@@ -96,6 +96,12 @@ module Network.PFQ.Lang.Default
     , Network.PFQ.Lang.Default.not
     , inv
     , par
+    , par3
+    , par4
+    , par5
+    , par6
+    , par7
+    , par8
 
         -- * Comparators
         -- | Take a NetProperty, a value, and return a predicate that compares the values.
@@ -893,6 +899,27 @@ inv x = Function "inv" x () () () () () () ()
 -- > par udp icmp >-> log_msg "This is an UDP or ICMP Packet"
 par :: NetFunction -> NetFunction -> NetFunction
 par a b = Function "par" a b () () () () () ()
+
+-- | Function that returns the parallel of n- monadic NetFunctions.
+
+par3 :: NetFunction -> NetFunction -> NetFunction -> NetFunction
+par3 a b c = Function "par3" a b c () () () () ()
+
+par4 :: NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction
+par4 a b c d = Function "par4" a b c d () () () ()
+
+par5 :: NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction
+par5 a b c d e = Function "par5" a b c d e () () ()
+
+par6 :: NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction
+par6 a b c d e f = Function "par6" a b c d e f () ()
+
+par7 :: NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction
+par7 a b c d e f g = Function "par7" a b c d e f g ()
+
+par8 :: NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction
+par8 = Function "par8"
+
 
 -- | Predicate which evaluates to /True/ when the packet has one of the
 -- vlan id specified by the list. Example:
