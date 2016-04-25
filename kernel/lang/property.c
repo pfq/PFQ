@@ -44,7 +44,7 @@ ip_tos(arguments_t args, SkBuff skb)
 		struct iphdr _iph;
 		const struct iphdr *ip;
 
-		ip = skb_ip_header_pointer(PFQ_SKB(skb), 0, sizeof(_iph), &_iph);
+		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
 		if (ip == NULL)
 			return NOTHING;
 
@@ -63,7 +63,7 @@ ip_tot_len(arguments_t args, SkBuff skb)
 		struct iphdr _iph;
 		const struct iphdr *ip;
 
-		ip = skb_ip_header_pointer(PFQ_SKB(skb), 0, sizeof(_iph), &_iph);
+		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
 		if (ip == NULL)
 			return NOTHING;
 
@@ -82,7 +82,7 @@ ip_id(arguments_t args, SkBuff skb)
 		struct iphdr _iph;
 		const struct iphdr *ip;
 
-		ip = skb_ip_header_pointer(PFQ_SKB(skb), 0, sizeof(_iph), &_iph);
+		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
 		if (ip == NULL)
 			return NOTHING;
 
@@ -101,7 +101,7 @@ ip_ttl(arguments_t args, SkBuff skb)
 		struct iphdr _iph;
 		const struct iphdr *ip;
 
-		ip = skb_ip_header_pointer(PFQ_SKB(skb), 0, sizeof(_iph), &_iph);
+		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
 		if (ip == NULL)
 			return NOTHING;
 
@@ -119,7 +119,7 @@ ip_frag(arguments_t args, SkBuff skb)
 		struct iphdr _iph;
 		const struct iphdr *ip;
 
-		ip = skb_ip_header_pointer(PFQ_SKB(skb), 0, sizeof(_iph), &_iph);
+		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
 		if (ip == NULL)
 			return NOTHING;
 
@@ -145,14 +145,14 @@ tcp_source(arguments_t args, SkBuff skb)
 		struct tcphdr _tcp;
 		const struct tcphdr *tcp;
 
-		ip = skb_ip_header_pointer(PFQ_SKB(skb), 0, sizeof(_iph), &_iph);
+		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
 		if (ip == NULL)
 			return NOTHING;
 
 		if (ip->protocol != IPPROTO_TCP)
 			return NOTHING;
 
-		tcp = skb_ip_header_pointer(PFQ_SKB(skb), (ip->ihl<<2), sizeof(_tcp), &_tcp);
+		tcp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(_tcp), &_tcp);
 		if (tcp == NULL)
 			return NOTHING;
 
@@ -174,14 +174,14 @@ tcp_dest(arguments_t args, SkBuff skb)
 		struct tcphdr _tcp;
 		const struct tcphdr *tcp;
 
-		ip = skb_ip_header_pointer(PFQ_SKB(skb), 0, sizeof(_iph), &_iph);
+		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
 		if (ip == NULL)
 			return NOTHING;
 
 		if (ip->protocol != IPPROTO_TCP)
 			return NOTHING;
 
-		tcp = skb_ip_header_pointer(PFQ_SKB(skb), (ip->ihl<<2), sizeof(_tcp), &_tcp);
+		tcp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(_tcp), &_tcp);
 		if (tcp == NULL)
 			return NOTHING;
 
@@ -202,14 +202,14 @@ tcp_hdrlen_(arguments_t args, SkBuff skb)
 		struct tcphdr _tcp;
 		const struct tcphdr *tcp;
 
-		ip = skb_ip_header_pointer(PFQ_SKB(skb), 0, sizeof(_iph), &_iph);
+		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
 		if (ip == NULL)
 			return NOTHING;
 
 		if (ip->protocol != IPPROTO_TCP)
 			return NOTHING;
 
-		tcp = skb_ip_header_pointer(PFQ_SKB(skb), (ip->ihl<<2), sizeof(_tcp), &_tcp);
+		tcp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(_tcp), &_tcp);
 		if (tcp == NULL)
 			return NOTHING;
 
@@ -234,14 +234,14 @@ udp_source(arguments_t args, SkBuff skb)
 		struct udphdr _udp;
 		const struct udphdr *udp;
 
-		ip = skb_ip_header_pointer(PFQ_SKB(skb), 0, sizeof(_iph), &_iph);
+		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
 		if (ip == NULL)
 			return NOTHING;
 
 		if (ip->protocol != IPPROTO_TCP)
 			return NOTHING;
 
-		udp = skb_ip_header_pointer(PFQ_SKB(skb), (ip->ihl<<2), sizeof(_udp), &_udp);
+		udp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(_udp), &_udp);
 		if (udp == NULL)
 			return NOTHING;
 
@@ -263,14 +263,14 @@ udp_dest(arguments_t args, SkBuff skb)
 		struct udphdr _udp;
 		const struct udphdr *udp;
 
-		ip = skb_ip_header_pointer(PFQ_SKB(skb), 0, sizeof(_iph), &_iph);
+		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
 		if (ip == NULL)
 			return NOTHING;
 
 		if (ip->protocol != IPPROTO_TCP)
 			return NOTHING;
 
-		udp = skb_ip_header_pointer(PFQ_SKB(skb), (ip->ihl<<2), sizeof(_udp), &_udp);
+		udp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(_udp), &_udp);
 		if (udp == NULL)
 			return NOTHING;
 
@@ -291,14 +291,14 @@ udp_len(arguments_t args, SkBuff skb)
 		struct udphdr _udp;
 		const struct udphdr *udp;
 
-		ip = skb_ip_header_pointer(PFQ_SKB(skb), 0, sizeof(_iph), &_iph);
+		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
 		if (ip == NULL)
 			return NOTHING;
 
 		if (ip->protocol != IPPROTO_TCP)
 			return NOTHING;
 
-		udp = skb_ip_header_pointer(PFQ_SKB(skb), (ip->ihl<<2), sizeof(_udp), &_udp);
+		udp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(_udp), &_udp);
 		if (udp == NULL)
 			return NOTHING;
 
@@ -320,14 +320,14 @@ icmp_type(arguments_t args, SkBuff skb)
 		struct icmphdr _icmp;
 		const struct icmphdr *icmp;
 
-		ip = skb_ip_header_pointer(PFQ_SKB(skb), 0, sizeof(_iph), &_iph);
+		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
 		if (ip == NULL)
 			return NOTHING;
 
 		if (ip->protocol != IPPROTO_ICMP)
 			return NOTHING;
 
-		icmp = skb_ip_header_pointer(PFQ_SKB(skb), (ip->ihl<<2), sizeof(_icmp), &_icmp);
+		icmp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(_icmp), &_icmp);
 		if (icmp == NULL)
 			return NOTHING;
 
@@ -349,14 +349,14 @@ icmp_code(arguments_t args, SkBuff skb)
 		struct icmphdr _icmp;
 		const struct icmphdr *icmp;
 
-		ip = skb_ip_header_pointer(PFQ_SKB(skb), 0, sizeof(_iph), &_iph);
+		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
 		if (ip == NULL)
 			return NOTHING;
 
 		if (ip->protocol != IPPROTO_ICMP)
 			return NOTHING;
 
-		icmp = skb_ip_header_pointer(PFQ_SKB(skb), (ip->ihl<<2), sizeof(_icmp), &_icmp);
+		icmp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(_icmp), &_icmp);
 		if (icmp == NULL)
 			return NOTHING;
 

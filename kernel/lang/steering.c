@@ -214,7 +214,7 @@ steering_p2p(arguments_t args, SkBuff skb)
 		struct iphdr _iph;
 		const struct iphdr *ip;
 
-		ip = skb_ip_header_pointer(PFQ_SKB(skb), 0, sizeof(_iph), &_iph);
+		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
 		if (ip == NULL)
 			return Drop(skb);
 
@@ -237,7 +237,7 @@ steering_ip(arguments_t args, SkBuff skb)
 		struct iphdr _iph;
 		const struct iphdr *ip;
 
-		ip = skb_ip_header_pointer(PFQ_SKB(skb), 0, sizeof(_iph), &_iph);
+		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
 		if (ip == NULL)
 			return Drop(skb);
 
@@ -268,7 +268,7 @@ steering_ip_local(arguments_t args, SkBuff skb)
 		struct iphdr _iph;
 		const struct iphdr *ip;
 
-		ip = skb_ip_header_pointer(PFQ_SKB(skb), 0, sizeof(_iph), &_iph);
+		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
 		if (ip == NULL)
 			return Drop(skb);
 
@@ -327,7 +327,7 @@ steering_net(arguments_t args, SkBuff skb)
 		const struct iphdr *ip;
 		bool src_net, dst_net;
 
-		ip = skb_ip_header_pointer(PFQ_SKB(skb), 0, sizeof(_iph), &_iph);
+		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
 		if (ip == NULL)
 			return Drop(skb);
 
@@ -364,7 +364,7 @@ steering_flow(arguments_t args, SkBuff skb)
 		const struct udphdr *udp;
 		__be32 hash;
 
-		ip = skb_ip_header_pointer(PFQ_SKB(skb), 0, sizeof(_iph), &_iph);
+		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
 		if (ip == NULL)
 			return Drop(skb);
 
@@ -372,7 +372,7 @@ steering_flow(arguments_t args, SkBuff skb)
 		    ip->protocol != IPPROTO_TCP)
 			return Drop(skb);
 
-		udp = skb_ip_header_pointer(PFQ_SKB(skb), (ip->ihl<<2), sizeof(_udp), &_udp);
+		udp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(_udp), &_udp);
 		if (udp == NULL)
 			return Drop(skb);  /* broken */
 

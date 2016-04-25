@@ -184,7 +184,7 @@ is_udp(SkBuff skb)
 		struct iphdr _iph;
 		const struct iphdr *ip;
 
-		ip = skb_ip_header_pointer(PFQ_SKB(skb), 0, sizeof(_iph), &_iph);
+		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
 		if (ip == NULL)
                         return false;
 
@@ -206,7 +206,7 @@ is_tcp(SkBuff skb)
 		struct iphdr _iph;
 		const struct iphdr *ip;
 
-		ip = skb_ip_header_pointer(PFQ_SKB(skb), 0, sizeof(_iph), &_iph);
+		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
 		if (ip == NULL)
                         return false;
 
@@ -228,7 +228,7 @@ is_icmp(SkBuff skb)
 		struct iphdr _iph;
 		const struct iphdr *ip;
 
-		ip = skb_ip_header_pointer(PFQ_SKB(skb), 0, sizeof(_iph), &_iph);
+		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
 		if (ip == NULL)
                         return false;
 
@@ -250,7 +250,7 @@ has_addr(SkBuff skb, __be32 addr, __be32 mask)
 		struct iphdr _iph;
 		const struct iphdr *ip;
 
-		ip = skb_ip_header_pointer(PFQ_SKB(skb), 0, sizeof(_iph), &_iph);
+		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
 		if (ip == NULL)
 			return false;
 
@@ -271,7 +271,7 @@ has_src_addr(SkBuff skb, __be32 addr, __be32 mask)
 		struct iphdr _iph;
 		const struct iphdr *ip;
 
-		ip = skb_ip_header_pointer(PFQ_SKB(skb), 0, sizeof(_iph), &_iph);
+		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
 		if (ip == NULL)
 			return false;
 
@@ -290,7 +290,7 @@ has_dst_addr(SkBuff skb, __be32 addr, __be32 mask)
 		struct iphdr _iph;
 		const struct iphdr *ip;
 
-		ip = skb_ip_header_pointer(PFQ_SKB(skb), 0, sizeof(_iph), &_iph);
+		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
 		if (ip == NULL)
 			return false;
 
@@ -310,7 +310,7 @@ is_flow(SkBuff skb)
 		struct iphdr _iph;
 		const struct iphdr *ip;
 
-		ip = skb_ip_header_pointer(PFQ_SKB(skb), 0, sizeof(_iph), &_iph);
+		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
 		if (ip == NULL)
 			return false;
 
@@ -341,7 +341,7 @@ is_l4_proto(SkBuff skb, u8 protocol)
 		struct iphdr _iph;
 		const struct iphdr *ip;
 
-		ip = skb_ip_header_pointer(PFQ_SKB(skb), 0, sizeof(_iph), &_iph);
+		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
 		if (ip == NULL)
 			return false;
 
@@ -360,7 +360,7 @@ is_frag(SkBuff skb)
 		struct iphdr _iph;
 		const struct iphdr *ip;
 
-		ip = skb_ip_header_pointer(PFQ_SKB(skb), 0, sizeof(_iph), &_iph);
+		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
 		if (ip == NULL)
 			return false;
 
@@ -378,7 +378,7 @@ is_first_frag(SkBuff skb)
 		struct iphdr _iph;
 		const struct iphdr *ip;
 
-		ip = skb_ip_header_pointer(PFQ_SKB(skb), 0, sizeof(_iph), &_iph);
+		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
 		if (ip == NULL)
 			return false;
 
@@ -396,7 +396,7 @@ is_more_frag(SkBuff skb)
 		struct iphdr _iph;
 		const struct iphdr *ip;
 
-		ip = skb_ip_header_pointer(PFQ_SKB(skb), 0, sizeof(_iph), &_iph);
+		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
 		if (ip == NULL)
 			return false;
 
@@ -414,7 +414,7 @@ has_src_port(SkBuff skb, uint16_t port)
 		struct iphdr _iph;
 		const struct iphdr *ip;
 
-		ip = skb_ip_header_pointer(PFQ_SKB(skb), 0, sizeof(_iph), &_iph);
+		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
 		if (ip == NULL)
 			return false;
 
@@ -422,7 +422,7 @@ has_src_port(SkBuff skb, uint16_t port)
 		{
 		case IPPROTO_UDP: {
 			struct udphdr _udph; const struct udphdr *udp;
-			udp = skb_ip_header_pointer(PFQ_SKB(skb), (ip->ihl<<2), sizeof(struct udphdr), &_udph);
+			udp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(struct udphdr), &_udph);
 			if (udp == NULL)
 				return false;
 
@@ -430,7 +430,7 @@ has_src_port(SkBuff skb, uint16_t port)
 		}
 		case IPPROTO_TCP: {
 			struct tcphdr _tcph; const struct tcphdr *tcp;
-			tcp = skb_ip_header_pointer(PFQ_SKB(skb), (ip->ihl<<2), sizeof(struct tcphdr), &_tcph);
+			tcp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(struct tcphdr), &_tcph);
 			if (tcp == NULL)
 				return false;
 
@@ -453,7 +453,7 @@ has_dst_port(SkBuff skb, uint16_t port)
 		struct iphdr _iph;
 		const struct iphdr *ip;
 
-		ip = skb_ip_header_pointer(PFQ_SKB(skb), 0, sizeof(_iph), &_iph);
+		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
 		if (ip == NULL)
 			return false;
 
@@ -461,7 +461,7 @@ has_dst_port(SkBuff skb, uint16_t port)
 		{
 		case IPPROTO_UDP: {
 			struct udphdr _udph; const struct udphdr *udp;
-			udp = skb_ip_header_pointer(PFQ_SKB(skb), (ip->ihl<<2), sizeof(struct udphdr), &_udph);
+			udp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(struct udphdr), &_udph);
 			if (udp == NULL)
 				return false;
 
@@ -469,7 +469,7 @@ has_dst_port(SkBuff skb, uint16_t port)
 		}
 		case IPPROTO_TCP: {
 			struct tcphdr _tcph; const struct tcphdr *tcp;
-			tcp = skb_ip_header_pointer(PFQ_SKB(skb), (ip->ihl<<2), sizeof(struct tcphdr), &_tcph);
+			tcp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(struct tcphdr), &_tcph);
 			if (tcp == NULL)
 				return false;
 

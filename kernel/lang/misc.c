@@ -124,14 +124,14 @@ log_ip4_packet(arguments_t args, SkBuff skb)
 	struct iphdr _iph;
 	const struct iphdr *ip;
 
-	ip = skb_ip_header_pointer(PFQ_SKB(skb), 0, sizeof(_iph), &_iph);
+	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
 	if (ip)
 	{
 		switch(ip->protocol)
 		{
 		case IPPROTO_UDP: {
 			struct udphdr _udph; const struct udphdr *udp;
-			udp = skb_ip_header_pointer(PFQ_SKB(skb), (ip->ihl<<2), sizeof(struct udphdr), &_udph);
+			udp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(struct udphdr), &_udph);
 			if (udp)
 			{
 				printk(KERN_INFO "[pfq-lang] IP4 %pI4.%d > %pI4.%d: UDP\n",
@@ -145,7 +145,7 @@ log_ip4_packet(arguments_t args, SkBuff skb)
 		} break;
 		case IPPROTO_TCP: {
 			struct tcphdr _tcph; const struct tcphdr *tcp;
-			tcp = skb_ip_header_pointer(PFQ_SKB(skb), (ip->ihl<<2), sizeof(struct tcphdr), &_tcph);
+			tcp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(struct tcphdr), &_tcph);
 			if (tcp)
 			{
 				printk(KERN_INFO "[pfq-lang] IP4 %pI4.%d > %pI4.%d: TCP\n",
@@ -159,7 +159,7 @@ log_ip4_packet(arguments_t args, SkBuff skb)
 		} break;
 		case IPPROTO_ICMP: {
 			struct icmphdr _icmp; const struct icmphdr *icmp;
-			icmp = skb_ip_header_pointer(PFQ_SKB(skb), (ip->ihl<<2), sizeof(struct icmphdr), &_icmp);
+			icmp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(struct icmphdr), &_icmp);
                         if (icmp)
 			{
 				printk(KERN_INFO "[pfq-lang] IP4 %pI4 > %pI4: ICMP type=%d (code=%d)\n",
