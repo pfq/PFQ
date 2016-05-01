@@ -194,7 +194,7 @@ pfq_lang_signature_simplify(string_view_t str)
 	return string_view_trim(str);
 }
 
-static inline
+static
 int __signature_arity(string_view_t s)
 {
 	string_view_t str  = pfq_lang_signature_simplify(s);
@@ -216,7 +216,7 @@ pfq_lang_signature_arity(string_view_t str)
 	return -1 + __signature_arity(str);
 }
 
-static inline
+static
 string_view_t __signature_bind(string_view_t s, int stop, int n)
 {
 	string_view_t str  = pfq_lang_signature_simplify(s),
@@ -240,7 +240,7 @@ pfq_lang_signature_bind(string_view_t str, int n)
 }
 
 
-static inline string_view_t
+static string_view_t
 __signature_arg(string_view_t s, int stop, int index)
 {
 	string_view_t str  = pfq_lang_signature_simplify(s);
