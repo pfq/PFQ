@@ -36,12 +36,14 @@ module Network.PFQ.Lang.Prelude
     , fromInteger
     , fromRational
     , fromString
+    , ifThenElse
     ) where
 
 
 import qualified Prelude as P hiding ((>>), (>>=), return)
 import qualified Data.String as S
 import Network.PFQ.Lang
+import Network.PFQ.Lang.Default
 
 a >> b = a >-> b
 
@@ -60,4 +62,5 @@ fromRational = P.fromRational
 fromString :: (S.IsString a) => P.String -> a
 fromString = S.fromString
 
+ifThenElse = conditional
 
