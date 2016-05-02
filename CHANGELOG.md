@@ -150,7 +150,7 @@ PFQ 6.0
     * `steer_field_symmetric`
     * `steer_ip_local`
     * `steer_link_local`
-    * `kernel'`
+    * `detour`
  * Transmission APIs updated.
  * General improvements.
  * Regressions and bugs fixes.
