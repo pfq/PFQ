@@ -708,13 +708,21 @@ namespace pfq { namespace lang {
 
         auto no_more_frag   = function("no_more_frag");
 
-        //! Send a copy of the packet to the kernel.
+        //! Send a copy of the packet to the kernel and evaluates to \c Pass.
         /*!
          *
          * To avoid loop, this function is ignored for packets sniffed from the kernel.
          */
 
         auto kernel         = function("kernel");
+
+        //! Send a copy of the packet to the kernel and evaluates to \c Drop.
+        /*!
+         *
+         * To avoid loop, this function is ignored for packets sniffed from the kernel.
+         */
+
+        auto kernel_        = function("kernel'");
 
         //! Broadcast the packet to all the sockets that have joined the group.
 

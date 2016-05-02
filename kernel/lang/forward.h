@@ -47,6 +47,12 @@ forward_to_kernel(arguments_t args, SkBuff b)
 }
 
 static inline ActionSkBuff
+forward_to_kernel_(arguments_t args, SkBuff b)
+{
+        return Drop(to_kernel(b));
+}
+
+static inline ActionSkBuff
 forward_class(arguments_t args, SkBuff b)
 {
         const int c = GET_ARG(int, args);

@@ -173,6 +173,7 @@ module Network.PFQ.Lang.Default
 
         -- * Forwarders
     , kernel
+    , kernel'
     , broadcast
     , Network.PFQ.Lang.Default.drop
     , classify
@@ -699,11 +700,14 @@ link :: [String] -> NetFunction
 link ds = Function "forward" ds () () () () () () ()
 
 
--- | Send a copy of the packet to the kernel (the sk_buff may have been captured directly
--- by PFQ).
---
--- To avoid loop, this function is ignored for packets sniffed from the kernel.
+-- | Send a copy of the packet to the kernel and evaluates to /Pass/.
+-- To avoid loop, this function is ignored for packets sniffed by the kernel.
 kernel = Function "kernel" () () () () () () () () :: NetFunction
+
+-- | Send a copy of the packet to the kernel and evaluates to /Drop/.
+-- To avoid loop, this function is ignored for packets sniffed by the kernel.
+kernel' = Function "kernel'" () () () () () () () () :: NetFunction
+
 
 -- | Broadcast the packet to all the sockets that have joined the group.
 broadcast = Function "broadcast" () () () () () () () () :: NetFunction
