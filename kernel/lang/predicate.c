@@ -175,6 +175,42 @@ pred_is_more_frag(arguments_t args, SkBuff b)
         return  is_more_frag(b);
 }
 
+static bool
+pred_is_broadcast(arguments_t args, SkBuff b)
+{
+	return is_broadcast(b);
+}
+
+static bool
+pred_is_multicast(arguments_t args, SkBuff b)
+{
+	return is_multicast(b);
+}
+
+static bool
+pred_is_ip_host(arguments_t args, SkBuff b)
+{
+	return is_ip_host(b);
+}
+
+static bool
+pred_is_ip_broadcast(arguments_t args, SkBuff b)
+{
+	return is_ip_broadcast(b);
+}
+
+static bool
+pred_is_ip_multicast(arguments_t args, SkBuff b)
+{
+	return is_ip_broadcast(b);
+}
+
+static bool
+pred_is_incoming_host(arguments_t args, SkBuff b)
+{
+	return is_incoming_host(b);
+}
+
 struct pfq_lang_function_descr predicate_functions[] = {
 
         { "less",	"(SkBuff -> Word64) -> Word64 -> SkBuff -> Bool", less		},
@@ -208,6 +244,13 @@ struct pfq_lang_function_descr predicate_functions[] = {
         { "has_addr",     "CIDR -> SkBuff -> Bool", pred_has_addr     , pred_addr_init },
         { "has_src_addr", "CIDR -> SkBuff -> Bool", pred_has_src_addr , pred_addr_init },
         { "has_dst_addr", "CIDR -> SkBuff -> Bool", pred_has_dst_addr , pred_addr_init },
+
+        { "is_broadcast",    "SkBuff -> Bool",  pred_is_broadcast	},
+        { "is_multicast",    "SkBuff -> Bool",  pred_is_multicast	},
+        { "is_incoming_host","SkBuff -> Bool",  pred_is_incoming_host	},
+        { "is_ip_host",      "SkBuff -> Bool",  pred_is_ip_host		},
+        { "is_ip_broadcast", "SkBuff -> Bool",  pred_is_ip_broadcast	},
+        { "is_ip_multicast", "SkBuff -> Bool",  pred_is_ip_multicast	},
 
         { NULL }};
 

@@ -35,6 +35,9 @@
 #include <linux/tcp.h>
 #include <linux/icmp.h>
 #include <linux/if_vlan.h>
+#include <linux/in.h>
+#include <linux/etherdevice.h>
+#include <linux/rcupdate.h>
 #include <net/ip.h>
 
 #include <pragma/diagnostic_pop>
@@ -436,6 +439,121 @@ static inline bool
 has_vid(SkBuff skb, int vid)
 {
 	return (skb->vlan_tci & VLAN_VID_MASK) == vid;
+}
+
+
+static inline bool
+is_broadcast(SkBuff skb)
+{
+	struct ethhdr *eth = eth_hdr(PFQ_SKB(skb));
+        bool ctx = PFQ_CB(skb)->monad->ep_ctx;
+
+	return (is_broadcast_ether_addr(eth->h_dest)   && (ctx & EPOINT_DST)) ||
+	       (is_broadcast_ether_addr(eth->h_source) && (ctx & EPOINT_SRC));
+}
+
+static inline bool
+is_multicast(SkBuff skb)
+{
+	struct ethhdr *eth = eth_hdr(PFQ_SKB(skb));
+        bool ctx = PFQ_CB(skb)->monad->ep_ctx;
+
+	return (is_multicast_ether_addr(eth->h_dest) && (ctx & EPOINT_DST)) ||
+	       (is_multicast_ether_addr(eth->h_source) && (ctx & EPOINT_SRC));
+}
+
+
+static inline bool
+is_ip_broadcast(SkBuff skb)
+{
+	struct iphdr _iph;
+	const struct iphdr *ip;
+        bool ctx = PFQ_CB(skb)->monad->ep_ctx;
+
+	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	if (ip == NULL)
+		return false;
+
+	return (ipv4_is_lbcast(ip->saddr) && (ctx & EPOINT_SRC)) ||
+	       (ipv4_is_lbcast(ip->daddr) && (ctx & EPOINT_DST));
+}
+
+
+static inline bool
+is_ip_multicast(SkBuff skb)
+{
+	struct iphdr _iph;
+	const struct iphdr *ip;
+        bool ctx = PFQ_CB(skb)->monad->ep_ctx;
+
+	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	if (ip == NULL)
+		return false;
+
+	return (ipv4_is_multicast(ip->saddr) && (ctx & EPOINT_SRC)) ||
+	       (ipv4_is_multicast(ip->daddr) && (ctx & EPOINT_DST));
+}
+
+
+static inline bool
+is_ip_host(SkBuff skb)
+{
+	struct in_device *in_dev;
+	struct iphdr _iph;
+	const struct iphdr *ip;
+	bool ret = false;
+        bool ctx = PFQ_CB(skb)->monad->ep_ctx;
+
+	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	if (ip == NULL)
+		return false;
+
+	rcu_read_lock();
+	in_dev = __in_dev_get_rcu(PFQ_SKB(skb)->dev);
+	if (in_dev != NULL) {
+		for_primary_ifa(in_dev) {
+			if (((ifa->ifa_address == ip->daddr) && (ctx & EPOINT_DST)) ||
+			    ((ifa->ifa_address == ip->saddr) && (ctx & EPOINT_SRC))){
+				ret = true;
+				break;
+			}
+		} endfor_ifa(in_dev);
+	}
+	rcu_read_unlock();
+	return ret;
+}
+
+
+static inline bool
+is_incoming_host(SkBuff skb)
+{
+	struct in_device *in_dev;
+	struct iphdr _iph;
+	const struct iphdr *ip;
+	bool ret = false;
+	struct ethhdr *eth = eth_hdr(PFQ_SKB(skb));
+
+	if (is_broadcast_ether_addr(eth->h_dest) || is_multicast_ether_addr(eth->h_dest))
+		return true;
+
+	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	if (ip == NULL)
+		return false;
+
+	rcu_read_lock();
+	in_dev = __in_dev_get_rcu(PFQ_SKB(skb)->dev);
+	if (in_dev != NULL) {
+		for_primary_ifa(in_dev) {
+			if (ifa->ifa_address == ip->daddr)
+			{
+				ret = true;
+				break;
+			}
+		} endfor_ifa(in_dev);
+	}
+	rcu_read_unlock();
+
+	return ret;
 }
 
 

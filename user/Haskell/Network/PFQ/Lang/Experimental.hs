@@ -60,6 +60,20 @@ module Network.PFQ.Lang.Experimental
     , kernel_if
     , detour_if
 
+    , is_broadcast
+    , is_multicast
+    , is_ip_broadcast
+    , is_ip_multicast
+    , is_ip_host
+    , is_incoming_host
+
+    , mac_broadcast
+    , mac_multicast
+    , incoming_host
+    , ip_broadcast
+    , ip_multicast
+    , ip_host
+
     ) where
 
 
@@ -164,5 +178,45 @@ kernel_if p = Function "kernel_if" p () () () () () () ()
 
 detour_if :: NetPredicate -> NetFunction
 detour_if p = Function "detour_if" p () () () () () () ()
+
+-- | Evaluate to /True/ if the SkBuff is broadcast frame.
+is_broadcast = Predicate "is_broadcast" () () () () () () () ()
+
+-- | Evaluate to /True/ if the SkBuff is multicast frame.
+is_multicast = Predicate "is_multicast" () () () () () () () ()
+
+-- | Evaluate to /True/ if the SkBuff is broadcast IP packet.
+is_ip_broadcast = Predicate "is_ip_broadcast" () () () () () () () ()
+
+-- | Evaluate to /True/ if the SkBuff is multicast IP packet.
+is_ip_multicast = Predicate "is_ip_multicast" () () () () () () () ()
+
+-- | Evaluate to /True/ if the SkBuff IP address matches that of the incoming interface,
+-- /False/ otherwise.
+is_ip_host = Predicate "is_ip_host" () () () () () () () ()
+
+-- | Evaluate to /True/ if the SkBuff IP address matches that of the incoming interface,
+--   is a broadcast or a multicast frame.
+is_incoming_host = Predicate "is_incoming_host" () () () () () () () ()
+
+
+-- | Evaluate to /Pass SkBuff/ if it is a broadcast frame, /Drop/ it otherwise.
+mac_broadcast = Function "mac_broadcast" () () () () () () () () :: NetFunction
+
+-- | Evaluate to /Pass SkBuff/ if it is a multicast frame, /Drop/ it otherwise.
+mac_multicast = Function "mac_multicast" () () () () () () () () :: NetFunction
+
+-- | Evaluate to /Pass SkBuff/ if it is a broadcast IP packet, /Drop/ it otherwise.
+ip_broadcast = Function "ip_broadcast" () () () () () () () () :: NetFunction
+
+-- | Evaluate to /Pass SkBuff/ if it is a multicast IP packet, /Drop/ it otherwise.
+ip_multicast = Function "ip_multicast" () () () () () () () () :: NetFunction
+
+-- | Evaluate to /Pass SkBuff/ if the IP address matches that of the incoming interface, /Drop/ it otherwise.
+ip_host = Function "ip_host" () () () () () () () () :: NetFunction
+
+-- | Evaluate to /Pass SkBuff/ if the IP address matches that of the incoming interface,
+-- is a broadcast or a multicast frame, /Drop/ it otherwise.
+incoming_host = Function "incoming_host" () () () () () () () () :: NetFunction
 
 

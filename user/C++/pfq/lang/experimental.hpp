@@ -128,6 +128,54 @@ namespace pfq { namespace lang { namespace experimental {
             static_assert(is_predicate<Predicate>::value,  "detour_if: argument 0: predicate expected");
             return function("detour_if", p);
         }
+
+        //! Evaluate to \c true if the SkBuff is a broadcast frame, \c false otherwise.
+
+        auto is_broadcast     = predicate("is_broadcast");
+
+        //! Evaluate to \c true if the SkBuff is a multicast frame, \c false otherwise.
+
+        auto is_multicast     = predicate("is_multicast");
+
+        //! Evaluate to \c true if the SkBuff is a broadcast IP packet, \c false otherwise.
+
+        auto is_ip_broadcast  = predicate("is_ip_broadcast");
+
+        //! Evaluate to \c true if the SkBuff is a multicast IP packet, \c false otherwise.
+        auto is_ip_multicast  = predicate("is_ip_multicast");
+
+        //! Evaluate to \c true if the SkBuff IP address matches that of the incoming interface, \c false otherwise.
+
+        auto is_ip_host       = predicate("is_ip_host");
+
+        //! Evaluate to \c true if the SkBuff IP address matches that of the incoming interface, is a broadcast or a multicast frame, \c false otherwise.
+
+        auto is_incoming_host = predicate("is_incoming_host");
+
+
+        //! Evaluate to \c Pass SkBuff if it is a broadcast frame, \c Drop it otherwise.
+
+        auto mac_broadcast    = function("mac_broadcast");
+
+        //! Evaluate to \c Pass SkBuff if it is a multicast frame, \c Drop it otherwise.
+
+        auto mac_multicast    = function("mac_multicast");
+
+        //! Evaluate to \c Pass SkBuff if it is a broadcast IP packet, \c Drop it otherwise.
+
+        auto ip_broadcast     = function("ip_broadcast");
+
+        //! Evaluate to \c Pass SkBuff if it is a multicast IP packet, \c Drop it otherwise.
+
+        auto ip_multicast     = function("ip_multicast");
+
+        //! Evaluate to \c Pass SkBuff if the IP address matches that of the incoming interface, \c Drop otherwise.
+
+        auto ip_host          = function("ip_host");
+
+        //! Evaluate to \c Pass SkBuff if the IP address matches that of the incoming interface, is a broadcast or a multicast frame, \c Drop otherwise.
+
+        auto incoming_host    = function("incoming_host");
     }
 
 } // namespace experimental

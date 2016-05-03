@@ -126,6 +126,45 @@ filter_no_more_frag(arguments_t args, SkBuff b)
 }
 
 
+static ActionSkBuff
+filter_broadcast(arguments_t args, SkBuff b)
+{
+	return is_broadcast(b) ? Drop(b) : Pass(b);
+}
+
+static ActionSkBuff
+filter_multicast(arguments_t args, SkBuff b)
+{
+	return is_multicast(b) ? Drop(b) : Pass(b);
+}
+
+
+static ActionSkBuff
+filter_ip_broadcast(arguments_t args, SkBuff b)
+{
+	return is_ip_broadcast(b) ? Drop(b) : Pass(b);
+}
+
+static ActionSkBuff
+filter_ip_multicast(arguments_t args, SkBuff b)
+{
+	return is_ip_multicast(b) ? Drop(b) : Pass(b);
+}
+
+
+static ActionSkBuff
+filter_ip_host(arguments_t args, SkBuff b)
+{
+	return is_ip_host(b) ? Drop(b) : Pass(b);
+}
+
+static ActionSkBuff
+filter_incoming_host(arguments_t args, SkBuff b)
+{
+	return is_incoming_host(b) ? Drop(b) : Pass(b);
+}
+
+
 struct pfq_lang_function_descr filter_functions[] = {
 
         { "unit",	  "SkBuff -> Action SkBuff",	unit			},
@@ -149,6 +188,13 @@ struct pfq_lang_function_descr filter_functions[] = {
 	{ "l3_proto",     "Word16 -> SkBuff -> Action SkBuff",           filter_l3_proto },
         { "l4_proto",     "Word8  -> SkBuff -> Action SkBuff",           filter_l4_proto },
         { "filter",       "(SkBuff -> Bool) -> SkBuff -> Action SkBuff", filter_generic  },
+
+	{ "mac_broadcast","SkBuff -> Action SkBuff",	filter_broadcast	},
+	{ "mac_multicast","SkBuff -> Action SkBuff",	filter_multicast	},
+	{ "incoming_host","SkBuff -> Action SkBuff",	filter_incoming_host	},
+	{ "ip_host",	  "SkBuff -> Action SkBuff",	filter_ip_host		},
+	{ "ip_broadcast", "SkBuff -> Action SkBuff",	filter_ip_broadcast	},
+	{ "ip_multicast", "SkBuff -> Action SkBuff",	filter_ip_multicast	},
 
         { NULL }};
 
