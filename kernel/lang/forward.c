@@ -254,6 +254,27 @@ tee(arguments_t args, SkBuff skb)
 }
 
 
+static ActionSkBuff
+forward_if_kernel(arguments_t args, SkBuff b)
+{
+        predicate_t pred_ = GET_ARG_0(predicate_t, args);
+        if (EVAL_PREDICATE(pred_, b))
+		to_kernel(b);
+        return Pass(b);
+}
+
+
+static ActionSkBuff
+detour_if_kernel(arguments_t args, SkBuff b)
+{
+        predicate_t pred_ = GET_ARG_0(predicate_t, args);
+        if (EVAL_PREDICATE(pred_, b))
+		return Drop(to_kernel(b));
+	else
+		return Pass(b);
+}
+
+
 struct pfq_lang_function_descr forward_functions[] = {
 
         { "drop",       "SkBuff -> Action SkBuff",		forward_drop		},
@@ -262,6 +283,9 @@ struct pfq_lang_function_descr forward_functions[] = {
 
         { "kernel",	"SkBuff -> Action SkBuff",		forward_kernel		},
         { "detour",	"SkBuff -> Action SkBuff",		detour_kernel		},
+
+        { "kernel_if",	"(SkBuff -> Bool) -> SkBuff -> Action SkBuff",	forward_if_kernel	},
+        { "detour_if",	"(SkBuff -> Bool) -> SkBuff -> Action SkBuff",	detour_if_kernel	},
 
 
 	{ "forwardIO",  "String -> SkBuff -> Action SkBuff",			 forwardIO, forward_init, forward_fini },

@@ -83,7 +83,7 @@ namespace pfq { namespace lang { namespace experimental {
 
         auto is_gtp_up      = predicate("is_gtp_up");
 
-        //! Dispatch the packet across the sockets
+        //! Dispatch the packet across the sockets.
         /*!
          * Dispatch with a randomized algorithm that maintains the integrity
          * of per-user flows on top of GTP tunnels (Control-Plane packets are broadcasted to
@@ -102,6 +102,32 @@ namespace pfq { namespace lang { namespace experimental {
         auto shift = function("shift");
         auto src   = function("src");
         auto dst   = function("dst");
+
+        //! conditional forward to kernel.
+        /*!
+         * kernel_if (is_udp)
+         *
+         */
+        template <typename Predicate>
+        auto kernel_if(Predicate p)
+            -> decltype(function(nullptr, p))
+        {
+            static_assert(is_predicate<Predicate>::value,  "kernel_if: argument 0: predicate expected");
+            return function("kernel_if", p);
+        }
+
+        //! conditional forward to kernel.
+        /*!
+         * detour_if (is_udp)
+         *
+         */
+        template <typename Predicate>
+        auto detour_if(Predicate p)
+            -> decltype(function(nullptr, p))
+        {
+            static_assert(is_predicate<Predicate>::value,  "detour_if: argument 0: predicate expected");
+            return function("detour_if", p);
+        }
     }
 
 } // namespace experimental

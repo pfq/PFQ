@@ -722,7 +722,7 @@ namespace pfq { namespace lang {
          * To avoid loop, this function is ignored for packets sniffed from the kernel.
          */
 
-        auto kernel_        = function("kernel'");
+        auto detour = function("detour");
 
         //! Broadcast the packet to all the sockets that have joined the group.
 

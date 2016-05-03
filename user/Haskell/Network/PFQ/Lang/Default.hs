@@ -173,7 +173,7 @@ module Network.PFQ.Lang.Default
 
         -- * Forwarders
     , kernel
-    , kernel'
+    , detour
     , broadcast
     , Network.PFQ.Lang.Default.drop
     , classify
@@ -706,7 +706,7 @@ kernel = Function "kernel" () () () () () () () () :: NetFunction
 
 -- | Send a copy of the packet to the kernel and evaluates to /Drop/.
 -- To avoid loop, this function is ignored for packets sniffed by the kernel.
-kernel' = Function "kernel'" () () () () () () () () :: NetFunction
+detour = Function "detour" () () () () () () () () :: NetFunction
 
 
 -- | Broadcast the packet to all the sockets that have joined the group.

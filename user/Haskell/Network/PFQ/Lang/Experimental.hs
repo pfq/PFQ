@@ -57,6 +57,9 @@ module Network.PFQ.Lang.Experimental
     , dst
     , trace
 
+    , kernel_if
+    , detour_if
+
     ) where
 
 
@@ -145,5 +148,21 @@ dst f = Function "dst" f () () () () () () ()
 --
 trace :: NetFunction
 trace = Function "trace" () () () () () () () ()
+
+
+-- | Conditional forwarder to kernel. Evaluate to /Pass SkBuff/.
+--
+-- > kernel_if is_tcp
+
+kernel_if :: NetPredicate -> NetFunction
+kernel_if p = Function "kernel_if" p () () () () () () ()
+
+-- | Conditional forwarder to kernel. Evaluate to /Drop/ if
+-- predicate evaluates to True, /Pass/ otherwise.
+--
+-- > detour_if is_tcp
+
+detour_if :: NetPredicate -> NetFunction
+detour_if p = Function "detour_if" p () () () () () () ()
 
 
