@@ -27,6 +27,7 @@
 #include <linux/module.h>
 #include <pragma/diagnostic_pop>
 
+#include <lang/control.h>
 #include <lang/module.h>
 #include <lang/headers.h>
 
@@ -310,6 +311,11 @@ par8(arguments_t args, SkBuff skb)
 
 
 struct pfq_lang_function_descr control_functions[] = {
+
+        { "conditional", "(SkBuff -> Bool) -> (SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff ",  conditional  },
+        { "when",        "(SkBuff -> Bool) -> (SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff",	when	},
+        { "unless",      "(SkBuff -> Bool) -> (SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff",	unless	},
+        { "shift",       "(SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff",  shift },
 
         { "inv",	"(SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff", inv },
         { "par",	"(SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff", par },

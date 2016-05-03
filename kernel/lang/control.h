@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef PFQ_LANG_CONDITIONAL_H
-#define PFQ_LANG_CONDITIONAL_H
+#ifndef PFQ_LANG_CONTROL_H
+#define PFQ_LANG_CONTROL_H
 
 #include <lang/module.h>
 #include <lang/predicate.h>
@@ -85,4 +85,4 @@ shift(arguments_t args, SkBuff b)
 }
 
 
-#endif /* PFQ_LANG_CONDITIONAL_H */
+#endif /* PFQ_LANG_CONTROL_H */

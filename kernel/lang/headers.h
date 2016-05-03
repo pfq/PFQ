@@ -25,9 +25,9 @@
 #define PFQ_LANG_HEADERS_H
 
 #include <lang/combinator.h>
-#include <lang/conditional.h>
 #include <lang/predicate.h>
 #include <lang/forward.h>
+#include <lang/control.h>
 #include <lang/filter.h>
 #include <lang/misc.h>
 

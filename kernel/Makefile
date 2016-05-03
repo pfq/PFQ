@@ -27,7 +27,7 @@ pfq-objs := pf_q.o pf_q-sockopt.o pf_q-global.o pf_q-proc.o pf_q-devmap.o pf_q-s
 		    pf_q-thread.o pf_q-receive.o pf_q-transmit.o pf_q-netdev.o pf_q-printk.o \
 		    lang/engine.o lang/GC.o lang/signature.o lang/symtable.o lang/printk.o \
 		    lang/filter.o lang/steering.o lang/forward.o \
-		    lang/predicate.o lang/combinator.o lang/conditional.o lang/control.o \
+		    lang/predicate.o lang/combinator.o lang/control.o \
 		    lang/property.o lang/bloom.o lang/vlan.o lang/misc.o lang/dummy.o
 
 KERNELVERSION := $(shell uname -r)
