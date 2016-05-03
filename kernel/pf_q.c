@@ -290,6 +290,7 @@ pfq_receive_batch(struct pfq_percpu_data *data,
 				monad.shift = 0;
 				monad.ipoff = 0;
 				monad.ipproto = IPPROTO_NONE;
+				monad.ep_ctx = EPOINT_SRC | EPOINT_DST;
 
 				/* run the functional program */
 

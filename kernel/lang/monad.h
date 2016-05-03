@@ -63,6 +63,10 @@ typedef struct
 
 } fanout_t;
 
+/* endpoint context */
+
+#define EPOINT_SRC	(1<<0)
+#define EPOINT_DST	(1<<1)
 
 /* Action monad */
 
@@ -74,8 +78,8 @@ struct pfq_lang_monad
         int			shift;
 	int			ipoff;
         int			ipproto;
+        int			ep_ctx;		/* endpoint context */
 };
-
 
 /* Fanout constructors */
 

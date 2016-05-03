@@ -53,6 +53,8 @@ module Network.PFQ.Lang.Experimental
     , is_gtp_cp
     , is_gtp_up
     , shift
+    , src
+    , dst
     , trace
 
     ) where
@@ -123,10 +125,24 @@ is_gtp_up = Predicate "is_gtp_up" () () () () () () () () :: NetPredicate
 shift :: NetFunction -> NetFunction
 shift f = Function "shift" f () () () () () () ()
 
+-- This function creates a 'source' context...
+--
+-- > src $ ...
+src :: NetFunction -> NetFunction
+src f = Function "src" f () () () () () () ()
+
+
+-- The function creates a 'destination' context...
+--
+-- > dst  $ ...
+dst :: NetFunction -> NetFunction
+dst f = Function "dst" f () () () () () () ()
+
 
 -- | Log monadic/state information to syslog.
 --
 -- > udp >-> log_msg "This is an UDP packet"
+--
 trace :: NetFunction
 trace = Function "trace" () () () () () () () ()
 

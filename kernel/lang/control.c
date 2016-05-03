@@ -315,7 +315,10 @@ struct pfq_lang_function_descr control_functions[] = {
         { "conditional", "(SkBuff -> Bool) -> (SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff ",  conditional  },
         { "when",        "(SkBuff -> Bool) -> (SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff",	when	},
         { "unless",      "(SkBuff -> Bool) -> (SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff",	unless	},
-        { "shift",       "(SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff",  shift },
+
+        { "shift",       "(SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff",  shift   },
+        { "src",	 "(SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff",  src_ctx },
+        { "dst",	 "(SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff",  dst_ctx },
 
         { "inv",	"(SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff", inv },
         { "par",	"(SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff", par },

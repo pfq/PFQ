@@ -208,7 +208,7 @@ trace(arguments_t args, SkBuff skb)
 	skb_ip_version(skb);
 
 	if (printk_ratelimit())
-		printk(KERN_INFO "[pfq-lang] TRACE state:%u fanout:{%lu %u %u %u} shift:%d ipoff:%d ipproto:%d\n"
+		printk(KERN_INFO "[pfq-lang] TRACE state:%u fanout:{%lu %u %u %u} shift:%d ipoff:%d ipproto:%d ep_ctx:%d\n"
 					, mon->state
 					, mon->fanout.class_mask
 					, mon->fanout.hash
@@ -217,6 +217,7 @@ trace(arguments_t args, SkBuff skb)
 					, mon->shift
 					, mon->ipoff
 					, mon->ipproto
+					, mon->ep_ctx
 					);
 
 	return Pass(skb);

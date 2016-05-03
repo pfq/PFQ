@@ -97,6 +97,11 @@ namespace pfq { namespace lang { namespace experimental {
             return function("steer_gtp_usr", ipv4_t{net}, prefix);
         };
 
+        //! Additional functions..
+
+        auto shift = function("shift");
+        auto src   = function("src");
+        auto dst   = function("dst");
     }
 
 } // namespace experimental

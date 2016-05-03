@@ -85,4 +85,40 @@ shift(arguments_t args, SkBuff b)
 }
 
 
+static inline ActionSkBuff
+src_ctx(arguments_t args, SkBuff b)
+{
+        function_t  fun_  = GET_ARG_0(function_t, args);
+	ActionSkBuff ret;
+
+	int ctx = PFQ_CB(b)->monad->ep_ctx;
+
+        PFQ_CB(b)->monad->ep_ctx = EPOINT_SRC;
+
+	ret = EVAL_FUNCTION(fun_, b);
+
+	PFQ_CB(b)->monad->ep_ctx = ctx;
+
+	return ret;
+}
+
+
+static inline ActionSkBuff
+dst_ctx(arguments_t args, SkBuff b)
+{
+        function_t  fun_  = GET_ARG_0(function_t, args);
+	ActionSkBuff ret;
+
+	int ctx = PFQ_CB(b)->monad->ep_ctx;
+
+        PFQ_CB(b)->monad->ep_ctx = EPOINT_DST;
+
+	ret = EVAL_FUNCTION(fun_, b);
+
+	PFQ_CB(b)->monad->ep_ctx = ctx;
+
+	return ret;
+}
+
+
 #endif /* PFQ_LANG_CONTROL_H */
