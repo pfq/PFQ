@@ -42,8 +42,8 @@ struct GC_log
 {
 	struct net_device * dev[Q_GC_LOG_QUEUE_LEN];
 	size_t num_devs;
-	size_t to_kernel;
 	size_t xmit_todo;
+	bool   to_kernel;
 };
 
 
@@ -106,7 +106,7 @@ void GC_data_init(struct GC_data *gc)
 static inline
 void GC_log_init(struct GC_log *log)
 {
-	log->to_kernel = 0;
+	log->to_kernel = false;
 	log->xmit_todo = 0;
 	log->num_devs  = 0;
 }

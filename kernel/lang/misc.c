@@ -208,7 +208,17 @@ trace(arguments_t args, SkBuff skb)
 	skb_ip_version(skb);
 
 	if (printk_ratelimit())
-		printk(KERN_INFO "[pfq-lang] TRACE state:%u fanout:{%lu %u %u %u} shift:%d ipoff:%d ipproto:%d ep_ctx:%d\n"
+	{
+		printk(KERN_INFO "[pfq-lang] TRACE SKB: counter:%u state:%u direct:%d group_mask:%lx (num_devs=%zu kernel:%d)\n"
+					, PFQ_CB(skb)->counter
+					, PFQ_CB(skb)->state
+					, PFQ_CB(skb)->direct
+					, PFQ_CB(skb)->group_mask
+					, PFQ_CB(skb)->log->num_devs
+					, PFQ_CB(skb)->log->to_kernel
+					);
+
+		printk(KERN_INFO "[pfq-lang]     MONAD: state:%u fanout:{cl=%lx h1=%u h2=%u tp=%u} shift:%d ipoff:%d ipproto:%d ep_ctx:%d\n"
 					, mon->state
 					, mon->fanout.class_mask
 					, mon->fanout.hash
@@ -220,6 +230,7 @@ trace(arguments_t args, SkBuff skb)
 					, mon->ep_ctx
 					);
 
+	}
 	return Pass(skb);
 }
 

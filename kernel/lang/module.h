@@ -233,7 +233,7 @@ is_double_steering(fanout_t a)
 static inline
 bool fwd_to_kernel(struct sk_buff *skb)
 {
-	return PFQ_CB(skb)->log->to_kernel != 0;
+	return PFQ_CB(skb)->log->to_kernel;
 }
 
 
