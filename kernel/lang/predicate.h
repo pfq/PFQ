@@ -253,10 +253,7 @@ has_src_addr(SkBuff skb, __be32 addr, __be32 mask)
 	if (ip == NULL)
 		return false;
 
-	if ((ip->saddr & mask) == (addr & mask))
-		return true;
-
-        return false;
+	return ((ip->saddr & mask) == (addr & mask));
 }
 
 static inline bool
@@ -269,10 +266,7 @@ has_dst_addr(SkBuff skb, __be32 addr, __be32 mask)
 	if (ip == NULL)
 		return false;
 
-	if ((ip->daddr & mask) == (addr & mask))
-		return true;
-
-        return false;
+	return ((ip->daddr & mask) == (addr & mask));
 }
 
 

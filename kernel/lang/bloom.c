@@ -53,13 +53,10 @@ bloom_src(arguments_t args, SkBuff skb)
 
 	addr = be32_to_cpu(ip->saddr & mask);
 
-	if ( BF_TEST(mem, hfun1(addr) & fold) &&
-	     BF_TEST(mem, hfun2(addr) & fold) &&
-	     BF_TEST(mem, hfun3(addr) & fold) &&
-	     BF_TEST(mem, hfun4(addr) & fold) )
-		return true;
-
-	return false;
+	return ( BF_TEST(mem, hfun1(addr) & fold) &&
+	         BF_TEST(mem, hfun2(addr) & fold) &&
+	         BF_TEST(mem, hfun3(addr) & fold) &&
+	         BF_TEST(mem, hfun4(addr) & fold) );
 }
 
 
@@ -82,13 +79,10 @@ bloom_dst(arguments_t args, SkBuff skb)
 
 	addr = be32_to_cpu(ip->daddr & mask);
 
-	if ( BF_TEST(mem, hfun1(addr) & fold) &&
-	     BF_TEST(mem, hfun2(addr) & fold) &&
-	     BF_TEST(mem, hfun3(addr) & fold) &&
-	     BF_TEST(mem, hfun4(addr) & fold) )
-		return true;
-
-	return false;
+	return ( BF_TEST(mem, hfun1(addr) & fold) &&
+	         BF_TEST(mem, hfun2(addr) & fold) &&
+	         BF_TEST(mem, hfun3(addr) & fold) &&
+	         BF_TEST(mem, hfun4(addr) & fold) );
 }
 
 static bool

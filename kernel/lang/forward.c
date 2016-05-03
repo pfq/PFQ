@@ -260,8 +260,8 @@ struct pfq_lang_function_descr forward_functions[] = {
         { "broadcast",  "SkBuff -> Action SkBuff",		forward_broadcast	},
         { "classify",	"CInt -> SkBuff -> Action SkBuff",	forward_class		},
 
-        { "kernel",		"SkBuff -> Action SkBuff",	forward_kernel		},
-        { "detour",		"SkBuff -> Action SkBuff",	detour_kernel		},
+        { "kernel",	"SkBuff -> Action SkBuff",		forward_kernel		},
+        { "detour",	"SkBuff -> Action SkBuff",		detour_kernel		},
 
 
 	{ "forwardIO",  "String -> SkBuff -> Action SkBuff",			 forwardIO, forward_init, forward_fini },
