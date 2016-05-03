@@ -47,6 +47,7 @@ var default_8hpp =
     [ "broadcast", "default_8hpp.html#ac9e0f3ad7fa32146565f4aaab709d19d", null ],
     [ "classify", "default_8hpp.html#a4f0a980be076a3958156b7053ac06912", null ],
     [ "dec", "default_8hpp.html#a139906841e77a2eb86b761b27ceeb685", null ],
+    [ "detour", "default_8hpp.html#ac8ba4f5ff06c1e099ac888ba4faa697a", null ],
     [ "drop", "default_8hpp.html#a0d715988e000ac6284a1615091eb4067", null ],
     [ "dst_addr", "default_8hpp.html#a3f51de44baa33ff19a94995945636072", null ],
     [ "dst_port", "default_8hpp.html#a25a3b35caf255c109a6c5b4f601b1b61", null ],

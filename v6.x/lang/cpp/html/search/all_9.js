@@ -1,6 +1,7 @@
 var searchData=
 [
   ['kernel',['kernel',['../namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#a93294225145f96c6aa6cf0cedfa19103',1,'pfq::lang::anonymous_namespace{default.hpp}']]],
+  ['kernel_5fif',['kernel_if',['../namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03.html#a805cf466389c487e6b2db6126a42d675',1,'pfq::lang::experimental::anonymous_namespace{experimental.hpp}']]],
   ['kfunction',['KFunction',['../structpfq_1_1lang_1_1KFunction.html',1,'pfq::lang']]],
   ['kleisli',['Kleisli',['../structpfq_1_1lang_1_1Kleisli.html',1,'pfq::lang']]],
   ['kleisly',['kleisly',['../structpfq_1_1lang_1_1kleisly.html',1,'pfq::lang']]],

@@ -1,13 +1,5 @@
 var searchData=
 [
-  ['operator_21_3d',['operator!=',['../namespacepfq_1_1lang.html#a4943eabefcfed4198394f42f913a14e8',1,'pfq::lang::operator!=(P const &amp;prop, uint64_t arg) -&gt; decltype(predicate(nullptr, prop, arg))'],['../namespacepfq_1_1lang.html#a55e12516137152fe0525bfc203b5fe50',1,'pfq::lang::operator!=(uint64_t arg, P const &amp;prop) -&gt; decltype(predicate(nullptr, prop, arg))']]],
-  ['operator_26',['operator&amp;',['../namespacepfq_1_1lang.html#af24d9c3092f064b0732a4b601dde2c64',1,'pfq::lang']]],
-  ['operator_3c',['operator&lt;',['../namespacepfq_1_1lang.html#aa358821bfd1326e552c69635b969835d',1,'pfq::lang::operator&lt;(P const &amp;prop, uint64_t arg) -&gt; decltype(predicate(nullptr, prop, arg))'],['../namespacepfq_1_1lang.html#aff17190c67c14754515551bc27f056da',1,'pfq::lang::operator&lt;(uint64_t arg, P const &amp;prop) -&gt; decltype(predicate(nullptr, prop, arg))']]],
-  ['operator_3c_3d',['operator&lt;=',['../namespacepfq_1_1lang.html#a039a937311f139f9a6e84c49c6505c70',1,'pfq::lang::operator&lt;=(P const &amp;prop, uint64_t arg) -&gt; decltype(predicate(nullptr, prop, arg))'],['../namespacepfq_1_1lang.html#ab78da35da3a46ac1e889653ace01c7a8',1,'pfq::lang::operator&lt;=(uint64_t arg, P const &amp;prop) -&gt; decltype(predicate(nullptr, prop, arg))']]],
-  ['operator_3d_3d',['operator==',['../namespacepfq_1_1lang.html#a87c8fa322873efdbddaa437f194b72b0',1,'pfq::lang::operator==(P const &amp;prop, uint64_t arg) -&gt; decltype(predicate(nullptr, prop, arg))'],['../namespacepfq_1_1lang.html#a3228fe8e103aaca7682f0256ea6b254c',1,'pfq::lang::operator==(uint64_t arg, P const &amp;prop) -&gt; decltype(predicate(nullptr, prop, arg))']]],
-  ['operator_3e',['operator&gt;',['../namespacepfq_1_1lang.html#a708ca1f29e8dd2461859c46369e89322',1,'pfq::lang::operator&gt;(P const &amp;prop, uint64_t arg) -&gt; decltype(predicate(nullptr, prop, arg))'],['../namespacepfq_1_1lang.html#a2217aa601457dcb21231ae59fe2bb8a2',1,'pfq::lang::operator&gt;(uint64_t arg, P const &amp;prop) -&gt; decltype(predicate(nullptr, prop, arg))']]],
-  ['operator_3e_3d',['operator&gt;=',['../namespacepfq_1_1lang.html#a8278e1cf39622e9eb4859f4720da1d16',1,'pfq::lang::operator&gt;=(P const &amp;prop, uint64_t arg) -&gt; decltype(predicate(nullptr, prop, arg))'],['../namespacepfq_1_1lang.html#a8a51f8f94279b3b4c7c3e2b52a89470c',1,'pfq::lang::operator&gt;=(uint64_t arg, P const &amp;prop) -&gt; decltype(predicate(nullptr, prop, arg))']]],
-  ['operator_3e_3e',['operator&gt;&gt;',['../namespacepfq_1_1lang.html#a7572c906145bed1281a8c4ce8c8eff79',1,'pfq::lang']]],
-  ['operator_5e',['operator^',['../namespacepfq_1_1lang.html#aa6692a978788617acebfee6ded6ebbbc',1,'pfq::lang']]],
-  ['operator_7c',['operator|',['../namespacepfq_1_1lang.html#a425bb535884185450da7addcdb47f35b',1,'pfq::lang']]]
+  ['make_5fargument',['make_argument',['../namespacepfq_1_1lang.html#ac28f404ec59b7aea311721e0f26b5577',1,'pfq::lang']]],
+  ['make_5farguments',['make_arguments',['../namespacepfq_1_1lang.html#aacc9139aafd72e1f19af3a74c1fdc6dc',1,'pfq::lang']]]
 ];

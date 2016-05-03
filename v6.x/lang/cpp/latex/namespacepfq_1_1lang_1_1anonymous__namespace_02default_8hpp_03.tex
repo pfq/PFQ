@@ -201,7 +201,9 @@ auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a88628ce70e2a650af1338851373b9891}{no\+\_\+more\+\_\+frag} = \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(\char`\"{}no\+\_\+more\+\_\+frag\char`\"{})
 \begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is not a fragment or if it is the first fragment, {\ttfamily Drop} it otherwise. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a93294225145f96c6aa6cf0cedfa19103}{kernel} = \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(\char`\"{}kernel\char`\"{})
-\begin{DoxyCompactList}\small\item\em Send a copy of the packet to the kernel. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Send a copy of the packet to the kernel and evaluates to {\ttfamily Pass}. \end{DoxyCompactList}\item 
+auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_ac8ba4f5ff06c1e099ac888ba4faa697a}{detour} = \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(\char`\"{}detour\char`\"{})
+\begin{DoxyCompactList}\small\item\em Send a copy of the packet to the kernel and evaluates to {\ttfamily Drop}. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_ac9e0f3ad7fa32146565f4aaab709d19d}{broadcast} = \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(\char`\"{}broadcast\char`\"{})
 \begin{DoxyCompactList}\small\item\em Broadcast the packet to all the sockets that have joined the group. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a0d715988e000ac6284a1615091eb4067}{drop} = \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(\char`\"{}drop\char`\"{})
@@ -690,7 +692,14 @@ Specify the class for the given packet.. The computation evaluates to {\ttfamily
 
 Decrement the i-\/th counter of the current group. 
 
-\index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!drop@{drop}}
+\index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!detour@{detour}}
+\index{detour@{detour}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
+\subsubsection[{\texorpdfstring{detour}{detour}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::detour = {\bf function}(\char`\"{}detour\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_ac8ba4f5ff06c1e099ac888ba4faa697a}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_ac8ba4f5ff06c1e099ac888ba4faa697a}
+
+
+Send a copy of the packet to the kernel and evaluates to {\ttfamily Drop}. 
+
+To avoid loop, this function is ignored for packets sniffed from the kernel. \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!drop@{drop}}
 \index{drop@{drop}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
 \subsubsection[{\texorpdfstring{drop}{drop}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::drop = {\bf function}(\char`\"{}drop\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a0d715988e000ac6284a1615091eb4067}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a0d715988e000ac6284a1615091eb4067}
 
@@ -1096,7 +1105,7 @@ Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+
 \subsubsection[{\texorpdfstring{kernel}{kernel}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::kernel = {\bf function}(\char`\"{}kernel\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a93294225145f96c6aa6cf0cedfa19103}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a93294225145f96c6aa6cf0cedfa19103}
 
 
-Send a copy of the packet to the kernel. 
+Send a copy of the packet to the kernel and evaluates to {\ttfamily Pass}. 
 
 To avoid loop, this function is ignored for packets sniffed from the kernel. \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!l3\+\_\+proto@{l3\+\_\+proto}}
 \index{l3\+\_\+proto@{l3\+\_\+proto}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}

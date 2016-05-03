@@ -1,5 +1,12 @@
 \hypertarget{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03}{}\section{pfq\+:\+:lang\+:\+:experimental\+:\+:anonymous\+\_\+namespace\{experimental.\+hpp\} Namespace Reference}
 \label{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03}\index{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+{\footnotesize template$<$typename Predicate $>$ }\\auto \hyperlink{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a805cf466389c487e6b2db6126a42d675}{kernel\+\_\+if} (\hyperlink{structpfq_1_1lang_1_1Predicate}{Predicate} p) -\/$>$ decltype(\hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(nullptr, p))
+\begin{DoxyCompactList}\small\item\em conditional forward to kernel. \end{DoxyCompactList}\item 
+{\footnotesize template$<$typename Predicate $>$ }\\auto \hyperlink{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a93e32ea5a9dd3c95f4811c4ad24e7ba0}{detour\+\_\+if} (\hyperlink{structpfq_1_1lang_1_1Predicate}{Predicate} p) -\/$>$ decltype(\hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(nullptr, p))
+\begin{DoxyCompactList}\small\item\em conditional forward to kernel. \end{DoxyCompactList}\end{DoxyCompactItemize}
 \subsection*{Variables}
 \begin{DoxyCompactItemize}
 \item 
@@ -32,13 +39,73 @@ auto \hyperlink{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02e
 auto \hyperlink{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a8c12f3cb8c8faaab619e0feb874ed0c3}{is\+\_\+gtp\+\_\+up} = \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate}(\char`\"{}is\+\_\+gtp\+\_\+up\char`\"{})
 \begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is a G\+TP Control-\/\+Plane packet, {\ttfamily Drop} it otherwise. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a6b08a2b49251677736f1939eaadac4a6}{steer\+\_\+gtp\+\_\+usr}
-\begin{DoxyCompactList}\small\item\em Dispatch the packet across the sockets. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Dispatch the packet across the sockets. \end{DoxyCompactList}\item 
+auto \hyperlink{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_ae2d4991027ccd4f2ad64a1e02bfa4679}{shift} = \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(\char`\"{}shift\char`\"{})
+\begin{DoxyCompactList}\small\item\em Additional functions.. \end{DoxyCompactList}\item 
+auto \hyperlink{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a9a26dd399154b70de7ed3da9015931fe}{src} = \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(\char`\"{}src\char`\"{})
+\item 
+auto \hyperlink{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a7b3e8ac44ecebbfd41420b39a269aeb9}{dst} = \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(\char`\"{}dst\char`\"{})
+\item 
+auto \hyperlink{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_aa9e352437ab1621e226173bc1d900b96}{is\+\_\+broadcast} = \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate}(\char`\"{}is\+\_\+broadcast\char`\"{})
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} is a broadcast frame, {\ttfamily false} otherwise. \end{DoxyCompactList}\item 
+auto \hyperlink{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_aaec1b91653bd79cedff8912605c7cdf8}{is\+\_\+multicast} = \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate}(\char`\"{}is\+\_\+multicast\char`\"{})
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} is a multicast frame, {\ttfamily false} otherwise. \end{DoxyCompactList}\item 
+auto \hyperlink{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a2d9128841747bf619fdf6ea411ee35e4}{is\+\_\+ip\+\_\+broadcast} = \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate}(\char`\"{}is\+\_\+ip\+\_\+broadcast\char`\"{})
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} is a broadcast IP packet, {\ttfamily false} otherwise. \end{DoxyCompactList}\item 
+auto \hyperlink{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a6b14037fa990cc066d69c9f491345156}{is\+\_\+ip\+\_\+multicast} = \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate}(\char`\"{}is\+\_\+ip\+\_\+multicast\char`\"{})
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} is a multicast IP packet, {\ttfamily false} otherwise. \end{DoxyCompactList}\item 
+auto \hyperlink{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a323f07b8b6098198779c19fdf4c95837}{is\+\_\+ip\+\_\+host} = \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate}(\char`\"{}is\+\_\+ip\+\_\+host\char`\"{})
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} IP address matches that of the incoming interface, {\ttfamily false} otherwise. \end{DoxyCompactList}\item 
+auto \hyperlink{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_aa75d253ac688edcdbfc80160eba5678e}{is\+\_\+incoming\+\_\+host} = \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate}(\char`\"{}is\+\_\+incoming\+\_\+host\char`\"{})
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} IP address matches that of the incoming interface, is a broadcast or a multicast frame, {\ttfamily false} otherwise. \end{DoxyCompactList}\item 
+auto \hyperlink{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_aa889cbcf0c306d992508759fc5e677cd}{mac\+\_\+broadcast} = \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(\char`\"{}mac\+\_\+broadcast\char`\"{})
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is a broadcast frame, {\ttfamily Drop} it otherwise. \end{DoxyCompactList}\item 
+auto \hyperlink{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a0c39849f9e3e8677342842f88a8ee37c}{mac\+\_\+multicast} = \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(\char`\"{}mac\+\_\+multicast\char`\"{})
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is a multicast frame, {\ttfamily Drop} it otherwise. \end{DoxyCompactList}\item 
+auto \hyperlink{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a5fbdc84e9899dc881ed25e37fbdddabc}{ip\+\_\+broadcast} = \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(\char`\"{}ip\+\_\+broadcast\char`\"{})
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is a broadcast IP packet, {\ttfamily Drop} it otherwise. \end{DoxyCompactList}\item 
+auto \hyperlink{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_ab9e6818d6b72bab5885dda6212a3ba52}{ip\+\_\+multicast} = \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(\char`\"{}ip\+\_\+multicast\char`\"{})
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is a multicast IP packet, {\ttfamily Drop} it otherwise. \end{DoxyCompactList}\item 
+auto \hyperlink{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_ab651cc72b27d482a4ae6c415f50780cd}{ip\+\_\+host} = \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(\char`\"{}ip\+\_\+host\char`\"{})
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if the IP address matches that of the incoming interface, {\ttfamily Drop} otherwise. \end{DoxyCompactList}\item 
+auto \hyperlink{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_ac6e38127701ae032cf44cb9527131feb}{incoming\+\_\+host} = \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(\char`\"{}incoming\+\_\+host\char`\"{})
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if the IP address matches that of the incoming interface, is a broadcast or a multicast frame, {\ttfamily Drop} otherwise. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
+
+\subsection{Function Documentation}
+\index{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}!detour\+\_\+if@{detour\+\_\+if}}
+\index{detour\+\_\+if@{detour\+\_\+if}!pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}}
+\subsubsection[{\texorpdfstring{detour\+\_\+if(\+Predicate p) -\/$>$ decltype(function(nullptr, p))}{detour_if(Predicate p) -> decltype(function(nullptr, p))}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename Predicate $>$ auto pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\{experimental.\+hpp\}\+::detour\+\_\+if (
+\begin{DoxyParamCaption}
+\item[{{\bf Predicate}}]{p}
+\end{DoxyParamCaption}
+) -\/$>$ decltype({\bf function}(nullptr, p))
+        }\hypertarget{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a93e32ea5a9dd3c95f4811c4ad24e7ba0}{}\label{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a93e32ea5a9dd3c95f4811c4ad24e7ba0}
+
+
+conditional forward to kernel. 
+
+detour\+\_\+if (is\+\_\+udp) \index{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}!kernel\+\_\+if@{kernel\+\_\+if}}
+\index{kernel\+\_\+if@{kernel\+\_\+if}!pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}}
+\subsubsection[{\texorpdfstring{kernel\+\_\+if(\+Predicate p) -\/$>$ decltype(function(nullptr, p))}{kernel_if(Predicate p) -> decltype(function(nullptr, p))}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename Predicate $>$ auto pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\{experimental.\+hpp\}\+::kernel\+\_\+if (
+\begin{DoxyParamCaption}
+\item[{{\bf Predicate}}]{p}
+\end{DoxyParamCaption}
+) -\/$>$ decltype({\bf function}(nullptr, p))
+        }\hypertarget{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a805cf466389c487e6b2db6126a42d675}{}\label{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a805cf466389c487e6b2db6126a42d675}
+
+
+conditional forward to kernel. 
+
+kernel\+\_\+if (is\+\_\+udp) 
 
 \subsection{Variable Documentation}
 \index{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}!crc16@{crc16}}
 \index{crc16@{crc16}!pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}}
 \subsubsection[{\texorpdfstring{crc16}{crc16}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\{experimental.\+hpp\}\+::crc16 = {\bf function}(\char`\"{}crc16\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a8152d34c5c69cc26aaa2b4a14ed37af1}{}\label{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a8152d34c5c69cc26aaa2b4a14ed37af1}
+\index{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}!dst@{dst}}
+\index{dst@{dst}!pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}}
+\subsubsection[{\texorpdfstring{dst}{dst}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\{experimental.\+hpp\}\+::dst = {\bf function}(\char`\"{}dst\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a7b3e8ac44ecebbfd41420b39a269aeb9}{}\label{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a7b3e8ac44ecebbfd41420b39a269aeb9}
 \index{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}!dummy@{dummy}}
 \index{dummy@{dummy}!pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}}
 \subsubsection[{\texorpdfstring{dummy}{dummy}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\{experimental.\+hpp\}\+::dummy = \mbox{[}$\,$\mbox{]} (int value) \{ return {\bf function}(\char`\"{}dummy\char`\"{}, value); \}}\hypertarget{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a5fc8274e9598b8524f833264174b62b7}{}\label{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a5fc8274e9598b8524f833264174b62b7}
@@ -81,6 +148,41 @@ Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} i
 
 Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is a G\+TP User-\/\+Plane packet, {\ttfamily Drop} it otherwise. 
 
+\index{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}!incoming\+\_\+host@{incoming\+\_\+host}}
+\index{incoming\+\_\+host@{incoming\+\_\+host}!pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}}
+\subsubsection[{\texorpdfstring{incoming\+\_\+host}{incoming_host}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\{experimental.\+hpp\}\+::incoming\+\_\+host = {\bf function}(\char`\"{}incoming\+\_\+host\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_ac6e38127701ae032cf44cb9527131feb}{}\label{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_ac6e38127701ae032cf44cb9527131feb}
+
+
+Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if the IP address matches that of the incoming interface, is a broadcast or a multicast frame, {\ttfamily Drop} otherwise. 
+
+\index{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}!ip\+\_\+broadcast@{ip\+\_\+broadcast}}
+\index{ip\+\_\+broadcast@{ip\+\_\+broadcast}!pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}}
+\subsubsection[{\texorpdfstring{ip\+\_\+broadcast}{ip_broadcast}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\{experimental.\+hpp\}\+::ip\+\_\+broadcast = {\bf function}(\char`\"{}ip\+\_\+broadcast\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a5fbdc84e9899dc881ed25e37fbdddabc}{}\label{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a5fbdc84e9899dc881ed25e37fbdddabc}
+
+
+Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is a broadcast IP packet, {\ttfamily Drop} it otherwise. 
+
+\index{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}!ip\+\_\+host@{ip\+\_\+host}}
+\index{ip\+\_\+host@{ip\+\_\+host}!pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}}
+\subsubsection[{\texorpdfstring{ip\+\_\+host}{ip_host}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\{experimental.\+hpp\}\+::ip\+\_\+host = {\bf function}(\char`\"{}ip\+\_\+host\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_ab651cc72b27d482a4ae6c415f50780cd}{}\label{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_ab651cc72b27d482a4ae6c415f50780cd}
+
+
+Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if the IP address matches that of the incoming interface, {\ttfamily Drop} otherwise. 
+
+\index{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}!ip\+\_\+multicast@{ip\+\_\+multicast}}
+\index{ip\+\_\+multicast@{ip\+\_\+multicast}!pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}}
+\subsubsection[{\texorpdfstring{ip\+\_\+multicast}{ip_multicast}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\{experimental.\+hpp\}\+::ip\+\_\+multicast = {\bf function}(\char`\"{}ip\+\_\+multicast\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_ab9e6818d6b72bab5885dda6212a3ba52}{}\label{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_ab9e6818d6b72bab5885dda6212a3ba52}
+
+
+Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is a multicast IP packet, {\ttfamily Drop} it otherwise. 
+
+\index{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}!is\+\_\+broadcast@{is\+\_\+broadcast}}
+\index{is\+\_\+broadcast@{is\+\_\+broadcast}!pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}}
+\subsubsection[{\texorpdfstring{is\+\_\+broadcast}{is_broadcast}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\{experimental.\+hpp\}\+::is\+\_\+broadcast = {\bf predicate}(\char`\"{}is\+\_\+broadcast\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_aa9e352437ab1621e226173bc1d900b96}{}\label{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_aa9e352437ab1621e226173bc1d900b96}
+
+
+Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} is a broadcast frame, {\ttfamily false} otherwise. 
+
 \index{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}!is\+\_\+gtp@{is\+\_\+gtp}}
 \index{is\+\_\+gtp@{is\+\_\+gtp}!pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}}
 \subsubsection[{\texorpdfstring{is\+\_\+gtp}{is_gtp}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\{experimental.\+hpp\}\+::is\+\_\+gtp = {\bf predicate}(\char`\"{}is\+\_\+gtp\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a2eb9e54a6fc6170b246cf3149445a2c4}{}\label{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a2eb9e54a6fc6170b246cf3149445a2c4}
@@ -102,6 +204,65 @@ Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} i
 
 Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is a G\+TP Control-\/\+Plane packet, {\ttfamily Drop} it otherwise. 
 
+\index{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}!is\+\_\+incoming\+\_\+host@{is\+\_\+incoming\+\_\+host}}
+\index{is\+\_\+incoming\+\_\+host@{is\+\_\+incoming\+\_\+host}!pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}}
+\subsubsection[{\texorpdfstring{is\+\_\+incoming\+\_\+host}{is_incoming_host}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\{experimental.\+hpp\}\+::is\+\_\+incoming\+\_\+host = {\bf predicate}(\char`\"{}is\+\_\+incoming\+\_\+host\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_aa75d253ac688edcdbfc80160eba5678e}{}\label{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_aa75d253ac688edcdbfc80160eba5678e}
+
+
+Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} IP address matches that of the incoming interface, is a broadcast or a multicast frame, {\ttfamily false} otherwise. 
+
+\index{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}!is\+\_\+ip\+\_\+broadcast@{is\+\_\+ip\+\_\+broadcast}}
+\index{is\+\_\+ip\+\_\+broadcast@{is\+\_\+ip\+\_\+broadcast}!pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}}
+\subsubsection[{\texorpdfstring{is\+\_\+ip\+\_\+broadcast}{is_ip_broadcast}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\{experimental.\+hpp\}\+::is\+\_\+ip\+\_\+broadcast = {\bf predicate}(\char`\"{}is\+\_\+ip\+\_\+broadcast\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a2d9128841747bf619fdf6ea411ee35e4}{}\label{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a2d9128841747bf619fdf6ea411ee35e4}
+
+
+Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} is a broadcast IP packet, {\ttfamily false} otherwise. 
+
+\index{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}!is\+\_\+ip\+\_\+host@{is\+\_\+ip\+\_\+host}}
+\index{is\+\_\+ip\+\_\+host@{is\+\_\+ip\+\_\+host}!pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}}
+\subsubsection[{\texorpdfstring{is\+\_\+ip\+\_\+host}{is_ip_host}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\{experimental.\+hpp\}\+::is\+\_\+ip\+\_\+host = {\bf predicate}(\char`\"{}is\+\_\+ip\+\_\+host\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a323f07b8b6098198779c19fdf4c95837}{}\label{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a323f07b8b6098198779c19fdf4c95837}
+
+
+Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} IP address matches that of the incoming interface, {\ttfamily false} otherwise. 
+
+\index{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}!is\+\_\+ip\+\_\+multicast@{is\+\_\+ip\+\_\+multicast}}
+\index{is\+\_\+ip\+\_\+multicast@{is\+\_\+ip\+\_\+multicast}!pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}}
+\subsubsection[{\texorpdfstring{is\+\_\+ip\+\_\+multicast}{is_ip_multicast}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\{experimental.\+hpp\}\+::is\+\_\+ip\+\_\+multicast = {\bf predicate}(\char`\"{}is\+\_\+ip\+\_\+multicast\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a6b14037fa990cc066d69c9f491345156}{}\label{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a6b14037fa990cc066d69c9f491345156}
+
+
+Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} is a multicast IP packet, {\ttfamily false} otherwise. 
+
+\index{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}!is\+\_\+multicast@{is\+\_\+multicast}}
+\index{is\+\_\+multicast@{is\+\_\+multicast}!pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}}
+\subsubsection[{\texorpdfstring{is\+\_\+multicast}{is_multicast}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\{experimental.\+hpp\}\+::is\+\_\+multicast = {\bf predicate}(\char`\"{}is\+\_\+multicast\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_aaec1b91653bd79cedff8912605c7cdf8}{}\label{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_aaec1b91653bd79cedff8912605c7cdf8}
+
+
+Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} is a multicast frame, {\ttfamily false} otherwise. 
+
+\index{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}!mac\+\_\+broadcast@{mac\+\_\+broadcast}}
+\index{mac\+\_\+broadcast@{mac\+\_\+broadcast}!pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}}
+\subsubsection[{\texorpdfstring{mac\+\_\+broadcast}{mac_broadcast}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\{experimental.\+hpp\}\+::mac\+\_\+broadcast = {\bf function}(\char`\"{}mac\+\_\+broadcast\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_aa889cbcf0c306d992508759fc5e677cd}{}\label{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_aa889cbcf0c306d992508759fc5e677cd}
+
+
+Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is a broadcast frame, {\ttfamily Drop} it otherwise. 
+
+\index{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}!mac\+\_\+multicast@{mac\+\_\+multicast}}
+\index{mac\+\_\+multicast@{mac\+\_\+multicast}!pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}}
+\subsubsection[{\texorpdfstring{mac\+\_\+multicast}{mac_multicast}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\{experimental.\+hpp\}\+::mac\+\_\+multicast = {\bf function}(\char`\"{}mac\+\_\+multicast\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a0c39849f9e3e8677342842f88a8ee37c}{}\label{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a0c39849f9e3e8677342842f88a8ee37c}
+
+
+Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is a multicast frame, {\ttfamily Drop} it otherwise. 
+
+\index{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}!shift@{shift}}
+\index{shift@{shift}!pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}}
+\subsubsection[{\texorpdfstring{shift}{shift}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\{experimental.\+hpp\}\+::shift = {\bf function}(\char`\"{}shift\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_ae2d4991027ccd4f2ad64a1e02bfa4679}{}\label{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_ae2d4991027ccd4f2ad64a1e02bfa4679}
+
+
+Additional functions.. 
+
+\index{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}!src@{src}}
+\index{src@{src}!pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}}
+\subsubsection[{\texorpdfstring{src}{src}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\{experimental.\+hpp\}\+::src = {\bf function}(\char`\"{}src\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a9a26dd399154b70de7ed3da9015931fe}{}\label{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a9a26dd399154b70de7ed3da9015931fe}
 \index{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}!steer\+\_\+gtp\+\_\+usr@{steer\+\_\+gtp\+\_\+usr}}
 \index{steer\+\_\+gtp\+\_\+usr@{steer\+\_\+gtp\+\_\+usr}!pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}}
 \subsubsection[{\texorpdfstring{steer\+\_\+gtp\+\_\+usr}{steer_gtp_usr}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\{experimental.\+hpp\}\+::steer\+\_\+gtp\+\_\+usr}\hypertarget{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a6b08a2b49251677736f1939eaadac4a6}{}\label{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a6b08a2b49251677736f1939eaadac4a6}

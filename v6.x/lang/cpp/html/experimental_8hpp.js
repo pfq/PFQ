@@ -1,6 +1,9 @@
 var experimental_8hpp =
 [
+    [ "detour_if", "experimental_8hpp.html#a93e32ea5a9dd3c95f4811c4ad24e7ba0", null ],
+    [ "kernel_if", "experimental_8hpp.html#a805cf466389c487e6b2db6126a42d675", null ],
     [ "crc16", "experimental_8hpp.html#a8152d34c5c69cc26aaa2b4a14ed37af1", null ],
+    [ "dst", "experimental_8hpp.html#a7b3e8ac44ecebbfd41420b39a269aeb9", null ],
     [ "dummy", "experimental_8hpp.html#a5fc8274e9598b8524f833264174b62b7", null ],
     [ "dummy_cidr", "experimental_8hpp.html#a331aab492ad841b1c7a0d95efea00e76", null ],
     [ "dummy_cidrs", "experimental_8hpp.html#ad239e0d3cd310dbf3b86ec109242aca1", null ],
@@ -11,8 +14,22 @@ var experimental_8hpp =
     [ "gtp", "experimental_8hpp.html#abd26824e1b0e6a31ddbba793b727ef8f", null ],
     [ "gtp_cp", "experimental_8hpp.html#a209a0ce5245cb37a38e0e4c6616e3604", null ],
     [ "gtp_up", "experimental_8hpp.html#ac8b95a754c8c3bbef4847904eaf6cb9b", null ],
+    [ "incoming_host", "experimental_8hpp.html#ac6e38127701ae032cf44cb9527131feb", null ],
+    [ "ip_broadcast", "experimental_8hpp.html#a5fbdc84e9899dc881ed25e37fbdddabc", null ],
+    [ "ip_host", "experimental_8hpp.html#ab651cc72b27d482a4ae6c415f50780cd", null ],
+    [ "ip_multicast", "experimental_8hpp.html#ab9e6818d6b72bab5885dda6212a3ba52", null ],
+    [ "is_broadcast", "experimental_8hpp.html#aa9e352437ab1621e226173bc1d900b96", null ],
     [ "is_gtp", "experimental_8hpp.html#a2eb9e54a6fc6170b246cf3149445a2c4", null ],
     [ "is_gtp_cp", "experimental_8hpp.html#ade25d79513e3131a54a05e23d25a7539", null ],
     [ "is_gtp_up", "experimental_8hpp.html#a8c12f3cb8c8faaab619e0feb874ed0c3", null ],
+    [ "is_incoming_host", "experimental_8hpp.html#aa75d253ac688edcdbfc80160eba5678e", null ],
+    [ "is_ip_broadcast", "experimental_8hpp.html#a2d9128841747bf619fdf6ea411ee35e4", null ],
+    [ "is_ip_host", "experimental_8hpp.html#a323f07b8b6098198779c19fdf4c95837", null ],
+    [ "is_ip_multicast", "experimental_8hpp.html#a6b14037fa990cc066d69c9f491345156", null ],
+    [ "is_multicast", "experimental_8hpp.html#aaec1b91653bd79cedff8912605c7cdf8", null ],
+    [ "mac_broadcast", "experimental_8hpp.html#aa889cbcf0c306d992508759fc5e677cd", null ],
+    [ "mac_multicast", "experimental_8hpp.html#a0c39849f9e3e8677342842f88a8ee37c", null ],
+    [ "shift", "experimental_8hpp.html#ae2d4991027ccd4f2ad64a1e02bfa4679", null ],
+    [ "src", "experimental_8hpp.html#a9a26dd399154b70de7ed3da9015931fe", null ],
     [ "steer_gtp_usr", "experimental_8hpp.html#a6b08a2b49251677736f1939eaadac4a6", null ]
 ];
