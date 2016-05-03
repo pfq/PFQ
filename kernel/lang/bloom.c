@@ -108,21 +108,27 @@ bloom(arguments_t args, SkBuff skb)
 	mem  = GET_ARG_1(char *,   args);
 	mask = GET_ARG_2(__be32,   args);
 
-	addr = be32_to_cpu(ip->daddr & mask);
+	if (PFQ_CB(skb)->monad->ep_ctx & EPOINT_DST)
+	{
+		addr = be32_to_cpu(ip->daddr & mask);
 
-	if ( BF_TEST(mem, hfun1(addr) & fold) &&
-	     BF_TEST(mem, hfun2(addr) & fold) &&
-	     BF_TEST(mem, hfun3(addr) & fold) &&
-	     BF_TEST(mem, hfun4(addr) & fold) )
-		return true;
+		if ( BF_TEST(mem, hfun1(addr) & fold) &&
+		     BF_TEST(mem, hfun2(addr) & fold) &&
+		     BF_TEST(mem, hfun3(addr) & fold) &&
+		     BF_TEST(mem, hfun4(addr) & fold) )
+			return true;
+	}
 
-	addr = be32_to_cpu(ip->saddr & mask);
+	if (PFQ_CB(skb)->monad->ep_ctx & EPOINT_SRC)
+	{
+		addr = be32_to_cpu(ip->saddr & mask);
 
-	if ( BF_TEST(mem, hfun1(addr) & fold) &&
-	     BF_TEST(mem, hfun2(addr) & fold) &&
-	     BF_TEST(mem, hfun3(addr) & fold) &&
-	     BF_TEST(mem, hfun4(addr) & fold) )
-		return true;
+		if ( BF_TEST(mem, hfun1(addr) & fold) &&
+		     BF_TEST(mem, hfun2(addr) & fold) &&
+		     BF_TEST(mem, hfun3(addr) & fold) &&
+		     BF_TEST(mem, hfun4(addr) & fold) )
+			return true;
+	}
 
 	return false;
 }
