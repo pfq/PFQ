@@ -21,14 +21,53 @@
  *
  ****************************************************************/
 
+#ifndef PFQ_LANG_FILTER_H
+#define PFQ_LANG_FILTER_H
 
-#ifndef PF_Q_PRINTK_H
-#define PF_Q_PRINTK_H
-
-#include <engine/group.h>
-
-extern void   pr_devel_group(pfq_gid_t gid);
-extern void   pr_devel_buffer(const unsigned char *buff, size_t len);
+#include <engine/lang/module.h>
+#include <engine/lang/predicate.h>
 
 
-#endif /* PF_Q_PRINTK_H */
+static inline ActionSkBuff
+filter_ip(arguments_t args, SkBuff b)
+{
+        return is_ip(b) ? Pass(b) : Drop(b);
+}
+
+static inline ActionQbuff
+filter_udp(arguments_t args, struct qbuff * b)
+{
+        return is_udp(b) ? Pass(b) : Drop(b);
+}
+
+static inline ActionSkBuff
+filter_tcp(arguments_t args, SkBuff b)
+{
+        return is_tcp(b) ? Pass(b) : Drop(b);
+}
+
+static inline ActionSkBuff
+filter_icmp(arguments_t args, SkBuff b)
+{
+        return is_icmp(b) ? Pass(b) : Drop(b);
+}
+
+static inline ActionSkBuff
+filter_flow(arguments_t args, SkBuff b)
+{
+        return is_flow(b) ? Pass(b) : Drop(b);
+}
+
+static inline ActionSkBuff
+filter_vlan(arguments_t args, SkBuff b)
+{
+        return has_vlan(b) ? Pass(b) : Drop(b);
+}
+
+static inline ActionSkBuff
+unit(arguments_t args, SkBuff b)
+{
+        return Pass(b);
+}
+
+#endif /* PFQ_LANG_FILTER_H */

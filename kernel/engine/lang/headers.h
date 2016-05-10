@@ -21,14 +21,14 @@
  *
  ****************************************************************/
 
+#ifndef PFQ_LANG_HEADERS_H
+#define PFQ_LANG_HEADERS_H
 
-#ifndef PF_Q_PRINTK_H
-#define PF_Q_PRINTK_H
+#include <engine/lang/combinator.h>
+#include <engine/lang/predicate.h>
+#include <engine/lang/forward.h>
+#include <engine/lang/control.h>
+#include <engine/lang/filter.h>
+#include <engine/lang/misc.h>
 
-#include <engine/group.h>
-
-extern void   pr_devel_group(pfq_gid_t gid);
-extern void   pr_devel_buffer(const unsigned char *buff, size_t len);
-
-
-#endif /* PF_Q_PRINTK_H */
+#endif /* PFQ_LANG_HEADERS_H */

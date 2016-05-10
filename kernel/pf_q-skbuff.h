@@ -28,11 +28,9 @@
 #include <linux/skbuff.h>
 #include <pragma/diagnostic_pop>
 
-#include <lang/types.h>
-
-#include <pf_q-types.h>
-#include <pf_q-bitops.h>
-#include <pf_q-define.h>
+#include <engine/lang/types.h>
+#include <engine/types.h>
+#include <engine/define.h>
 
 
 struct pfq_skbuff_batch;

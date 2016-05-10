@@ -28,8 +28,9 @@
 
 #include <pragma/diagnostic_pop>
 
+#include <engine/global.h>
+
 #include <pf_q-sparse.h>
-#include <pf_q-global.h>
 
 /* inspired to linux kernel vlan_untag */
 

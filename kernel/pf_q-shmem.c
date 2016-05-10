@@ -31,8 +31,9 @@
 
 #include <pragma/diagnostic_pop>
 
+#include <engine/queue.h>
+
 #include <pf_q-shmem.h>
-#include <pf_q-shared-queue.h>
 
 
 static int

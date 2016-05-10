@@ -29,7 +29,8 @@
 
 #include <pragma/diagnostic_pop>
 
-#include <pf_q-group.h>
+#include <engine/group.h>
+
 #include <pf_q-printk.h>
 
 

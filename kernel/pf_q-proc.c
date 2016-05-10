@@ -33,17 +33,17 @@
 
 #include <pragma/diagnostic_pop>
 
-#include <pf_q-global.h>
-#include <pf_q-group.h>
-#include <pf_q-bitops.h>
+#include <engine/lang/printk.h>
+#include <engine/lang/module.h>
+#include <engine/global.h>
+#include <engine/define.h>
+#include <engine/group.h>
+#include <engine/bitops.h>
+
 #include <pf_q-sparse.h>
-#include <pf_q-define.h>
 #include <pf_q-proc.h>
 #include <pf_q-memory.h>
 #include <pf_q-printk.h>
-
-#include <lang/printk.h>
-#include <lang/module.h>
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3,10,0)
 #define PDE_DATA(a) PDE(a)->data

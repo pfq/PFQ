@@ -30,8 +30,9 @@
 
 #include <pragma/diagnostic_pop>
 
+#include <engine/global.h>
+
 #include <pf_q-memory.h>
-#include <pf_q-global.h>
 
 
 /* exported symbols */

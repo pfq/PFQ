@@ -21,14 +21,38 @@
  *
  ****************************************************************/
 
+#ifndef Q_ENGINE_ENDPOINT_H
+#define Q_ENGINE_ENDPOINT_H
 
-#ifndef PF_Q_PRINTK_H
-#define PF_Q_PRINTK_H
+#include <engine/types.h>
+#include <engine/define.h>
 
-#include <engine/group.h>
+struct pfq_sock;
+struct pfq_skbuff_GC_queue;
+struct net_device;
 
-extern void   pr_devel_group(pfq_gid_t gid);
-extern void   pr_devel_buffer(const unsigned char *buff, size_t len);
+enum pfq_endpoint_type
+{
+	pfq_endpoint_socket,
+	pfq_endpoint_device
+};
 
 
-#endif /* PF_Q_PRINTK_H */
+struct pfq_endpoint_info
+{
+	struct net_device * dev[Q_GC_LOG_QUEUE_LEN];
+	size_t cnt [Q_GC_LOG_QUEUE_LEN];
+	size_t cnt_total;
+	size_t num;
+};
+
+
+void add_dev_to_endpoints(struct net_device *dev, struct pfq_endpoint_info *ts);
+
+
+extern size_t copy_to_endpoint_skbs(struct pfq_sock *so,
+				    struct pfq_skbuff_GC_queue *pool,
+				    unsigned long long mask,
+				    int cpu, pfq_gid_t gid);
+
+#endif /* Q_ENGINE_ENDPOINT_H */

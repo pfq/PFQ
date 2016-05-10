@@ -21,14 +21,18 @@
  *
  ****************************************************************/
 
+#ifndef Q_ENGINE_TYPES_H
+#define Q_ENGINE_TYPES_H
 
-#ifndef PF_Q_PRINTK_H
-#define PF_Q_PRINTK_H
+#include <pragma/diagnostic_push>
+#include <linux/kernel.h>
+#include <linux/skbuff.h>
+#include <pragma/diagnostic_pop>
 
-#include <engine/group.h>
+#include <linux/compiler.h>
 
-extern void   pr_devel_group(pfq_gid_t gid);
-extern void   pr_devel_buffer(const unsigned char *buff, size_t len);
+typedef int __bitwise pfq_id_t;
+typedef int __bitwise pfq_gid_t;
 
 
-#endif /* PF_Q_PRINTK_H */
+#endif  /* Q_ENGINE_TYPES_H */

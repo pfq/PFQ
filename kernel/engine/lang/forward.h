@@ -21,14 +21,50 @@
  *
  ****************************************************************/
 
+#ifndef PFQ_LANG_FORWARD_H
+#define PFQ_LANG_FORWARD_H
 
-#ifndef PF_Q_PRINTK_H
-#define PF_Q_PRINTK_H
-
-#include <engine/group.h>
-
-extern void   pr_devel_group(pfq_gid_t gid);
-extern void   pr_devel_buffer(const unsigned char *buff, size_t len);
+#include <engine/lang/module.h>
+#include <engine/lang/predicate.h>
 
 
-#endif /* PF_Q_PRINTK_H */
+static inline ActionSkBuff
+forward_drop(arguments_t args, SkBuff b)
+{
+        return Drop(b);
+}
+
+static inline ActionSkBuff
+forward_broadcast(arguments_t args, SkBuff b)
+{
+        return Broadcast(b);
+}
+
+static inline ActionSkBuff
+forward_kernel(arguments_t args, SkBuff b)
+{
+        return Pass(to_kernel(b));
+}
+
+static inline ActionSkBuff
+detour_kernel(arguments_t args, SkBuff b)
+{
+        return Drop(to_kernel(b));
+}
+
+
+static inline ActionSkBuff
+forward_class(arguments_t args, SkBuff b)
+{
+        const int c = GET_ARG(int, args);
+
+        if (!c) {
+                if (printk_ratelimit())
+                        printk(KERN_INFO "[pfq-lang] forward class: internal error!\n");
+                return Pass(b);
+        }
+
+        return Pass(class(b, (1ULL << c)));
+}
+
+#endif /* PFQ_LANG_FORWARD_H */

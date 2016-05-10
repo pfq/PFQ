@@ -21,14 +21,39 @@
  *
  ****************************************************************/
 
+#ifndef Q_ENGINE_GLOBAL_H
+#define Q_ENGINE_GLOBAL_H
 
-#ifndef PF_Q_PRINTK_H
-#define PF_Q_PRINTK_H
+#include <pragma/diagnostic_push>
+#include <linux/types.h>
+#include <linux/percpu.h>
+#include <pragma/diagnostic_pop>
 
-#include <engine/group.h>
+#include <engine/stats.h>
+#include <engine/define.h>
 
-extern void   pr_devel_group(pfq_gid_t gid);
-extern void   pr_devel_buffer(const unsigned char *buff, size_t len);
+#include <pf_q-sparse.h>
+
+extern int capture_incoming;
+extern int capture_outgoing;
+
+extern int capt_slot_size;
+extern int xmit_slot_size;
+
+extern int xmit_batch_len;
+extern int capt_batch_len;
+
+extern int vl_untag;
+
+extern int skb_pool_size;
+
+extern int tx_affinity[Q_MAX_CPU];
+extern int tx_thread_nr;
+
+extern int tx_rate_control_eager;
+
+DECLARE_PER_CPU(pfq_global_stats_t, global_stats);
+DECLARE_PER_CPU(struct pfq_memory_stats, memory_stats);
 
 
-#endif /* PF_Q_PRINTK_H */
+#endif /* Q_ENGINE_GLOBAL_H */

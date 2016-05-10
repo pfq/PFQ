@@ -27,7 +27,8 @@
 
 #include <linux/pf_q.h>
 
-#include "../../module.h"
+#include "../../engine/lang/symtable.h"
+#include "../../engine/lang/module.h"
 
 
 MODULE_LICENSE("GPL");
@@ -233,7 +234,7 @@ steering_rtp(arguments_t arg, SkBuff skb)
 	{
 	case type_unknown: return Drop(skb);
 	case type_rtp:	   return Steering(skb, ret.hash);
-	case type_rtcp:    return steering(skb, ret.hash);
+	case type_rtcp:    return Steering(skb, ret.hash);
 	case type_sip:     return Drop(skb);
 	}
 

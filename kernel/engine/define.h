@@ -21,14 +21,41 @@
  *
  ****************************************************************/
 
+#ifndef Q_ENGINE_DEFINE_H
+#define Q_ENGINE_DEFINE_H
 
-#ifndef PF_Q_PRINTK_H
-#define PF_Q_PRINTK_H
+#include <engine/types.h>
 
-#include <engine/group.h>
+#define Q_MAX_ID                ((int)sizeof(long)<<3)
+#define Q_MAX_GID		((int)sizeof(long)<<3)
+#define Q_SKBUFF_BATCH		((int)sizeof(long)<<3)
 
-extern void   pr_devel_group(pfq_gid_t gid);
-extern void   pr_devel_buffer(const unsigned char *buff, size_t len);
+#define Q_GC_LOG_QUEUE_LEN	16
+#define Q_GC_POOL_QUEUE_LEN	512
+
+#define Q_MAX_SOCK_MASK		1024
+#define Q_MAX_DEVICE		1024
+#define Q_MAX_HW_QUEUE          256
+
+#define Q_MAX_TX_SKB_COPY	256
+
+#define Q_GRACE_PERIOD		50 /* msec */
+
+#define Q_SLOT_ALIGN(s, n)      ((s+(n-1)) & ~(n-1))
+
+#define Q_FUN_SYMB_LEN          256
+
+#define Q_MAX_CPU               256
+#define Q_MAX_CPU_MASK          (Q_MAX_CPU-1)
+
+#define Q_GROUP_PERSIST_MEM	64
+#define Q_GROUP_PERSIST_DATA	1024
+
+#define Q_MAX_POOL_SIZE         16384
+#define Q_MAX_SOCKQUEUE_LEN	262144
 
 
-#endif /* PF_Q_PRINTK_H */
+#define Q_INVALID_ID	(__force pfq_id_t)-1
+
+
+#endif /* Q_ENGINE_DEFINE_H */

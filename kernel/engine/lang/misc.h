@@ -21,14 +21,26 @@
  *
  ****************************************************************/
 
+#ifndef PFQ_LANG_MISC_H
+#define PFQ_LANG_MISC_H
 
-#ifndef PF_Q_PRINTK_H
-#define PF_Q_PRINTK_H
+#include <engine/lang/module.h>
 
-#include <engine/group.h>
+static inline ActionSkBuff
+mark(arguments_t args, SkBuff b)
+{
+	const uint32_t value = GET_ARG(uint32_t, args);
+	set_mark(b, value);
+	return Pass(b);
+}
 
-extern void   pr_devel_group(pfq_gid_t gid);
-extern void   pr_devel_buffer(const unsigned char *buff, size_t len);
+static inline ActionSkBuff
+put_state(arguments_t args, SkBuff b)
+{
+	const uint32_t value = GET_ARG(uint32_t, args);
+	set_state(b, value);
+	return Pass(b);
+}
 
 
-#endif /* PF_Q_PRINTK_H */
+#endif /* PFQ_LANG_MISC_H */

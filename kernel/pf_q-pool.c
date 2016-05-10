@@ -21,9 +21,10 @@
  *
  ****************************************************************/
 
+#include <engine/percpu.h>
+#include <engine/global.h>
+
 #include <pf_q-pool.h>
-#include <pf_q-percpu.h>
-#include <pf_q-global.h>
 
 #include <linux/printk.h>
 

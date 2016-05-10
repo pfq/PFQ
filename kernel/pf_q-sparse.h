@@ -44,7 +44,6 @@
 	_ret; \
 })
 
-
 #define sparse_set(ptr, var, value) ({ \
 	int _i, this = get_cpu(); \
 	for_each_possible_cpu(_i) { \

@@ -32,12 +32,13 @@
 #include <net/dst.h>
 #include <pragma/diagnostic_pop>
 
+#include <engine/global.h>
+#include <engine/percpu.h>
+#include <engine/define.h>
+#include <engine/stats.h>
+
 #include <pf_q-pool.h>
-#include <pf_q-define.h>
-#include <pf_q-percpu.h>
 #include <pf_q-sparse.h>
-#include <pf_q-global.h>
-#include <pf_q-stats.h>
 
 extern int skb_pool_size;
 

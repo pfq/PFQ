@@ -22,13 +22,14 @@ EXTRA_CFLAGS += -DPFQ_USE_SKB_POOL
 
 obj-m := $(TARGET).o
 
-pfq-objs := pf_q.o pf_q-sockopt.o pf_q-global.o pf_q-proc.o pf_q-devmap.o pf_q-sock.o pf_q-shmem.o pf_q-memory.o pf_q-pool.o \
-			pf_q-group.o pf_q-stats.o pf_q-endpoint.o pf_q-shared-queue.o pf_q-percpu.o pf_q-bpf.o pf_q-vlan.o \
-		    pf_q-thread.o pf_q-receive.o pf_q-transmit.o pf_q-netdev.o pf_q-printk.o \
-		    lang/engine.o lang/GC.o lang/signature.o lang/symtable.o lang/printk.o \
-		    lang/filter.o lang/steering.o lang/forward.o \
-		    lang/predicate.o lang/combinator.o lang/control.o \
-		    lang/property.o lang/bloom.o lang/vlan.o lang/misc.o lang/dummy.o
+pfq-objs := pf_q.o pf_q-sockopt.o pf_q-proc.o pf_q-shmem.o pf_q-memory.o pf_q-pool.o \
+			pf_q-bpf.o pf_q-vlan.o pf_q-thread.o pf_q-netdev.o pf_q-printk.o \
+		    engine/io.o engine/core.o engine/queue.o engine/global.o engine/percpu.o engine/devmap.o \
+		    engine/sock.o engine/group.o engine/endpoint.o engine/stats.o \
+		    engine/lang/engine.o engine/lang/GC.o engine/lang/signature.o engine/lang/symtable.o engine/lang/printk.o \
+		    engine/lang/filter.o engine/lang/steering.o engine/lang/forward.o \
+		    engine/lang/predicate.o engine/lang/combinator.o engine/lang/control.o \
+		    engine/lang/property.o engine/lang/bloom.o engine/lang/vlan.o engine/lang/misc.o engine/lang/dummy.o
 
 KERNELVERSION := $(shell uname -r)
 

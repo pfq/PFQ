@@ -21,14 +21,47 @@
  *
  ****************************************************************/
 
+#ifndef PFQ_LANG_COMBINATOR_H
+#define PFQ_LANG_COMBINATOR_H
 
-#ifndef PF_Q_PRINTK_H
-#define PF_Q_PRINTK_H
+#include <engine/lang/predicate.h>
 
-#include <engine/group.h>
+static inline
+bool not(arguments_t args, SkBuff b)
+{
+	predicate_t p1 = GET_ARG(predicate_t, args);
 
-extern void   pr_devel_group(pfq_gid_t gid);
-extern void   pr_devel_buffer(const unsigned char *buff, size_t len);
+        return !EVAL_PREDICATE(p1,b);
+}
+
+static inline
+bool or(arguments_t args, SkBuff b)
+{
+	predicate_t p1 = GET_ARG_0(predicate_t, args);
+	predicate_t p2 = GET_ARG_1(predicate_t, args);
+
+        return EVAL_PREDICATE(p1,b) || EVAL_PREDICATE(p2, b);
+}
 
 
-#endif /* PF_Q_PRINTK_H */
+static inline
+bool and(arguments_t args, SkBuff b)
+{
+	predicate_t p1 = GET_ARG_0(predicate_t, args);
+	predicate_t p2 = GET_ARG_1(predicate_t, args);
+
+        return EVAL_PREDICATE(p1, b) && EVAL_PREDICATE(p2, b);
+}
+
+
+static inline
+bool xor(arguments_t args, SkBuff b)
+{
+	predicate_t p1 = GET_ARG_0(predicate_t, args);
+	predicate_t p2 = GET_ARG_1(predicate_t, args);
+
+        return EVAL_PREDICATE(p1, b) != EVAL_PREDICATE(p2, b);
+}
+
+
+#endif /* PFQ_LANG_COMBINATOR_H */

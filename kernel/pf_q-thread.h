@@ -33,8 +33,8 @@
 #include <linux/mutex.h>
 #include <pragma/diagnostic_pop>
 
-#include <pf_q-sock.h>
-#include <pf_q-define.h>
+#include <engine/sock.h>
+#include <engine/define.h>
 
 extern struct task_struct *kthread_tx_pool [Q_MAX_CPU];
 

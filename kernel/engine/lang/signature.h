@@ -22,13 +22,25 @@
  ****************************************************************/
 
 
-#ifndef PF_Q_PRINTK_H
-#define PF_Q_PRINTK_H
+#ifndef PFQ_LANG_SIGNATURE_H
+#define PFQ_LANG_SIGNATURE_H
 
-#include <engine/group.h>
+#include <engine/lang/string-view.h>
 
-extern void   pr_devel_group(pfq_gid_t gid);
-extern void   pr_devel_buffer(const unsigned char *buff, size_t len);
+string_view_t pfq_lang_signature_simplify(string_view_t sig);
+string_view_t pfq_lang_signature_bind(string_view_t sig, int n);
+string_view_t pfq_lang_signature_arg(string_view_t sig, int n);
+string_view_t pfq_lang_signature_remove_extent(string_view_t str);
+
+int    pfq_lang_signature_redundant_brackets(string_view_t sig);
+int    pfq_lang_signature_arity(string_view_t sig);
+bool   pfq_lang_signature_equal(string_view_t a, string_view_t b);
+bool   pfq_lang_signature_is_function(string_view_t sig);
+
+ptrdiff_t pfq_lang_signature_sizeof(string_view_t str);
+
+bool   pfq_lang_signature_check(string_view_t sig);
+bool   pfq_lang_signature_type_check(string_view_t t);
 
 
-#endif /* PF_Q_PRINTK_H */
+#endif /* PFQ_LANG_SIGNATURE_H */

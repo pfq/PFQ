@@ -1,6 +1,7 @@
 /***************************************************************
  *
  * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
+ *             Loris Gazzarrini <loris.gazzarrini@iet.unipi.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,14 +22,21 @@
  *
  ****************************************************************/
 
+#ifndef Q_ENGINE_CORE_H
+#define Q_ENGINE_CORE_H
 
-#ifndef PF_Q_PRINTK_H
-#define PF_Q_PRINTK_H
+#include <engine/lang/engine.h>
+#include <engine/lang/GC.h>
 
-#include <engine/group.h>
-
-extern void   pr_devel_group(pfq_gid_t gid);
-extern void   pr_devel_buffer(const unsigned char *buff, size_t len);
+#include <engine/percpu.h>
 
 
-#endif /* PF_Q_PRINTK_H */
+int pfq_process_batch(struct pfq_percpu_data *data,
+		      struct pfq_percpu_sock *sock,
+		      struct pfq_percpu_pool *pool,
+		      struct GC_data *GC_ptr,
+		      int cpu);
+
+
+#endif /* Q_ENGINE_CORE_H */
+

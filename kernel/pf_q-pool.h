@@ -28,8 +28,8 @@
 #include <linux/skbuff.h>
 #include <pragma/diagnostic_pop>
 
-#include <pf_q-global.h>
-#include <pf_q-stats.h>
+#include <engine/global.h>
+#include <engine/stats.h>
 
 struct pfq_skb_pool
 {

@@ -36,11 +36,12 @@
 
 #include <pragma/diagnostic_pop>
 
-#include <pf_q-define.h>
+#include <engine/io.h>
+#include <engine/define.h>
+#include <engine/sock.h>
+
 #include <pf_q-thread.h>
 #include <pf_q-memory.h>
-#include <pf_q-sock.h>
-#include <pf_q-transmit.h>
 
 
 

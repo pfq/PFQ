@@ -21,14 +21,22 @@
  *
  ****************************************************************/
 
+#include <pragma/diagnostic_push>
 
-#ifndef PF_Q_PRINTK_H
-#define PF_Q_PRINTK_H
+#include <linux/kernel.h>
+#include <linux/module.h>
 
-#include <engine/group.h>
+#include <pragma/diagnostic_pop>
 
-extern void   pr_devel_group(pfq_gid_t gid);
-extern void   pr_devel_buffer(const unsigned char *buff, size_t len);
+#include <engine/lang/module.h>
+#include <engine/lang/combinator.h>
 
+struct pfq_lang_function_descr combinator_functions[] = {
 
-#endif /* PF_Q_PRINTK_H */
+        { "or",    "(SkBuff -> Bool) -> (SkBuff -> Bool) -> SkBuff -> Bool",    or  },
+        { "and",   "(SkBuff -> Bool) -> (SkBuff -> Bool) -> SkBuff -> Bool",    and },
+        { "xor",   "(SkBuff -> Bool) -> (SkBuff -> Bool) -> SkBuff -> Bool",    xor },
+        { "not",   "(SkBuff -> Bool) -> SkBuff -> Bool",			not },
+
+        { NULL }};
+

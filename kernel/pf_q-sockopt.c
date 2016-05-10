@@ -31,25 +31,28 @@
 
 #include <pragma/diagnostic_pop>
 
-#include <pf_q-stats.h>
+#include <engine/lang/engine.h>
+#include <engine/lang/symtable.h>
+#include <engine/lang/printk.h>
+
+#include <engine/io.h>
+#include <engine/global.h>
+#include <engine/devmap.h>
+#include <engine/stats.h>
+#include <engine/sock.h>
+#include <engine/group.h>
+#include <engine/endpoint.h>
+#include <engine/queue.h>
+
 #include <pf_q-netdev.h>
-#include <pf_q-transmit.h>
 #include <pf_q-thread.h>
-#include <pf_q-global.h>
-#include <pf_q-sock.h>
-#include <pf_q-group.h>
 #include <pf_q-memory.h>
-#include <pf_q-devmap.h>
 #include <pf_q-thread.h>
 #include <pf_q-sockopt.h>
-#include <pf_q-endpoint.h>
-#include <pf_q-shared-queue.h>
 #include <pf_q-printk.h>
 #include <pf_q-netdev.h>
+#include <pf_q-bpf.h>
 
-#include <lang/engine.h>
-#include <lang/symtable.h>
-#include <lang/printk.h>
 
 int pfq_getsockopt(struct socket *sock,
                 int level, int optname,
