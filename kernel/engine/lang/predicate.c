@@ -21,14 +21,6 @@
  *
  ****************************************************************/
 
-#include <pragma/diagnostic_push>
-
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/inetdevice.h>
-
-#include <pragma/diagnostic_pop>
-
 #include <engine/lang/module.h>
 #include <engine/lang/predicate.h>
 

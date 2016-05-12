@@ -21,14 +21,6 @@
  *
  ****************************************************************/
 
-#include <pragma/diagnostic_push>
-
-#include <linux/kernel.h>
-#include <linux/pf_q.h>
-#include <asm/uaccess.h>
-
-#include <pragma/diagnostic_pop>
-
 #include <engine/lang/engine.h>
 #include <engine/lang/headers.h>
 #include <engine/lang/symtable.h>

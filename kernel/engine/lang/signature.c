@@ -21,17 +21,7 @@
  *
  ****************************************************************/
 
-#ifdef __KERNEL__
-
-#include <pragma/diagnostic_push>
-
-#include <linux/kernel.h>
-#include <linux/string.h>
-#include <linux/ctype.h>
-#include <linux/limits.h>
-
-#include <pragma/diagnostic_pop>
-#else
+#ifndef __KERNEL__
 #include <kcompat.h>
 #endif
 

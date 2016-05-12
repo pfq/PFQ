@@ -21,18 +21,6 @@
  *
  ****************************************************************/
 
-#include <pragma/diagnostic_push>
-
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/list.h>
-#include <linux/string.h>
-#include <linux/semaphore.h>
-#include <linux/rwsem.h>
-
-#include <pragma/diagnostic_pop>
-
-
 #include <engine/lang/module.h>
 #include <engine/lang/string-view.h>
 #include <engine/lang/signature.h>

@@ -21,20 +21,6 @@
  *
  ****************************************************************/
 
-#include <pragma/diagnostic_push>
-
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/ip.h>
-#include <linux/ipv6.h>
-#include <linux/tcp.h>
-#include <linux/udp.h>
-#include <linux/icmp.h>
-#include <linux/icmpv6.h>
-#include <linux/crc16.h>
-
-#include <pragma/diagnostic_pop>
-
 #include <engine/lang/module.h>
 #include <engine/lang/headers.h>
 #include <engine/lang/misc.h>
@@ -74,15 +60,6 @@ dec_counter(arguments_t args, SkBuff skb)
 		local_dec(&ctrs->value[idx]);
 	}
 
-        return Pass(skb);
-}
-
-
-static ActionSkBuff
-crc16_sum(arguments_t args, SkBuff skb)
-{
-	u16 crc = crc16(0, (u8 const *)eth_hdr(PFQ_SKB(skb)), skb->len);
-	set_state(skb, crc);
         return Pass(skb);
 }
 
@@ -242,7 +219,6 @@ struct pfq_lang_function_descr misc_functions[] = {
 	{ "mark",	"Word32  -> SkBuff -> Action SkBuff",	mark		},
 	{ "put_state",	"Word32  -> SkBuff -> Action SkBuff",	put_state	},
 
-        { "crc16",	"SkBuff -> Action SkBuff",		crc16_sum	},
         { "log_msg",	"String -> SkBuff -> Action SkBuff",	log_msg		},
         { "log_buff",   "SkBuff -> Action SkBuff",		log_buff	},
         { "log_packet", "SkBuff -> Action SkBuff",		log_packet	},
