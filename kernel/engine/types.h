@@ -26,7 +26,6 @@
 
 #include <pragma/diagnostic_push>
 #include <linux/kernel.h>
-#include <linux/skbuff.h>
 #include <pragma/diagnostic_pop>
 
 #include <linux/compiler.h>

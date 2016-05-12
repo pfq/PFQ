@@ -26,6 +26,7 @@
 
 #include <engine/lang/predicate.h>
 
+
 static inline
 bool not(arguments_t args, SkBuff b)
 {

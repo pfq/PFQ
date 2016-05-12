@@ -25,18 +25,8 @@
 #define PFQ_LANG_MODULE_H
 
 #include <pragma/diagnostic_push>
-
 #include <linux/kernel.h>
 #include <linux/version.h>
-#include <linux/pf_q.h>
-#include <linux/skbuff.h>
-#include <linux/ip.h>
-#include <linux/icmp.h>
-#include <linux/ipv6.h>
-#include <linux/if_ether.h>
-#include <linux/if_vlan.h>
-#include <linux/types.h>
-
 #include <pragma/diagnostic_pop>
 
 #include <engine/lang/GC.h>

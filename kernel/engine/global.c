@@ -22,12 +22,7 @@
  ****************************************************************/
 
 #include <pragma/diagnostic_push>
-
-#include <linux/kernel.h>
 #include <linux/module.h>
-#include <linux/types.h>
-#include <linux/percpu.h>
-
 #include <pragma/diagnostic_pop>
 
 #include <engine/global.h>

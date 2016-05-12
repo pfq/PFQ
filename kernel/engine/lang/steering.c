@@ -33,6 +33,7 @@
 #include <engine/lang/skbuff.h>
 #include <engine/lang/module.h>
 
+#include <pf_q-vlan.h>
 
 static ActionSkBuff
 steering_rrobin(arguments_t args, SkBuff skb)

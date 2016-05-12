@@ -25,10 +25,7 @@
 #define PFQ_LANG_PREDICATE_H
 
 #include <pragma/diagnostic_push>
-
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/skbuff.h>
+#include <net/ip.h>
 #include <linux/ip.h>
 #include <linux/ipv6.h>
 #include <linux/udp.h>
@@ -37,9 +34,6 @@
 #include <linux/if_vlan.h>
 #include <linux/in.h>
 #include <linux/etherdevice.h>
-#include <linux/rcupdate.h>
-#include <net/ip.h>
-
 #include <pragma/diagnostic_pop>
 
 #include <engine/lang/skbuff.h>

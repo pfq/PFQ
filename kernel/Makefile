@@ -26,7 +26,7 @@ pfq-objs := pf_q.o pf_q-sockopt.o pf_q-proc.o pf_q-shmem.o pf_q-memory.o pf_q-po
 			pf_q-bpf.o pf_q-vlan.o pf_q-thread.o pf_q-netdev.o pf_q-printk.o \
 		    engine/io.o engine/core.o engine/queue.o engine/global.o engine/percpu.o engine/devmap.o \
 		    engine/sock.o engine/group.o engine/endpoint.o engine/stats.o \
-		    engine/lang/engine.o engine/lang/GC.o engine/lang/signature.o engine/lang/symtable.o engine/lang/printk.o \
+		    engine/lang/engine.o engine/lang/GC.o engine/lang/signature.o engine/lang/symtable.o \
 		    engine/lang/filter.o engine/lang/steering.o engine/lang/forward.o \
 		    engine/lang/predicate.o engine/lang/combinator.o engine/lang/control.o \
 		    engine/lang/property.o engine/lang/bloom.o engine/lang/vlan.o engine/lang/misc.o engine/lang/dummy.o

@@ -22,20 +22,9 @@
  *
  ****************************************************************/
 
-#include <pragma/diagnostic_push>
-
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/vmalloc.h>
-#include <linux/printk.h>
-#include <linux/kthread.h>
-#include <linux/mm.h>
-#include <linux/pf_q.h>
-
-#include <pragma/diagnostic_pop>
-
 #include <engine/queue.h>
 
+#include <pf_q-printk.h>
 #include <pf_q-memory.h>
 #include <pf_q-shmem.h>
 

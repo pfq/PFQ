@@ -25,10 +25,6 @@
 #define Q_ENGINE_SOCK_H
 
 #include <pragma/diagnostic_push>
-#include <linux/kernel.h>
-#include <linux/poll.h>
-#include <linux/pf_q.h>
-#include <linux/percpu.h>
 #include <net/sock.h>
 #include <pragma/diagnostic_pop>
 
@@ -38,7 +34,6 @@
 #include <engine/types.h>
 
 #include <pf_q-shmem.h>
-
 
 
 #define for_each_sk_mbuff(hdr, end, fix) \

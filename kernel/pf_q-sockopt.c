@@ -33,7 +33,6 @@
 
 #include <engine/lang/engine.h>
 #include <engine/lang/symtable.h>
-#include <engine/lang/printk.h>
 
 #include <engine/io.h>
 #include <engine/global.h>

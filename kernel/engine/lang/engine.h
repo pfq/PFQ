@@ -25,10 +25,6 @@
 #ifndef PFQ_LANG_ENGINE_H
 #define PFQ_LANG_ENGINE_H
 
-#include <pragma/diagnostic_push>
-#include <linux/kernel.h>
-#include <pragma/diagnostic_pop>
-
 #include <engine/lang/monad.h>
 #include <engine/lang/module.h>
 

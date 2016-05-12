@@ -25,6 +25,7 @@
 
 #include <linux/kernel.h>
 #include <linux/module.h>
+#include <linux/icmp.h>
 
 #include <pragma/diagnostic_pop>
 

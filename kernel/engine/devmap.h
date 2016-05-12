@@ -25,10 +25,6 @@
 #ifndef Q_ENGINE_DEVMAP_H
 #define Q_ENGINE_DEVMAP_H
 
-#include <pragma/diagnostic_push>
-#include <linux/pf_q.h>
-#include <pragma/diagnostic_pop>
-
 #include <engine/group.h>
 #include <engine/define.h>
 

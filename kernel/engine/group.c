@@ -22,23 +22,12 @@
  *
  ****************************************************************/
 
-#include <pragma/diagnostic_push>
-
-#include <linux/kernel.h>
-#include <linux/bug.h>
-#include <linux/module.h>
-#include <linux/mutex.h>
-#include <linux/sched.h>
-
-#include <pragma/diagnostic_pop>
-
 #include <engine/lang/engine.h>
 
 #include <engine/percpu.h>
 #include <engine/devmap.h>
 #include <engine/group.h>
 #include <engine/bitops.h>
-
 
 
 DEFINE_MUTEX(group_lock);

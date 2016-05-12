@@ -28,8 +28,8 @@
 
 #include <pragma/diagnostic_push>
 #include <linux/string.h>
-#include <linux/slab.h>
 #include <linux/ctype.h>
+#include <linux/slab.h>
 #include <pragma/diagnostic_pop>
 
 #else

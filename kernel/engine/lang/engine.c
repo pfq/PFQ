@@ -24,7 +24,6 @@
 #include <pragma/diagnostic_push>
 
 #include <linux/kernel.h>
-#include <linux/printk.h>
 #include <linux/pf_q.h>
 #include <asm/uaccess.h>
 
@@ -35,6 +34,8 @@
 #include <engine/lang/symtable.h>
 #include <engine/lang/signature.h>
 #include <engine/lang/module.h>
+
+#include <pf_q-printk.h>
 
 
 const char *

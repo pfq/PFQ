@@ -24,13 +24,9 @@
 #ifndef Q_ENGINE_STATS_H
 #define Q_ENGINE_STATS_H
 
-#include <pragma/diagnostic_push>
-#include <linux/kernel.h>
-#include <linux/cpumask.h>
-#include <linux/percpu-defs.h>
 #include <linux/pf_q.h>
-#include <pragma/diagnostic_pop>
 
+#include <engine/define.h>
 #include <pf_q-sparse.h>
 
 

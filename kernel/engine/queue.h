@@ -25,14 +25,6 @@
 #ifndef Q_ENGINE_QUEUE_H
 #define Q_ENGINE_QUEUE_H
 
-#include <pragma/diagnostic_push>
-
-#include <linux/skbuff.h>
-#include <linux/pf_q.h>
-#include <linux/if_vlan.h>
-
-#include <pragma/diagnostic_pop>
-
 #include <engine/lang/GC.h>
 
 #include <engine/group.h>

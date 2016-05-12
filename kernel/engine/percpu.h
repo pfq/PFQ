@@ -24,19 +24,11 @@
 #ifndef Q_ENGINE_PERCPU_H
 #define Q_ENGINE_PERCPU_H
 
-#include <pragma/diagnostic_push>
-
-#include <linux/percpu.h>
-#include <linux/ktime.h>
-#include <linux/timer.h>
-#include <linux/printk.h>
-
-#include <pragma/diagnostic_pop>
-
 #include <engine/define.h>
 #include <engine/lang/GC.h>
 
 #include <pf_q-pool.h>
+#include <pf_q-printk.h>
 
 
 int pfq_percpu_init(void);

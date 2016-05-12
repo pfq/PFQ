@@ -33,7 +33,6 @@
 
 #include <pragma/diagnostic_pop>
 
-#include <engine/lang/printk.h>
 #include <engine/lang/module.h>
 #include <engine/global.h>
 #include <engine/define.h>

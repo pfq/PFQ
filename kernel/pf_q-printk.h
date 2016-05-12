@@ -25,10 +25,19 @@
 #ifndef PF_Q_PRINTK_H
 #define PF_Q_PRINTK_H
 
+#include <linux/printk.h>
+
 #include <engine/group.h>
+
+struct pfq_lang_computation_descr;
+struct pfq_lang_computation_tree;
+struct pfq_lang_functional_node;
 
 extern void   pr_devel_group(pfq_gid_t gid);
 extern void   pr_devel_buffer(const unsigned char *buff, size_t len);
+extern void   pr_devel_computation_descr(struct pfq_lang_computation_descr const *);
+extern void   pr_devel_computation_tree(struct pfq_lang_computation_tree const *);
+extern size_t snprintf_functional_node(char *buffer, size_t size, struct pfq_lang_functional_node const *node, size_t index);
 
 
 #endif /* PF_Q_PRINTK_H */

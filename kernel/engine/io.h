@@ -25,11 +25,6 @@
 #ifndef Q_ENGINE_IO_H
 #define Q_ENGINE_IO_H
 
-#include <pragma/diagnostic_push>
-#include <linux/skbuff.h>
-#include <linux/netdevice.h>
-#include <pragma/diagnostic_pop>
-
 #include <engine/lang/module.h>
 #include <engine/lang/engine.h>
 #include <engine/lang/symtable.h>

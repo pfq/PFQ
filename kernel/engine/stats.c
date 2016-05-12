@@ -21,10 +21,6 @@
  *
  ****************************************************************/
 
-#include <pragma/diagnostic_push>
-#include <linux/kernel.h>
-#include <pragma/diagnostic_pop>
-
 #include <engine/stats.h>
 
 

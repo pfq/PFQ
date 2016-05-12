@@ -24,11 +24,6 @@
 #ifndef PFQ_LANG_GC_H
 #define PFQ_LANG_GC_H
 
-#include <pragma/diagnostic_push>
-#include <linux/string.h>
-#include <linux/skbuff.h>
-#include <pragma/diagnostic_pop>
-
 #include <engine/endpoint.h>
 #include <engine/define.h>
 

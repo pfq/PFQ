@@ -22,14 +22,6 @@
  *
  ****************************************************************/
 
-#include <pragma/diagnostic_push>
-
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/mutex.h>
-
-#include <pragma/diagnostic_pop>
-
 #include <engine/devmap.h>
 #include <engine/group.h>
 

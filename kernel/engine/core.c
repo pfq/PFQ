@@ -36,7 +36,7 @@
 #include <engine/bitops.h>
 
 #include <pf_q-memory.h>
-
+#include <pf_q-vlan.h>
 
 /* send this packet to selected sockets */
 

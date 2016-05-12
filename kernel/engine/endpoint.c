@@ -21,18 +21,8 @@
  *
  ****************************************************************/
 
-#include <pragma/diagnostic_push>
-
-#include <linux/kernel.h>
-#include <linux/version.h>
-#include <linux/module.h>
-#include <linux/skbuff.h>
-
-#include <pragma/diagnostic_pop>
-
 #include <engine/io.h>
 #include <engine/endpoint.h>
-
 #include <engine/queue.h>
 #include <engine/bitops.h>
 

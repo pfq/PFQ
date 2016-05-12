@@ -25,7 +25,6 @@
 #define Q_ENGINE_GLOBAL_H
 
 #include <pragma/diagnostic_push>
-#include <linux/types.h>
 #include <linux/percpu.h>
 #include <pragma/diagnostic_pop>
 
@@ -33,6 +32,7 @@
 #include <engine/define.h>
 
 #include <pf_q-sparse.h>
+
 
 extern int capture_incoming;
 extern int capture_outgoing;

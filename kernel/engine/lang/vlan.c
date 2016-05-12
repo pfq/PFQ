@@ -30,6 +30,8 @@
 
 #include <engine/lang/module.h>
 
+#include <pf_q-vlan.h>
+
 
 static bool
 vlan_id(arguments_t args, SkBuff skb)

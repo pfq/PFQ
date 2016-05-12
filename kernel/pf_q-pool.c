@@ -25,8 +25,7 @@
 #include <engine/global.h>
 
 #include <pf_q-pool.h>
-
-#include <linux/printk.h>
+#include <pf_q-printk.h>
 
 
 void pfq_skb_pool_enable(bool value)

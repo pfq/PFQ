@@ -21,16 +21,6 @@
  *
  ****************************************************************/
 
-#include <pragma/diagnostic_push>
-
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/version.h>
-#include <linux/types.h>
-#include <pragma/diagnostic_pop>
-
-#include <engine/sock.h>
-
 #include <pf_q-thread.h>
 #include <pf_q-pool.h>
 

@@ -21,16 +21,6 @@
  *
  ****************************************************************/
 
-#include <pragma/diagnostic_push>
-
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/cpumask.h>
-#include <linux/timer.h>
-#include <linux/pf_q.h>
-
-#include <pragma/diagnostic_pop>
-
 #include <engine/global.h>
 #include <engine/lang/GC.h>
 

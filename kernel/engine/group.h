@@ -24,15 +24,6 @@
 #ifndef Q_ENGINE_GROUP_H
 #define Q_ENGINE_GROUP_H
 
-#include <pragma/diagnostic_push>
-#include <linux/kernel.h>
-#include <linux/delay.h>
-#include <linux/pf_q.h>
-#include <linux/filter.h>
-#include <linux/spinlock.h>
-#include <linux/semaphore.h>
-#include <pragma/diagnostic_pop>
-
 #include <engine/sock.h>
 #include <engine/stats.h>
 #include <engine/define.h>
