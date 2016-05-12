@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-16 Nicola Bonelli <nicola@pfq.io>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,8 @@
 #define Q_ENGINE_STATS_H
 
 #include <linux/pf_q.h>
+
+#include <pfq/kcompat.h>
 
 #include <engine/define.h>
 

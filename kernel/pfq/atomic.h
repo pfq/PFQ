@@ -1,7 +1,6 @@
 /***************************************************************
  *
  * (C) 2011-16 Nicola Bonelli <nicola@pfq.io>
- *             Loris Gazzarrini <loris.gazzarrini@iet.unipi.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,15 +21,10 @@
  *
  ****************************************************************/
 
-#ifndef PF_Q_BPF_H
-#define PF_Q_BPF_H
+#ifndef PF_Q_ATOMIC_H
+#define PF_Q_ATOMIC_H
 
-#include <pragma/diagnostic_push>
-#include <linux/filter.h>
-#include <pragma/diagnostic_pop>
+#include <asm/atomic.h>
+#include <asm/local.h>
 
-struct sk_filter * pfq_alloc_sk_filter(struct sock_fprog *fprog);
-
-void pfq_free_sk_filter(struct sk_filter *filter);
-
-#endif /* PF_Q_BPF_H */
+#endif /* PF_Q_ATOMIC_H */

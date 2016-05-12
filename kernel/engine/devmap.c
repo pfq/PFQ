@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-16 Nicola Bonelli <nicola@pfq.io>
  *             Andrea Di Pietro <andrea.dipietro@for.unipi.it>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,6 +22,9 @@
  *
  ****************************************************************/
 
+#include <pfq/kcompat.h>
+#include <pfq/printk.h>
+
 #include <engine/devmap.h>
 #include <engine/group.h>
 
@@ -40,7 +43,7 @@ void pfq_devmap_monitor_update(void)
         unsigned long val = 0;
         for(j=0; j < Q_MAX_HW_QUEUE; ++j)
         {
-            val |= atomic_long_read(&pfq_devmap[i][j]);
+            val |= (unsigned long)atomic_long_read(&pfq_devmap[i][j]);
         }
 
         atomic_set(&pfq_devmap_monitor[i], val ? 1 : 0);
@@ -64,7 +67,7 @@ int pfq_devmap_update(int action, int index, int queue, pfq_gid_t gid)
     {
         for(q=0; q < Q_MAX_HW_QUEUE; ++q)
         {
-            unsigned long tmp;
+            long tmp;
 
             if (!pfq_devmap_equal(i, q, index, queue))
                 continue;

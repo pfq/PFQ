@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-16 Nicola Bonelli <nicola@pfq.io>
  *             Andrea Di Pietro <andrea.dipietro@for.unipi.it>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -56,7 +56,7 @@ int pfq_devmap_equal(int i1, int q1, int i2, int q2)
 static inline
 unsigned long pfq_devmap_get_groups(int dev, int queue)
 {
-        return atomic_long_read(&pfq_devmap[dev][queue]);
+        return (long unsigned)atomic_long_read(&pfq_devmap[dev][queue]);
 }
 
 

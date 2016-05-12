@@ -1,4 +1,4 @@
---    Copyright (c) 2011-14, Nicola Bonelli
+--    Copyright (c) 2011-16, Nicola Bonelli
 --    All rights reserved.
 --
 --    Redistribution and use in source and binary forms, with or without

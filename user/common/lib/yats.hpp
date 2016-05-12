@@ -2,7 +2,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2011-15 Nicola Bonelli <nicola@pfq.io>
+ * Copyright (c) 2011-16 Nicola Bonelli <nicola@pfq.io>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal

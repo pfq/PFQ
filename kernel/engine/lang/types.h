@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-16 Nicola Bonelli <nicola@pfq.io>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,8 +30,9 @@
 
 /* skb owned by garbage collector */
 
+#ifndef __GC
 #define __GC __attribute__((address_space(7)))
-
+#endif
 
 /* CIDR notation */
 

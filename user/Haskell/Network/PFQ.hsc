@@ -29,7 +29,7 @@
 ------------------------------------------------------------------------------
 -- |
 --  Module      : Network.PFQ
---  Copyright   : Nicola Bonelli (c) 2012-2015
+--  Copyright   : Nicola Bonelli (c) 2012-2015-16
 --  License     : GPL
 --  Maintainer  : nicola@pfq.io
 --  Stability   : experimental

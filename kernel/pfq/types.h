@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-16 Nicola Bonelli <nicola@pfq.io>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef Q_ENGINE_TYPES_H
-#define Q_ENGINE_TYPES_H
+#ifndef PF_Q_TYPES_H
+#define PF_Q_TYPES_H
 
 #include <linux/kernel.h>
 #include <linux/compiler.h>
@@ -31,4 +31,4 @@ typedef int __bitwise pfq_id_t;
 typedef int __bitwise pfq_gid_t;
 
 
-#endif  /* Q_ENGINE_TYPES_H */
+#endif  /* PF_Q_TYPES_H */

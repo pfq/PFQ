@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-16 Nicola Bonelli <nicola@pfq.io>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -87,7 +87,7 @@ extern void pfq_groups_destruct(void);
 static inline
 bool pfq_has_joined_group(pfq_gid_t gid, pfq_id_t id)
 {
-        return pfq_get_all_groups_mask(gid) & (1L << (__force int)id);
+        return (pfq_get_all_groups_mask(gid) & (1UL << (__force int)id));
 }
 
 static inline

@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-16 Nicola Bonelli <nicola@pfq.io>
  *             Andrea Di Pietro <andrea.dipietro@for.unipi.it>
  * 	       Loris Gazzarrini <loris.gazzarrini@iet.unipi.it>
  *

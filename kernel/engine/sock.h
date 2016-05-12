@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-16 Nicola Bonelli <nicola@pfq.io>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,16 +24,19 @@
 #ifndef Q_ENGINE_SOCK_H
 #define Q_ENGINE_SOCK_H
 
-#include <pragma/diagnostic_push>
+#ifdef __KERNEL__
 #include <net/sock.h>
-#include <pragma/diagnostic_pop>
+#endif
 
 #include <engine/endpoint.h>
 #include <engine/stats.h>
 #include <engine/define.h>
 
+#include <pfq/kcompat.h>
 #include <pfq/shmem.h>
 #include <pfq/types.h>
+#include <pfq/atomic.h>
+
 
 #define for_each_sk_mbuff(hdr, end, fix) \
         for(; (hdr < (struct pfq_pkthdr *)end); \
@@ -87,7 +90,9 @@ struct pfq_sock_opt
 	size_t			tx_queue_len;
 	size_t			tx_slot_size;
 
+#ifdef __KERNEL__
 	wait_queue_head_t	waitqueue;
+#endif
 
         size_t			tx_num_async_queues;
 

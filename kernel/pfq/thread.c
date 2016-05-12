@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Bonelli Nicola <nicola@pfq.io>
+ * Copyright (c) 2011-16 Bonelli Nicola <nicola@pfq.io>
  *
  * All rights reserved.
  *
