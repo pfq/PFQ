@@ -24,12 +24,11 @@
 #ifndef PFQ_LANG_SKBUFF_H
 #define PFQ_LANG_SKBUFF_H
 
-#include <linux/ip.h>
-#include <linux/ipv6.h>
-#include <linux/skbuff.h>
 
 #include <engine/lang/monad.h>
 
+#include <pf_q-skbuff.h>
+#include <pf_q-nethdr.h>
 
 
 static inline int

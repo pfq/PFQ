@@ -24,21 +24,10 @@
 #ifndef PFQ_LANG_PREDICATE_H
 #define PFQ_LANG_PREDICATE_H
 
-#include <pragma/diagnostic_push>
-#include <net/ip.h>
-#include <linux/ip.h>
-#include <linux/ipv6.h>
-#include <linux/udp.h>
-#include <linux/tcp.h>
-#include <linux/icmp.h>
-#include <linux/if_vlan.h>
-#include <linux/in.h>
-#include <linux/etherdevice.h>
-#include <pragma/diagnostic_pop>
-
 #include <engine/lang/skbuff.h>
 #include <engine/lang/module.h>
 
+#include <pf_q-nethdr.h>
 
 static inline bool
 less(arguments_t args, SkBuff skb)
