@@ -381,7 +381,7 @@ pfq_create(
 {
         struct pfq_sock *so;
         struct sock *sk;
-	int id;
+	pfq_id_t id;
 
         /* security and sanity check */
 
@@ -389,7 +389,7 @@ pfq_create(
                 return -EPERM;
         if (sock->type != SOCK_RAW)
                 return -ESOCKTNOSUPPORT;
-        if (protocol != __constant_htons(ETH_P_ALL))
+        if (protocol != (__force int)__constant_htons(ETH_P_ALL))
                 return -EPROTONOSUPPORT;
 
         sock->state = SS_UNCONNECTED;
@@ -419,7 +419,7 @@ pfq_create(
         /* get a unique id for this sock */
 
         id = pfq_get_free_id(so);
-        if (id == -1) {
+        if ((__force int)id == -1) {
                 printk(KERN_WARNING "[PFQ] error: pfq_sock_init: resource exhausted!\n");
                 sk_free(sk);
                 return -EBUSY;

@@ -33,7 +33,7 @@
 #include <engine/lang/module.h>
 
 #include <engine/group.h>
-
+#include <pfq/printk.h>
 
 void
 pr_devel_group(pfq_gid_t gid)
