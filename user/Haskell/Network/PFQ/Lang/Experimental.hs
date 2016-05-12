@@ -42,8 +42,6 @@ module Network.PFQ.Lang.Experimental
     , dummy_cidr
     , dummy_cidrs
 
-    , crc16
-
     , steer_gtp_usr
 
     , gtp
@@ -102,9 +100,6 @@ dummy_cidr x  = Function "dummy_cidr" x () () () () () () ()
 dummy_cidrs  :: [CIDR] -> NetFunction
 dummy_cidrs xs  = Function "dummy_cidrs" xs () () () () () () ()
 
-
-crc16 :: NetFunction
-crc16 = Function "crc16" () () () () () () () ()
 
 -- | Dispatch the packet across the sockets
 -- with a randomized algorithm that maintains the integrity of

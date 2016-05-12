@@ -57,8 +57,6 @@ namespace pfq { namespace lang { namespace experimental {
         auto dummy_string  = [] (std::string s) { return function("dummy_string", std::move(s)); };
         auto dummy_strings = [] (std::vector<std::string> const &vec) { return function("dummy_strings", vec); };
 
-        auto crc16         = function("crc16");
-
         //! Evaluate to \c Pass SkBuff if it is a GTP packet, \c Drop it otherwise.
 
         auto gtp            = function("gtp");
