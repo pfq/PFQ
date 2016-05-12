@@ -31,10 +31,9 @@
 #include <engine/endpoint.h>
 #include <engine/stats.h>
 #include <engine/define.h>
-#include <engine/types.h>
 
-#include <pf_q-shmem.h>
-
+#include <pfq/shmem.h>
+#include <pfq/types.h>
 
 #define for_each_sk_mbuff(hdr, end, fix) \
         for(; (hdr < (struct pfq_pkthdr *)end); \

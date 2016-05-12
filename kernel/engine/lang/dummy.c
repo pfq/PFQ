@@ -27,7 +27,7 @@
 #include <engine/lang/types.h>
 
 
-#include <pf_q-sparse.h>
+#include <pfq/sparse.h>
 
 static ActionSkBuff
 dummy(arguments_t args, SkBuff skb)

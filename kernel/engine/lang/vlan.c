@@ -23,7 +23,7 @@
 
 #include <engine/lang/module.h>
 
-#include <pf_q-vlan.h>
+#include <pfq/vlan.h>
 
 
 static bool

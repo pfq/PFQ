@@ -30,7 +30,7 @@
 
 #include <engine/global.h>
 
-#include <pf_q-sparse.h>
+#include <pfq/sparse.h>
 
 /* inspired to linux kernel vlan_untag */
 

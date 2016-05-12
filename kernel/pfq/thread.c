@@ -40,8 +40,8 @@
 #include <engine/define.h>
 #include <engine/sock.h>
 
-#include <pf_q-thread.h>
-#include <pf_q-memory.h>
+#include <pfq/thread.h>
+#include <pfq/memory.h>
 
 
 

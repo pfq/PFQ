@@ -26,15 +26,13 @@
 
 #ifdef __KERNEL__
 
-#include <pragma/diagnostic_push>
-#include <linux/string.h>
-#include <linux/ctype.h>
-#include <linux/slab.h>
-#include <pragma/diagnostic_pop>
+#include "pfq/string.h"
+#include "pfq/kcompat.h"
 
 #else
 #include <stddef.h>
 #endif
+
 
 #define SVIEW_FMT	"%.*s"
 #define SVIEW_ARG(x)	(int)string_view_length(x), x.begin

@@ -26,7 +26,7 @@
 #include <engine/queue.h>
 #include <engine/bitops.h>
 
-#include <pf_q-sparse.h>
+#include <pfq/sparse.h>
 
 
 void

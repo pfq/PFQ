@@ -32,7 +32,7 @@
 
 #include <engine/global.h>
 
-#include <pf_q-memory.h>
+#include <pfq/memory.h>
 
 
 /* exported symbols */

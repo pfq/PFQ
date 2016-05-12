@@ -24,16 +24,12 @@
 #ifndef PFQ_LANG_MODULE_H
 #define PFQ_LANG_MODULE_H
 
-#include <pragma/diagnostic_push>
-#include <linux/kernel.h>
-#include <linux/version.h>
-#include <pragma/diagnostic_pop>
-
 #include <engine/lang/GC.h>
 #include <engine/lang/monad.h>
 #include <engine/lang/maybe.h>
 
-#include <pf_q-sparse.h>
+#include <pfq/sparse.h>
+#include <pfq/kcompat.h>
 
 
 #define ARGS_TYPE(a)		__builtin_choose_expr(__builtin_types_compatible_p(arguments_t, typeof(a)), a, (void)0)

@@ -39,10 +39,10 @@
 #include <engine/group.h>
 #include <engine/bitops.h>
 
-#include <pf_q-sparse.h>
-#include <pf_q-proc.h>
-#include <pf_q-memory.h>
-#include <pf_q-printk.h>
+#include <pfq/sparse.h>
+#include <pfq/proc.h>
+#include <pfq/memory.h>
+#include <pfq/printk.h>
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3,10,0)
 #define PDE_DATA(a) PDE(a)->data

@@ -27,7 +27,7 @@
 #include <engine/lang/skbuff.h>
 #include <engine/lang/module.h>
 
-#include <pf_q-nethdr.h>
+#include <pfq/nethdr.h>
 
 static inline bool
 less(arguments_t args, SkBuff skb)

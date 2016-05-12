@@ -67,15 +67,15 @@
 #include <engine/endpoint.h>
 #include <engine/define.h>
 
-#include <pf_q-shmem.h>
-#include <pf_q-proc.h>
-#include <pf_q-sockopt.h>
-#include <pf_q-bpf.h>
-#include <pf_q-memory.h>
-#include <pf_q-thread.h>
-#include <pf_q-vlan.h>
-#include <pf_q-pool.h>
-#include <pf_q-kcompact.h>
+#include <pfq/shmem.h>
+#include <pfq/proc.h>
+#include <pfq/sockopt.h>
+#include <pfq/bpf.h>
+#include <pfq/memory.h>
+#include <pfq/thread.h>
+#include <pfq/vlan.h>
+#include <pfq/pool.h>
+#include <pfq/kcompat.h>
 
 
 static struct packet_type       pfq_prot_hook;

@@ -33,8 +33,8 @@
 #include <engine/percpu.h>
 #include <engine/sock.h>
 
-#include <pf_q-skbuff.h>
-#include <pf_q-netdev.h>
+#include <pfq/skbuff.h>
+#include <pfq/netdev.h>
 
 struct napi_struct;
 

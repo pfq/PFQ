@@ -27,10 +27,10 @@
 #include <engine/sock.h>
 #include <engine/stats.h>
 #include <engine/define.h>
-#include <engine/types.h>
 
-#include <pf_q-sparse.h>
-#include <pf_q-bpf.h>
+#include <pfq/sparse.h>
+#include <pfq/types.h>
+#include <pfq/bpf.h>
 
 struct pfq_group
 {

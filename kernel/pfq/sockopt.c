@@ -43,14 +43,14 @@
 #include <engine/endpoint.h>
 #include <engine/queue.h>
 
-#include <pf_q-netdev.h>
-#include <pf_q-thread.h>
-#include <pf_q-memory.h>
-#include <pf_q-thread.h>
-#include <pf_q-sockopt.h>
-#include <pf_q-printk.h>
-#include <pf_q-netdev.h>
-#include <pf_q-bpf.h>
+#include <pfq/netdev.h>
+#include <pfq/thread.h>
+#include <pfq/memory.h>
+#include <pfq/thread.h>
+#include <pfq/sockopt.h>
+#include <pfq/printk.h>
+#include <pfq/netdev.h>
+#include <pfq/bpf.h>
 
 
 int pfq_getsockopt(struct socket *sock,

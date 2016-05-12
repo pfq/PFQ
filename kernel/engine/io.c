@@ -41,9 +41,9 @@
 #include <engine/queue.h>
 #include <engine/bitops.h>
 
-#include <pf_q-vlan.h>
-#include <pf_q-thread.h>
-#include <pf_q-memory.h>
+#include <pfq/vlan.h>
+#include <pfq/thread.h>
+#include <pfq/memory.h>
 
 
 int

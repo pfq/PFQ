@@ -27,7 +27,7 @@
 #include <engine/endpoint.h>
 #include <engine/define.h>
 
-#include <pf_q-skbuff.h>
+#include <pfq/skbuff.h>
 
 
 typedef struct sk_buff __GC * SkBuff;

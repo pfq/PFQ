@@ -24,7 +24,11 @@
 #include <engine/global.h>
 #include <engine/lang/GC.h>
 
-#include <pf_q-memory.h>
+#include <pfq/memory.h>
+
+
+DEFINE_PER_CPU(pfq_global_stats_t, global_stats);
+DEFINE_PER_CPU(struct pfq_memory_stats, memory_stats);
 
 
 struct pfq_percpu_data __percpu    * percpu_data;

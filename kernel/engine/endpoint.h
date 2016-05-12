@@ -24,8 +24,9 @@
 #ifndef Q_ENGINE_ENDPOINT_H
 #define Q_ENGINE_ENDPOINT_H
 
-#include <engine/types.h>
 #include <engine/define.h>
+
+#include <pfq/types.h>
 
 struct pfq_sock;
 struct pfq_skbuff_GC_queue;

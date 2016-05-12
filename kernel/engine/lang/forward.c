@@ -26,8 +26,7 @@
 #include <engine/global.h>
 #include <engine/io.h>
 
-
-#include <pf_q-skbuff.h>
+#include <pfq/skbuff.h>
 
 
 static int

@@ -21,29 +21,14 @@
  *
  ****************************************************************/
 
-#ifndef Q_ENGINE_GLOBAL_H
-#define Q_ENGINE_GLOBAL_H
+#ifndef Q_ENGINE_TYPES_H
+#define Q_ENGINE_TYPES_H
 
-#include <engine/stats.h>
-#include <engine/define.h>
+#include <linux/kernel.h>
+#include <linux/compiler.h>
 
-extern int capture_incoming;
-extern int capture_outgoing;
-
-extern int capt_slot_size;
-extern int xmit_slot_size;
-
-extern int xmit_batch_len;
-extern int capt_batch_len;
-
-extern int vl_untag;
-
-extern int skb_pool_size;
-
-extern int tx_affinity[Q_MAX_CPU];
-extern int tx_thread_nr;
-
-extern int tx_rate_control_eager;
+typedef int __bitwise pfq_id_t;
+typedef int __bitwise pfq_gid_t;
 
 
-#endif /* Q_ENGINE_GLOBAL_H */
+#endif  /* Q_ENGINE_TYPES_H */

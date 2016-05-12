@@ -25,7 +25,7 @@
  *
  */
 
-#include <pf_q-netdev.h>
+#include <pfq/netdev.h>
 
 struct net_dev_queue net_dev_queue_null = { PFQ_DEVQ_NULL, NULL, NULL, 0 };
 

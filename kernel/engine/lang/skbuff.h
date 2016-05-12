@@ -27,8 +27,8 @@
 
 #include <engine/lang/monad.h>
 
-#include <pf_q-skbuff.h>
-#include <pf_q-nethdr.h>
+#include <pfq/skbuff.h>
+#include <pfq/nethdr.h>
 
 
 static inline int

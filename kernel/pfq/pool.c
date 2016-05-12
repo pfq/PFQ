@@ -24,8 +24,8 @@
 #include <engine/percpu.h>
 #include <engine/global.h>
 
-#include <pf_q-pool.h>
-#include <pf_q-printk.h>
+#include <pfq/pool.h>
+#include <pfq/printk.h>
 
 
 void pfq_skb_pool_enable(bool value)

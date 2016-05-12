@@ -25,7 +25,7 @@
 #include <engine/lang/headers.h>
 #include <engine/lang/misc.h>
 
-#include <pf_q-sparse.h>
+#include <pfq/sparse.h>
 
 
 static ActionSkBuff

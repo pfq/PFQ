@@ -29,9 +29,9 @@
 #include <pragma/diagnostic_pop>
 
 #include <engine/lang/types.h>
-#include <engine/types.h>
 #include <engine/define.h>
 
+#include <pfq/types.h>
 
 struct pfq_skbuff_batch;
 struct pfq_lang_monad;

@@ -27,7 +27,8 @@
 #include <linux/pf_q.h>
 
 #include <engine/define.h>
-#include <pf_q-sparse.h>
+
+#include <pfq/sparse.h>
 
 
 struct pfq_kernel_stats

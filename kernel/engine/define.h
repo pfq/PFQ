@@ -24,7 +24,7 @@
 #ifndef Q_ENGINE_DEFINE_H
 #define Q_ENGINE_DEFINE_H
 
-#include <engine/types.h>
+#include <pfq/types.h>
 
 #define Q_MAX_ID                ((int)sizeof(long)<<3)
 #define Q_MAX_GID		((int)sizeof(long)<<3)

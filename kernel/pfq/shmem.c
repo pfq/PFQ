@@ -33,7 +33,7 @@
 
 #include <engine/queue.h>
 
-#include <pf_q-shmem.h>
+#include <pfq/shmem.h>
 
 
 static int

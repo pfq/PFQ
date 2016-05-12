@@ -37,8 +37,8 @@
 #include <engine/define.h>
 #include <engine/stats.h>
 
-#include <pf_q-pool.h>
-#include <pf_q-sparse.h>
+#include <pfq/pool.h>
+#include <pfq/sparse.h>
 
 extern int skb_pool_size;
 

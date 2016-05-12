@@ -27,8 +27,12 @@
 #include <engine/define.h>
 #include <engine/lang/GC.h>
 
-#include <pf_q-pool.h>
-#include <pf_q-printk.h>
+#include <pfq/pool.h>
+#include <pfq/printk.h>
+
+
+DECLARE_PER_CPU(pfq_global_stats_t, global_stats);
+DECLARE_PER_CPU(struct pfq_memory_stats, memory_stats);
 
 
 int pfq_percpu_init(void);

@@ -27,7 +27,7 @@
 #include <engine/lang/signature.h>
 #include <engine/lang/module.h>
 
-#include <pf_q-printk.h>
+#include <pfq/printk.h>
 
 
 const char *

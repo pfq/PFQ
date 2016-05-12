@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#include <pf_q-thread.h>
-#include <pf_q-pool.h>
+#include <pfq/thread.h>
+#include <pfq/pool.h>
 
 
 /* vector of pointers to pfq_sock */

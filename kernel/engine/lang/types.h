@@ -24,7 +24,9 @@
 #ifndef PFQ_LANG_TYPES_H
 #define PFQ_LANG_TYPES_H
 
-#include <linux/inetdevice.h>
+
+#include <pfq/kcompat.h>
+
 
 /* skb owned by garbage collector */
 

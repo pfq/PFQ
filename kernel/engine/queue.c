@@ -24,9 +24,9 @@
 
 #include <engine/queue.h>
 
-#include <pf_q-printk.h>
-#include <pf_q-memory.h>
-#include <pf_q-shmem.h>
+#include <pfq/printk.h>
+#include <pfq/memory.h>
+#include <pfq/shmem.h>
 
 
 int

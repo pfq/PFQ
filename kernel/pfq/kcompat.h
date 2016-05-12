@@ -1,4 +1,4 @@
-/***************************************************************
+ /***************************************************************
  *
  * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
  *
@@ -21,17 +21,31 @@
  *
  ****************************************************************/
 
-#ifndef Q_ENGINE_TYPES_H
-#define Q_ENGINE_TYPES_H
+#ifndef PF_Q_KCOMPACT_H
+#define PF_Q_KCOMPACT_H
 
-#include <pragma/diagnostic_push>
-#include <linux/kernel.h>
-#include <pragma/diagnostic_pop>
+#include <linux/version.h>
+#include <linux/netdevice.h>
+#include <linux/slab.h>
+#include <linux/inetdevice.h>
 
-#include <linux/compiler.h>
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(3,14,0))
+static inline bool netif_xmit_frozen_or_drv_stopped(const struct netdev_queue *queue)
+{
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,3,0))
+	return netif_tx_queue_frozen_or_stopped(queue);
+#else
+	return netif_xmit_frozen_or_stopped(queue);
+#endif
+}
+#endif
 
-typedef int __bitwise pfq_id_t;
-typedef int __bitwise pfq_gid_t;
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(3,10,0))
+static inline struct net_device *
+netdev_notifier_info_to_dev(void *data)
+{
+	return data;
+}
+#endif
 
-
-#endif  /* Q_ENGINE_TYPES_H */
+#endif

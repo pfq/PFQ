@@ -34,7 +34,7 @@
 
 #include <pragma/diagnostic_pop>
 
-#include <pf_q-bpf.h>
+#include <pfq/bpf.h>
 
 struct sk_filter *
 pfq_alloc_sk_filter(struct sock_fprog *fprog)

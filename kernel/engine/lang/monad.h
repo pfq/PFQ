@@ -28,8 +28,8 @@
 #include <engine/lang/GC.h>
 #include <engine/define.h>
 
-#include <pf_q-skbuff.h>
-#include <pf_q-sparse.h>
+#include <pfq/skbuff.h>
+#include <pfq/sparse.h>
 
 
 /* The Action monad */
