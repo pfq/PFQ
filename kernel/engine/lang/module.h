@@ -184,8 +184,10 @@ struct pfq_lang_function_descr
 static inline bool
 is_drop(fanout_t a)
 {
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
-	BUILD_BUG_ON_MSG(sizeof(struct pfq_cb) > sizeof(((struct sk_buff *)0)->cb), "pfq control buffer overflow");
+#ifdef __KERNEL__
+	#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
+		BUILD_BUG_ON_MSG(sizeof(struct pfq_cb) > sizeof(((struct sk_buff *)0)->cb), "pfq control buffer overflow");
+	#endif
 #endif
 	return a.type == fanout_drop;
 }

@@ -24,9 +24,9 @@
 #ifndef PFQ_LANG_SYMTABLE_H
 #define PFQ_LANG_SYMTABLE_H
 
-
 #include <engine/lang/module.h>
 #include <engine/define.h>
+
 
 /* symtable_entry */
 
