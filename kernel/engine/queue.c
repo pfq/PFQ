@@ -22,11 +22,12 @@
  *
  ****************************************************************/
 
-#include <engine/queue.h>
-
+#include <pfq/kcompat.h>
 #include <pfq/printk.h>
 #include <pfq/memory.h>
 #include <pfq/shmem.h>
+
+#include <engine/queue.h>
 
 
 int

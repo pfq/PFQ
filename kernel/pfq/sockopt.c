@@ -34,7 +34,6 @@
 #include <engine/lang/engine.h>
 #include <engine/lang/symtable.h>
 
-#include <engine/io.h>
 #include <engine/global.h>
 #include <engine/devmap.h>
 #include <engine/stats.h>
@@ -43,6 +42,7 @@
 #include <engine/endpoint.h>
 #include <engine/queue.h>
 
+#include <pfq/io.h>
 #include <pfq/netdev.h>
 #include <pfq/thread.h>
 #include <pfq/memory.h>
@@ -813,7 +813,7 @@ int pfq_setsockopt(struct socket *sock,
 
 		if (queue == 0) { /* transmit Tx queue */
 			atomic_t stop = {0};
-			tx_ret tx = pfq_sk_queue_xmit(so, -1, Q_NO_KTHREAD, NUMA_NO_NODE, &stop);
+			tx_res_t tx = pfq_sk_queue_xmit(so, -1, Q_NO_KTHREAD, NUMA_NO_NODE, &stop);
 
 			sparse_add(so->stats, sent, tx.ok);
 			sparse_add(so->stats, fail, tx.fail);

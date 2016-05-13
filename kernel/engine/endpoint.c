@@ -21,12 +21,13 @@
  *
  ****************************************************************/
 
-#include <engine/io.h>
+#include <pfq/kcompat.h>
+#include <pfq/sparse.h>
+#include <pfq/io.h>
+
 #include <engine/endpoint.h>
 #include <engine/queue.h>
 #include <engine/bitops.h>
-
-#include <pfq/sparse.h>
 
 
 void

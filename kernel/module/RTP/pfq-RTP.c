@@ -30,6 +30,7 @@
 #include "../../engine/lang/symtable.h"
 #include "../../engine/lang/module.h"
 
+#include "../../pfq/nethdr.h"
 
 MODULE_LICENSE("GPL");
 

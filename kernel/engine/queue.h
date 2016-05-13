@@ -25,8 +25,9 @@
 #ifndef Q_ENGINE_QUEUE_H
 #define Q_ENGINE_QUEUE_H
 
-#include <engine/lang/GC.h>
+#include <pfq/kcompat.h>
 
+#include <engine/lang/GC.h>
 #include <engine/group.h>
 #include <engine/sock.h>
 #include <engine/define.h>

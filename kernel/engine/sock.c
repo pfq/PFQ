@@ -21,6 +21,7 @@
  *
  ****************************************************************/
 
+#include <pfq/kcompat.h>
 #include <pfq/thread.h>
 #include <pfq/pool.h>
 

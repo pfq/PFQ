@@ -25,6 +25,8 @@
 #ifndef Q_ENGINE_DEVMAP_H
 #define Q_ENGINE_DEVMAP_H
 
+#include <pfq/kcompat.h>
+
 #include <engine/group.h>
 #include <engine/define.h>
 

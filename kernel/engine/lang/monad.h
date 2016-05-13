@@ -30,7 +30,7 @@
 
 #include <pfq/skbuff.h>
 #include <pfq/sparse.h>
-
+#include <pfq/kcompat.h>
 
 /* The Action monad */
 

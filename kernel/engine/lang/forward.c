@@ -24,9 +24,9 @@
 #include <engine/lang/module.h>
 #include <engine/lang/forward.h>
 #include <engine/global.h>
-#include <engine/io.h>
 
 #include <pfq/skbuff.h>
+#include <pfq/io.h>
 
 
 static int

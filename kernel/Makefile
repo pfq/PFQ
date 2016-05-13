@@ -24,8 +24,8 @@ EXTRA_CFLAGS += -DPFQ_USE_SKB_POOL
 obj-m := $(TARGET).o
 
 pfq-objs := pf_q.o pfq/sockopt.o pfq/proc.o pfq/shmem.o pfq/memory.o pfq/pool.o \
-			pfq/bpf.o pfq/vlan.o pfq/thread.o pfq/netdev.o pfq/printk.o pfq/param.o \
-		    engine/io.o engine/core.o engine/queue.o engine/global.o engine/percpu.o engine/devmap.o \
+			pfq/bpf.o pfq/vlan.o pfq/thread.o pfq/netdev.o pfq/printk.o pfq/param.o pfq/io.o \
+		    engine/core.o engine/queue.o engine/global.o engine/percpu.o engine/devmap.o \
 		    engine/sock.o engine/group.o engine/endpoint.o engine/stats.o \
 		    engine/lang/engine.o engine/lang/GC.o engine/lang/signature.o engine/lang/symtable.o \
 		    engine/lang/filter.o engine/lang/steering.o engine/lang/forward.o \

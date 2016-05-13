@@ -21,10 +21,12 @@
  *
  ****************************************************************/
 
+#include <pfq/memory.h>
+#include <pfq/kcompat.h>
+
 #include <engine/global.h>
 #include <engine/lang/GC.h>
 
-#include <pfq/memory.h>
 
 
 DEFINE_PER_CPU(pfq_global_stats_t, global_stats);

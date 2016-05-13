@@ -23,6 +23,11 @@
  *
  ****************************************************************/
 
+#include <pfq/kcompat.h>
+#include <pfq/io.h>
+#include <pfq/memory.h>
+#include <pfq/vlan.h>
+
 #include <engine/percpu.h>
 #include <engine/global.h>
 #include <engine/devmap.h>
@@ -31,12 +36,9 @@
 #include <engine/lang/symtable.h>
 #include <engine/lang/GC.h>
 
-#include <engine/io.h>
 #include <engine/queue.h>
 #include <engine/bitops.h>
 
-#include <pfq/memory.h>
-#include <pfq/vlan.h>
 
 /* send this packet to selected sockets */
 

@@ -54,7 +54,6 @@
 #include <pragma/diagnostic_pop>
 
 #include <engine/global.h>
-#include <engine/io.h>
 #include <engine/devmap.h>
 #include <engine/lang/engine.h>
 #include <engine/lang/symtable.h>
@@ -67,6 +66,7 @@
 #include <engine/endpoint.h>
 #include <engine/define.h>
 
+#include <pfq/io.h>
 #include <pfq/shmem.h>
 #include <pfq/proc.h>
 #include <pfq/sockopt.h>

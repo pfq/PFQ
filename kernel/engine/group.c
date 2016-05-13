@@ -22,8 +22,9 @@
  *
  ****************************************************************/
 
-#include <engine/lang/engine.h>
+#include <pfq/kcompat.h>
 
+#include <engine/lang/engine.h>
 #include <engine/percpu.h>
 #include <engine/devmap.h>
 #include <engine/group.h>

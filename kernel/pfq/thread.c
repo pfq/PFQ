@@ -36,10 +36,10 @@
 
 #include <pragma/diagnostic_pop>
 
-#include <engine/io.h>
 #include <engine/define.h>
 #include <engine/sock.h>
 
+#include <pfq/io.h>
 #include <pfq/thread.h>
 #include <pfq/memory.h>
 
@@ -108,7 +108,7 @@ pfq_tx_thread(void *_data)
 		{
 			struct pfq_sock *sock;
 			int sock_queue;
-			tx_ret tx;
+			tx_res_t tx;
 
 			sock_queue = atomic_read(&data->sock_queue[n]);
 			smp_rmb();

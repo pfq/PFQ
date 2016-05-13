@@ -28,7 +28,6 @@
 #include <net/inet_common.h>
 #endif
 
-#include <engine/io.h>
 #include <engine/core.h>
 #include <engine/percpu.h>
 #include <engine/global.h>
@@ -41,6 +40,7 @@
 #include <engine/queue.h>
 #include <engine/bitops.h>
 
+#include <pfq/io.h>
 #include <pfq/vlan.h>
 #include <pfq/thread.h>
 #include <pfq/memory.h>
@@ -366,23 +366,23 @@ pfq_xmit(struct sk_buff *skb, struct net_device *dev, int queue, int more)
  * transmit a mbuff packet with copies
  */
 
-static tx_ret
+static tx_res_t
 __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
 		 struct pfq_mbuff_xmit_context *ctx, int copies, bool xmit_more, atomic_t const *stop, bool *intr)
 {
 	struct sk_buff *skb;
-        tx_ret ret = { 0 };
+        tx_res_t ret = { 0 };
 	size_t len;
 
 	if (!dev_queue->dev)
-		return (tx_ret){.ok = 0, .fail = copies};
+		return (tx_res_t){.ok = 0, .fail = copies};
 
 	/* wait until for the timestap to expire (if specified) */
 
 	if (hdr->tstamp.tv64) {
 		ctx->now = wait_until(hdr->tstamp.tv64, ctx->now, dev_queue, stop, intr);
 		if (*intr)
-			return (tx_ret){.ok = 0, .fail = copies};
+			return (tx_res_t){.ok = 0, .fail = copies};
 	}
 
 	/* allocate a new socket buffer */
@@ -391,7 +391,7 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
 	if (unlikely(skb == NULL)) {
 		if (printk_ratelimit())
 			printk(KERN_INFO "[PFQ] Tx could not allocate an skb!\n");
-		return (tx_ret){.ok = 0, .fail = copies};
+		return (tx_res_t){.ok = 0, .fail = copies};
 	}
 
 	/* fill the socket buffer */
@@ -457,7 +457,7 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
  * transmit queues of packets (from memory mapped queue)...
  */
 
-tx_ret
+tx_res_t
 pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic_t const *stop)
 {
 	struct pfq_tx_info const * txinfo = pfq_get_tx_queue_info(&so->opt, sock_queue);
@@ -468,7 +468,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 	struct pfq_pkthdr *hdr;
 	ptrdiff_t prod_off;
         char *begin, *end;
-        tx_ret ret = {0};
+        tx_res_t ret = {0};
 
 	/* get the Tx queue descriptor */
 
@@ -522,7 +522,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 	{
                 bool intr = false, xmit_more = true;
 		dev_queue_t qid; int copies;
-                tx_ret tmp = {0};
+                tx_res_t tmp = {0};
 
 		/* because of dynamic slot size, ensure that caplen is not set to 0 */
 
@@ -629,13 +629,13 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
  * transmit queues of packets (from a skbuff_queue)...
  */
 
-tx_ret
+tx_res_t
 pfq_skb_queue_xmit(struct pfq_skbuff_queue *skbs, unsigned long long mask, struct net_device *dev, int queue)
 {
 	struct netdev_queue *txq;
 	struct sk_buff *skb;
 	int n, last_idx;
-	tx_ret ret = {0};
+	tx_res_t ret = {0};
 
 	/* get txq and fix the queue for this batch.
 	 *
