@@ -29,7 +29,7 @@
 #include <pfq/io.h>
 
 
-void pfq_timer(unsigned long cpu)
+static void pfq_timer(unsigned long cpu)
 {
 	struct pfq_percpu_data *data;
 

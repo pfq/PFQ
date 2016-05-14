@@ -30,7 +30,7 @@
 #include <engine/lang/GC.h>
 
 
-pfq_global_stats_t	           * global_stats;
+pfq_global_stats_t	__percpu   * global_stats;
 struct pfq_memory_stats __percpu   * memory_stats;
 
 struct pfq_percpu_data __percpu    * percpu_data;
