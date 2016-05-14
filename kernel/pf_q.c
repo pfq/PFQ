@@ -66,6 +66,7 @@
 #include <engine/endpoint.h>
 #include <engine/define.h>
 
+#include <pfq/percpu.h>
 #include <pfq/io.h>
 #include <pfq/shmem.h>
 #include <pfq/proc.h>

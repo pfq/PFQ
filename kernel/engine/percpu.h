@@ -33,8 +33,6 @@
 #include <engine/lang/GC.h>
 
 
-int  pfq_percpu_init(void);
-int  pfq_percpu_destruct(void);
 int  pfq_percpu_alloc(void);
 void pfq_percpu_free(void);
 
