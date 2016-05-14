@@ -22,8 +22,8 @@
  *
  ****************************************************************/
 
-#ifndef Q_ENGINE_IO_H
-#define Q_ENGINE_IO_H
+#ifndef PF_Q_IO_H
+#define PF_Q_IO_H
 
 #include <engine/lang/module.h>
 #include <engine/lang/engine.h>
@@ -87,4 +87,4 @@ extern int pfq_skb_queue_lazy_xmit(struct pfq_skbuff_GC_queue *queue, unsigned l
 extern int pfq_skb_queue_lazy_xmit_run(struct pfq_skbuff_GC_queue *queue, struct pfq_endpoint_info const *info);
 
 
-#endif /* Q_ENGINE_IO_H */
+#endif /* PF_Q_IO_H */
