@@ -22,6 +22,7 @@
  ****************************************************************/
 
 #include <pfq/kcompat.h>
+#include <pfq/timer.h>
 
 #include <engine/percpu.h>
 #include <engine/stats.h>
@@ -35,8 +36,6 @@ DEFINE_PER_CPU(struct pfq_memory_stats, memory_stats);
 struct pfq_percpu_data __percpu    * percpu_data;
 struct pfq_percpu_sock __percpu    * percpu_sock;
 struct pfq_percpu_pool __percpu    * percpu_pool;
-
-extern void pfq_timer (unsigned long);
 
 
 int pfq_percpu_alloc(void)
@@ -122,18 +121,9 @@ int pfq_percpu_init(void)
 
                 data = per_cpu_ptr(percpu_data, cpu);
 
-		init_timer_deferrable(&data->timer);
-
+		pfq_setup_timer(&data->timer, cpu);
 		data->counter = 0;
-
-		data->timer.function = pfq_timer;
-		data->timer.data = (unsigned long)cpu;
-		data->timer.expires = jiffies + msecs_to_jiffies(100);
-
-		add_timer_on(&data->timer, cpu);
-
 		data->GC = GCs[n++];
-
 		GC_data_init(data->GC);
 
 		preempt_enable();
@@ -176,7 +166,8 @@ int pfq_percpu_destruct(void)
                 total += data->GC->pool.len;
 
 		GC_reset(data->GC);
-		del_timer(&data->timer);
+
+		pfq_del_timer(&data->timer);
 
 		preempt_enable();
         }

@@ -94,8 +94,6 @@ MODULE_DESCRIPTION("Functional Networking Framework for Multi-core Architectures
 
 static DEFINE_MUTEX(sock_lock);
 
-void pfq_timer(unsigned long cpu);
-
 
 /* simple packet HANDLER */
 
@@ -140,17 +138,6 @@ out:
 	sparse_inc(&memory_stats, os_free);
 	kfree_skb(skb);
 	return 0;
-}
-
-
-void pfq_timer(unsigned long cpu)
-{
-	struct pfq_percpu_data *data;
-
-	pfq_receive(NULL, NULL, 0);
-
-	data = per_cpu_ptr(percpu_data, cpu);
-	mod_timer_pinned(&data->timer, jiffies + msecs_to_jiffies(100));
 }
 
 
