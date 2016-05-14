@@ -55,7 +55,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 	/* if no socket is open drop the packet */
 
 	if (unlikely(pfq_get_sock_count() == 0)) {
-		sparse_inc(&memory_stats, os_free);
+		sparse_inc(memory_stats, os_free);
 		kfree_skb(skb);
 		return 0;
 	}
@@ -77,7 +77,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 		if (vl_untag && skb->protocol == cpu_to_be16(ETH_P_8021Q)) {
 			skb = pfq_vlan_untag(skb);
 			if (unlikely(!skb)) {
-				__sparse_inc(&global_stats, lost, cpu);
+				__sparse_inc(global_stats, lost, cpu);
 				return -1;
 			}
 		}
@@ -95,8 +95,8 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 		if (buff == NULL) {
 			if (printk_ratelimit())
 				printk(KERN_INFO "[PFQ] GC: memory exhausted!\n");
-			__sparse_inc(&global_stats, lost, cpu);
-			__sparse_inc(&memory_stats, os_free, cpu);
+			__sparse_inc(global_stats, lost, cpu);
+			__sparse_inc(memory_stats, os_free, cpu);
 			kfree_skb(skb);
 			return 0;
 		}
@@ -316,7 +316,7 @@ __pfq_xmit_retry(struct sk_buff *skb, struct net_device *dev, int xmit_more, boo
 	}
 
 	if (!retry) {
-		sparse_inc(&memory_stats, os_free);
+		sparse_inc(memory_stats, os_free);
 		kfree_skb(skb);
 	}
 
@@ -671,7 +671,7 @@ intr:
 	/* the ret-i packet is already freed by the driver */
 
 	for_each_skbuff_from(ret.ok + 1, skbs, skb, n) {
-		sparse_inc(&memory_stats, os_free);
+		sparse_inc(memory_stats, os_free);
 		kfree_skb(skb);
 		++ret.fail;
 	}
@@ -782,7 +782,7 @@ pfq_skb_queue_lazy_xmit_run(struct pfq_skbuff_GC_queue *skbs, struct pfq_endpoin
 				if (nskb && __pfq_xmit(nskb, dev, xmit_more) == NETDEV_TX_OK)
 					sent++;
 				else
-					sparse_inc(&global_stats, disc);
+					sparse_inc(global_stats, disc);
 			}
 		}
 

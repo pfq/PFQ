@@ -158,6 +158,7 @@ int pfq_getsockopt(struct socket *sock,
         case Q_SO_GET_STATS:
         {
                 struct pfq_stats stat;
+
                 if (len != sizeof(struct pfq_stats))
                         return -EINVAL;
 
@@ -817,8 +818,8 @@ int pfq_setsockopt(struct socket *sock,
 
 			sparse_add(so->stats, sent, tx.ok);
 			sparse_add(so->stats, fail, tx.fail);
-			sparse_add(&global_stats, sent, tx.ok);
-			sparse_add(&global_stats, fail, tx.fail);
+			sparse_add(global_stats, sent, tx.ok);
+			sparse_add(global_stats, fail, tx.fail);
 
 			return 0;
 		}

@@ -25,6 +25,7 @@
 #define Q_ENGINE_PERCPU_H
 
 #include <pfq/kcompat.h>
+#include <pfq/timer.h>
 #include <pfq/printk.h>
 #include <pfq/pool.h>
 
@@ -32,13 +33,9 @@
 #include <engine/lang/GC.h>
 
 
-DECLARE_PER_CPU(pfq_global_stats_t, global_stats);
-DECLARE_PER_CPU(struct pfq_memory_stats, memory_stats);
-
-
-int pfq_percpu_init(void);
-int pfq_percpu_destruct(void);
-int pfq_percpu_alloc(void);
+int  pfq_percpu_init(void);
+int  pfq_percpu_destruct(void);
+int  pfq_percpu_alloc(void);
 void pfq_percpu_free(void);
 
 
@@ -71,9 +68,11 @@ struct pfq_percpu_data
 } ____cacheline_aligned;
 
 
-extern struct pfq_percpu_data __percpu * percpu_data;
-extern struct pfq_percpu_sock __percpu * percpu_sock;
-extern struct pfq_percpu_pool __percpu * percpu_pool;
+extern struct pfq_percpu_data  __percpu * percpu_data;
+extern struct pfq_percpu_sock  __percpu * percpu_sock;
+extern struct pfq_percpu_pool  __percpu * percpu_pool;
+extern struct pfq_memory_stats __percpu * memory_stats;
+extern pfq_global_stats_t      __percpu * global_stats;
 
 
 static inline void
@@ -81,10 +80,11 @@ pfq_invalidate_percpu_eligible_mask(pfq_id_t id)
 {
 	int cpu;
 
+	(void)id;
 	for_each_possible_cpu(cpu)
 	{
 		struct pfq_percpu_sock * sock = per_cpu_ptr(percpu_sock, cpu);
-		sock->eligible_mask = 0; /* TODO should be atomic */
+		sock->eligible_mask = 0;
 		sock->cnt = 0;
 	}
 }

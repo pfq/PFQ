@@ -131,7 +131,7 @@ int pfq_process_batch(struct pfq_percpu_data *data,
 
 	this_batch_len = GC_size(GC_ptr);
 
-	__sparse_add(&global_stats, recv, this_batch_len, cpu);
+	__sparse_add(global_stats, recv, this_batch_len, cpu);
 
 	/* cleanup sock_queue... */
 
@@ -338,8 +338,8 @@ int pfq_process_batch(struct pfq_percpu_data *data,
 	{
 		size_t total = pfq_skb_queue_lazy_xmit_run(SKBUFF_GC_QUEUE_ADDR(GC_ptr->pool), &endpoints);
 
-		__sparse_add(&global_stats, frwd, total, cpu);
-		__sparse_add(&global_stats, disc, endpoints.cnt_total - total, cpu);
+		__sparse_add(global_stats, frwd, total, cpu);
+		__sparse_add(global_stats, disc, endpoints.cnt_total - total, cpu);
 	}
 
 	/* forward skbs to kernel or to the pool */
@@ -351,7 +351,7 @@ int pfq_process_batch(struct pfq_percpu_data *data,
 		/* send a copy of this skb to the kernel */
 
 		if (cb->direct && fwd_to_kernel(skb)) {
-		        __sparse_inc(&global_stats, kern, cpu);
+		        __sparse_inc(global_stats, kern, cpu);
 			skb_pull(skb, skb->mac_len);
 			skb->peeked = capture_incoming;
 			netif_receive_skb(skb);

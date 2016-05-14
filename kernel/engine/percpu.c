@@ -30,8 +30,8 @@
 #include <engine/lang/GC.h>
 
 
-DEFINE_PER_CPU(pfq_global_stats_t, global_stats);
-DEFINE_PER_CPU(struct pfq_memory_stats, memory_stats);
+pfq_global_stats_t	           * global_stats;
+struct pfq_memory_stats __percpu   * memory_stats;
 
 struct pfq_percpu_data __percpu    * percpu_data;
 struct pfq_percpu_sock __percpu    * percpu_sock;
@@ -58,9 +58,24 @@ int pfq_percpu_alloc(void)
                 goto err1;
         }
 
+	global_stats = alloc_percpu(pfq_global_stats_t);
+	if (!global_stats) {
+                printk(KERN_ERR "[PFQ] could not allocate percpu pool!\n");
+                goto err2;
+        }
+
+	memory_stats = alloc_percpu(struct pfq_memory_stats);
+	if (!memory_stats) {
+                printk(KERN_ERR "[PFQ] could not allocate percpu pool!\n");
+                goto err3;
+        }
+
 	printk(KERN_INFO "[PFQ] number of online cpus %d\n", num_online_cpus());
         return 0;
 
+
+err3:   free_percpu(global_stats);
+err2:   free_percpu(percpu_pool);
 err1:	free_percpu(percpu_sock);
 err0:	free_percpu(percpu_data);
 
@@ -77,6 +92,9 @@ void pfq_percpu_free(void)
                 data = per_cpu_ptr(percpu_data, cpu);
 		kfree(data->GC);
 	}
+
+	free_percpu(global_stats);
+	free_percpu(memory_stats);
 
 	free_percpu(percpu_data);
 	free_percpu(percpu_sock);
@@ -95,8 +113,8 @@ int pfq_percpu_init(void)
 		return -ENOMEM;
 	}
 
-	for_each_possible_cpu(cpu) {
-
+	for_each_possible_cpu(cpu)
+	{
 		if (n == Q_MAX_CPU) {
 			printk(KERN_ERR "[PFQ] percpu: maximum number of cpu reached (%d)!\n", Q_MAX_CPU);
 			goto err;
@@ -110,17 +128,18 @@ int pfq_percpu_init(void)
 		n++;
 	}
 
-	/* allocate GCs */
 
 	n = 0;
-        for_each_possible_cpu(cpu) {
-
+        for_each_possible_cpu(cpu)
+        {
                 struct pfq_percpu_data *data;
+
+		memset(per_cpu_ptr(global_stats, cpu), 0, sizeof(pfq_global_stats_t));
+		memset(per_cpu_ptr(memory_stats, cpu), 0, sizeof(struct pfq_memory_stats));
 
 		preempt_disable();
 
                 data = per_cpu_ptr(percpu_data, cpu);
-
 		pfq_setup_timer(&data->timer, cpu);
 		data->counter = 0;
 		data->GC = GCs[n++];
@@ -159,7 +178,7 @@ int pfq_percpu_destruct(void)
 
 		for_each_skbuff(SKBUFF_QUEUE_ADDR(data->GC->pool), skb, n)
 		{
-			sparse_inc(&memory_stats, os_free);
+			sparse_inc(memory_stats, os_free);
 			kfree_skb(skb);
 		}
 
@@ -172,7 +191,7 @@ int pfq_percpu_destruct(void)
 		preempt_enable();
         }
 
-	sparse_add(&global_stats, lost, total);
+	sparse_add(global_stats, lost, total);
         return total;
 }
 

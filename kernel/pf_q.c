@@ -135,7 +135,7 @@ pfq_packet_rcv
 
         return pfq_receive(NULL, skb, 0);
 out:
-	sparse_inc(&memory_stats, os_free);
+	sparse_inc(memory_stats, os_free);
 	kfree_skb(skb);
 	return 0;
 }
@@ -638,7 +638,7 @@ static void __exit pfq_exit_module(void)
 
 #ifdef PFQ_USE_SKB_POOL
         total += pfq_skb_pool_free_all();
-	sparse_add(&memory_stats, pool_pop, total);
+	sparse_add(memory_stats, pool_pop, total);
 #endif
         if (total)
                 printk(KERN_INFO "[PFQ] %d skbuff freed.\n", total);

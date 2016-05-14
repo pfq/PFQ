@@ -120,8 +120,8 @@ pfq_tx_thread(void *_data)
 
 				sparse_add(sock->stats,	  sent, tx.ok);
 				sparse_add(sock->stats,   fail, tx.fail);
-				sparse_add(&global_stats, sent, tx.ok);
-				sparse_add(&global_stats, fail, tx.fail);
+				sparse_add(global_stats,  sent, tx.ok);
+				sparse_add(global_stats,  fail, tx.fail);
 			}
 		}
 
