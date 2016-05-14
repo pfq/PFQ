@@ -21,17 +21,16 @@
  *
  ****************************************************************/
 
-#include <pfq/memory.h>
 #include <pfq/kcompat.h>
 
+#include <engine/percpu.h>
+#include <engine/stats.h>
 #include <engine/global.h>
 #include <engine/lang/GC.h>
 
 
-
 DEFINE_PER_CPU(pfq_global_stats_t, global_stats);
 DEFINE_PER_CPU(struct pfq_memory_stats, memory_stats);
-
 
 struct pfq_percpu_data __percpu    * percpu_data;
 struct pfq_percpu_sock __percpu    * percpu_sock;

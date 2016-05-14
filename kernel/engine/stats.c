@@ -28,16 +28,16 @@
 
 void pfq_kernel_stats_read(struct pfq_kernel_stats __percpu *kstats, struct pfq_stats *stats)
 {
-	stats->recv = sparse_read(kstats, recv);
-	stats->lost = sparse_read(kstats, lost);
-	stats->drop = sparse_read(kstats, drop);
+	stats->recv = (long unsigned)sparse_read(kstats, recv);
+	stats->lost = (long unsigned)sparse_read(kstats, lost);
+	stats->drop = (long unsigned)sparse_read(kstats, drop);
 
-	stats->sent = sparse_read(kstats, sent);
-	stats->disc = sparse_read(kstats, disc);
-	stats->fail = sparse_read(kstats, fail);
+	stats->sent = (long unsigned)sparse_read(kstats, sent);
+	stats->disc = (long unsigned)sparse_read(kstats, disc);
+	stats->fail = (long unsigned)sparse_read(kstats, fail);
 
-	stats->frwd = sparse_read(kstats, frwd);
-	stats->kern = sparse_read(kstats, kern);
+	stats->frwd = (long unsigned)sparse_read(kstats, frwd);
+	stats->kern = (long unsigned)sparse_read(kstats, kern);
 }
 
 
