@@ -49,6 +49,7 @@ struct GC_skbuff_batch
         struct sk_buff __GC *queue[Q_SKBUFF_BATCH];
 };
 
+
 struct GC_skbuff_queue
 {
         size_t len;
@@ -65,13 +66,9 @@ struct GC_data
 
 extern void   GC_reset(struct GC_data *gc);
 
-extern struct sk_buff __GC * GC_make_buff(struct GC_data *gc, struct sk_buff *skb);
+extern struct sk_buff __GC * GC_make_buff (struct GC_data *gc, struct sk_buff *skb);
 extern struct sk_buff __GC * GC_alloc_buff(struct GC_data *gc, size_t size);
-extern struct sk_buff __GC * GC_copy_buff(struct GC_data *gc, struct sk_buff __GC * orig);
-
-struct sk_buff __GC * pfq_lang_make_buff(struct sk_buff *skb);
-struct sk_buff __GC * pfq_lang_alloc_buff(size_t size);
-struct sk_buff __GC * pfq_lang_copy_buff(struct sk_buff __GC * skb);
+extern struct sk_buff __GC * GC_copy_buff (struct GC_data *gc, struct sk_buff __GC * orig);
 
 
 struct skb_lazy_targets;

@@ -131,25 +131,3 @@ GC_get_lazy_endpoints(struct GC_data *gc, struct pfq_endpoint_info *ts)
 	}
 }
 
-
-struct sk_buff __GC *
-pfq_lang_make_buff(struct sk_buff *skb)
-{
-	struct pfq_percpu_data *data = this_cpu_ptr(percpu_data);
-	return GC_make_buff(data->GC, skb);
-}
-
-struct sk_buff __GC *
-pfq_lang_alloc_buff(size_t size)
-{
-	struct pfq_percpu_data *data = this_cpu_ptr(percpu_data);
-	return GC_alloc_buff(data->GC, size);
-}
-
-struct sk_buff __GC *
-pfq_lang_copy_buff(struct sk_buff __GC * skb)
-{
-	struct pfq_percpu_data *data = this_cpu_ptr(percpu_data);
-	return GC_copy_buff(data->GC, skb);
-}
-

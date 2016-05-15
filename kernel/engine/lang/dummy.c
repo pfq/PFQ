@@ -34,20 +34,9 @@ dummy(arguments_t args, SkBuff skb)
 {
         const int data = GET_ARG(int,args);
 
-	SkBuff nskb;
-
 	printk(KERN_INFO "[pfq-lang] dummy = %d\n", data);
 
-        nskb = pfq_lang_copy_buff(skb);
-
-	if (nskb == NULL) {
-                printk(KERN_INFO "[pfq-lang] clone error!!!\n");
-                return Drop(skb);
-	}
-
-        printk(KERN_INFO "[pfq-lang] packet cloned: %p -> %p\n", nskb, skb);
-
-        return Pass(nskb);
+        return Pass(skb);
 }
 
 
