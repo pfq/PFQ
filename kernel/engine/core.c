@@ -25,6 +25,7 @@
 
 #include <pfq/kcompat.h>
 #include <pfq/memory.h>
+#include <pfq/qbuff.h>
 #include <pfq/io.h>
 #include <pfq/vlan.h>
 #include <pfq/GC.h>
@@ -144,7 +145,9 @@ int pfq_process_batch(struct pfq_percpu_data *data,
 
 	for_each_skbuff(SKBUFF_QUEUE_ADDR(GC_ptr->pool), skb, n)
         {
-		uint16_t queue = skb_rx_queue_recorded(skb) ? skb_get_rx_queue(skb) : 0;
+		struct qbuff qbuff = {.skb = skb};
+		uint16_t queue = qbuff_get_rx_queue(&qbuff);
+
 		unsigned long group_mask = pfq_devmap_get_groups(skb->dev->ifindex, queue);
 		all_group_mask |= group_mask;
 
@@ -185,17 +188,9 @@ int pfq_process_batch(struct pfq_percpu_data *data,
 			/* check if bp filter is enabled */
 
 			if (bf_filt_enabled) {
-				struct sk_filter *bpf = (struct sk_filter *)atomic_long_read(&this_group->bp_filter);
-
-				if (bpf &&
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,15,0))
-					!sk_run_filter(buff, bpf->insns)
-#elif (LINUX_VERSION_CODE < KERNEL_VERSION(4,4,0))
-					!SK_RUN_FILTER(bpf, PFQ_SKB(buff))
-#else
-					!bpf_prog_run_clear_cb(bpf->prog, PFQ_SKB(buff))
-#endif
-				) {
+				struct qbuff qbuff = { .skb = PFQ_SKB(buff) };
+				if (!qbuff_run_bp_filter(&qbuff, this_group))
+				{
 					__sparse_inc(this_group->stats, drop, cpu);
 					refs.queue[refs.len++] = NULL;
 					continue;
@@ -205,7 +200,8 @@ int pfq_process_batch(struct pfq_percpu_data *data,
 			/* check vlan filter */
 
 			if (vlan_filt_enabled) {
-				if (!pfq_check_group_vlan_filter(gid, buff->vlan_tci & ~VLAN_TAG_PRESENT)) {
+				struct qbuff qbuff = { .skb = PFQ_SKB(buff) };
+				if (!qbuff_run_vlan_filter(&qbuff, (pfq_gid_t)gid)) {
 					__sparse_inc(this_group->stats, drop, cpu);
 					refs.queue[refs.len++] = NULL;
 					continue;
