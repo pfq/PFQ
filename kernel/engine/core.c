@@ -157,12 +157,12 @@ int pfq_process_batch(struct pfq_percpu_data *data,
 
 	pfq_bitwise_foreach(all_group_mask, bit,
 	{
-		pfq_gid_t gid = { pfq_ctz(bit) };
+		pfq_gid_t gid = (__force pfq_gid_t)pfq_ctz(bit);
 
 		struct pfq_group * this_group = pfq_get_group(gid);
 		bool bf_filt_enabled = atomic_long_read(&this_group->bp_filter);
 		bool vlan_filt_enabled = pfq_vlan_filters_enabled(gid);
-		struct GC_skbuff_batch refs = { len:0 };
+		struct GC_skbuff_batch refs = { .len = 0 };
 
 		socket_mask = 0;
 
@@ -285,7 +285,7 @@ int pfq_process_batch(struct pfq_percpu_data *data,
 						sock->cnt = 0;
 						pfq_bitwise_foreach(eligible_mask, ebit,
 						{
-							pfq_id_t id = pfq_ctz(ebit);
+							pfq_id_t id = (__force pfq_id_t)pfq_ctz(ebit);
 							struct pfq_sock * so = pfq_get_sock_by_id(id);
                                                         int i;
 
@@ -323,7 +323,7 @@ int pfq_process_batch(struct pfq_percpu_data *data,
 
 		pfq_bitwise_foreach(socket_mask, lb,
 		{
-			pfq_id_t id = pfq_ctz(lb);
+			pfq_id_t id = (__force pfq_id_t)pfq_ctz(lb);
 			struct pfq_sock * so = pfq_get_sock_by_id(id);
 			copy_to_endpoint_skbs(so, SKBUFF_GC_QUEUE_ADDR(refs), sock_queue[(int __force)id], cpu, gid);
 		})
