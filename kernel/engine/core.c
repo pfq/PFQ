@@ -112,7 +112,7 @@ int pfq_process_batch(struct pfq_percpu_data *data,
 		      int cpu)
 {
 	unsigned long long sock_queue[Q_SKBUFF_BATCH];
-        unsigned long group_mask, socket_mask;
+        unsigned long all_group_mask, socket_mask;
 	struct pfq_endpoint_info endpoints;
         struct sk_buff *skb;
 	struct sk_buff __GC * buff;
@@ -134,7 +134,7 @@ int pfq_process_batch(struct pfq_percpu_data *data,
 	/* cleanup sock_queue... */
 
         memset(sock_queue, 0, sizeof(sock_queue));
-	group_mask = 0;
+	all_group_mask = 0;
 
 #ifdef PFQ_RX_PROFILE
 	start = get_cycles();
@@ -145,16 +145,17 @@ int pfq_process_batch(struct pfq_percpu_data *data,
 	for_each_skbuff(SKBUFF_QUEUE_ADDR(GC_ptr->pool), skb, n)
         {
 		uint16_t queue = skb_rx_queue_recorded(skb) ? skb_get_rx_queue(skb) : 0;
-		unsigned long local_group_mask = pfq_devmap_get_groups(skb->dev->ifindex, queue);
-		group_mask |= local_group_mask;
-		PFQ_CB(skb)->group_mask = local_group_mask;
+		unsigned long group_mask = pfq_devmap_get_groups(skb->dev->ifindex, queue);
+		all_group_mask |= group_mask;
+
+		PFQ_CB(skb)->group_mask = group_mask;
 		PFQ_CB(skb)->monad = &monad;
 		PFQ_CB(skb)->counter = data->counter++;
 	}
 
         /* process all groups enabled for this batch */
 
-	pfq_bitwise_foreach(group_mask, bit,
+	pfq_bitwise_foreach(all_group_mask, bit,
 	{
 		pfq_gid_t gid = { pfq_ctz(bit) };
 
