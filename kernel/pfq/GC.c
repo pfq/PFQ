@@ -21,7 +21,7 @@
  *
  ****************************************************************/
 
-#include <engine/lang/GC.h>
+#include <pfq/GC.h>
 
 #include <engine/percpu.h>
 #include <engine/global.h>

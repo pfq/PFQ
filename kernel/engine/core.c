@@ -24,9 +24,10 @@
  ****************************************************************/
 
 #include <pfq/kcompat.h>
-#include <pfq/io.h>
 #include <pfq/memory.h>
+#include <pfq/io.h>
 #include <pfq/vlan.h>
+#include <pfq/GC.h>
 
 #include <engine/percpu.h>
 #include <engine/global.h>
@@ -34,7 +35,6 @@
 
 #include <engine/lang/engine.h>
 #include <engine/lang/symtable.h>
-#include <engine/lang/GC.h>
 
 #include <engine/queue.h>
 #include <engine/bitops.h>
@@ -48,7 +48,7 @@ void mask_to_sock_queue(unsigned long n, unsigned long mask, unsigned long long 
 	unsigned long bit;
 	pfq_bitwise_foreach(mask, bit,
 	{
-	        int index = pfq_ctz(bit);
+	        int index = (int)pfq_ctz(bit);
                 sock_queue[index] |= 1UL << n;
         })
 }
@@ -125,9 +125,7 @@ int pfq_process_batch(struct pfq_percpu_data *data,
 	cycles_t start, stop;
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
-	BUILD_BUG_ON_MSG(Q_SKBUFF_BATCH > (sizeof(sock_queue[0]) << 3), "skbuff batch overflow");
-#endif
+	PFQ_BUILD_BUG_ON_MSG(Q_SKBUFF_BATCH > (sizeof(sock_queue[0]) << 3), "skbuff batch overflow");
 
 	this_batch_len = GC_size(GC_ptr);
 

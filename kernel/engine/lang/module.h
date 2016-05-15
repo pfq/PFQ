@@ -24,12 +24,12 @@
 #ifndef PFQ_LANG_MODULE_H
 #define PFQ_LANG_MODULE_H
 
-#include <engine/lang/GC.h>
 #include <engine/lang/monad.h>
 #include <engine/lang/maybe.h>
 
 #include <pfq/sparse.h>
 #include <pfq/kcompat.h>
+#include <pfq/GC.h>
 
 
 #define ARGS_TYPE(a)		__builtin_choose_expr(__builtin_types_compatible_p(arguments_t, typeof(a)), a, (void)0)
@@ -184,11 +184,7 @@ struct pfq_lang_function_descr
 static inline bool
 is_drop(fanout_t a)
 {
-#ifdef __KERNEL__
-	#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
-		BUILD_BUG_ON_MSG(sizeof(struct pfq_cb) > sizeof(((struct sk_buff *)0)->cb), "pfq control buffer overflow");
-	#endif
-#endif
+	PFQ_BUILD_BUG_ON_MSG(sizeof(struct pfq_cb) > sizeof(((struct sk_buff *)0)->cb), "pfq control buffer overflow");
 	return a.type == fanout_drop;
 }
 

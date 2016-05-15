@@ -28,11 +28,11 @@
 #include <engine/lang/module.h>
 #include <engine/lang/engine.h>
 #include <engine/lang/symtable.h>
-#include <engine/lang/GC.h>
 
 #include <engine/percpu.h>
 #include <engine/sock.h>
 
+#include <pfq/GC.h>
 #include <pfq/skbuff.h>
 #include <pfq/netdev.h>
 

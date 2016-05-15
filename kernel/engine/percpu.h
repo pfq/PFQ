@@ -28,9 +28,9 @@
 #include <pfq/timer.h>
 #include <pfq/printk.h>
 #include <pfq/pool.h>
+#include <pfq/GC.h>
 
 #include <engine/define.h>
-#include <engine/lang/GC.h>
 
 
 int  pfq_percpu_alloc(void);

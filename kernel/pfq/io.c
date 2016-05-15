@@ -35,7 +35,6 @@
 
 #include <engine/lang/engine.h>
 #include <engine/lang/symtable.h>
-#include <engine/lang/GC.h>
 
 #include <engine/queue.h>
 #include <engine/bitops.h>
@@ -44,6 +43,7 @@
 #include <pfq/vlan.h>
 #include <pfq/thread.h>
 #include <pfq/memory.h>
+#include <pfq/GC.h>
 
 
 int

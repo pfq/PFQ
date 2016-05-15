@@ -48,4 +48,12 @@ netdev_notifier_info_to_dev(void *data)
 }
 #endif
 
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
+#  define PFQ_BUILD_BUG_ON_MSG(...) BUILD_BUG_ON_MSG(__VA_ARGS__)
+#else
+#  define PFQ_BUILD_BUG_ON_MSG(...)
 #endif
+
+
+#endif /* PF_Q_KCOMPACT_H */

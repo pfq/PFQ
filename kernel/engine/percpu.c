@@ -23,11 +23,11 @@
 
 #include <pfq/kcompat.h>
 #include <pfq/timer.h>
+#include <pfq/GC.h>
 
 #include <engine/percpu.h>
 #include <engine/stats.h>
 #include <engine/global.h>
-#include <engine/lang/GC.h>
 
 
 pfq_global_stats_t	__percpu   * global_stats;

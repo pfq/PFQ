@@ -43,12 +43,12 @@ struct GC_skbuff_queue;
 
 struct pfq_cb
 {
-	struct GC_log	 *log;
-	struct pfq_lang_monad *monad;
-        unsigned long	  group_mask;
-        uint32_t	  counter;
-        uint32_t	  state;
-	bool		  direct;
+	struct pfq_lang_monad	*monad;
+	struct GC_log		*log;
+        unsigned long		group_mask;
+        uint32_t		counter;
+        uint32_t		state;
+	bool			direct;
 };
 
 
@@ -94,6 +94,7 @@ struct pfq_skbuff_GC_queue
 
 
 #define PFQ_SKBUFF_MASK_ALL	~0ULL
+
 
 #define for_each_skbuff_bitmask(q, skb, n, mask) \
         for((n) = pfq_ctz(mask); ((n) < (q)->len) && (mask) && (skb = (q)->queue[n]); \

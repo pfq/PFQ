@@ -26,8 +26,8 @@
 #define Q_ENGINE_QUEUE_H
 
 #include <pfq/kcompat.h>
+#include <pfq/GC.h>
 
-#include <engine/lang/GC.h>
 #include <engine/group.h>
 #include <engine/sock.h>
 #include <engine/define.h>
@@ -72,6 +72,7 @@ int pfq_mpsc_queue_index(struct pfq_sock *p)
 static inline
 char *pfq_mpsc_slot_ptr(struct pfq_sock_opt *opt, struct pfq_rx_queue *qd, size_t qindex, size_t slot)
 {
+	(void)qd;
 	return (char *)(opt->rxq.base_addr) + (opt->rx_queue_len * (qindex & 1) + slot) * opt->rx_slot_size;
 }
 

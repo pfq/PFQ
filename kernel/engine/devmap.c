@@ -23,6 +23,7 @@
  ****************************************************************/
 
 #include <pfq/kcompat.h>
+#include <pfq/thread.h>
 #include <pfq/printk.h>
 
 #include <engine/devmap.h>

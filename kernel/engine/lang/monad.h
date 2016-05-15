@@ -25,12 +25,12 @@
 #define PFQ_LANG_MONAD_H
 
 #include <engine/group.h>
-#include <engine/lang/GC.h>
 #include <engine/define.h>
 
 #include <pfq/skbuff.h>
 #include <pfq/sparse.h>
 #include <pfq/kcompat.h>
+#include <pfq/GC.h>
 
 /* The Action monad */
 

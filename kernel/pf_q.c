@@ -57,7 +57,6 @@
 #include <engine/devmap.h>
 #include <engine/lang/engine.h>
 #include <engine/lang/symtable.h>
-#include <engine/lang/GC.h>
 #include <engine/percpu.h>
 #include <engine/group.h>
 #include <engine/sock.h>
@@ -66,6 +65,7 @@
 #include <engine/endpoint.h>
 #include <engine/define.h>
 
+#include <pfq/GC.h>
 #include <pfq/percpu.h>
 #include <pfq/io.h>
 #include <pfq/shmem.h>
