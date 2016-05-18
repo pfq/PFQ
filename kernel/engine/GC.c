@@ -21,10 +21,11 @@
  *
  ****************************************************************/
 
-#include <pfq/GC.h>
 
 #include <engine/percpu.h>
 #include <engine/global.h>
+#include <engine/qbuff.h>
+#include <engine/GC.h>
 
 
 void GC_reset(struct GC_data *gc)
@@ -38,80 +39,22 @@ void GC_reset(struct GC_data *gc)
 }
 
 
-struct sk_buff __GC *
-GC_make_buff(struct GC_data *gc, struct sk_buff *skb)
+struct qbuff *
+GC_make_buff(struct GC_data *gc, void *addr)
 {
-	struct sk_buff __GC * ret;
+	struct qbuff * ret;
 
-	if (gc->pool.len >= Q_GC_POOL_QUEUE_LEN) {
+	if (gc->pool.len >= Q_BUFF_QUEUE_LEN) {
 		ret = NULL;
 	}
 	else {
-                PFQ_CB(skb)->log = &gc->log[gc->pool.len];
-		ret = gc->pool.queue[gc->pool.len++] = (struct sk_buff __force __GC *) skb;
+		ret = & gc->pool.queue[gc->pool.len];
+		ret->addr = addr;
+                ret->log  = &gc->log[gc->pool.len++];
 	}
 
 	return ret;
 }
-
-
-struct sk_buff __GC *
-GC_alloc_buff(struct GC_data *gc, size_t size)
-{
-	struct sk_buff *skb;
-	struct sk_buff __GC * ret;
-
-	if (gc->pool.len >= Q_GC_POOL_QUEUE_LEN) {
-		pr_devel("[PFQ] GC: pool exhausted!\n");
-		ret = NULL;
-		return ret;
-	}
-
-	skb = alloc_skb(size, GFP_ATOMIC);
-	if (skb == NULL) {
-		pr_devel("[PFQ] GC: out of memory!\n");
-		ret = NULL;
-		return ret;
-	}
-
-	/* GC_make_buff can't fail now */
-
-	return GC_make_buff(gc, skb);
-}
-
-
-struct sk_buff __GC *
-GC_copy_buff(struct GC_data *gc, struct sk_buff __GC * orig)
-{
-	struct sk_buff *skb;
-	struct sk_buff __GC * ret;
-
-	if (gc->pool.len >= Q_GC_POOL_QUEUE_LEN) {
-		pr_devel("[PFQ] GC: pool exhausted!\n");
-		ret = NULL;
-		return ret;
-	}
-
-	skb = skb_copy(PFQ_SKB(orig), GFP_ATOMIC);
-	if (skb == NULL) {
-		pr_devel("[PFQ] GC: out of memory!\n");
-		ret = NULL;
-		return ret;
-	}
-
-	skb->mac_len = orig->mac_len;
-
-	/* GC_make_buff can't fail now */
-
-	ret = GC_make_buff(gc, skb);
-
-	PFQ_CB(ret)->group_mask = PFQ_CB(orig)->group_mask;
-	PFQ_CB(ret)->direct     = PFQ_CB(orig)->direct;
-	PFQ_CB(ret)->monad      = PFQ_CB(orig)->monad;
-
-	return ret;
-}
-
 
 
 void

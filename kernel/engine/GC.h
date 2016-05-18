@@ -21,59 +21,36 @@
  *
  ****************************************************************/
 
-#ifndef PFQ_LANG_GC_H
-#define PFQ_LANG_GC_H
+#ifndef Q_ENGINE_GC_H
+#define Q_ENGINE_GC_H
 
 #include <engine/endpoint.h>
 #include <engine/define.h>
+#include <engine/qbuff.h>
 
 #include <pfq/kcompat.h>
-#include <pfq/skbuff.h>
 
-
-typedef struct sk_buff __GC * SkBuff;
-
+struct net_device;
 
 struct GC_log
 {
-	struct net_device * dev[Q_GC_LOG_QUEUE_LEN];
+	struct net_device * dev[Q_BUFF_LOG_LEN];
 	size_t num_devs;
 	size_t xmit_todo;
 	bool   to_kernel;
 };
 
 
-struct GC_skbuff_batch
-{
-        size_t len;
-        struct sk_buff __GC *queue[Q_SKBUFF_BATCH];
-};
-
-
-struct GC_skbuff_queue
-{
-        size_t len;
-        struct sk_buff __GC * queue[Q_GC_POOL_QUEUE_LEN];
-};
-
-
 struct GC_data
 {
-	struct GC_log		log[Q_GC_POOL_QUEUE_LEN];
-	struct GC_skbuff_queue	pool;
+	struct pfq_qbuff_long_queue pool;
+	struct GC_log log[Q_BUFF_QUEUE_LEN];
 };
 
 
-extern void   GC_reset(struct GC_data *gc);
-
-extern struct sk_buff __GC * GC_make_buff (struct GC_data *gc, struct sk_buff *skb);
-extern struct sk_buff __GC * GC_alloc_buff(struct GC_data *gc, size_t size);
-extern struct sk_buff __GC * GC_copy_buff (struct GC_data *gc, struct sk_buff __GC * orig);
-
-
-struct skb_lazy_targets;
-
+extern struct qbuff * GC_make_buff (struct GC_data *gc, void *addr);
 extern void  GC_get_lazy_endpoints(struct GC_data *gc, struct pfq_endpoint_info *info);
+extern void  GC_reset(struct GC_data *gc);
 
 
 static inline size_t
@@ -112,4 +89,4 @@ size_t GC_size(struct GC_data *gc)
 }
 
 
-#endif /* PFQ_LANG_GC_H */
+#endif /* Q_ENGINE_GC_H */

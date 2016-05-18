@@ -27,19 +27,19 @@
 
 
 static bool
-vlan_id(arguments_t args, SkBuff skb)
+vlan_id(arguments_t args, struct qbuff * buff)
 {
 	char *mem = GET_ARG_1(char *, args);
-	return mem[ skb->vlan_tci & VLAN_VID_MASK ];
+	return mem[ qbuff_vlan_tci(buff) & VLAN_VID_MASK ];
 }
 
 
-static ActionSkBuff
-vlan_id_filter(arguments_t args, SkBuff skb)
+static ActionQbuff
+vlan_id_filter(arguments_t args, struct qbuff * buff)
 {
-	if (vlan_id(args, skb))
-		return Pass(skb);
-	return Drop(skb);
+	if (vlan_id(args, buff))
+		return Pass(buff);
+	return Drop(buff);
 }
 
 
@@ -90,8 +90,8 @@ static int vlan_fini(arguments_t args)
 
 struct pfq_lang_function_descr vlan_functions[] = {
 
-	{ "vlan_id",		"[CInt] -> SkBuff -> Bool",		vlan_id,	vlan_init,	vlan_fini },
-	{ "vlan_id_filter",	"[CInt] -> SkBuff -> Action SkBuff",	vlan_id_filter, vlan_init,	vlan_fini },
+	{ "vlan_id",		"[CInt] -> Qbuff -> Bool",		vlan_id,	vlan_init,	vlan_fini },
+	{ "vlan_id_filter",	"[CInt] -> Qbuff -> Action Qbuff",	vlan_id_filter, vlan_init,	vlan_fini },
 
 	{ NULL }};
 

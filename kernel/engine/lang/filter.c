@@ -23,10 +23,11 @@
 
 #include <engine/lang/module.h>
 #include <engine/lang/filter.h>
+#include <engine/lang/types.h>
 
 
-static ActionSkBuff
-filter_generic(arguments_t args, SkBuff b)
+static ActionQbuff
+filter_generic(arguments_t args, struct qbuff * b)
 {
 	predicate_t pred_ = GET_ARG(predicate_t, args);
 
@@ -36,36 +37,36 @@ filter_generic(arguments_t args, SkBuff b)
 	return Drop(b);
 }
 
-static ActionSkBuff
-filter_l3_proto(arguments_t args, SkBuff b)
+static ActionQbuff
+filter_l3_proto(arguments_t args, struct qbuff * b)
 {
 	const u16 type = GET_ARG(u16, args);
         return is_l3_proto(b, type) ? Pass(b) : Drop(b);
 }
 
-static ActionSkBuff
-filter_l4_proto(arguments_t args, SkBuff b)
+static ActionQbuff
+filter_l4_proto(arguments_t args, struct qbuff * b)
 {
 	const u8 proto = GET_ARG(u8, args);
         return is_l4_proto(b, proto) ? Pass(b) : Drop(b);
 }
 
-static ActionSkBuff
-filter_port(arguments_t args, SkBuff b)
+static ActionQbuff
+filter_port(arguments_t args, struct qbuff * b)
 {
 	const u16 port = GET_ARG(u16, args);
         return has_port(b, port) ? Pass(b) : Drop(b);
 }
 
-static ActionSkBuff
-filter_src_port(arguments_t args, SkBuff b)
+static ActionQbuff
+filter_src_port(arguments_t args, struct qbuff * b)
 {
 	const u16 port = GET_ARG(u16, args);
         return has_src_port(b, port) ? Pass(b) : Drop(b);
 }
 
-static ActionSkBuff
-filter_dst_port(arguments_t args, SkBuff b)
+static ActionQbuff
+filter_dst_port(arguments_t args, struct qbuff * b)
 {
 	const u16 port = GET_ARG(u16, args);
         return has_dst_port(b, port) ? Pass(b) : Drop(b);
@@ -83,75 +84,75 @@ static int filter_addr_init(arguments_t args)
 }
 
 
-static ActionSkBuff
-filter_addr(arguments_t args, SkBuff b)
+static ActionQbuff
+filter_addr(arguments_t args, struct qbuff * b)
 {
 	struct CIDR_ *data = GET_PTR_0(struct CIDR_, args);
 	return has_addr(b, data->addr, data->mask) ? Pass(b) : Drop(b);
 }
 
 
-static ActionSkBuff
-filter_src_addr(arguments_t args, SkBuff b)
+static ActionQbuff
+filter_src_addr(arguments_t args, struct qbuff * b)
 {
 	struct CIDR_ *data = GET_PTR_0(struct CIDR_, args);
 	return has_src_addr(b, data->addr, data->mask) ? Pass(b) : Drop(b);
 }
 
-static ActionSkBuff
-filter_dst_addr(arguments_t args, SkBuff b)
+static ActionQbuff
+filter_dst_addr(arguments_t args, struct qbuff * b)
 {
 	struct CIDR_ *data = GET_PTR_0(struct CIDR_, args);
 	return has_dst_addr(b, data->addr, data->mask) ? Pass(b) : Drop(b);
 }
 
-static ActionSkBuff
-filter_no_frag(arguments_t args, SkBuff b)
+static ActionQbuff
+filter_no_frag(arguments_t args, struct qbuff * b)
 {
 	return is_frag(b) ? Drop(b) : Pass(b);
 }
 
-static ActionSkBuff
-filter_no_more_frag(arguments_t args, SkBuff b)
+static ActionQbuff
+filter_no_more_frag(arguments_t args, struct qbuff * b)
 {
 	return is_more_frag(b) ? Drop(b) : Pass(b);
 }
 
 
-static ActionSkBuff
-filter_broadcast(arguments_t args, SkBuff b)
+static ActionQbuff
+filter_broadcast(arguments_t args, struct qbuff * b)
 {
 	return is_broadcast(b) ? Drop(b) : Pass(b);
 }
 
-static ActionSkBuff
-filter_multicast(arguments_t args, SkBuff b)
+static ActionQbuff
+filter_multicast(arguments_t args, struct qbuff * b)
 {
 	return is_multicast(b) ? Drop(b) : Pass(b);
 }
 
 
-static ActionSkBuff
-filter_ip_broadcast(arguments_t args, SkBuff b)
+static ActionQbuff
+filter_ip_broadcast(arguments_t args, struct qbuff * b)
 {
 	return is_ip_broadcast(b) ? Drop(b) : Pass(b);
 }
 
-static ActionSkBuff
-filter_ip_multicast(arguments_t args, SkBuff b)
+static ActionQbuff
+filter_ip_multicast(arguments_t args, struct qbuff * b)
 {
 	return is_ip_multicast(b) ? Drop(b) : Pass(b);
 }
 
 
-static ActionSkBuff
-filter_ip_host(arguments_t args, SkBuff b)
+static ActionQbuff
+filter_ip_host(arguments_t args, struct qbuff * b)
 {
 	return is_ip_host(b) ? Drop(b) : Pass(b);
 }
 
-static ActionSkBuff
-filter_incoming_host(arguments_t args, SkBuff b)
+static ActionQbuff
+filter_incoming_host(arguments_t args, struct qbuff * b)
 {
 	return is_incoming_host(b) ? Drop(b) : Pass(b);
 }

@@ -31,10 +31,10 @@
 
 #include <engine/percpu.h>
 #include <engine/sock.h>
+#include <engine/GC.h>
 
-#include <pfq/GC.h>
-#include <pfq/skbuff.h>
 #include <pfq/netdev.h>
+
 
 struct napi_struct;
 
@@ -55,11 +55,11 @@ typedef union
 
 
 
-extern size_t pfq_sk_rx_queue_recv(struct pfq_sock_opt *opt,
-		                   struct pfq_skbuff_GC_queue *skbs,
-		                   unsigned long long skbs_mask,
-		                   int burst_len,
-		                   pfq_gid_t gid);
+extern size_t pfq_sk_queue_recv(struct pfq_sock_opt *opt,
+		                struct pfq_qbuff_refs *buffs,
+		                unsigned long long skbs_mask,
+		                int burst_len,
+		                pfq_gid_t gid);
 
 struct pfq_mbuff_xmit_context
 {
@@ -75,16 +75,31 @@ struct pfq_mbuff_xmit_context
 
 extern tx_res_t pfq_sk_queue_xmit(struct pfq_sock *so, int qindex, int cpu, int node, atomic_t const *stop);
 
-/* skb queues */
 
-extern int pfq_xmit(struct sk_buff *skb, struct net_device *dev, int queue, int more);
-extern tx_res_t pfq_skb_queue_xmit(struct pfq_skbuff_queue *skbs, unsigned long long skbs_mask, struct net_device *dev, int queue_index);
+/* qbuff queues */
 
-/* skb lazy xmit */
+extern int pfq_xmit(struct qbuff *buff, struct net_device *dev, int queue, int more);
+extern tx_res_t pfq_skb_queue_xmit(struct pfq_qbuff_queue *buffs, unsigned long long buffs_mask, struct net_device *dev, int queue_index);
 
-extern int pfq_lazy_xmit(struct sk_buff __GC * skb, struct net_device *dev, int queue_index);
-extern int pfq_skb_queue_lazy_xmit(struct pfq_skbuff_GC_queue *queue, unsigned long long mask, struct net_device *dev, int queue_index);
-extern int pfq_skb_queue_lazy_xmit_run(struct pfq_skbuff_GC_queue *queue, struct pfq_endpoint_info const *info);
 
+extern int pfq_lazy_xmit(struct qbuff * buff, struct net_device *dev, int queue_index);
+extern int pfq_qbuff_queue_lazy_xmit_run(struct pfq_qbuff_queue *queue, struct pfq_endpoint_info const *info);
+
+
+#define pfq_qbuff_queue_lazy_xmit(buffs, mask, dev, queue_index) ({ \
+		int enforce = STATIC_TYPE(unsigned long long, mask) && \
+			      STATIC_TYPE(struct net_device *, dev) && \
+			      STATIC_TYPE(int, queue_index); \
+		struct qbuff * buff; \
+		int i, n = 0; \
+		(void)enforce; \
+                \
+		for_each_qbuff_with_mask(mask, buffs, buff, i) \
+		{   \
+			if (pfq_lazy_xmit(buff, dev, queue_index)) \
+				++n; \
+		} \
+		n; \
+	})
 
 #endif /* PF_Q_IO_H */

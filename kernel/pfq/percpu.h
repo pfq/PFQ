@@ -24,8 +24,20 @@
 #ifndef PF_Q_PERCPU_H
 #define PF_Q_PERCPU_H
 
+#include <pfq/pool.h>
+
 int  pfq_percpu_init(void);
 int  pfq_percpu_destruct(void);
+
+
+struct pfq_percpu_pool
+{
+        atomic_t                enable;
+	struct pfq_skb_pool	tx_pool;
+        struct pfq_skb_pool	rx_pool;
+
+} ____cacheline_aligned;
+
 
 #endif /* PF_Q_PERCPU_H */
 

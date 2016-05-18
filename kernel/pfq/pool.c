@@ -24,6 +24,7 @@
 #include <engine/percpu.h>
 #include <engine/global.h>
 
+#include <pfq/percpu.h>
 #include <pfq/pool.h>
 #include <pfq/printk.h>
 

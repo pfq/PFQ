@@ -281,7 +281,7 @@ static struct
 	{.symb = "CIDR",    .size = sizeof(struct CIDR)},
 	{.symb = "String",  .size = 0},
 	{.symb = "Action",  .size = 0},
-	{.symb = "SkBuff",  .size = 0}
+	{.symb = "Qbuff",  .size = 0}
 };
 
 

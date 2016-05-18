@@ -28,9 +28,9 @@
 #include <pfq/timer.h>
 #include <pfq/printk.h>
 #include <pfq/pool.h>
-#include <pfq/GC.h>
 
 #include <engine/define.h>
+#include <engine/GC.h>
 
 
 int  pfq_percpu_alloc(void);
@@ -42,16 +42,6 @@ struct pfq_percpu_sock
         unsigned long           eligible_mask;
 	unsigned long           mask[Q_MAX_SOCK_MASK];
         int                     cnt;
-
-} ____cacheline_aligned;
-
-
-struct pfq_percpu_pool
-{
-        atomic_t                enable;
-
-	struct pfq_skb_pool	tx_pool;
-        struct pfq_skb_pool	rx_pool;
 
 } ____cacheline_aligned;
 

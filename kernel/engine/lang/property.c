@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#include <engine/lang/skbuff.h>
 #include <engine/lang/module.h>
+#include <engine/lang/qbuff.h>
 
 #include <pfq/nethdr.h>
 
@@ -31,12 +31,12 @@
  ****************************************************************/
 
 static uint64_t
-ip_tos(arguments_t args, SkBuff skb)
+ip_tos(arguments_t args, struct qbuff * buff)
 {
 	struct iphdr _iph;
 	const struct iphdr *ip;
 
-	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	ip = qbuff_ip_header_pointer(buff, 0, sizeof(_iph), &_iph);
 	if (ip == NULL)
 		return NOTHING;
 
@@ -45,12 +45,12 @@ ip_tos(arguments_t args, SkBuff skb)
 
 
 static uint64_t
-ip_tot_len(arguments_t args, SkBuff skb)
+ip_tot_len(arguments_t args, struct qbuff * buff)
 {
 	struct iphdr _iph;
 	const struct iphdr *ip;
 
-	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	ip = qbuff_ip_header_pointer(buff, 0, sizeof(_iph), &_iph);
 	if (ip == NULL)
 		return NOTHING;
 
@@ -59,12 +59,12 @@ ip_tot_len(arguments_t args, SkBuff skb)
 
 
 static uint64_t
-ip_id(arguments_t args, SkBuff skb)
+ip_id(arguments_t args, struct qbuff * buff)
 {
 	struct iphdr _iph;
 	const struct iphdr *ip;
 
-	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	ip = qbuff_ip_header_pointer(buff, 0, sizeof(_iph), &_iph);
 	if (ip == NULL)
 		return NOTHING;
 
@@ -73,12 +73,12 @@ ip_id(arguments_t args, SkBuff skb)
 
 
 static uint64_t
-ip_ttl(arguments_t args, SkBuff skb)
+ip_ttl(arguments_t args, struct qbuff * buff)
 {
 	struct iphdr _iph;
 	const struct iphdr *ip;
 
-	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	ip = qbuff_ip_header_pointer(buff, 0, sizeof(_iph), &_iph);
 	if (ip == NULL)
 		return NOTHING;
 
@@ -86,12 +86,12 @@ ip_ttl(arguments_t args, SkBuff skb)
 }
 
 static uint64_t
-ip_frag(arguments_t args, SkBuff skb)
+ip_frag(arguments_t args, struct qbuff * buff)
 {
 	struct iphdr _iph;
 	const struct iphdr *ip;
 
-	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	ip = qbuff_ip_header_pointer(buff, 0, sizeof(_iph), &_iph);
 	if (ip == NULL)
 		return NOTHING;
 
@@ -104,7 +104,7 @@ ip_frag(arguments_t args, SkBuff skb)
  ****************************************************************/
 
 static uint64_t
-tcp_source(arguments_t args, SkBuff skb)
+tcp_source(arguments_t args, struct qbuff * buff)
 {
 	struct iphdr _iph;
 	const struct iphdr *ip;
@@ -112,14 +112,14 @@ tcp_source(arguments_t args, SkBuff skb)
 	struct tcphdr _tcp;
 	const struct tcphdr *tcp;
 
-	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	ip = qbuff_ip_header_pointer(buff, 0, sizeof(_iph), &_iph);
 	if (ip == NULL)
 		return NOTHING;
 
 	if (ip->protocol != IPPROTO_TCP)
 		return NOTHING;
 
-	tcp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(_tcp), &_tcp);
+	tcp = qbuff_ip_header_pointer(buff, (ip->ihl<<2), sizeof(_tcp), &_tcp);
 	if (tcp == NULL)
 		return NOTHING;
 
@@ -128,7 +128,7 @@ tcp_source(arguments_t args, SkBuff skb)
 
 
 static uint64_t
-tcp_dest(arguments_t args, SkBuff skb)
+tcp_dest(arguments_t args, struct qbuff * buff)
 {
 	struct iphdr _iph;
 	const struct iphdr *ip;
@@ -136,14 +136,14 @@ tcp_dest(arguments_t args, SkBuff skb)
 	struct tcphdr _tcp;
 	const struct tcphdr *tcp;
 
-	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	ip = qbuff_ip_header_pointer(buff, 0, sizeof(_iph), &_iph);
 	if (ip == NULL)
 		return NOTHING;
 
 	if (ip->protocol != IPPROTO_TCP)
 		return NOTHING;
 
-	tcp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(_tcp), &_tcp);
+	tcp = qbuff_ip_header_pointer(buff, (ip->ihl<<2), sizeof(_tcp), &_tcp);
 	if (tcp == NULL)
 		return NOTHING;
 
@@ -151,7 +151,7 @@ tcp_dest(arguments_t args, SkBuff skb)
 }
 
 static uint64_t
-tcp_hdrlen_(arguments_t args, SkBuff skb)
+tcp_hdrlen_(arguments_t args, struct qbuff * buff)
 {
 	struct iphdr _iph;
 	const struct iphdr *ip;
@@ -159,14 +159,14 @@ tcp_hdrlen_(arguments_t args, SkBuff skb)
 	struct tcphdr _tcp;
 	const struct tcphdr *tcp;
 
-	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	ip = qbuff_ip_header_pointer(buff, 0, sizeof(_iph), &_iph);
 	if (ip == NULL)
 		return NOTHING;
 
 	if (ip->protocol != IPPROTO_TCP)
 		return NOTHING;
 
-	tcp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(_tcp), &_tcp);
+	tcp = qbuff_ip_header_pointer(buff, (ip->ihl<<2), sizeof(_tcp), &_tcp);
 	if (tcp == NULL)
 		return NOTHING;
 
@@ -178,7 +178,7 @@ tcp_hdrlen_(arguments_t args, SkBuff skb)
  ****************************************************************/
 
 static uint64_t
-udp_source(arguments_t args, SkBuff skb)
+udp_source(arguments_t args, struct qbuff * buff)
 {
 	struct iphdr _iph;
 	const struct iphdr *ip;
@@ -186,14 +186,14 @@ udp_source(arguments_t args, SkBuff skb)
 	struct udphdr _udp;
 	const struct udphdr *udp;
 
-	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	ip = qbuff_ip_header_pointer(buff, 0, sizeof(_iph), &_iph);
 	if (ip == NULL)
 		return NOTHING;
 
 	if (ip->protocol != IPPROTO_TCP)
 		return NOTHING;
 
-	udp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(_udp), &_udp);
+	udp = qbuff_ip_header_pointer(buff, (ip->ihl<<2), sizeof(_udp), &_udp);
 	if (udp == NULL)
 		return NOTHING;
 
@@ -202,7 +202,7 @@ udp_source(arguments_t args, SkBuff skb)
 
 
 static uint64_t
-udp_dest(arguments_t args, SkBuff skb)
+udp_dest(arguments_t args, struct qbuff * buff)
 {
 	struct iphdr _iph;
 	const struct iphdr *ip;
@@ -210,14 +210,14 @@ udp_dest(arguments_t args, SkBuff skb)
 	struct udphdr _udp;
 	const struct udphdr *udp;
 
-	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	ip = qbuff_ip_header_pointer(buff, 0, sizeof(_iph), &_iph);
 	if (ip == NULL)
 		return NOTHING;
 
 	if (ip->protocol != IPPROTO_TCP)
 		return NOTHING;
 
-	udp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(_udp), &_udp);
+	udp = qbuff_ip_header_pointer(buff, (ip->ihl<<2), sizeof(_udp), &_udp);
 	if (udp == NULL)
 		return NOTHING;
 
@@ -225,7 +225,7 @@ udp_dest(arguments_t args, SkBuff skb)
 }
 
 static uint64_t
-udp_len(arguments_t args, SkBuff skb)
+udp_len(arguments_t args, struct qbuff * buff)
 {
 	struct iphdr _iph;
 	const struct iphdr *ip;
@@ -233,14 +233,14 @@ udp_len(arguments_t args, SkBuff skb)
 	struct udphdr _udp;
 	const struct udphdr *udp;
 
-	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	ip = qbuff_ip_header_pointer(buff, 0, sizeof(_iph), &_iph);
 	if (ip == NULL)
 		return NOTHING;
 
 	if (ip->protocol != IPPROTO_TCP)
 		return NOTHING;
 
-	udp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(_udp), &_udp);
+	udp = qbuff_ip_header_pointer(buff, (ip->ihl<<2), sizeof(_udp), &_udp);
 	if (udp == NULL)
 		return NOTHING;
 
@@ -249,7 +249,7 @@ udp_len(arguments_t args, SkBuff skb)
 
 
 static uint64_t
-icmp_type(arguments_t args, SkBuff skb)
+icmp_type(arguments_t args, struct qbuff * buff)
 {
 	struct iphdr _iph;
 	const struct iphdr *ip;
@@ -257,14 +257,14 @@ icmp_type(arguments_t args, SkBuff skb)
 	struct icmphdr _icmp;
 	const struct icmphdr *icmp;
 
-	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	ip = qbuff_ip_header_pointer(buff, 0, sizeof(_iph), &_iph);
 	if (ip == NULL)
 		return NOTHING;
 
 	if (ip->protocol != IPPROTO_ICMP)
 		return NOTHING;
 
-	icmp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(_icmp), &_icmp);
+	icmp = qbuff_ip_header_pointer(buff, (ip->ihl<<2), sizeof(_icmp), &_icmp);
 	if (icmp == NULL)
 		return NOTHING;
 
@@ -273,7 +273,7 @@ icmp_type(arguments_t args, SkBuff skb)
 
 
 static uint64_t
-icmp_code(arguments_t args, SkBuff skb)
+icmp_code(arguments_t args, struct qbuff * buff)
 {
 	struct iphdr _iph;
 	const struct iphdr *ip;
@@ -281,14 +281,14 @@ icmp_code(arguments_t args, SkBuff skb)
 	struct icmphdr _icmp;
 	const struct icmphdr *icmp;
 
-	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	ip = qbuff_ip_header_pointer(buff, 0, sizeof(_iph), &_iph);
 	if (ip == NULL)
 		return NOTHING;
 
 	if (ip->protocol != IPPROTO_ICMP)
 		return NOTHING;
 
-	icmp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(_icmp), &_icmp);
+	icmp = qbuff_ip_header_pointer(buff, (ip->ihl<<2), sizeof(_icmp), &_icmp);
 	if (icmp == NULL)
 		return NOTHING;
 
@@ -297,40 +297,40 @@ icmp_code(arguments_t args, SkBuff skb)
 
 
 static uint64_t
-__get_mark(arguments_t args, SkBuff skb)
+__get_mark(arguments_t args, struct qbuff * buff)
 {
-	return JUST(get_mark(skb));
+	return JUST(get_mark(buff));
 }
 
 
 static uint64_t
-__get_state(arguments_t args, SkBuff skb)
+__get_state(arguments_t args, struct qbuff * buff)
 {
-	return JUST(get_state(skb));
+	return JUST(get_state(buff));
 }
 
 
 struct pfq_lang_function_descr property_functions[] = {
 
-	{ "ip_tos",	 "SkBuff -> Word64", ip_tos		},
-	{ "ip_tot_len",  "SkBuff -> Word64", ip_tot_len		},
-	{ "ip_id",	 "SkBuff -> Word64", ip_id		},
-	{ "ip_frag",	 "SkBuff -> Word64", ip_frag		},
-	{ "ip_ttl",	 "SkBuff -> Word64", ip_ttl		},
+	{ "ip_tos",	 "Qbuff -> Word64", ip_tos		},
+	{ "ip_tot_len",  "Qbuff -> Word64", ip_tot_len		},
+	{ "ip_id",	 "Qbuff -> Word64", ip_id		},
+	{ "ip_frag",	 "Qbuff -> Word64", ip_frag		},
+	{ "ip_ttl",	 "Qbuff -> Word64", ip_ttl		},
 
-	{ "tcp_source",  "SkBuff -> Word64", tcp_source		},
-	{ "tcp_dest",	 "SkBuff -> Word64", tcp_dest		},
-	{ "tcp_hdrlen",  "SkBuff -> Word64", tcp_hdrlen_	},
+	{ "tcp_source",  "Qbuff -> Word64", tcp_source		},
+	{ "tcp_dest",	 "Qbuff -> Word64", tcp_dest		},
+	{ "tcp_hdrlen",  "Qbuff -> Word64", tcp_hdrlen_	},
 
-	{ "udp_source",  "SkBuff -> Word64", udp_source		},
-	{ "udp_dest",	 "SkBuff -> Word64", udp_dest		},
-	{ "udp_len",	 "SkBuff -> Word64", udp_len		},
+	{ "udp_source",  "Qbuff -> Word64", udp_source		},
+	{ "udp_dest",	 "Qbuff -> Word64", udp_dest		},
+	{ "udp_len",	 "Qbuff -> Word64", udp_len		},
 
-	{ "icmp_type",   "SkBuff -> Word64", icmp_type		},
-	{ "icmp_code",   "SkBuff -> Word64", icmp_code		},
+	{ "icmp_type",   "Qbuff -> Word64", icmp_type		},
+	{ "icmp_code",   "Qbuff -> Word64", icmp_code		},
 
-	{ "get_mark",	 "SkBuff -> Word64", __get_mark		},
-	{ "get_state",	 "SkBuff -> Word64", __get_state	},
+	{ "get_mark",	 "Qbuff -> Word64", __get_mark		},
+	{ "get_state",	 "Qbuff -> Word64", __get_state	},
 
 	{ NULL }};
 

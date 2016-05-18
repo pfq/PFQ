@@ -39,6 +39,7 @@
 
 #include <pfq/pool.h>
 #include <pfq/sparse.h>
+#include <pfq/percpu.h>
 
 extern int skb_pool_size;
 

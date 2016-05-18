@@ -138,15 +138,15 @@ strdup_user(const char __user *str)
 }
 
 
-static inline ActionSkBuff
-pfq_lang_bind(SkBuff skb, struct pfq_lang_functional_node *node)
+static inline ActionQbuff
+pfq_lang_bind(struct qbuff * buff, struct pfq_lang_functional_node *node)
 {
-	return EVAL_FUNCTION((function_t){&node->fun}, skb);
+	return EVAL_FUNCTION((function_t){&node->fun}, buff);
 }
 
 
-ActionSkBuff
-pfq_lang_run(SkBuff skb, struct pfq_lang_computation_tree *prg)
+ActionQbuff
+pfq_lang_run(struct qbuff * buff, struct pfq_lang_computation_tree *prg)
 {
 #ifdef PFQ_LANG_PROFILE
 	static uint64_t nrun, total;
@@ -156,12 +156,12 @@ pfq_lang_run(SkBuff skb, struct pfq_lang_computation_tree *prg)
 #ifdef PFQ_LANG_PROFILE
 	start = get_cycles();
 
-	skb =
+	buff =
 #else
 	return
 #endif
 
-	pfq_lang_bind(skb, prg->entry_point);
+	pfq_lang_bind(buff, prg->entry_point);
 
 #ifdef PFQ_LANG_PROFILE
 	stop = get_cycles();
@@ -170,7 +170,7 @@ pfq_lang_run(SkBuff skb, struct pfq_lang_computation_tree *prg)
 	if ((nrun++ % 1048576) == 0)
 		printk(KERN_INFO "[pfq-lang] run: %llu_tsc.\n", total/nrun);
 
-	return skb;
+	return buff;
 #endif
 
 }
@@ -370,7 +370,7 @@ pfq_lang_check_computation_descr(struct pfq_lang_computation_descr const *descr)
 
 		if (n == entry_point || fun->next != -1 ) {  /* next != -1 means monadic function! */
 
-			if (!function_signature_match(fun, make_string_view("SkBuff -> Action SkBuff"), n)) {
+			if (!function_signature_match(fun, make_string_view("Qbuff -> Action Qbuff"), n)) {
 				printk(KERN_INFO "[PFQ] function[%zu]: %s: invalid signature!\n", n, signature);
 				return -EPERM;
 			}

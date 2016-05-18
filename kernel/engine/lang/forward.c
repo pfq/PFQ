@@ -25,7 +25,6 @@
 #include <engine/lang/forward.h>
 #include <engine/global.h>
 
-#include <pfq/skbuff.h>
 #include <pfq/io.h>
 
 
@@ -97,13 +96,13 @@ link_fini(arguments_t args)
 }
 
 
-static ActionSkBuff
-forwardIO(arguments_t args, SkBuff skb)
+static ActionQbuff
+forwardIO(arguments_t args, struct qbuff * buff)
 {
 	struct net_device *dev = GET_ARG(struct net_device *, args);
-	struct sk_buff *nskb;
+	struct qbuff *nbuff;
 
-	pfq_group_stats_t *stats = get_group_stats(skb);
+	pfq_group_stats_t *stats = get_group_stats(buff);
 
 	if (dev == NULL) {
                 if (printk_ratelimit())
@@ -111,19 +110,19 @@ forwardIO(arguments_t args, SkBuff skb)
 		sparse_inc(global_stats, disc);
 		local_inc(&stats->disc);
 
-                return Pass(skb);
+                return Pass(buff);
 	}
 
-	nskb = skb_clone(PFQ_SKB(skb), GFP_ATOMIC);
-	if (!nskb) {
+	nbuff = qbuff_clone(buff);
+	if (!nbuff) {
                 if (printk_ratelimit())
 			printk(KERN_INFO "[pfq-lang] forward pfq_xmit %s: no memory!\n", dev->name);
 		sparse_inc(global_stats, disc);
 		local_inc(&stats->disc);
-		return Pass(skb);
+		return Pass(buff);
 	}
 
-	if (pfq_xmit(nskb, dev, nskb->queue_mapping, 0) != 1) {
+	if (pfq_xmit(nbuff, dev, qbuff_get_queue_mapping(nbuff), 0) != 1) {
                 if (printk_ratelimit())
                         printk(KERN_INFO "[pfq-lang] forward pfq_xmit: error on device %s!\n", dev->name);
 
@@ -135,12 +134,12 @@ forwardIO(arguments_t args, SkBuff skb)
 		local_inc(&stats->frwd);
 	}
 
-	return Pass(skb);
+	return Pass(buff);
 }
 
 
-static ActionSkBuff
-forward(arguments_t args, SkBuff skb)
+static ActionQbuff
+forward(arguments_t args, struct qbuff * buff)
 {
 	struct net_device *dev = GET_ARG(struct net_device *, args);
         pfq_group_stats_t *stats;
@@ -148,59 +147,60 @@ forward(arguments_t args, SkBuff skb)
 	if (dev == NULL) {
                 if (printk_ratelimit())
                         printk(KERN_INFO "[pfq-lang] forward: device error!\n");
-                return Pass(skb);
+                return Pass(buff);
 	}
 
-	pfq_lazy_xmit(skb, dev, skb->queue_mapping);
+	pfq_lazy_xmit(buff, dev, qbuff_get_queue_mapping(buff));
 
-	stats = get_group_stats(skb);
+	stats = get_group_stats(buff);
 	local_inc(&stats->frwd);
 
-	return Pass(skb);
+	return Pass(buff);
 }
 
 
-static ActionSkBuff
-bridge(arguments_t args, SkBuff skb)
+static ActionQbuff
+bridge(arguments_t args, struct qbuff * buff)
 {
 	struct net_device *dev = GET_ARG(struct net_device *, args);
 
 	if (dev == NULL) {
                 if (printk_ratelimit())
                         printk(KERN_INFO "[pfq-lang] bridge: device error!\n");
-                return Drop(skb);
+                return Drop(buff);
 	}
 
-	pfq_lazy_xmit(skb, dev, skb->queue_mapping);
+	pfq_lazy_xmit(buff, dev, qbuff_get_queue_mapping(buff));
 
-	local_inc(&get_group_stats(skb)->frwd);
+	local_inc(&get_group_stats(buff)->frwd);
 
-	return Drop(skb);
+	return Drop(buff);
 }
 
 
-static ActionSkBuff
-link(arguments_t args, SkBuff skb)
+static ActionQbuff
+link(arguments_t args, struct qbuff * buff)
 {
         struct net_device **dev = GET_ARRAY(struct net_device *,args);
 	size_t n, ndev = LEN_ARRAY(args);
-        pfq_group_stats_t *stats = get_group_stats(skb);
+
+        pfq_group_stats_t *stats = get_group_stats(buff);
 
 	for(n = 0; n < ndev; n++)
 	{
-		if (dev[n] != NULL && skb->dev != dev[n])
+		if (dev[n] != NULL && qbuff_device(buff) != dev[n])
 		{
-			pfq_lazy_xmit(skb, dev[n], skb->queue_mapping);
+			pfq_lazy_xmit(buff, dev[n], qbuff_get_queue_mapping(buff));
 			local_inc(&stats->frwd);
 		}
 	}
 
-	return Pass(skb);
+	return Pass(buff);
 }
 
 
-static ActionSkBuff
-tap(arguments_t args, SkBuff skb)
+static ActionQbuff
+tap(arguments_t args, struct qbuff * buff)
 {
 	struct net_device *dev = GET_ARG(struct net_device *, args);
 	predicate_t pred_  = GET_ARG_1(predicate_t, args);
@@ -208,22 +208,22 @@ tap(arguments_t args, SkBuff skb)
 	if (dev == NULL) {
                 if (printk_ratelimit())
                         printk(KERN_INFO "[pfq-lang] tap: device error!\n");
-                return Drop(skb);
+                return Drop(buff);
 	}
 
-        if (EVAL_PREDICATE(pred_, skb))
-		return Pass(skb);
+        if (EVAL_PREDICATE(pred_, buff))
+		return Pass(buff);
 
-	pfq_lazy_xmit(skb, dev, skb->queue_mapping);
+	pfq_lazy_xmit(buff, dev, qbuff_get_queue_mapping(buff));
 
-	local_inc(&get_group_stats(skb)->frwd);
+	local_inc(&get_group_stats(buff)->frwd);
 
-	return Drop(skb);
+	return Drop(buff);
 }
 
 
-static ActionSkBuff
-tee(arguments_t args, SkBuff skb)
+static ActionQbuff
+tee(arguments_t args, struct qbuff * buff)
 {
 	struct net_device *dev = GET_ARG(struct net_device *, args);
 	predicate_t pred_  = GET_ARG_1(predicate_t, args);
@@ -231,22 +231,22 @@ tee(arguments_t args, SkBuff skb)
 	if (dev == NULL) {
                 if (printk_ratelimit())
                         printk(KERN_INFO "[pfq-lang] tee: device error!\n");
-                return Drop(skb);
+                return Drop(buff);
 	}
 
-	pfq_lazy_xmit(skb, dev, skb->queue_mapping);
+	pfq_lazy_xmit(buff, dev, qbuff_get_queue_mapping(buff));
 
-	local_inc(&get_group_stats(skb)->frwd);
+	local_inc(&get_group_stats(buff)->frwd);
 
-        if (EVAL_PREDICATE(pred_, skb))
-		return Pass(skb);
+        if (EVAL_PREDICATE(pred_, buff))
+		return Pass(buff);
 
-	return Drop(skb);
+	return Drop(buff);
 }
 
 
-static ActionSkBuff
-forward_if_kernel(arguments_t args, SkBuff b)
+static ActionQbuff
+forward_if_kernel(arguments_t args, struct qbuff * b)
 {
         predicate_t pred_ = GET_ARG_0(predicate_t, args);
         if (EVAL_PREDICATE(pred_, b))
@@ -255,8 +255,8 @@ forward_if_kernel(arguments_t args, SkBuff b)
 }
 
 
-static ActionSkBuff
-detour_if_kernel(arguments_t args, SkBuff b)
+static ActionQbuff
+detour_if_kernel(arguments_t args, struct qbuff * b)
 {
         predicate_t pred_ = GET_ARG_0(predicate_t, args);
         if (EVAL_PREDICATE(pred_, b))
@@ -268,24 +268,24 @@ detour_if_kernel(arguments_t args, SkBuff b)
 
 struct pfq_lang_function_descr forward_functions[] = {
 
-        { "drop",       "SkBuff -> Action SkBuff",		forward_drop		},
-        { "broadcast",  "SkBuff -> Action SkBuff",		forward_broadcast	},
-        { "classify",	"CInt -> SkBuff -> Action SkBuff",	forward_class		},
+        { "drop",       "Qbuff -> Action Qbuff",		forward_drop		},
+        { "broadcast",  "Qbuff -> Action Qbuff",		forward_broadcast	},
+        { "classify",	"CInt -> Qbuff -> Action Qbuff",	forward_class		},
 
-        { "kernel",	"SkBuff -> Action SkBuff",		forward_kernel		},
-        { "detour",	"SkBuff -> Action SkBuff",		detour_kernel		},
+        { "kernel",	"Qbuff -> Action Qbuff",		forward_kernel		},
+        { "detour",	"Qbuff -> Action Qbuff",		detour_kernel		},
 
-        { "kernel_if",	"(SkBuff -> Bool) -> SkBuff -> Action SkBuff",	forward_if_kernel	},
-        { "detour_if",	"(SkBuff -> Bool) -> SkBuff -> Action SkBuff",	detour_if_kernel	},
+        { "kernel_if",	"(Qbuff -> Bool) -> Qbuff -> Action Qbuff",	forward_if_kernel	},
+        { "detour_if",	"(Qbuff -> Bool) -> Qbuff -> Action Qbuff",	detour_if_kernel	},
 
 
-	{ "forwardIO",  "String -> SkBuff -> Action SkBuff",			 forwardIO, forward_init, forward_fini },
-	{ "forward",    "String -> SkBuff -> Action SkBuff",			 forward,   forward_init, forward_fini },
-	{ "link",	"[String] -> SkBuff -> Action SkBuff",			 link,	    link_init,    link_fini    },
+	{ "forwardIO",  "String -> Qbuff -> Action Qbuff",			 forwardIO, forward_init, forward_fini },
+	{ "forward",    "String -> Qbuff -> Action Qbuff",			 forward,   forward_init, forward_fini },
+	{ "link",	"[String] -> Qbuff -> Action Qbuff",			 link,	    link_init,    link_fini    },
 
-	{ "bridge",     "String -> SkBuff -> Action SkBuff",			 bridge,    forward_init, forward_fini },
-	{ "tee",	"String -> (SkBuff -> Bool) -> SkBuff -> Action SkBuff", tee,	    forward_init, forward_fini },
-	{ "tap",	"String -> (SkBuff -> Bool) -> SkBuff -> Action SkBuff", tap,	    forward_init, forward_fini },
+	{ "bridge",     "String -> Qbuff -> Action Qbuff",			 bridge,    forward_init, forward_fini },
+	{ "tee",	"String -> (Qbuff -> Bool) -> Qbuff -> Action Qbuff", tee,	    forward_init, forward_fini },
+	{ "tap",	"String -> (Qbuff -> Bool) -> Qbuff -> Action Qbuff", tap,	    forward_init, forward_fini },
 
         { NULL }};
 

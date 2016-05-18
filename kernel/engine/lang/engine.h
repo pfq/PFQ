@@ -77,7 +77,7 @@ extern size_t pfq_lang_number_of_arguments(struct pfq_lang_functional_descr cons
 
 extern char * strdup_user(const char __user *str);
 
-extern ActionSkBuff pfq_lang_run(SkBuff, struct pfq_lang_computation_tree *prg);
+extern ActionQbuff pfq_lang_run(struct qbuff *, struct pfq_lang_computation_tree *prg);
 
 
 #endif /* PFQ_LANG_ENGINE_H */

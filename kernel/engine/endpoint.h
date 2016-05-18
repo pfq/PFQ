@@ -24,15 +24,15 @@
 #ifndef Q_ENGINE_ENDPOINT_H
 #define Q_ENGINE_ENDPOINT_H
 
+#include <engine/qbuff.h>
+#include <engine/define.h>
+
 #include <pfq/types.h>
 #include <pfq/kcompat.h>
 
-#include <engine/define.h>
-
-
 struct pfq_sock;
-struct pfq_skbuff_GC_queue;
 struct net_device;
+struct qbuff;
 
 enum pfq_endpoint_type
 {
@@ -43,8 +43,8 @@ enum pfq_endpoint_type
 
 struct pfq_endpoint_info
 {
-	struct net_device * dev[Q_GC_LOG_QUEUE_LEN];
-	size_t cnt [Q_GC_LOG_QUEUE_LEN];
+	struct net_device * dev[Q_BUFF_LOG_LEN];
+	size_t cnt [Q_BUFF_LOG_LEN];
 	size_t cnt_total;
 	size_t num;
 };
@@ -53,9 +53,9 @@ struct pfq_endpoint_info
 void add_dev_to_endpoints(struct net_device *dev, struct pfq_endpoint_info *ts);
 
 
-extern size_t copy_to_endpoint_skbs(struct pfq_sock *so,
-				    struct pfq_skbuff_GC_queue *pool,
-				    unsigned long long mask,
-				    int cpu, pfq_gid_t gid);
+extern size_t copy_to_endpoint_qbuffs(struct pfq_sock *so,
+				      struct pfq_qbuff_refs *buffs,
+				      unsigned long long mask,
+				      int cpu, pfq_gid_t gid);
 
 #endif /* Q_ENGINE_ENDPOINT_H */

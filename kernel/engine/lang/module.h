@@ -26,17 +26,17 @@
 
 #include <engine/lang/monad.h>
 #include <engine/lang/maybe.h>
+#include <engine/GC.h>
 
 #include <pfq/sparse.h>
 #include <pfq/kcompat.h>
-#include <pfq/GC.h>
 
 
 #define ARGS_TYPE(a)		__builtin_choose_expr(__builtin_types_compatible_p(arguments_t, typeof(a)), a, (void)0)
 
-#define EVAL_FUNCTION(f,skb)    eval_function(f, skb)
-#define EVAL_PROPERTY(f, skb)	((property_ptr_t )f.fun->run)(f.fun, skb)
-#define EVAL_PREDICATE(f,skb)	((predicate_ptr_t)f.fun->run)(f.fun, skb)
+#define EVAL_FUNCTION(f,buff)    eval_function(f, buff)
+#define EVAL_PROPERTY(f, buff)	((property_ptr_t )f.fun->run)(f.fun, buff)
+#define EVAL_PREDICATE(f,buff)	((predicate_ptr_t)f.fun->run)(f.fun, buff)
 
 #define GET_PTR_0(type,a)	__builtin_choose_expr(sizeof(type) <= sizeof(uintptr_t), (type *)&ARGS_TYPE(a)->arg[0].value, (void *)ARGS_TYPE(a)->arg[0].value)
 #define GET_PTR_1(type,a)	__builtin_choose_expr(sizeof(type) <= sizeof(uintptr_t), (type *)&ARGS_TYPE(a)->arg[1].value, (void *)ARGS_TYPE(a)->arg[1].value)
@@ -121,9 +121,9 @@ typedef struct pfq_lang_functional * arguments_t;
 /**** function prototypes ****/
 
 
-typedef ActionSkBuff  (*function_ptr_t) (arguments_t, SkBuff);
-typedef uint64_t      (*property_ptr_t) (arguments_t, SkBuff);
-typedef bool	      (*predicate_ptr_t)(arguments_t, SkBuff);
+typedef ActionQbuff  (*function_ptr_t) (arguments_t, struct qbuff *);
+typedef uint64_t      (*property_ptr_t) (arguments_t, struct qbuff *);
+typedef bool	      (*predicate_ptr_t)(arguments_t, struct qbuff *);
 typedef int	      (*init_ptr_t)	(arguments_t);
 typedef int	      (*fini_ptr_t)	(arguments_t);
 
@@ -184,7 +184,6 @@ struct pfq_lang_function_descr
 static inline bool
 is_drop(fanout_t a)
 {
-	PFQ_BUILD_BUG_ON_MSG(sizeof(struct pfq_cb) > sizeof(((struct sk_buff *)0)->cb), "pfq control buffer overflow");
 	return a.type == fanout_drop;
 }
 
@@ -215,30 +214,30 @@ is_double_steering(fanout_t a)
 
 
 static inline
-bool fwd_to_kernel(struct sk_buff *skb)
+bool fwd_to_kernel(struct qbuff *buff)
 {
-	return PFQ_CB(skb)->log->to_kernel;
+	return buff->log->to_kernel;
 }
 
 
-static inline ActionSkBuff
-eval_function(function_t f, SkBuff skb)
+static inline ActionQbuff
+eval_function(function_t f, struct qbuff * buff)
 {
 	struct pfq_lang_functional *fun = f.fun;
 	while (fun) {
 
                 fanout_t *a;
-		skb =  ((function_ptr_t)fun->run)(fun, skb).skb;
-		if (skb == NULL)
-			return Pass(skb);
+		buff =  ((function_ptr_t)fun->run)(fun, buff).qbuff;
+		if (buff == NULL)
+			return Pass(buff);
 
-                a = &PFQ_CB(skb)->monad->fanout;
+                a = &buff->monad->fanout;
                 if (is_drop(*a))
-                        return Pass(skb);
+                        return Pass(buff);
                 fun = fun->next;
 	}
 
-	return Pass(skb);
+	return Pass(buff);
 }
 
 

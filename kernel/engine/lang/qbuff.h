@@ -21,20 +21,19 @@
  *
  ****************************************************************/
 
-#ifndef PFQ_LANG_SKBUFF_H
-#define PFQ_LANG_SKBUFF_H
+#ifndef PFQ_LANG_QBUFF_H
+#define PFQ_LANG_QBUFF_H
 
 
 #include <engine/lang/monad.h>
 
-#include <pfq/skbuff.h>
 #include <pfq/nethdr.h>
 
 
 static inline int
-next_ip_offset(struct sk_buff const *skb, int offset, int tproto, int *proto)
+next_ip_offset(struct qbuff const *buff, int offset, int tproto, int *proto)
 {
-	(void)skb;
+	(void)buff;
 
 	switch(tproto)
 	{
@@ -53,22 +52,22 @@ next_ip_offset(struct sk_buff const *skb, int offset, int tproto, int *proto)
 
 
 static inline int
-skb_next_ip_offset(struct sk_buff *skb, int offset, int *proto)
+qbuff_next_ip_offset(struct qbuff *buff, int offset, int *proto)
 {
 	switch(*proto)
 	{
 	case IPPROTO_NONE: {
 
-		if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
+		if (qbuff_eth_hdr(buff)->h_proto == __constant_htons(ETH_P_IP))
 		{
 			*proto = IPPROTO_IP;
-			return skb->mac_len;
+			return qbuff_maclen(buff);
 		}
 
-		if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IPV6))
+		if (qbuff_eth_hdr(buff)->h_proto == __constant_htons(ETH_P_IPV6))
 		{
 			*proto = IPPROTO_IPV6;
-			return skb->mac_len;
+			return qbuff_maclen(buff);
 		}
 
 		return -1;
@@ -79,11 +78,11 @@ skb_next_ip_offset(struct sk_buff *skb, int offset, int *proto)
 		struct iphdr _iph;
 		const struct iphdr *ip;
 
-		ip = skb_header_pointer(PFQ_SKB(skb), offset, sizeof(_iph), &_iph);
+		ip = qbuff_header_pointer(buff, offset, sizeof(_iph), &_iph);
 		if (ip == NULL)
 			return -1;
 
-                return next_ip_offset(PFQ_SKB(skb), offset + (ip->ihl<<2), ip->protocol, proto);
+                return next_ip_offset(buff, offset + (ip->ihl<<2), ip->protocol, proto);
 
 	} break;
 	}
@@ -93,73 +92,66 @@ skb_next_ip_offset(struct sk_buff *skb, int offset, int *proto)
 
 
 static inline const void *
-skb_generic_ip_header_pointer(SkBuff skb, int ip_proto, int offset, int len, void *buffer)
+qbuff_generic_ip_header_pointer(struct qbuff * buff, int ip_proto, int offset, int len, void *buffer)
 {
-	int ipoff = PFQ_CB(skb)->monad->ipoff;
+	int ipoff = buff->monad->ipoff;
 
 	if (unlikely(ipoff < 0))
 		return NULL;
 
-	if (PFQ_CB(skb)->monad->ipproto == IPPROTO_NONE)
+	if (buff->monad->ipproto == IPPROTO_NONE)
 	{
 		int n = 0;
 		do
 		{
-			ipoff = skb_next_ip_offset(PFQ_SKB(skb), ipoff, &PFQ_CB(skb)->monad->ipproto);
+			ipoff = qbuff_next_ip_offset(buff, ipoff, &buff->monad->ipproto);
 			if (ipoff < 0) {
-				PFQ_CB(skb)->monad->ipproto = IPPROTO_NONE;
-				PFQ_CB(skb)->monad->ipoff = -1;
+				buff->monad->ipproto = IPPROTO_NONE;
+				buff->monad->ipoff = -1;
 				return NULL;
 			}
 		}
-		while (n++ < PFQ_CB(skb)->monad->shift);
+		while (n++ < buff->monad->shift);
 
-		PFQ_CB(skb)->monad->ipoff = ipoff;
+		buff->monad->ipoff = ipoff;
 	}
 
-	if (PFQ_CB(skb)->monad->ipproto != ip_proto)
+	if (buff->monad->ipproto != ip_proto)
 		return NULL;
 
-	return skb_header_pointer(PFQ_SKB(skb), PFQ_CB(skb)->monad->ipoff + offset, len, buffer);
+	return qbuff_header_pointer(buff, buff->monad->ipoff + offset, len, buffer);
 }
 
-#define skb_ip_header_pointer(skb, offset, len, buffer) skb_generic_ip_header_pointer(skb, IPPROTO_IP, offset, len, buffer)
+#define qbuff_ip_header_pointer(buff, offset, len, buffer)  qbuff_generic_ip_header_pointer(buff, IPPROTO_IP, offset, len, buffer)
 
 
 static inline int
-skb_ip_version(SkBuff skb)
+qbuff_ip_version(struct qbuff * buff)
 {
-	if (unlikely(PFQ_CB(skb)->monad->ipoff < 0))
+	if (unlikely(buff->monad->ipoff < 0))
 		return 0;
 
-	if (PFQ_CB(skb)->monad->ipproto == IPPROTO_NONE)
+	if (buff->monad->ipproto == IPPROTO_NONE)
 	{
-		skb_ip_header_pointer(skb, 0, 0, NULL);
+		qbuff_ip_header_pointer(buff, 0, 0, NULL);
 	}
 
-	return PFQ_CB(skb)->monad->ipproto == IPPROTO_IP   ? 4 :
-	       PFQ_CB(skb)->monad->ipproto == IPPROTO_IPV6 ? 6 : 0;
+	return buff->monad->ipproto == IPPROTO_IP   ? 4 :
+	       buff->monad->ipproto == IPPROTO_IPV6 ? 6 : 0;
 }
 
 
 static inline int
-skb_ip_protocol(SkBuff skb)
+qbuff_ip_protocol(struct qbuff * buff)
 {
-	switch(skb_ip_version(skb))
+	switch(qbuff_ip_version(buff))
 	{
 	case 4: {
 		struct iphdr _iph;
 		const struct iphdr *ip;
-		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+		ip = qbuff_ip_header_pointer(buff, 0, sizeof(_iph), &_iph);
 		if (ip)
 			return ip->protocol;
-	} break;
-	case 6: {
-		struct ipv6hdr _iph;
-		const struct ipv6hdr *ip6;
-		ip6 = skb_ip6_header_pointer(skb, 0, sizeof(_iph), &_iph);
-		if (ip6)
-			return ip6->nexthdr;
 	} break;
 	}
 
@@ -167,4 +159,4 @@ skb_ip_protocol(SkBuff skb)
 }
 
 
-#endif /* PFQ_LANG_SKBUFF_H */
+#endif /* PFQ_LANG_QBUFF_H */

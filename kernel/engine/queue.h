@@ -26,11 +26,11 @@
 #define Q_ENGINE_QUEUE_H
 
 #include <pfq/kcompat.h>
-#include <pfq/GC.h>
 
 #include <engine/group.h>
 #include <engine/sock.h>
 #include <engine/define.h>
+#include <engine/GC.h>
 
 
 

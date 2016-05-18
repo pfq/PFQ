@@ -28,11 +28,11 @@
 #include <pfq/sparse.h>
 
 
-static ActionSkBuff
-inc_counter(arguments_t args, SkBuff skb)
+static ActionQbuff
+inc_counter(arguments_t args, struct qbuff * buff)
 {
         const int idx = GET_ARG(int,args);
-        struct pfq_group_counters * ctrs = get_group_counters(skb);
+        struct pfq_group_counters * ctrs = get_group_counters(buff);
 
 	if (idx < 0 || idx >= Q_MAX_COUNTERS) {
                 if (printk_ratelimit())
@@ -42,15 +42,15 @@ inc_counter(arguments_t args, SkBuff skb)
 		local_inc(&ctrs->value[idx]);
 	}
 
-        return Pass(skb);
+        return Pass(buff);
 }
 
 
-static ActionSkBuff
-dec_counter(arguments_t args, SkBuff skb)
+static ActionQbuff
+dec_counter(arguments_t args, struct qbuff * buff)
 {
         const int idx = GET_ARG(int,args);
-        struct pfq_group_counters * ctrs = get_group_counters(skb);
+        struct pfq_group_counters * ctrs = get_group_counters(buff);
 
 	if (idx < 0 || idx >= Q_MAX_COUNTERS) {
                 if (printk_ratelimit())
@@ -60,55 +60,55 @@ dec_counter(arguments_t args, SkBuff skb)
 		local_dec(&ctrs->value[idx]);
 	}
 
-        return Pass(skb);
+        return Pass(buff);
 }
 
 
-static ActionSkBuff
-log_msg(arguments_t args, SkBuff skb)
+static ActionQbuff
+log_msg(arguments_t args, struct qbuff * buff)
 {
 	const char *msg = GET_ARG(const char *, args);
 
 	if (printk_ratelimit())
 		printk(KERN_INFO "[pfq-lang] log_msg: %s\n", msg);
 
-	return Pass(skb);
+	return Pass(buff);
 }
 
 
-static ActionSkBuff
-log_buff(arguments_t args, SkBuff skb)
+static ActionQbuff
+log_buff(arguments_t args, struct qbuff * buff)
 {
 	int maxlen;
 
 	if (!printk_ratelimit())
-		return Pass(skb);
+		return Pass(buff);
 
-	printk(KERN_INFO "[pfq-lang] [%p] len=%u head=%u tail=%u\n", skb,
-								skb->len,
-								skb_headroom(PFQ_SKB(skb)),
-								skb_tailroom(PFQ_SKB(skb)));
+	printk(KERN_INFO "[pfq-lang] [%p] len=%u head=%u tail=%u\n", buff,
+								qbuff_len(buff),
+								qbuff_headroom(buff),
+								qbuff_tailroom(buff));
 
-	maxlen = (int)min(skb->len, 34U);
-	printk(KERN_INFO "[pfq-lang] [%*ph ...]\n", maxlen, skb->data);
-	return Pass(skb);
+	maxlen = (int)min(qbuff_len(buff), 34U);
+	printk(KERN_INFO "[pfq-lang] [%*ph ...]\n", maxlen, (unsigned char *)qbuff_eth_hdr(buff));
+	return Pass(buff);
 }
 
 
 static void
-log_ip4_packet(arguments_t args, SkBuff skb)
+log_ip4_packet(arguments_t args, struct qbuff * buff)
 {
 	struct iphdr _iph;
 	const struct iphdr *ip;
 
-	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	ip = qbuff_ip_header_pointer(buff, 0, sizeof(_iph), &_iph);
 	if (ip)
 	{
 		switch(ip->protocol)
 		{
 		case IPPROTO_UDP: {
 			struct udphdr _udph; const struct udphdr *udp;
-			udp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(struct udphdr), &_udph);
+			udp = qbuff_ip_header_pointer(buff, (ip->ihl<<2), sizeof(struct udphdr), &_udph);
 			if (udp)
 			{
 				printk(KERN_INFO "[pfq-lang] IP4 %pI4.%d > %pI4.%d: UDP\n",
@@ -122,7 +122,7 @@ log_ip4_packet(arguments_t args, SkBuff skb)
 		} break;
 		case IPPROTO_TCP: {
 			struct tcphdr _tcph; const struct tcphdr *tcp;
-			tcp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(struct tcphdr), &_tcph);
+			tcp = qbuff_ip_header_pointer(buff, (ip->ihl<<2), sizeof(struct tcphdr), &_tcph);
 			if (tcp)
 			{
 				printk(KERN_INFO "[pfq-lang] IP4 %pI4.%d > %pI4.%d: TCP\n",
@@ -136,7 +136,7 @@ log_ip4_packet(arguments_t args, SkBuff skb)
 		} break;
 		case IPPROTO_ICMP: {
 			struct icmphdr _icmp; const struct icmphdr *icmp;
-			icmp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(struct icmphdr), &_icmp);
+			icmp = qbuff_ip_header_pointer(buff, (ip->ihl<<2), sizeof(struct icmphdr), &_icmp);
                         if (icmp)
 			{
 				printk(KERN_INFO "[pfq-lang] IP4 %pI4 > %pI4: ICMP type=%d (code=%d)\n",
@@ -161,38 +161,38 @@ log_ip4_packet(arguments_t args, SkBuff skb)
 }
 
 
-static ActionSkBuff
-log_packet(arguments_t args, SkBuff skb)
+static ActionQbuff
+log_packet(arguments_t args, struct qbuff * buff)
 {
 	if (!printk_ratelimit())
-		return Pass(skb);
+		return Pass(buff);
 
-	switch(skb_ip_version(skb))
+	switch(qbuff_ip_version(buff))
 	{
 	case IPPROTO_IP: {
-		log_ip4_packet(args, skb);
+		log_ip4_packet(args, buff);
 	} break;
 	}
 
-        return Pass(skb);
+        return Pass(buff);
 }
 
-static ActionSkBuff
-trace(arguments_t args, SkBuff skb)
+static ActionQbuff
+trace(arguments_t args, struct qbuff * buff)
 {
-	struct pfq_lang_monad *mon = PFQ_CB(skb)->monad;
+	struct pfq_lang_monad *mon = buff->monad;
 
-	skb_ip_version(skb);
+	qbuff_ip_version(buff);
 
 	if (printk_ratelimit())
 	{
 		printk(KERN_INFO "[pfq-lang] TRACE SKB: counter:%u state:%u direct:%d group_mask:%lx (num_devs=%zu kernel:%d)\n"
-					, PFQ_CB(skb)->counter
-					, PFQ_CB(skb)->state
-					, PFQ_CB(skb)->direct
-					, PFQ_CB(skb)->group_mask
-					, PFQ_CB(skb)->log->num_devs
-					, PFQ_CB(skb)->log->to_kernel
+					, buff->counter
+					, buff->state
+					, buff->direct
+					, buff->group_mask
+					, buff->log->num_devs
+					, buff->log->to_kernel
 					);
 
 		printk(KERN_INFO "[pfq-lang]     MONAD: state:%u fanout:{cl=%lx h1=%u h2=%u tp=%u} shift:%d ipoff:%d ipproto:%d ep_ctx:%d\n"
@@ -208,21 +208,21 @@ trace(arguments_t args, SkBuff skb)
 					);
 
 	}
-	return Pass(skb);
+	return Pass(buff);
 }
 
 
 struct pfq_lang_function_descr misc_functions[] = {
 
-        { "inc",	"CInt    -> SkBuff -> Action SkBuff",	inc_counter	},
-        { "dec",	"CInt    -> SkBuff -> Action SkBuff",	dec_counter	},
-	{ "mark",	"Word32  -> SkBuff -> Action SkBuff",	mark		},
-	{ "put_state",	"Word32  -> SkBuff -> Action SkBuff",	put_state	},
+        { "inc",	"CInt    -> Qbuff -> Action Qbuff",	inc_counter	},
+        { "dec",	"CInt    -> Qbuff -> Action Qbuff",	dec_counter	},
+	{ "mark",	"Word32  -> Qbuff -> Action Qbuff",	mark		},
+	{ "put_state",	"Word32  -> Qbuff -> Action Qbuff",	put_state	},
 
-        { "log_msg",	"String -> SkBuff -> Action SkBuff",	log_msg		},
-        { "log_buff",   "SkBuff -> Action SkBuff",		log_buff	},
-        { "log_packet", "SkBuff -> Action SkBuff",		log_packet	},
-        { "trace",	"SkBuff -> Action SkBuff",		trace		},
+        { "log_msg",	"String -> Qbuff -> Action Qbuff",	log_msg		},
+        { "log_buff",   "Qbuff -> Action Qbuff",		log_buff	},
+        { "log_packet", "Qbuff -> Action Qbuff",		log_packet	},
+        { "trace",	"Qbuff -> Action Qbuff",		trace		},
 
         { NULL }};
 

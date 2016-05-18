@@ -24,18 +24,19 @@
 #ifndef PFQ_LANG_PREDICATE_H
 #define PFQ_LANG_PREDICATE_H
 
-#include <engine/lang/skbuff.h>
 #include <engine/lang/module.h>
+#include <engine/lang/qbuff.h>
 
 #include <pfq/nethdr.h>
+#include <pfq/qbuff.h>
 
 static inline bool
-less(arguments_t args, SkBuff skb)
+less(arguments_t args, struct qbuff * buff)
 {
 	property_t p = GET_ARG_0(property_t, args);
 	const uint64_t data = GET_ARG_1(uint64_t, args);
 
-	uint64_t ret = EVAL_PROPERTY(p, skb);
+	uint64_t ret = EVAL_PROPERTY(p, buff);
 
 	if (IS_JUST(ret))
 		return FROM_JUST(uint64_t, ret) < data;
@@ -44,12 +45,12 @@ less(arguments_t args, SkBuff skb)
 }
 
 static inline bool
-less_eq(arguments_t args, SkBuff skb)
+less_eq(arguments_t args, struct qbuff * buff)
 {
 	property_t p = GET_ARG_0(property_t, args);
 	const uint64_t data = GET_ARG_1(uint64_t, args);
 
-	uint64_t ret = EVAL_PROPERTY(p, skb);
+	uint64_t ret = EVAL_PROPERTY(p, buff);
 
 	if (IS_JUST(ret))
 		return FROM_JUST(uint64_t, ret) <= data;
@@ -58,12 +59,12 @@ less_eq(arguments_t args, SkBuff skb)
 }
 
 static inline bool
-greater(arguments_t args, SkBuff skb)
+greater(arguments_t args, struct qbuff * buff)
 {
 	property_t p = GET_ARG_0(property_t, args);
 	const uint64_t data = GET_ARG_1(uint64_t, args);
 
-	uint64_t ret = EVAL_PROPERTY(p, skb);
+	uint64_t ret = EVAL_PROPERTY(p, buff);
 
 	if (IS_JUST(ret))
 		return FROM_JUST(uint64_t, ret) > data;
@@ -72,12 +73,12 @@ greater(arguments_t args, SkBuff skb)
 }
 
 static inline bool
-greater_eq(arguments_t args, SkBuff skb)
+greater_eq(arguments_t args, struct qbuff * buff)
 {
 	property_t p = GET_ARG_0(property_t, args);
 	const uint64_t data = GET_ARG_1(uint64_t, args);
 
-	uint64_t ret = EVAL_PROPERTY(p, skb);
+	uint64_t ret = EVAL_PROPERTY(p, buff);
 
 	if (IS_JUST(ret))
 		return FROM_JUST(uint64_t, ret) >= data;
@@ -86,12 +87,12 @@ greater_eq(arguments_t args, SkBuff skb)
 }
 
 static inline bool
-equal(arguments_t args, SkBuff skb)
+equal(arguments_t args, struct qbuff * buff)
 {
 	property_t p = GET_ARG_0(property_t, args);
 	const uint64_t data = GET_ARG_1(uint64_t, args);
 
-	uint64_t ret = EVAL_PROPERTY(p, skb);
+	uint64_t ret = EVAL_PROPERTY(p, buff);
 
 	if (IS_JUST(ret))
 		return FROM_JUST(uint64_t, ret) == data;
@@ -100,12 +101,12 @@ equal(arguments_t args, SkBuff skb)
 }
 
 static inline bool
-not_equal(arguments_t args, SkBuff skb)
+not_equal(arguments_t args, struct qbuff * buff)
 {
 	property_t p = GET_ARG_0(property_t, args);
 	const uint64_t data = GET_ARG_1(uint64_t, args);
 
-	uint64_t ret = EVAL_PROPERTY(p, skb);
+	uint64_t ret = EVAL_PROPERTY(p, buff);
 
 	if (IS_JUST(ret))
 		return FROM_JUST(uint64_t, ret) != data;
@@ -114,12 +115,12 @@ not_equal(arguments_t args, SkBuff skb)
 }
 
 static inline bool
-any_bit(arguments_t args, SkBuff skb)
+any_bit(arguments_t args, struct qbuff * buff)
 {
 	property_t p = GET_ARG_0(property_t, args);
 	const uint64_t data = GET_ARG_1(uint64_t, args);
 
-	uint64_t ret = EVAL_PROPERTY(p, skb);
+	uint64_t ret = EVAL_PROPERTY(p, buff);
 
 	if (IS_JUST(ret))
 		return (FROM_JUST(uint64_t, ret) & data) != 0;
@@ -128,12 +129,12 @@ any_bit(arguments_t args, SkBuff skb)
 }
 
 static inline bool
-all_bit(arguments_t args, SkBuff skb)
+all_bit(arguments_t args, struct qbuff * buff)
 {
 	property_t p = GET_ARG_0(property_t, args);
 	const uint64_t data = GET_ARG_1(uint64_t, args);
 
-	uint64_t ret = EVAL_PROPERTY(p, skb);
+	uint64_t ret = EVAL_PROPERTY(p, buff);
 
 	if (IS_JUST(ret))
 		return (FROM_JUST(uint64_t, ret) & data) == data;
@@ -144,83 +145,82 @@ all_bit(arguments_t args, SkBuff skb)
 /* basic predicates ... */
 
 static inline bool
-skb_header_available(struct sk_buff *skb, int offset, int len)
+qbuff_header_available(struct qbuff *buff, int offset, int len)
 {
-        if (skb->len - offset >= len)
+        if (qbuff_len(buff) - offset >= len)
                 return true;
         return false;
 }
 
 
 static inline bool
-is_ip(SkBuff skb)
+is_ip(struct qbuff * buff)
 {
-	if (skb_ip_version(skb) == 4)
+	if (qbuff_ip_version(buff) == 4)
 		return true;
         return false;
 }
 
-
 static inline bool
-is_udp(SkBuff skb)
+is_udp(struct qbuff * buff)
 {
 	struct iphdr _iph;
 	const struct iphdr *ip;
 
-	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	ip = qbuff_ip_header_pointer(buff, 0, sizeof(_iph), &_iph);
 	if (ip == NULL)
                 return false;
 
 	if (ip->protocol != IPPROTO_UDP)
                 return false;
 
-        return skb_header_available(PFQ_SKB(skb), skb->mac_len  + (ip->ihl<<2), sizeof(struct udphdr));
+        return qbuff_header_available(buff, qbuff_maclen(buff)  + (ip->ihl<<2), sizeof(struct udphdr));
 }
 
 
 static inline bool
-is_tcp(SkBuff skb)
+is_tcp(struct qbuff * buff)
 {
 	struct iphdr _iph;
 	const struct iphdr *ip;
 
-	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	ip = qbuff_ip_header_pointer(buff, 0, sizeof(_iph), &_iph);
 	if (ip == NULL)
                 return false;
 
 	if (ip->protocol != IPPROTO_TCP)
                 return false;
 
-	return skb_header_available(PFQ_SKB(skb), skb->mac_len + (ip->ihl<<2), sizeof(struct tcphdr));
+	return qbuff_header_available(buff, qbuff_maclen(buff) + (ip->ihl<<2), sizeof(struct tcphdr));
 }
 
 
 static inline bool
-is_icmp(SkBuff skb)
+is_icmp(struct qbuff * buff)
 {
 	struct iphdr _iph;
 	const struct iphdr *ip;
 
-	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	ip = qbuff_ip_header_pointer(buff, 0, sizeof(_iph), &_iph);
 	if (ip == NULL)
                 return false;
 
 	if (ip->protocol != IPPROTO_ICMP)
                 return false;
 
-	return skb_header_available(PFQ_SKB(skb), skb->mac_len + (ip->ihl<<2), sizeof(struct icmphdr));
+	return qbuff_header_available(buff, qbuff_maclen(buff) + (ip->ihl<<2), sizeof(struct icmphdr));
 }
 
 
 static inline bool
-has_addr(SkBuff skb, __be32 addr, __be32 mask)
+has_addr(struct qbuff * buff, __be32 addr, __be32 mask)
 {
 	struct iphdr _iph;
 	const struct iphdr *ip;
 
-        bool ctx = PFQ_CB(skb)->monad->ep_ctx;
+        bool ctx = buff->monad->ep_ctx;
 
-	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	ip = qbuff_ip_header_pointer(buff, 0, sizeof(_iph), &_iph);
 	if (ip == NULL)
 		return false;
 
@@ -230,12 +230,12 @@ has_addr(SkBuff skb, __be32 addr, __be32 mask)
 
 
 static inline bool
-has_src_addr(SkBuff skb, __be32 addr, __be32 mask)
+has_src_addr(struct qbuff * buff, __be32 addr, __be32 mask)
 {
 	struct iphdr _iph;
 	const struct iphdr *ip;
 
-	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	ip = qbuff_ip_header_pointer(buff, 0, sizeof(_iph), &_iph);
 	if (ip == NULL)
 		return false;
 
@@ -243,12 +243,12 @@ has_src_addr(SkBuff skb, __be32 addr, __be32 mask)
 }
 
 static inline bool
-has_dst_addr(SkBuff skb, __be32 addr, __be32 mask)
+has_dst_addr(struct qbuff * buff, __be32 addr, __be32 mask)
 {
 	struct iphdr _iph;
 	const struct iphdr *ip;
 
-	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	ip = qbuff_ip_header_pointer(buff, 0, sizeof(_iph), &_iph);
 	if (ip == NULL)
 		return false;
 
@@ -257,12 +257,12 @@ has_dst_addr(SkBuff skb, __be32 addr, __be32 mask)
 
 
 static inline bool
-is_flow(SkBuff skb)
+is_flow(struct qbuff * buff)
 {
 	struct iphdr _iph;
 	const struct iphdr *ip;
 
-	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	ip = qbuff_ip_header_pointer(buff, 0, sizeof(_iph), &_iph);
 	if (ip == NULL)
 		return false;
 
@@ -270,25 +270,25 @@ is_flow(SkBuff skb)
 	    ip->protocol != IPPROTO_TCP)
                 return false;
 
-	return skb_header_available(PFQ_SKB(skb), skb->mac_len + (ip->ihl<<2), ip->protocol == IPPROTO_UDP ?
+	return qbuff_header_available(buff, qbuff_maclen(buff) + (ip->ihl<<2), ip->protocol == IPPROTO_UDP ?
 				    sizeof(struct udphdr) : sizeof(struct tcphdr));
 }
 
 
 static inline bool
-is_l3_proto(SkBuff skb, uint16_t type)
+is_l3_proto(struct qbuff * buff, uint16_t type)
 {
-	return eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(type);
+	return qbuff_eth_hdr(buff)->h_proto == __constant_htons(type);
 }
 
 
 static inline bool
-is_l4_proto(SkBuff skb, u8 protocol)
+is_l4_proto(struct qbuff * buff, u8 protocol)
 {
 	struct iphdr _iph;
 	const struct iphdr *ip;
 
-	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	ip = qbuff_ip_header_pointer(buff, 0, sizeof(_iph), &_iph);
 	if (ip == NULL)
 		return false;
 
@@ -297,12 +297,12 @@ is_l4_proto(SkBuff skb, u8 protocol)
 
 
 static inline bool
-is_frag(SkBuff skb)
+is_frag(struct qbuff * buff)
 {
 	struct iphdr _iph;
 	const struct iphdr *ip;
 
-	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	ip = qbuff_ip_header_pointer(buff, 0, sizeof(_iph), &_iph);
 	if (ip == NULL)
 		return false;
 
@@ -310,12 +310,12 @@ is_frag(SkBuff skb)
 }
 
 static inline bool
-is_first_frag(SkBuff skb)
+is_first_frag(struct qbuff * buff)
 {
 	struct iphdr _iph;
 	const struct iphdr *ip;
 
-	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	ip = qbuff_ip_header_pointer(buff, 0, sizeof(_iph), &_iph);
 	if (ip == NULL)
 		return false;
 
@@ -323,12 +323,12 @@ is_first_frag(SkBuff skb)
 }
 
 static inline bool
-is_more_frag(SkBuff skb)
+is_more_frag(struct qbuff * buff)
 {
 	struct iphdr _iph;
 	const struct iphdr *ip;
 
-	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	ip = qbuff_ip_header_pointer(buff, 0, sizeof(_iph), &_iph);
 	if (ip == NULL)
 		return false;
 
@@ -336,12 +336,12 @@ is_more_frag(SkBuff skb)
 }
 
 static inline bool
-has_src_port(SkBuff skb, uint16_t port)
+has_src_port(struct qbuff * buff, uint16_t port)
 {
 	struct iphdr _iph;
 	const struct iphdr *ip;
 
-	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	ip = qbuff_ip_header_pointer(buff, 0, sizeof(_iph), &_iph);
 	if (ip == NULL)
 		return false;
 
@@ -349,7 +349,7 @@ has_src_port(SkBuff skb, uint16_t port)
 	{
 	case IPPROTO_UDP: {
 		struct udphdr _udph; const struct udphdr *udp;
-		udp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(struct udphdr), &_udph);
+		udp = qbuff_ip_header_pointer(buff, (ip->ihl<<2), sizeof(struct udphdr), &_udph);
 		if (udp == NULL)
 			return false;
 
@@ -357,7 +357,7 @@ has_src_port(SkBuff skb, uint16_t port)
 	}
 	case IPPROTO_TCP: {
 		struct tcphdr _tcph; const struct tcphdr *tcp;
-		tcp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(struct tcphdr), &_tcph);
+		tcp = qbuff_ip_header_pointer(buff, (ip->ihl<<2), sizeof(struct tcphdr), &_tcph);
 		if (tcp == NULL)
 			return false;
 
@@ -369,12 +369,12 @@ has_src_port(SkBuff skb, uint16_t port)
 }
 
 static inline bool
-has_dst_port(SkBuff skb, uint16_t port)
+has_dst_port(struct qbuff * buff, uint16_t port)
 {
 	struct iphdr _iph;
 	const struct iphdr *ip;
 
-	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	ip = qbuff_ip_header_pointer(buff, 0, sizeof(_iph), &_iph);
 	if (ip == NULL)
 		return false;
 
@@ -382,7 +382,7 @@ has_dst_port(SkBuff skb, uint16_t port)
 	{
 	case IPPROTO_UDP: {
 		struct udphdr _udph; const struct udphdr *udp;
-		udp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(struct udphdr), &_udph);
+		udp = qbuff_ip_header_pointer(buff, (ip->ihl<<2), sizeof(struct udphdr), &_udph);
 		if (udp == NULL)
 			return false;
 
@@ -390,7 +390,7 @@ has_dst_port(SkBuff skb, uint16_t port)
 	}
 	case IPPROTO_TCP: {
 		struct tcphdr _tcph; const struct tcphdr *tcp;
-		tcp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(struct tcphdr), &_tcph);
+		tcp = qbuff_ip_header_pointer(buff, (ip->ihl<<2), sizeof(struct tcphdr), &_tcph);
 		if (tcp == NULL)
 			return false;
 
@@ -403,43 +403,43 @@ has_dst_port(SkBuff skb, uint16_t port)
 
 
 static inline bool
-has_port(SkBuff skb, uint16_t port)
+has_port(struct qbuff * buff, uint16_t port)
 {
-        bool ctx = PFQ_CB(skb)->monad->ep_ctx;
+        bool ctx = buff->monad->ep_ctx;
 
-	return (has_src_port(skb, port) && (ctx & EPOINT_SRC)) ||
-	       (has_dst_port(skb, port) && (ctx & EPOINT_DST));
+	return (has_src_port(buff, port) && (ctx & EPOINT_SRC)) ||
+	       (has_dst_port(buff, port) && (ctx & EPOINT_DST));
 }
 
 
 static inline bool
-has_vlan(SkBuff skb)
+has_vlan(struct qbuff * buff)
 {
-	return (skb->vlan_tci & VLAN_VID_MASK);
+	return (qbuff_vlan_tci(buff) & VLAN_VID_MASK);
 }
 
 static inline bool
-has_vid(SkBuff skb, int vid)
+has_vid(struct qbuff * buff, int vid)
 {
-	return (skb->vlan_tci & VLAN_VID_MASK) == vid;
+	return (qbuff_vlan_tci(buff) & VLAN_VID_MASK) == vid;
 }
 
 
 static inline bool
-is_broadcast(SkBuff skb)
+is_broadcast(struct qbuff * buff)
 {
-	struct ethhdr *eth = eth_hdr(PFQ_SKB(skb));
-        bool ctx = PFQ_CB(skb)->monad->ep_ctx;
+	struct ethhdr *eth = qbuff_eth_hdr(buff);
+        bool ctx = buff->monad->ep_ctx;
 
 	return (is_broadcast_ether_addr(eth->h_dest)   && (ctx & EPOINT_DST)) ||
 	       (is_broadcast_ether_addr(eth->h_source) && (ctx & EPOINT_SRC));
 }
 
 static inline bool
-is_multicast(SkBuff skb)
+is_multicast(struct qbuff * buff)
 {
-	struct ethhdr *eth = eth_hdr(PFQ_SKB(skb));
-        bool ctx = PFQ_CB(skb)->monad->ep_ctx;
+	struct ethhdr *eth = qbuff_eth_hdr(buff);
+        bool ctx = buff->monad->ep_ctx;
 
 	return (is_multicast_ether_addr(eth->h_dest) && (ctx & EPOINT_DST)) ||
 	       (is_multicast_ether_addr(eth->h_source) && (ctx & EPOINT_SRC));
@@ -447,13 +447,13 @@ is_multicast(SkBuff skb)
 
 
 static inline bool
-is_ip_broadcast(SkBuff skb)
+is_ip_broadcast(struct qbuff * buff)
 {
 	struct iphdr _iph;
 	const struct iphdr *ip;
-        bool ctx = PFQ_CB(skb)->monad->ep_ctx;
+        bool ctx = buff->monad->ep_ctx;
 
-	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	ip = qbuff_ip_header_pointer(buff, 0, sizeof(_iph), &_iph);
 	if (ip == NULL)
 		return false;
 
@@ -463,13 +463,13 @@ is_ip_broadcast(SkBuff skb)
 
 
 static inline bool
-is_ip_multicast(SkBuff skb)
+is_ip_multicast(struct qbuff * buff)
 {
 	struct iphdr _iph;
 	const struct iphdr *ip;
-        bool ctx = PFQ_CB(skb)->monad->ep_ctx;
+        bool ctx = buff->monad->ep_ctx;
 
-	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	ip = qbuff_ip_header_pointer(buff, 0, sizeof(_iph), &_iph);
 	if (ip == NULL)
 		return false;
 
@@ -479,64 +479,34 @@ is_ip_multicast(SkBuff skb)
 
 
 static inline bool
-is_ip_host(SkBuff skb)
+is_ip_host(struct qbuff * buff)
 {
-	struct in_device *in_dev;
 	struct iphdr _iph;
 	const struct iphdr *ip;
-	bool ret = false;
-        bool ctx = PFQ_CB(skb)->monad->ep_ctx;
 
-	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	ip = qbuff_ip_header_pointer(buff, 0, sizeof(_iph), &_iph);
 	if (ip == NULL)
 		return false;
 
-	rcu_read_lock();
-	in_dev = __in_dev_get_rcu(PFQ_SKB(skb)->dev);
-	if (in_dev != NULL) {
-		for_primary_ifa(in_dev) {
-			if (((ifa->ifa_address == ip->daddr) && (ctx & EPOINT_DST)) ||
-			    ((ifa->ifa_address == ip->saddr) && (ctx & EPOINT_SRC))){
-				ret = true;
-				break;
-			}
-		} endfor_ifa(in_dev);
-	}
-	rcu_read_unlock();
-	return ret;
+	return qbuff_ingress(buff, ip);
 }
 
 
 static inline bool
-is_incoming_host(SkBuff skb)
+is_incoming_host(struct qbuff * buff)
 {
-	struct in_device *in_dev;
 	struct iphdr _iph;
 	const struct iphdr *ip;
-	bool ret = false;
-	struct ethhdr *eth = eth_hdr(PFQ_SKB(skb));
+	struct ethhdr *eth = qbuff_eth_hdr(buff);
 
 	if (is_broadcast_ether_addr(eth->h_dest) || is_multicast_ether_addr(eth->h_dest))
 		return true;
 
-	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	ip = qbuff_ip_header_pointer(buff, 0, sizeof(_iph), &_iph);
 	if (ip == NULL)
 		return false;
 
-	rcu_read_lock();
-	in_dev = __in_dev_get_rcu(PFQ_SKB(skb)->dev);
-	if (in_dev != NULL) {
-		for_primary_ifa(in_dev) {
-			if (ifa->ifa_address == ip->daddr)
-			{
-				ret = true;
-				break;
-			}
-		} endfor_ifa(in_dev);
-	}
-	rcu_read_unlock();
-
-	return ret;
+	return qbuff_ingress(buff, ip);
 }
 
 

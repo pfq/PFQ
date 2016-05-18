@@ -38,13 +38,14 @@
 
 #include <engine/queue.h>
 #include <engine/bitops.h>
+#include <engine/qbuff.h>
+#include <engine/GC.h>
 
 #include <pfq/io.h>
 #include <pfq/vlan.h>
 #include <pfq/thread.h>
 #include <pfq/memory.h>
-#include <pfq/GC.h>
-
+#include <pfq/qbuff.h>
 
 int
 pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
@@ -65,7 +66,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 	if (likely(skb))
 	{
-		struct sk_buff __GC * buff;
+		struct qbuff * buff;
 
 		/* if required, timestamp the packet now */
 
@@ -101,15 +102,15 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 			return 0;
 		}
 
-		PFQ_CB(buff)->direct = direct;
+		buff->direct = direct;
 
 		if ((GC_size(data->GC) < (size_t)capt_batch_len) &&
-		     (ktime_to_ns(ktime_sub(skb_get_ktime(PFQ_SKB(buff)), data->last_rx)) < 1000000))
+		     (ktime_to_ns(ktime_sub(qbuff_get_ktime(buff), data->last_rx)) < 1000000))
 		{
 			return 0;
 		}
 
-		data->last_rx = skb_get_ktime(PFQ_SKB(buff));
+		data->last_rx = qbuff_get_ktime(buff);
 	}
 	else {
                 if (GC_size(data->GC) == 0)
@@ -332,9 +333,10 @@ __pfq_xmit(struct sk_buff *skb, struct net_device *dev, int xmit_more)
 
 
 int
-pfq_xmit(struct sk_buff *skb, struct net_device *dev, int queue, int more)
+pfq_xmit(struct qbuff *buff, struct net_device *dev, int queue, int more)
 {
 	struct netdev_queue *txq;
+	struct sk_buff *skb = QBUFF_SKB(buff);
 	int ret = 0;
 
 	/* get txq and fix the queue for this batch.
@@ -630,10 +632,10 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
  */
 
 tx_res_t
-pfq_skb_queue_xmit(struct pfq_skbuff_queue *skbs, unsigned long long mask, struct net_device *dev, int queue)
+pfq_skb_queue_xmit(struct pfq_qbuff_queue *buffs, unsigned long long mask, struct net_device *dev, int queue)
 {
 	struct netdev_queue *txq;
-	struct sk_buff *skb;
+	struct qbuff *buff;
 	int n, last_idx;
 	tx_res_t ret = {0};
 
@@ -642,20 +644,20 @@ pfq_skb_queue_xmit(struct pfq_skbuff_queue *skbs, unsigned long long mask, struc
 	 * note: in case the queue is set to any-queue (-1), the driver along the first skb
 	 * select the queue */
 
-	last_idx = pfq_skbuff_queue_len(skbs) - 1;
+	last_idx = buffs->len - 1;
 
-	txq = pfq_netdev_pick_tx(dev, skbs->queue[0], &queue);
+	txq = pfq_netdev_pick_tx(dev, QBUFF_SKB(&buffs->queue[0]), &queue);
 
 	local_bh_disable();
 	HARD_TX_LOCK(dev, txq, smp_processor_id());
 
-	for_each_skbuff_bitmask(skbs, skb, n, mask)
+	for_each_qbuff_with_mask(mask, buffs, buff, n)
 	{
-		skb_reset_mac_header(skb);
-		skb_set_queue_mapping(skb, queue);
+		skb_reset_mac_header(QBUFF_SKB(buff));
+		skb_set_queue_mapping(QBUFF_SKB(buff), queue);
 
 		if (likely(!netif_xmit_frozen_or_drv_stopped(txq)) &&
-			__pfq_xmit(skb, dev, !( n == last_idx || ((mask & (mask-1)) == 0))) == NETDEV_TX_OK)
+			__pfq_xmit(QBUFF_SKB(buff), dev, !( n == last_idx || ((mask & (mask-1)) == 0))) == NETDEV_TX_OK)
 			++ret.ok;
 		else {
 			++ret.fail;
@@ -670,9 +672,9 @@ pfq_skb_queue_xmit(struct pfq_skbuff_queue *skbs, unsigned long long mask, struc
 intr:
 	/* the ret-i packet is already freed by the driver */
 
-	for_each_skbuff_from(ret.ok + 1, skbs, skb, n) {
+	for_each_qbuff_from(ret.ok + 1, buffs, buff, n) {
 		sparse_inc(memory_stats, os_free);
-		kfree_skb(skb);
+		kfree_skb(QBUFF_SKB(buff));
 		++ret.fail;
 	}
 
@@ -686,46 +688,30 @@ intr:
  */
 
 int
-pfq_lazy_xmit(struct sk_buff __GC * skb, struct net_device *dev, int queue)
+pfq_lazy_xmit(struct qbuff * buff, struct net_device *dev, int queue)
 {
-	struct GC_log *skb_log = PFQ_CB(skb)->log;
+	struct GC_log *buff_log = buff->log;
 
-	if (skb_log->num_devs >= Q_GC_LOG_QUEUE_LEN) {
+	if (buff_log->num_devs >= Q_BUFF_LOG_LEN) {
 		if (printk_ratelimit())
 			printk(KERN_INFO "[PFQ] bridge %s: too many annotation!\n", dev->name);
 		return 0;
 	}
 
-	skb_set_queue_mapping(PFQ_SKB(skb), queue);
-	skb_log->dev[skb_log->num_devs++] = dev;
-	skb_log->xmit_todo++;
+	skb_set_queue_mapping(QBUFF_SKB(buff), queue);
+
+	buff_log->dev[buff_log->num_devs++] = dev;
+	buff_log->xmit_todo++;
 
 	return 1;
 }
 
 
 int
-pfq_skb_queue_lazy_xmit(struct pfq_skbuff_GC_queue *queue, unsigned long long mask, struct net_device *dev, int queue_index)
-{
-	struct sk_buff __GC * skb;
-	int i, n = 0;
-
-	for_each_skbuff_bitmask(queue, skb, i, mask)
-	{
-		if (pfq_lazy_xmit(skb, dev, queue_index))
-			++n;
-	}
-
-	return n;
-}
-
-
-int
-pfq_skb_queue_lazy_xmit_run(struct pfq_skbuff_GC_queue *skbs, struct pfq_endpoint_info const *endpoints)
+pfq_qbuff_queue_lazy_xmit_run(struct pfq_qbuff_queue *buffs, struct pfq_endpoint_info const *endpoints)
 {
 	struct netdev_queue *txq;
 	struct net_device *dev;
-	struct sk_buff __GC *skb;
         size_t sent = 0;
 	size_t n, i;
 	int queue = -1;
@@ -740,17 +726,16 @@ pfq_skb_queue_lazy_xmit_run(struct pfq_skbuff_GC_queue *skbs, struct pfq_endpoin
 		txq = NULL;
                 queue = -1;
 
-		/* scan the list of skbs, and forward them in batch fashion */
+		/* scan the list of buffs, and forward them in batch fashion */
 
-		for(i = 0; i < skbs->len; i++)
+		for(i = 0; i < buffs->len; i++)
 		{
                         size_t j, num;
 
-			/* select packet and log */
+			struct qbuff * buff = &buffs->queue[i];
+			struct sk_buff *skb = QBUFF_SKB(buff);
 
-			skb = skbs->queue[i];
-
-			num = GC_count_dev_in_log(dev, PFQ_CB(skb)->log);
+			num = GC_count_dev_in_log(dev, buff->log);
 
 			if (num == 0)
 				continue;
@@ -764,7 +749,7 @@ pfq_skb_queue_lazy_xmit_run(struct pfq_skbuff_GC_queue *skbs, struct pfq_endpoin
 					local_bh_enable();
                                 }
 
-				txq = pfq_netdev_pick_tx(dev, PFQ_SKB(skb), &queue);
+				txq = pfq_netdev_pick_tx(dev, skb, &queue);
 
 				local_bh_disable();
 				HARD_TX_LOCK(dev, txq, smp_processor_id());
@@ -775,9 +760,9 @@ pfq_skb_queue_lazy_xmit_run(struct pfq_skbuff_GC_queue *skbs, struct pfq_endpoin
 			for (j = 0; j < num; j++)
 			{
 				const int xmit_more  = ++sent_dev != endpoints->cnt[n];
-				const bool to_clone  = PFQ_CB(skb)->log->to_kernel || PFQ_CB(skb)->log->xmit_todo-- > 1;
+				const bool to_clone  = buff->log->to_kernel || buff->log->xmit_todo-- > 1;
 
-				struct sk_buff *nskb = to_clone ? skb_clone(PFQ_SKB(skb), GFP_ATOMIC) : skb_get(PFQ_SKB(skb));
+				struct sk_buff *nskb = to_clone ? skb_clone(skb, GFP_ATOMIC) : skb_get(skb);
 
 				if (nskb && __pfq_xmit(nskb, dev, xmit_more) == NETDEV_TX_OK)
 					sent++;
@@ -806,16 +791,16 @@ void *pfq_skb_copy_from_linear_data(const struct sk_buff *skb, void *to, size_t 
 
 
 
-size_t pfq_sk_rx_queue_recv(struct pfq_sock_opt *opt,
-			    struct pfq_skbuff_GC_queue *skbs,
-			    unsigned long long mask,
-			    int burst_len,
-			    pfq_gid_t gid)
+size_t pfq_sk_queue_recv(struct pfq_sock_opt *opt,
+			 struct pfq_qbuff_refs *buffs,
+			 unsigned long long mask,
+			 int burst_len,
+			 pfq_gid_t gid)
 {
 	struct pfq_rx_queue *rx_queue = pfq_get_rx_queue(opt);
 	struct pfq_pkthdr *hdr;
+	struct qbuff *buff;
 	int data, qlen, qindex;
-	struct sk_buff __GC *skb;
 	size_t n, sent = 0;
 
 	if (unlikely(rx_queue == NULL))
@@ -832,9 +817,10 @@ size_t pfq_sk_rx_queue_recv(struct pfq_sock_opt *opt,
 	qindex = Q_SHARED_QUEUE_INDEX(data);
 	hdr = (struct pfq_pkthdr *) pfq_mpsc_slot_ptr(opt, rx_queue, qindex, qlen);
 
-	for_each_skbuff_bitmask(skbs, skb, n, mask)
+	for_each_qbuff_with_mask(mask, buffs, buff, n)
 	{
 		size_t bytes, slot_index;
+		struct sk_buff *skb = QBUFF_SKB(buff);
 		char *pkt;
 
 		bytes = min_t(size_t, skb->len, opt->caplen);
@@ -853,31 +839,31 @@ size_t pfq_sk_rx_queue_recv(struct pfq_sock_opt *opt,
 		/* copy bytes of packet */
 
 #ifdef PFQ_USE_SKB_LINEARIZE
-		if (unlikely(skb_is_nonlinear(PFQ_SKB(skb))))
+		if (unlikely(skb_is_nonlinear(skb)))
 #else
-		if (skb_is_nonlinear(PFQ_SKB(skb)))
+		if (skb_is_nonlinear(skb))
 #endif
 		{
-			if (skb_copy_bits(PFQ_SKB(skb), 0, pkt, bytes) != 0) {
+			if (skb_copy_bits(skb, 0, pkt, bytes) != 0) {
 				printk(KERN_WARNING "[PFQ] BUG! skb_copy_bits failed (bytes=%zu, skb_len=%d mac_len=%d)!\n",
 				       bytes, skb->len, skb->mac_len);
 				return 0;
 			}
 		}
 		else {
-			pfq_skb_copy_from_linear_data(PFQ_SKB(skb), pkt, bytes);
+			pfq_skb_copy_from_linear_data(skb, pkt, bytes);
 		}
 
 		/* copy state from pfq_cb annotation */
 
 		hdr->data.mark  = skb->mark;
-		hdr->data.state = PFQ_CB(skb)->state;
+		hdr->data.state = buff->state;
 
 		/* setup the header */
 
 		if (opt->tstamp != 0) {
 			struct timespec ts;
-			skb_get_timestampns(PFQ_SKB(skb), &ts);
+			skb_get_timestampns(skb, &ts);
 			hdr->tstamp.tv.sec  = (uint32_t)ts.tv_sec;
 			hdr->tstamp.tv.nsec = (uint32_t)ts.tv_nsec;
 		}
@@ -887,7 +873,7 @@ size_t pfq_sk_rx_queue_recv(struct pfq_sock_opt *opt,
 		hdr->len      = (uint16_t)skb->len;
 		hdr->caplen   = (uint16_t)bytes;
 		hdr->vlan.tci = skb->vlan_tci & ~VLAN_TAG_PRESENT;
-		hdr->queue    = skb_rx_queue_recorded(PFQ_SKB(skb)) ? (uint8_t)(skb_get_rx_queue(PFQ_SKB(skb)) & 0xff) : 0;
+		hdr->queue    = skb_rx_queue_recorded(skb) ? (uint8_t)(skb_get_rx_queue(skb) & 0xff) : 0;
 
 		/* commit the slot (release semantic) */
 

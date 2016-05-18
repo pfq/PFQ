@@ -64,8 +64,8 @@
 #include <engine/queue.h>
 #include <engine/endpoint.h>
 #include <engine/define.h>
+#include <engine/GC.h>
 
-#include <pfq/GC.h>
 #include <pfq/percpu.h>
 #include <pfq/io.h>
 #include <pfq/shmem.h>
@@ -494,15 +494,15 @@ static int __init pfq_init_module(void)
 
 	/* check options */
 
-        if (capt_batch_len <= 0 || capt_batch_len > Q_SKBUFF_BATCH) {
+        if (capt_batch_len <= 0 || capt_batch_len > Q_BUFF_BATCH_LEN) {
                 printk(KERN_INFO "[PFQ] capt_batch_len=%d not allowed: valid range (0,%d]!\n",
-                       capt_batch_len, Q_SKBUFF_BATCH);
+                       capt_batch_len, Q_BUFF_BATCH_LEN);
                 return -EFAULT;
         }
 
-        if (xmit_batch_len <= 0 || xmit_batch_len > (Q_SKBUFF_BATCH*4)) {
+        if (xmit_batch_len <= 0 || xmit_batch_len > (Q_BUFF_BATCH_LEN*4)) {
                 printk(KERN_INFO "[PFQ] xmit_batch_len=%d not allowed: valid range (0,%d]!\n",
-                       xmit_batch_len, Q_SKBUFF_BATCH * 4);
+                       xmit_batch_len, Q_BUFF_BATCH_LEN * 4);
                 return -EFAULT;
         }
 

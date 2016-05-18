@@ -27,8 +27,7 @@
 
 #include <engine/lang/engine.h>
 #include <engine/percpu.h>
-
-#include <pfq/GC.h>
+#include <engine/GC.h>
 
 int pfq_process_batch(struct pfq_percpu_data *data,
 		      struct pfq_percpu_sock *sock,

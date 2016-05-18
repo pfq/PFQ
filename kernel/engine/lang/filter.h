@@ -28,8 +28,8 @@
 #include <engine/lang/predicate.h>
 
 
-static inline ActionSkBuff
-filter_ip(arguments_t args, SkBuff b)
+static inline ActionQbuff
+filter_ip(arguments_t args, struct qbuff * b)
 {
         return is_ip(b) ? Pass(b) : Drop(b);
 }
@@ -40,32 +40,32 @@ filter_udp(arguments_t args, struct qbuff * b)
         return is_udp(b) ? Pass(b) : Drop(b);
 }
 
-static inline ActionSkBuff
-filter_tcp(arguments_t args, SkBuff b)
+static inline ActionQbuff
+filter_tcp(arguments_t args, struct qbuff * b)
 {
         return is_tcp(b) ? Pass(b) : Drop(b);
 }
 
-static inline ActionSkBuff
-filter_icmp(arguments_t args, SkBuff b)
+static inline ActionQbuff
+filter_icmp(arguments_t args, struct qbuff * b)
 {
         return is_icmp(b) ? Pass(b) : Drop(b);
 }
 
-static inline ActionSkBuff
-filter_flow(arguments_t args, SkBuff b)
+static inline ActionQbuff
+filter_flow(arguments_t args, struct qbuff * b)
 {
         return is_flow(b) ? Pass(b) : Drop(b);
 }
 
-static inline ActionSkBuff
-filter_vlan(arguments_t args, SkBuff b)
+static inline ActionQbuff
+filter_vlan(arguments_t args, struct qbuff * b)
 {
         return has_vlan(b) ? Pass(b) : Drop(b);
 }
 
-static inline ActionSkBuff
-unit(arguments_t args, SkBuff b)
+static inline ActionQbuff
+unit(arguments_t args, struct qbuff * b)
 {
         return Pass(b);
 }

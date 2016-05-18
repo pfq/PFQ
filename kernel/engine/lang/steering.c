@@ -21,40 +21,42 @@
  *
  ****************************************************************/
 
-#include <engine/lang/skbuff.h>
 #include <engine/lang/module.h>
+#include <engine/lang/types.h>
+#include <engine/lang/qbuff.h>
 
+#include <pfq/qbuff.h>
 #include <pfq/vlan.h>
 
-static ActionSkBuff
-steering_rrobin(arguments_t args, SkBuff skb)
+static ActionQbuff
+steering_rrobin(arguments_t args, struct qbuff * buff)
 {
-	return Steering(skb, PFQ_CB(skb)->counter);
+	return Steering(buff, buff->counter);
 }
 
 
 
-static ActionSkBuff
-steering_rss(arguments_t args, SkBuff skb)
+static ActionQbuff
+steering_rss(arguments_t args, struct qbuff * buff)
 {
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,14,0))
 	uint32_t hash = 0;
 #else
-	uint32_t hash = skb_get_hash(PFQ_SKB(skb));
+	uint32_t hash = qbuff_get_rss_hash(buff);
 #endif
-	return Steering(skb, hash);
+	return Steering(buff, hash);
 }
 
 
-static ActionSkBuff
-steering_to(arguments_t args, SkBuff skb)
+static ActionQbuff
+steering_to(arguments_t args, struct qbuff * buff)
 {
-	return Steering(skb, GET_ARG_0(uint32_t, args));
+	return Steering(buff, GET_ARG_0(uint32_t, args));
 }
 
 
-static ActionSkBuff
-steering_field(arguments_t args, SkBuff skb)
+static ActionQbuff
+steering_field(arguments_t args, struct qbuff * buff)
 {
 	uint32_t offset = GET_ARG_0(uint32_t, args);
 	uint32_t size   = GET_ARG_1(uint32_t, args);
@@ -63,18 +65,18 @@ steering_field(arguments_t args, SkBuff skb)
 	if (size > 4) {
 		if (printk_ratelimit())
 			printk(KERN_INFO "[pfq-lang] steering_field: size too big (max. 4 bytes)!\n");
-		return Drop(skb);
+		return Drop(buff);
 	}
 
-	if (!(data = skb_header_pointer(PFQ_SKB(skb), offset, size, &data_)))
-		return Drop(skb);
+	if (!(data = qbuff_header_pointer(buff, offset, size, &data_)))
+		return Drop(buff);
 
-	return Steering(skb, *data);
+	return Steering(buff, *data);
 }
 
 
-static ActionSkBuff
-steering_field_symmetric(arguments_t args, SkBuff skb)
+static ActionQbuff
+steering_field_symmetric(arguments_t args, struct qbuff * buff)
 {
 	uint32_t offset1 = GET_ARG_0(uint32_t, args);
 	uint32_t offset2 = GET_ARG_1(uint32_t, args);
@@ -84,20 +86,20 @@ steering_field_symmetric(arguments_t args, SkBuff skb)
 	if (size > 4) {
 		if (printk_ratelimit())
 			printk(KERN_INFO "[pfq-lang] steering_field_symmetric: size too big (max. 4 bytes)!\n");
-		return Drop(skb);
+		return Drop(buff);
 	}
 
-	if (!(data1 = skb_header_pointer(PFQ_SKB(skb), offset1, size, &data1_)))
-		return Drop(skb);
-	if (!(data2 = skb_header_pointer(PFQ_SKB(skb), offset2, size, &data2_)))
-		return Drop(skb);
+	if (!(data1 = qbuff_header_pointer(buff, offset1, size, &data1_)))
+		return Drop(buff);
+	if (!(data2 = qbuff_header_pointer(buff, offset2, size, &data2_)))
+		return Drop(buff);
 
-	return Steering(skb, *data1 ^ *data2);
+	return Steering(buff, *data1 ^ *data2);
 }
 
 
-static ActionSkBuff
-steering_field_double(arguments_t args, SkBuff skb)
+static ActionQbuff
+steering_field_double(arguments_t args, struct qbuff * buff)
 {
 	uint32_t offset1 = GET_ARG_0(uint32_t, args);
 	uint32_t offset2 = GET_ARG_1(uint32_t, args);
@@ -107,29 +109,29 @@ steering_field_double(arguments_t args, SkBuff skb)
 	if (size > 4) {
 		if (printk_ratelimit())
 			printk(KERN_INFO "[pfq-lang] steering_field_double: size too big (max. 4 bytes)!\n");
-		return Drop(skb);
+		return Drop(buff);
 	}
 
-	if (!(data1 = skb_header_pointer(PFQ_SKB(skb), offset1, size, &data1_)))
-		return Drop(skb);
-	if (!(data2 = skb_header_pointer(PFQ_SKB(skb), offset2, size, &data2_)))
-		return Drop(skb);
+	if (!(data1 = qbuff_header_pointer(buff, offset1, size, &data1_)))
+		return Drop(buff);
+	if (!(data2 = qbuff_header_pointer(buff, offset2, size, &data2_)))
+		return Drop(buff);
 
-	return DoubleSteering(skb, *data1, *data2);
+	return DoubleSteering(buff, *data1, *data2);
 }
 
 
-static ActionSkBuff
-steering_link(arguments_t args, SkBuff skb)
+static ActionQbuff
+steering_link(arguments_t args, struct qbuff * buff)
 {
 	uint16_t * w;
-	w = (uint16_t *)eth_hdr(PFQ_SKB(skb));
+	w = (uint16_t *)qbuff_eth_hdr(buff);
 
 	if ((w[0] & w[1] & w[2]) == 0xffff ||
 	    (w[3] & w[4] & w[5]) == 0xffff)
-		return Broadcast(skb);
+		return Broadcast(buff);
 
-	return Steering(skb, w[0] ^ w[1] ^ w[2] ^ w[3] ^ w[4] ^ w[5]);
+	return Steering(buff, w[0] ^ w[1] ^ w[2] ^ w[3] ^ w[4] ^ w[5]);
 }
 
 
@@ -149,90 +151,91 @@ static int steering_link_local_init(arguments_t args)
 }
 
 
-static ActionSkBuff
-steering_link_local(arguments_t args, SkBuff skb)
+static ActionQbuff
+steering_link_local(arguments_t args, struct qbuff * buff)
 {
 	uint16_t * gw_mac = GET_ARG(uint16_t *, args);
 	uint16_t * w;
-	w = (uint16_t *)eth_hdr(PFQ_SKB(skb));
+	w = (uint16_t *)qbuff_eth_hdr(buff);
 
 	if ((w[0] & w[1] & w[2]) == 0xffff ||
 	    (w[3] & w[4] & w[5]) == 0xffff)
-		return Broadcast(skb);
+		return Broadcast(buff);
 
 	if (w[0] == gw_mac[0] &&
 	    w[1] == gw_mac[1] &&
 	    w[2] == gw_mac[2])
-		return Steering(skb, w[3] ^ w[4] ^ w[5]);
+		return Steering(buff, w[3] ^ w[4] ^ w[5]);
 
 	if (w[3] == gw_mac[0] &&
 	    w[4] == gw_mac[1] &&
 	    w[5] == gw_mac[2])
-		return Steering(skb, w[0] ^ w[1] ^ w[2]);
+		return Steering(buff, w[0] ^ w[1] ^ w[2]);
 
-	return DoubleSteering(skb, w[0] ^ w[1] ^ w[2], w[3] ^ w[4] ^ w[5]);
+	return DoubleSteering(buff, w[0] ^ w[1] ^ w[2], w[3] ^ w[4] ^ w[5]);
 }
 
-static ActionSkBuff
-steering_mac(arguments_t args, SkBuff skb)
+static ActionQbuff
+steering_mac(arguments_t args, struct qbuff * buff)
 {
 	uint16_t * w;
-	w = (uint16_t *)eth_hdr(PFQ_SKB(skb));
+	w = (uint16_t *)qbuff_eth_hdr(buff);
 
 	if ((w[0] & w[1] & w[2]) == 0xffff ||
 	    (w[3] & w[4] & w[5]) == 0xffff)
-		return Broadcast(skb);
+		return Broadcast(buff);
 
-	return DoubleSteering(skb, w[0] ^ w[1] ^ w[2],
+	return DoubleSteering(buff, w[0] ^ w[1] ^ w[2],
 				   w[3] ^ w[4] ^ w[5]);
 }
 
 
-static ActionSkBuff
-steering_vlan_id(arguments_t args, SkBuff skb)
+static ActionQbuff
+steering_vlan_id(arguments_t args, struct qbuff * buff)
 {
-	if (skb->vlan_tci & VLAN_VID_MASK)
-		return Steering(skb, skb->vlan_tci & VLAN_VID_MASK);
+	uint16_t vid = qbuff_vlan_tci(buff) & VLAN_VID_MASK;
+	if (vid)
+		return Steering(buff, vid);
 	else
-		return Drop(skb);
+		return Drop(buff);
 }
 
 
-static ActionSkBuff
-steering_p2p(arguments_t args, SkBuff skb)
+static ActionQbuff
+steering_p2p(arguments_t args, struct qbuff * buff)
 {
-		struct iphdr _iph;
-		const struct iphdr *ip;
+	struct iphdr _iph;
+	const struct iphdr *ip;
 
-		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
-		if (ip == NULL)
-			return Drop(skb);
+	ip = qbuff_ip_header_pointer(buff, 0, sizeof(_iph), &_iph);
+	if (ip == NULL)
+		return Drop(buff);
 
-		if (ip->saddr == (__force __be32)0xffffffff ||
-		    ip->daddr == (__force __be32)0xffffffff)
-			return Broadcast(skb);
+	if (ip->saddr == (__force __be32)0xffffffff ||
+	    ip->daddr == (__force __be32)0xffffffff)
+		return Broadcast(buff);
 
-		return Steering(skb, (__force uint32_t)(ip->saddr ^ ip->daddr));
-	}
+	return Steering(buff, (__force uint32_t)(ip->saddr ^ ip->daddr));
+}
 
 
-static ActionSkBuff
-steering_ip(arguments_t args, SkBuff skb)
+static ActionQbuff
+steering_ip(arguments_t args, struct qbuff * buff)
 {
-		struct iphdr _iph;
-		const struct iphdr *ip;
+	struct iphdr _iph;
+	const struct iphdr *ip;
 
-		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
-		if (ip == NULL)
-			return Drop(skb);
+	ip = qbuff_ip_header_pointer(buff, 0, sizeof(_iph), &_iph);
+	if (ip == NULL)
+		return Drop(buff);
 
-		if (ip->saddr == (__force __be32)0xffffffff ||
-		    ip->daddr == (__force __be32)0xffffffff)
-			return Broadcast(skb);
+	if (ip->saddr == (__force __be32)0xffffffff ||
+	    ip->daddr == (__force __be32)0xffffffff)
+		return Broadcast(buff);
 
-		return DoubleSteering(skb, (__force uint32_t)ip->saddr,
-					   (__force uint32_t)ip->daddr);
-	}
+	return DoubleSteering(buff, (__force uint32_t)ip->saddr,
+				   (__force uint32_t)ip->daddr);
+}
 
 static int steering_ip_local_init(arguments_t args)
 {
@@ -240,33 +243,33 @@ static int steering_ip_local_init(arguments_t args)
 	return 0;
 }
 
-static ActionSkBuff
-steering_ip_local(arguments_t args, SkBuff skb)
+static ActionQbuff
+steering_ip_local(arguments_t args, struct qbuff * buff)
 {
 	struct CIDR_ *data = GET_PTR_0(struct CIDR_, args);
-		struct iphdr _iph;
-		const struct iphdr *ip;
+	struct iphdr _iph;
+	const struct iphdr *ip;
 
-		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
-		if (ip == NULL)
-			return Drop(skb);
+	ip = qbuff_ip_header_pointer(buff, 0, sizeof(_iph), &_iph);
+	if (ip == NULL)
+		return Drop(buff);
 
-		if (ip->saddr == (__force __be32)0xffffffff ||
-		    ip->daddr == (__force __be32)0xffffffff)
-			return Broadcast(skb);
+	if (ip->saddr == (__force __be32)0xffffffff ||
+	    ip->daddr == (__force __be32)0xffffffff)
+		return Broadcast(buff);
 
-                if ((ip->daddr & data->mask) == data->addr &&
-                    (ip->saddr & data->mask) == data->addr)
-			return DoubleSteering(skb, (__force uint32_t)ip->saddr,
-						   (__force uint32_t)ip->daddr);
+        if ((ip->daddr & data->mask) == data->addr &&
+            (ip->saddr & data->mask) == data->addr)
+		return DoubleSteering(buff, (__force uint32_t)ip->saddr,
+					   (__force uint32_t)ip->daddr);
 
-                if ((ip->saddr & data->mask) == data->addr)
-			return Steering(skb, (__force uint32_t)ip->saddr);
+        if ((ip->saddr & data->mask) == data->addr)
+		return Steering(buff, (__force uint32_t)ip->saddr);
 
-                if ((ip->daddr & data->mask) == data->addr)
-			return Steering(skb, (__force uint32_t)ip->daddr);
+        if ((ip->daddr & data->mask) == data->addr)
+		return Steering(buff, (__force uint32_t)ip->daddr);
 
-	return Drop(skb);
+	return Drop(buff);
 }
 
 
@@ -291,89 +294,89 @@ static int steering_net_init(arguments_t args)
 }
 
 
-static ActionSkBuff
-steering_net(arguments_t args, SkBuff skb)
+static ActionQbuff
+steering_net(arguments_t args, struct qbuff * buff)
 {
 	__be32 addr    = GET_ARG_0(__be32, args);
 	__be32 mask    = GET_ARG_1(__be32, args);
 	__be32 submask = GET_ARG_2(__be32, args);
 
-		struct iphdr _iph;
-		const struct iphdr *ip;
-		bool src_net, dst_net;
+	struct iphdr _iph;
+	const struct iphdr *ip;
+	bool src_net, dst_net;
 
-		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
-		if (ip == NULL)
-			return Drop(skb);
+	ip = qbuff_ip_header_pointer(buff, 0, sizeof(_iph), &_iph);
+	if (ip == NULL)
+		return Drop(buff);
 
-		if (ip->saddr == (__force __be32)0xffffffff ||
-		    ip->daddr == (__force __be32)0xffffffff)
-			return Broadcast(skb);
+	if (ip->saddr == (__force __be32)0xffffffff ||
+	    ip->daddr == (__force __be32)0xffffffff)
+		return Broadcast(buff);
 
-		src_net = (ip->saddr & mask) == addr;
-		dst_net = (ip->daddr & mask) == addr;
+	src_net = (ip->saddr & mask) == addr;
+	dst_net = (ip->daddr & mask) == addr;
 
-		if (src_net && dst_net)
-			return DoubleSteering(skb, (__force uint32_t)(ip->saddr & submask),
-						   (__force uint32_t)(ip->daddr & submask));
-		if (src_net)
-			return Steering(skb, (__force uint32_t)(ip->saddr & submask));
+	if (src_net && dst_net)
+		return DoubleSteering(buff, (__force uint32_t)(ip->saddr & submask),
+					   (__force uint32_t)(ip->daddr & submask));
+	if (src_net)
+		return Steering(buff, (__force uint32_t)(ip->saddr & submask));
 
-		if (dst_net)
-			return Steering(skb, (__force uint32_t)(ip->daddr & submask));
+	if (dst_net)
+		return Steering(buff, (__force uint32_t)(ip->daddr & submask));
 
-	return Drop(skb);
+	return Drop(buff);
 }
 
 
-static ActionSkBuff
-steering_flow(arguments_t args, SkBuff skb)
+static ActionQbuff
+steering_flow(arguments_t args, struct qbuff * buff)
 {
-		struct iphdr _iph;
-		const struct iphdr *ip;
+	struct iphdr _iph;
+	const struct iphdr *ip;
 
-		struct udphdr _udp;
-		const struct udphdr *udp;
-		__be32 hash;
+	struct udphdr _udp;
+	const struct udphdr *udp;
+	__be32 hash;
 
-		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
-		if (ip == NULL)
-			return Drop(skb);
+	ip = qbuff_ip_header_pointer(buff, 0, sizeof(_iph), &_iph);
+	if (ip == NULL)
+		return Drop(buff);
 
-		if (ip->protocol != IPPROTO_UDP &&
-		    ip->protocol != IPPROTO_TCP)
-			return Drop(skb);
+	if (ip->protocol != IPPROTO_UDP &&
+	    ip->protocol != IPPROTO_TCP)
+		return Drop(buff);
 
-		udp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(_udp), &_udp);
-		if (udp == NULL)
-			return Drop(skb);  /* broken */
+	udp = qbuff_ip_header_pointer(buff, (ip->ihl<<2), sizeof(_udp), &_udp);
+	if (udp == NULL)
+		return Drop(buff);  /* broken */
 
-		hash = ip->saddr ^ ip->daddr ^ (__force __be32)udp->source ^ (__force __be32)udp->dest;
+	hash = ip->saddr ^ ip->daddr ^ (__force __be32)udp->source ^ (__force __be32)udp->dest;
 
-		return Steering(skb, (__force uint32_t)hash);
-	}
+	return Steering(buff, (__force uint32_t)hash);
+}
 
 
 struct pfq_lang_function_descr steering_functions[] = {
 
-	{ "steer_rrobin","SkBuff -> Action SkBuff", steering_rrobin  },
-	{ "steer_rss",   "SkBuff -> Action SkBuff", steering_rss     },
-	{ "steer_link",  "SkBuff -> Action SkBuff", steering_link    },
-	{ "steer_link_local",  "String -> SkBuff -> Action SkBuff", steering_link_local, steering_link_local_init },
-	{ "steer_mac",   "SkBuff -> Action SkBuff", steering_mac     },
-	{ "steer_vlan",  "SkBuff -> Action SkBuff", steering_vlan_id },
-	{ "steer_ip",    "SkBuff -> Action SkBuff", steering_ip      },
+	{ "steer_rrobin","Qbuff -> Action Qbuff", steering_rrobin  },
+	{ "steer_rss",   "Qbuff -> Action Qbuff", steering_rss     },
+	{ "steer_link",  "Qbuff -> Action Qbuff", steering_link    },
+	{ "steer_link_local",  "String -> Qbuff -> Action Qbuff", steering_link_local, steering_link_local_init },
+	{ "steer_mac",   "Qbuff -> Action Qbuff", steering_mac     },
+	{ "steer_vlan",  "Qbuff -> Action Qbuff", steering_vlan_id },
+	{ "steer_ip",    "Qbuff -> Action Qbuff", steering_ip      },
 
-	{ "steer_ip_local","CIDR -> SkBuff -> Action SkBuff", steering_ip_local, steering_ip_local_init },
+	{ "steer_ip_local","CIDR -> Qbuff -> Action Qbuff", steering_ip_local, steering_ip_local_init },
 
-	{ "steer_p2p",   "SkBuff -> Action SkBuff", steering_p2p     },
-	{ "steer_flow",  "SkBuff -> Action SkBuff", steering_flow    },
-	{ "steer_to",    "CInt   -> SkBuff -> Action SkBuff", steering_to },
+	{ "steer_p2p",   "Qbuff -> Action Qbuff", steering_p2p     },
+	{ "steer_flow",  "Qbuff -> Action Qbuff", steering_flow    },
+	{ "steer_to",    "CInt   -> Qbuff -> Action Qbuff", steering_to },
 
-	{ "steer_field", "Word32 -> Word32 -> SkBuff -> Action SkBuff", steering_field },
-	{ "steer_field_double",   "Word32 -> Word32 -> Word32 -> SkBuff -> Action SkBuff", steering_field_double},
-	{ "steer_field_symmetric","Word32 -> Word32 -> Word32 -> SkBuff -> Action SkBuff", steering_field_symmetric },
+	{ "steer_field", "Word32 -> Word32 -> Qbuff -> Action Qbuff", steering_field },
+	{ "steer_field_double",   "Word32 -> Word32 -> Word32 -> Qbuff -> Action Qbuff", steering_field_double},
+	{ "steer_field_symmetric","Word32 -> Word32 -> Word32 -> Qbuff -> Action Qbuff", steering_field_symmetric },
 
-	{ "steer_net",   "Word32 -> Word32 -> Word32 -> SkBuff -> Action SkBuff", steering_net, steering_net_init },
+	{ "steer_net",   "Word32 -> Word32 -> Word32 -> Qbuff -> Action Qbuff", steering_net, steering_net_init },
 	{ NULL }};
 

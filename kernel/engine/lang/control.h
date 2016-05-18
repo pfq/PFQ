@@ -28,8 +28,8 @@
 #include <engine/lang/predicate.h>
 
 
-static inline ActionSkBuff
-conditional(arguments_t args, SkBuff b)
+static inline ActionQbuff
+conditional(arguments_t args, struct qbuff * b)
 {
         predicate_t pred_ = GET_ARG_0(predicate_t, args);
         function_t  then_ = GET_ARG_1(function_t, args);
@@ -41,8 +41,8 @@ conditional(arguments_t args, SkBuff b)
 	return EVAL_FUNCTION(else_, b);
 }
 
-static inline ActionSkBuff
-when(arguments_t args, SkBuff b)
+static inline ActionQbuff
+when(arguments_t args, struct qbuff * b)
 {
         predicate_t pred_ = GET_ARG_0(predicate_t, args);
         function_t  fun_  = GET_ARG_1(function_t, args);
@@ -53,8 +53,8 @@ when(arguments_t args, SkBuff b)
 	return Pass(b);
 }
 
-static inline ActionSkBuff
-unless(arguments_t args, SkBuff b)
+static inline ActionQbuff
+unless(arguments_t args, struct qbuff * b)
 {
         predicate_t pred_ = GET_ARG_0(predicate_t, args);
         function_t  fun_  = GET_ARG_1(function_t, args);
@@ -66,57 +66,57 @@ unless(arguments_t args, SkBuff b)
 }
 
 
-static inline ActionSkBuff
-shift(arguments_t args, SkBuff b)
+static inline ActionQbuff
+shift(arguments_t args, struct qbuff * b)
 {
         function_t  fun_  = GET_ARG_0(function_t, args);
-	ActionSkBuff ret;
+	ActionQbuff ret;
 
-	PFQ_CB(b)->monad->shift++;
-	PFQ_CB(b)->monad->ipoff = 0;
-	PFQ_CB(b)->monad->ipproto = IPPROTO_NONE;
+	b->monad->shift++;
+	b->monad->ipoff = 0;
+	b->monad->ipproto = IPPROTO_NONE;
 
 	ret = EVAL_FUNCTION(fun_, b);
 
-	PFQ_CB(b)->monad->shift--;
-	PFQ_CB(b)->monad->ipoff = 0;
-	PFQ_CB(b)->monad->ipproto = IPPROTO_NONE;
+	b->monad->shift--;
+	b->monad->ipoff = 0;
+	b->monad->ipproto = IPPROTO_NONE;
 
 	return ret;
 }
 
 
-static inline ActionSkBuff
-src_ctx(arguments_t args, SkBuff b)
+static inline ActionQbuff
+src_ctx(arguments_t args, struct qbuff * b)
 {
         function_t  fun_  = GET_ARG_0(function_t, args);
-	ActionSkBuff ret;
+	ActionQbuff ret;
 
-	int ctx = PFQ_CB(b)->monad->ep_ctx;
+	int ctx = b->monad->ep_ctx;
 
-        PFQ_CB(b)->monad->ep_ctx = EPOINT_SRC;
+        b->monad->ep_ctx = EPOINT_SRC;
 
 	ret = EVAL_FUNCTION(fun_, b);
 
-	PFQ_CB(b)->monad->ep_ctx = ctx;
+	b->monad->ep_ctx = ctx;
 
 	return ret;
 }
 
 
-static inline ActionSkBuff
-dst_ctx(arguments_t args, SkBuff b)
+static inline ActionQbuff
+dst_ctx(arguments_t args, struct qbuff * b)
 {
         function_t  fun_  = GET_ARG_0(function_t, args);
-	ActionSkBuff ret;
+	ActionQbuff ret;
 
-	int ctx = PFQ_CB(b)->monad->ep_ctx;
+	int ctx = b->monad->ep_ctx;
 
-        PFQ_CB(b)->monad->ep_ctx = EPOINT_DST;
+        b->monad->ep_ctx = EPOINT_DST;
 
 	ret = EVAL_FUNCTION(fun_, b);
 
-	PFQ_CB(b)->monad->ep_ctx = ctx;
+	b->monad->ep_ctx = ctx;
 
 	return ret;
 }

@@ -28,7 +28,6 @@
 #include <pfq/qbuff.h>
 #include <pfq/io.h>
 #include <pfq/vlan.h>
-#include <pfq/GC.h>
 
 #include <engine/percpu.h>
 #include <engine/global.h>
@@ -39,6 +38,7 @@
 
 #include <engine/queue.h>
 #include <engine/bitops.h>
+#include <engine/GC.h>
 
 
 /* send this packet to selected sockets */
@@ -112,25 +112,24 @@ int pfq_process_batch(struct pfq_percpu_data *data,
 		      struct GC_data *GC_ptr,
 		      int cpu)
 {
-	unsigned long long sock_queue[Q_SKBUFF_BATCH];
+	unsigned long long sock_queue[Q_BUFF_BATCH_LEN];
         unsigned long all_group_mask, socket_mask;
 	struct pfq_endpoint_info endpoints;
-        struct sk_buff *skb;
-	struct sk_buff __GC * buff;
+        struct qbuff *buff;
 
         long unsigned n, bit, lb;
-	size_t this_batch_len;
+	size_t current_batch_len;
 	struct pfq_lang_monad monad;
 
 #ifdef PFQ_RX_PROFILE
 	cycles_t start, stop;
 #endif
 
-	PFQ_BUILD_BUG_ON_MSG(Q_SKBUFF_BATCH > (sizeof(sock_queue[0]) << 3), "skbuff batch overflow");
+	PFQ_BUILD_BUG_ON_MSG(Q_BUFF_BATCH_LEN > (sizeof(sock_queue[0]) << 3), "qbuff batch overflow");
 
-	this_batch_len = GC_size(GC_ptr);
+	current_batch_len = GC_size(GC_ptr);
 
-	__sparse_add(global_stats, recv, this_batch_len, cpu);
+	__sparse_add(global_stats, recv, current_batch_len, cpu);
 
 	/* cleanup sock_queue... */
 
@@ -141,19 +140,18 @@ int pfq_process_batch(struct pfq_percpu_data *data,
 	start = get_cycles();
 #endif
 
-        /* setup all the skbs collected */
+        /* setup all the qbuff collected */
 
-	for_each_skbuff(SKBUFF_QUEUE_ADDR(GC_ptr->pool), skb, n)
+	for_each_qbuff(&GC_ptr->pool, buff, n)
         {
-		struct qbuff qbuff = {.skb = skb};
-		uint16_t queue = qbuff_get_rx_queue(&qbuff);
+		uint16_t queue = qbuff_get_rx_queue(buff);
+		unsigned long group_mask = pfq_devmap_get_groups(qbuff_get_ifindex(buff), queue);
 
-		unsigned long group_mask = pfq_devmap_get_groups(skb->dev->ifindex, queue);
 		all_group_mask |= group_mask;
 
-		PFQ_CB(skb)->group_mask = group_mask;
-		PFQ_CB(skb)->monad = &monad;
-		PFQ_CB(skb)->counter = data->counter++;
+		buff->group_mask = group_mask;
+		buff->monad = &monad;
+		buff->counter = data->counter++;
 	}
 
         /* process all groups enabled for this batch */
@@ -165,19 +163,20 @@ int pfq_process_batch(struct pfq_percpu_data *data,
 		struct pfq_group * this_group = pfq_get_group(gid);
 		bool bf_filt_enabled = atomic_long_read(&this_group->bp_filter);
 		bool vlan_filt_enabled = pfq_vlan_filters_enabled(gid);
-		struct GC_skbuff_batch refs = { .len = 0 };
+
+		struct pfq_ref_batch refs = { .len = 0 };
 
 		socket_mask = 0;
 
-		for_each_skbuff_upto(this_batch_len, &GC_ptr->pool, buff, n)
+		for_each_qbuff_upto(current_batch_len, &GC_ptr->pool, buff, n)
 		{
 			struct pfq_lang_computation_tree *prg;
 			unsigned long sock_mask = 0;
 
 			/* skip this packet for this group ? */
 
-			if ((PFQ_CB(buff)->group_mask & bit) == 0) {
-				refs.queue[refs.len++] = NULL;
+			if ((buff->group_mask & bit) == 0) {
+				refs.ref[refs.len++] = NULL;
 				continue;
 			}
 
@@ -188,11 +187,10 @@ int pfq_process_batch(struct pfq_percpu_data *data,
 			/* check if bp filter is enabled */
 
 			if (bf_filt_enabled) {
-				struct qbuff qbuff = { .skb = PFQ_SKB(buff) };
-				if (!qbuff_run_bp_filter(&qbuff, this_group))
+				if (!qbuff_run_bp_filter(buff, this_group))
 				{
 					__sparse_inc(this_group->stats, drop, cpu);
-					refs.queue[refs.len++] = NULL;
+					refs.ref[refs.len++] = NULL;
 					continue;
 				}
 			}
@@ -200,23 +198,22 @@ int pfq_process_batch(struct pfq_percpu_data *data,
 			/* check vlan filter */
 
 			if (vlan_filt_enabled) {
-				struct qbuff qbuff = { .skb = PFQ_SKB(buff) };
-				if (!qbuff_run_vlan_filter(&qbuff, (pfq_gid_t)gid)) {
+				if (!qbuff_run_vlan_filter(buff, (pfq_gid_t)gid)) {
 					__sparse_inc(this_group->stats, drop, cpu);
-					refs.queue[refs.len++] = NULL;
+					refs.ref[refs.len++] = NULL;
 					continue;
 				}
 			}
 
 			/* evaluate the computation of the current group */
 
-			PFQ_CB(buff)->state = 0;
+			buff->state = 0;
 
 			prg = (struct pfq_lang_computation_tree *)atomic_long_read(&this_group->comp);
 			if (prg) {
 				unsigned long cbit, eligible_mask = 0;
-				size_t to_kernel = PFQ_CB(buff)->log->to_kernel;
-				size_t num_fwd = PFQ_CB(buff)->log->num_devs;
+				size_t to_kernel = buff->log->to_kernel;
+				size_t num_fwd = buff->log->num_devs;
 
 				/* setup monad for this computation */
 
@@ -231,33 +228,33 @@ int pfq_process_batch(struct pfq_percpu_data *data,
 
 				/* run the functional program */
 
-				buff = pfq_lang_run(buff, prg).skb;
+				buff = pfq_lang_run(buff, prg).qbuff;
 				if (buff == NULL) {
 					__sparse_inc(this_group->stats, drop, cpu);
-					refs.queue[refs.len++] = NULL;
+					refs.ref[refs.len++] = NULL;
 					continue;
 				}
 
 				/* park the monad state */
 
-				PFQ_CB(buff)->state = monad.state;
+				buff->state = monad.state;
 
 				/* update stats */
 
-                                __sparse_add(this_group->stats, frwd, PFQ_CB(buff)->log->num_devs -num_fwd, cpu);
-                                __sparse_add(this_group->stats, kern, PFQ_CB(buff)->log->to_kernel -to_kernel, cpu);
+                                __sparse_add(this_group->stats, frwd, buff->log->num_devs -num_fwd, cpu);
+                                __sparse_add(this_group->stats, kern, buff->log->to_kernel -to_kernel, cpu);
 
 				/* skip the packet? */
 
 				if (is_drop(monad.fanout)) {
 					__sparse_inc(this_group->stats, drop, cpu);
-					refs.queue[refs.len++] = NULL;
+					refs.ref[refs.len++] = NULL;
 					continue;
 				}
 
 				/* save a reference to the current packet */
 
-				refs.queue[refs.len++] = buff;
+				refs.ref[refs.len++] = buff;
 
 				/* compute the eligible mask of sockets enabled for this packet... */
 
@@ -307,7 +304,7 @@ int pfq_process_batch(struct pfq_percpu_data *data,
 			}
 			else {
 				/* save a reference to the current packet */
-				refs.queue[refs.len++] = buff;
+				refs.ref[refs.len++] = buff;
 				sock_mask |= atomic_long_read(&this_group->sock_id[0]);
 			}
 
@@ -321,38 +318,32 @@ int pfq_process_batch(struct pfq_percpu_data *data,
 		{
 			pfq_id_t id = (__force pfq_id_t)pfq_ctz(lb);
 			struct pfq_sock * so = pfq_get_sock_by_id(id);
-			copy_to_endpoint_skbs(so, SKBUFF_GC_QUEUE_ADDR(refs), sock_queue[(int __force)id], cpu, gid);
+			copy_to_endpoint_qbuffs(so, PFQ_QBUFF_REFS(&refs), sock_queue[(int __force)id], cpu, gid);
 		})
 	})
 
-	/* forward skbs to network devices */
+	/* forward buffs to network devices */
 
 	GC_get_lazy_endpoints(GC_ptr, &endpoints);
 
 	if (endpoints.cnt_total)
 	{
-		size_t total = pfq_skb_queue_lazy_xmit_run(SKBUFF_GC_QUEUE_ADDR(GC_ptr->pool), &endpoints);
+		size_t total = pfq_qbuff_queue_lazy_xmit_run(PFQ_QBUFF_QUEUE(&GC_ptr->pool), &endpoints);
 
 		__sparse_add(global_stats, frwd, total, cpu);
 		__sparse_add(global_stats, disc, endpoints.cnt_total - total, cpu);
 	}
 
-	/* forward skbs to kernel or to the pool */
+	/* forward buffs to kernel or release them... */
 
-	for_each_skbuff(SKBUFF_QUEUE_ADDR(GC_ptr->pool), skb, n)
+	for_each_qbuff(PFQ_QBUFF_QUEUE(&GC_ptr->pool), buff, n)
 	{
-		struct pfq_cb *cb = PFQ_CB(skb);
-
-		/* send a copy of this skb to the kernel */
-
-		if (cb->direct && fwd_to_kernel(skb)) {
-		        __sparse_inc(global_stats, kern, cpu);
-			skb_pull(skb, skb->mac_len);
-			skb->peeked = capture_incoming;
-			netif_receive_skb(skb);
+		if (buff->direct && fwd_to_kernel(buff)) {
+			qbuff_send_to_kernel(buff, cpu);
+			__sparse_inc(global_stats, kern, cpu);
 		}
 		else {
-			pfq_kfree_skb_pool(skb, &pool->rx_pool);
+			qbuff_free(buff, &pool->rx_pool);
 		}
 	}
 

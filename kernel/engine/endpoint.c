@@ -44,7 +44,7 @@ add_dev_to_endpoints(struct net_device *dev, struct pfq_endpoint_info *ts)
 		}
 	}
 
-	if (n < Q_GC_LOG_QUEUE_LEN) {
+	if (n < Q_BUFF_LOG_LEN) {
 		ts->dev[n] = dev;
 		ts->cnt[n] = 1;
 		ts->cnt_total++;
@@ -56,7 +56,7 @@ add_dev_to_endpoints(struct net_device *dev, struct pfq_endpoint_info *ts)
 
 
 static
-size_t copy_to_user_skbs(struct pfq_sock *so, struct pfq_skbuff_GC_queue *skbs,
+size_t copy_to_user_qbuffs(struct pfq_sock *so, struct pfq_qbuff_refs *buffs,
 			 unsigned long long mask, int cpu, pfq_gid_t gid)
 {
         unsigned int len = pfq_popcount(mask);
@@ -66,7 +66,7 @@ size_t copy_to_user_skbs(struct pfq_sock *so, struct pfq_skbuff_GC_queue *skbs,
 
 		smp_rmb();
 
-                cpy = pfq_sk_rx_queue_recv(&so->opt, skbs, mask, len, gid);
+                cpy = pfq_sk_queue_recv(&so->opt, buffs, mask, len, gid);
 
 		__sparse_add(so->stats, recv, cpy, cpu);
 
@@ -83,7 +83,7 @@ size_t copy_to_user_skbs(struct pfq_sock *so, struct pfq_skbuff_GC_queue *skbs,
 
 
 static
-size_t copy_to_dev_skbs(struct pfq_sock *so, struct pfq_skbuff_GC_queue *skbs,
+size_t copy_to_dev_qbuffs(struct pfq_sock *so, struct pfq_qbuff_refs *buffs,
 			 unsigned long long mask, int cpu, pfq_gid_t gid)
 {
 	struct net_device *dev;
@@ -99,7 +99,7 @@ size_t copy_to_dev_skbs(struct pfq_sock *so, struct pfq_skbuff_GC_queue *skbs,
                         return false;
 		}
 
-		sent = pfq_skb_queue_lazy_xmit(skbs, mask, dev, so->egress_queue);
+		sent = pfq_qbuff_queue_lazy_xmit(buffs, mask, dev, so->egress_queue);
                 dev_put(dev);
 		return sent;
 	}
@@ -108,16 +108,17 @@ size_t copy_to_dev_skbs(struct pfq_sock *so, struct pfq_skbuff_GC_queue *skbs,
 }
 
 
-size_t copy_to_endpoint_skbs(struct pfq_sock *so, struct pfq_skbuff_GC_queue *pool,
+size_t copy_to_endpoint_qbuffs(struct pfq_sock *so,
+			       struct pfq_qbuff_refs *buffs,
 			      unsigned long long mask, int cpu, pfq_gid_t gid)
 {
 	switch(so->egress_type)
 	{
 	case pfq_endpoint_socket:
-		return copy_to_user_skbs(so, pool, mask, cpu, gid);
+		return copy_to_user_qbuffs(so, buffs, mask, cpu, gid);
 
 	case pfq_endpoint_device:
-		return copy_to_dev_skbs(so, pool, mask, cpu, gid);
+		return copy_to_dev_qbuffs(so, buffs, mask, cpu, gid);
 	}
 
 	return false;

@@ -22,7 +22,10 @@
  ****************************************************************/
 
 #include <engine/percpu.h>
+#include <engine/qbuff.h>
+
 #include <pfq/percpu.h>
+#include <pfq/qbuff.h>
 
 
 int pfq_percpu_init(void)
@@ -92,17 +95,17 @@ int pfq_percpu_destruct(void)
         for_each_possible_cpu(cpu) {
 
 		struct pfq_percpu_data *data;
-	        struct sk_buff *skb;
-		int n = 0;
+		struct qbuff *buff;
+		size_t n;
 
 		preempt_disable();
 
                 data = per_cpu_ptr(percpu_data, cpu);
 
-		for_each_skbuff(SKBUFF_QUEUE_ADDR(data->GC->pool), skb, n)
+		for_each_qbuff(&data->GC->pool, buff, n)
 		{
 			sparse_inc(memory_stats, os_free);
-			kfree_skb(skb);
+			kfree_skb(QBUFF_SKB(buff));
 		}
 
                 total += data->GC->pool.len;

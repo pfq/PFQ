@@ -26,22 +26,19 @@
 
 #include <engine/group.h>
 #include <engine/define.h>
+#include <engine/GC.h>
 
-#include <pfq/skbuff.h>
 #include <pfq/sparse.h>
 #include <pfq/kcompat.h>
-#include <pfq/GC.h>
+#include <pfq/qbuff.h>
 
 /* The Action monad */
 
-#define MakeAction(type, name) \
-typedef struct \
-{ \
-	type	name; \
-} Action ## type;
+typedef struct
+{
+	struct qbuff *	qbuff;
 
-
-MakeAction(SkBuff, skb);
+} ActionQbuff;
 
 
 /* fanout: actions types */
@@ -85,112 +82,112 @@ struct pfq_lang_monad
 /* Fanout constructors */
 
 static inline
-ActionSkBuff
-Pass(SkBuff skb)
+ActionQbuff
+Pass(struct qbuff * buff)
 {
-        return (ActionSkBuff){skb};
+        return (ActionQbuff){buff};
 }
 
 static inline
-ActionSkBuff
-Drop(SkBuff skb)
+ActionQbuff
+Drop(struct qbuff * buff)
 {
-        PFQ_CB(skb)->monad->fanout.type = fanout_drop;
-        return (ActionSkBuff){skb};
+        buff->monad->fanout.type = fanout_drop;
+        return (ActionQbuff){buff};
 }
 
 static inline
-ActionSkBuff
-Copy(SkBuff skb)
+ActionQbuff
+Copy(struct qbuff * buff)
 {
-        PFQ_CB(skb)->monad->fanout.type = fanout_copy;
-        return (ActionSkBuff){skb};
+        buff->monad->fanout.type = fanout_copy;
+        return (ActionQbuff){buff};
 }
 
 static inline
-ActionSkBuff
-Broadcast(SkBuff skb)
+ActionQbuff
+Broadcast(struct qbuff * buff)
 {
-        fanout_t * a  = &PFQ_CB(skb)->monad->fanout;
+        fanout_t * a  = &buff->monad->fanout;
         a->class_mask = Q_CLASS_ANY;
         a->type       = fanout_copy;
-        return (ActionSkBuff){skb};
+        return (ActionQbuff){buff};
 }
 
 static inline
-ActionSkBuff
-Steering(SkBuff skb, uint32_t hash)
+ActionQbuff
+Steering(struct qbuff * buff, uint32_t hash)
 {
-        fanout_t * a = &PFQ_CB(skb)->monad->fanout;
+        fanout_t * a = &buff->monad->fanout;
         a->type  = fanout_steer;
         a->hash  = hash;
-        return (ActionSkBuff){skb};
+        return (ActionQbuff){buff};
 }
 
 static inline
-ActionSkBuff
-DoubleSteering(SkBuff skb, uint32_t h1, uint32_t h2)
+ActionQbuff
+DoubleSteering(struct qbuff * buff, uint32_t h1, uint32_t h2)
 {
-        fanout_t * a = &PFQ_CB(skb)->monad->fanout;
+        fanout_t * a = &buff->monad->fanout;
         a->type  = fanout_double;
         a->hash  = h1;
         a->hash2 = h2;
-        return (ActionSkBuff){skb};
+        return (ActionQbuff){buff};
 }
 
 /* utility functions */
 
 static inline
-SkBuff
-class(SkBuff skb, uint64_t class_mask)
+struct qbuff *
+class(struct qbuff * buff, uint64_t class_mask)
 {
-        PFQ_CB(skb)->monad->fanout.class_mask = class_mask;
-        return skb;
+        buff->monad->fanout.class_mask = class_mask;
+        return buff;
 }
 
 static inline
-SkBuff
-to_kernel(SkBuff skb)
+struct qbuff *
+to_kernel(struct qbuff * buff)
 {
-        PFQ_CB(skb)->log->to_kernel = true;
-        return skb;
+        buff->log->to_kernel = true;
+        return buff;
 }
 
 
 static inline
-uint32_t get_mark(SkBuff skb)
+uint32_t get_mark(struct qbuff * buff)
 {
-        return skb->mark;
+        return qbuff_get_mark(buff);
 }
 
 static inline
-void set_mark(SkBuff skb, uint32_t value)
+void set_mark(struct qbuff * buff, uint32_t value)
 {
-        skb->mark = value;
+        qbuff_set_mark(buff,value);
 }
 
 static inline
-uint32_t get_state(SkBuff skb)
+uint32_t get_state(struct qbuff * buff)
 {
-        return PFQ_CB(skb)->monad->state;
+        return buff->monad->state;
 }
 
 static inline
-void set_state(SkBuff skb, uint32_t state)
+void set_state(struct qbuff * buff, uint32_t state)
 {
-        PFQ_CB(skb)->monad->state = state;
+        buff->monad->state = state;
 }
 
 static inline
-pfq_group_stats_t * get_group_stats(SkBuff skb)
+pfq_group_stats_t * get_group_stats(struct qbuff * buff)
 {
-	return this_cpu_ptr(PFQ_CB(skb)->monad->group->stats);
+	return this_cpu_ptr(buff->monad->group->stats);
 }
 
 static inline
-struct pfq_group_counters * get_group_counters(SkBuff skb)
+struct pfq_group_counters * get_group_counters(struct qbuff * buff)
 {
-	return this_cpu_ptr(PFQ_CB(skb)->monad->group->counters);
+	return this_cpu_ptr(buff->monad->group->counters);
 }
 
 

@@ -42,7 +42,6 @@ extern int skb_pool_size;
 
 extern int tx_affinity[Q_MAX_CPU];
 extern int tx_thread_nr;
-
 extern int tx_rate_control_eager;
 
 

@@ -21,13 +21,13 @@
  *
  ****************************************************************/
 
-#include <engine/lang/skbuff.h>
 #include <engine/lang/module.h>
+#include <engine/lang/qbuff.h>
 #include <engine/lang/bloom.h>
 
 
 static bool
-bloom_src(arguments_t args, SkBuff skb)
+bloom_src(arguments_t args, struct qbuff * buff)
 {
 	struct iphdr _iph;
 	const struct iphdr *ip;
@@ -35,7 +35,7 @@ bloom_src(arguments_t args, SkBuff skb)
 	__be32 mask;
 	char *mem;
 
-	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	ip = qbuff_ip_header_pointer(buff, 0, sizeof(_iph), &_iph);
 	if (ip == NULL)
 		return false;
 
@@ -53,7 +53,7 @@ bloom_src(arguments_t args, SkBuff skb)
 
 
 static bool
-bloom_dst(arguments_t args, SkBuff skb)
+bloom_dst(arguments_t args, struct qbuff * buff)
 {
 	struct iphdr _iph;
 	const struct iphdr *ip;
@@ -61,7 +61,7 @@ bloom_dst(arguments_t args, SkBuff skb)
 	__be32 mask;
 	char *mem;
 
-	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	ip = qbuff_ip_header_pointer(buff, 0, sizeof(_iph), &_iph);
 	if (ip == NULL)
 		return false;
 
@@ -78,7 +78,7 @@ bloom_dst(arguments_t args, SkBuff skb)
 }
 
 static bool
-bloom(arguments_t args, SkBuff skb)
+bloom(arguments_t args, struct qbuff * buff)
 {
 	struct iphdr _iph;
 	const struct iphdr *ip;
@@ -86,7 +86,7 @@ bloom(arguments_t args, SkBuff skb)
 	__be32 mask;
 	char *mem;
 
-	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	ip = qbuff_ip_header_pointer(buff, 0, sizeof(_iph), &_iph);
 	if (ip == NULL)
 		return false;
 
@@ -94,7 +94,7 @@ bloom(arguments_t args, SkBuff skb)
 	mem  = GET_ARG_1(char *,   args);
 	mask = GET_ARG_2(__be32,   args);
 
-	if (PFQ_CB(skb)->monad->ep_ctx & EPOINT_DST)
+	if (buff->monad->ep_ctx & EPOINT_DST)
 	{
 		addr = be32_to_cpu(ip->daddr & mask);
 
@@ -105,7 +105,7 @@ bloom(arguments_t args, SkBuff skb)
 			return true;
 	}
 
-	if (PFQ_CB(skb)->monad->ep_ctx & EPOINT_SRC)
+	if (buff->monad->ep_ctx & EPOINT_SRC)
 	{
 		addr = be32_to_cpu(ip->saddr & mask);
 
@@ -120,29 +120,29 @@ bloom(arguments_t args, SkBuff skb)
 }
 
 
-static ActionSkBuff
-bloom_filter(arguments_t args, SkBuff skb)
+static ActionQbuff
+bloom_filter(arguments_t args, struct qbuff * buff)
 {
-	if (bloom(args, skb))
-		return Pass(skb);
-	return Drop(skb);
+	if (bloom(args, buff))
+		return Pass(buff);
+	return Drop(buff);
 }
 
 
-static ActionSkBuff
-bloom_src_filter(arguments_t args, SkBuff skb)
+static ActionQbuff
+bloom_src_filter(arguments_t args, struct qbuff * buff)
 {
-	if (bloom_src(args, skb))
-		return Pass(skb);
-	return Drop(skb);
+	if (bloom_src(args, buff))
+		return Pass(buff);
+	return Drop(buff);
 }
 
-static ActionSkBuff
-bloom_dst_filter(arguments_t args, SkBuff skb)
+static ActionQbuff
+bloom_dst_filter(arguments_t args, struct qbuff * buff)
 {
-	if (bloom_dst(args, skb))
-		return Pass(skb);
-	return Drop(skb);
+	if (bloom_dst(args, buff))
+		return Pass(buff);
+	return Drop(buff);
 }
 
 
@@ -217,11 +217,11 @@ static int bloom_fini(arguments_t args)
 
 struct pfq_lang_function_descr bloom_functions[] = {
 
-	{"bloom",		"CInt -> [Word32] -> CInt -> SkBuff -> Bool",		bloom,			bloom_init,	bloom_fini},
-	{"bloom_src",		"CInt -> [Word32] -> CInt -> SkBuff -> Bool",		bloom_src,		bloom_init,	bloom_fini},
-	{"bloom_dst",		"CInt -> [Word32] -> CInt -> SkBuff -> Bool",		bloom_dst,		bloom_init,	bloom_fini},
-	{"bloom_filter",	"CInt -> [Word32] -> CInt -> SkBuff -> Action SkBuff",	bloom_filter,		bloom_init,	bloom_fini},
-	{"bloom_src_filter",	"CInt -> [Word32] -> CInt -> SkBuff -> Action SkBuff",	bloom_src_filter,	bloom_init,	bloom_fini},
-	{"bloom_dst_filter",	"CInt -> [Word32] -> CInt -> SkBuff -> Action SkBuff",	bloom_dst_filter,	bloom_init,	bloom_fini},
+	{"bloom",		"CInt -> [Word32] -> CInt -> Qbuff -> Bool",		bloom,			bloom_init,	bloom_fini},
+	{"bloom_src",		"CInt -> [Word32] -> CInt -> Qbuff -> Bool",		bloom_src,		bloom_init,	bloom_fini},
+	{"bloom_dst",		"CInt -> [Word32] -> CInt -> Qbuff -> Bool",		bloom_dst,		bloom_init,	bloom_fini},
+	{"bloom_filter",	"CInt -> [Word32] -> CInt -> Qbuff -> Action Qbuff",	bloom_filter,		bloom_init,	bloom_fini},
+	{"bloom_src_filter",	"CInt -> [Word32] -> CInt -> Qbuff -> Action Qbuff",	bloom_src_filter,	bloom_init,	bloom_fini},
+	{"bloom_dst_filter",	"CInt -> [Word32] -> CInt -> Qbuff -> Action Qbuff",	bloom_dst_filter,	bloom_init,	bloom_fini},
 	{ NULL }};
 
