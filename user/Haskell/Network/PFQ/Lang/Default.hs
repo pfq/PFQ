@@ -151,7 +151,7 @@ module Network.PFQ.Lang.Default
 
         -- * Steering functions
         -- | Monadic functions used to dispatch packets across sockets.
-        -- They evaluate to /Steer Hash Skbuff/, if the packet has a certain property, /Drop/ otherwise.
+        -- They evaluate to /Steer Hash Qbuff/, if the packet has a certain property, /Drop/ otherwise.
 
     , steer_rrobin
     , steer_rss
@@ -309,40 +309,40 @@ p `any_bit` x = Predicate "any_bit" p x () () () () () ()
 p `all_bit` x = Predicate "all_bit" p x () () () () () ()
 
 
--- | Evaluate to /True/ if the SkBuff is an IPv4 packet.
+-- | Evaluate to /True/ if the Qbuff is an IPv4 packet.
 is_ip = Predicate "is_ip" () () () () () () () ()
 
--- | Evaluate to /True/ if the SkBuff is an UDP packet.
+-- | Evaluate to /True/ if the Qbuff is an UDP packet.
 is_udp = Predicate "is_udp" () () () () () () () ()
 
--- | Evaluate to /True/ if the SkBuff is a TCP packet.
+-- | Evaluate to /True/ if the Qbuff is a TCP packet.
 is_tcp = Predicate "is_tcp" () () () () () () () ()
 
--- | Evaluate to /True/ if the SkBuff is an ICMP packet.
+-- | Evaluate to /True/ if the Qbuff is an ICMP packet.
 is_icmp = Predicate "is_icmp" () () () () () () () ()
 
--- | Evaluate to /True/ if the SkBuff is an UDP or TCP packet.
+-- | Evaluate to /True/ if the Qbuff is an UDP or TCP packet.
 is_flow = Predicate "is_flow" () () () () () () () ()
 
--- | Evaluate to /True/ if the SkBuff has a vlan tag.
+-- | Evaluate to /True/ if the Qbuff has a vlan tag.
 has_vlan = Predicate "has_vlan" () () () () () () () ()
 
--- | Evaluate to /True/ if the SkBuff is a TCP fragment.
+-- | Evaluate to /True/ if the Qbuff is a TCP fragment.
 is_frag = Predicate "is_frag" () () () () () () () ()
 
--- | Evaluate to /True/ if the SkBuff is the first TCP fragment.
+-- | Evaluate to /True/ if the Qbuff is the first TCP fragment.
 is_first_frag = Predicate "is_first_frag" () () () () () () () ()
 
--- | Evaluate to /True/ if the SkBuff is a TCP fragment, but the first.
+-- | Evaluate to /True/ if the Qbuff is a TCP fragment, but the first.
 is_more_frag = Predicate "is_more_frag" () () () () () () () ()
 
--- | Evaluate to /True/ if the SkBuff has the given vlan id.
+-- | Evaluate to /True/ if the Qbuff has the given vlan id.
 --
 -- > has_vid 42
 has_vid :: Int -> NetPredicate
 has_vid x = Predicate "has_vid" x () () () () () () ()
 
--- | Evaluate to /True/ if the SkBuff has the given mark, set by 'mark' function.
+-- | Evaluate to /True/ if the Qbuff has the given mark, set by 'mark' function.
 --
 -- > has_mark 11
 has_mark :: Word32 -> NetPredicate
@@ -355,44 +355,44 @@ has_state :: Word32 -> NetPredicate
 has_state x = Predicate "has_state" x () () () () () () ()
 
 
--- | Evaluate to /True/ if the SkBuff has the given Layer3 protocol.
+-- | Evaluate to /True/ if the Qbuff has the given Layer3 protocol.
 is_l3_proto :: Int16 -> NetPredicate
 is_l3_proto x = Predicate "is_l3_proto" x () () () () () () ()
 
--- | Evaluate to /True/ if the SkBuff has the given Layer4 protocol.
+-- | Evaluate to /True/ if the Qbuff has the given Layer4 protocol.
 is_l4_proto :: Int8 -> NetPredicate
 is_l4_proto x = Predicate "is_l4_proto" x () () () () () () ()
 
 is_rtp, is_rtcp, is_sip, is_voip :: NetPredicate
 
--- | Evaluate to /True/ if the SkBuff is a RTP packet.
+-- | Evaluate to /True/ if the Qbuff is a RTP packet.
 is_rtp = Predicate "is_rtp" () () () () () () () ()
 
--- | Evaluate to /True/ if the SkBuff is a RTCP packet.
+-- | Evaluate to /True/ if the Qbuff is a RTCP packet.
 is_rtcp = Predicate "is_rtcp" () () () () () () () ()
 
--- | Evaluate to /True/ if the SkBuff is a SIP packet.
+-- | Evaluate to /True/ if the Qbuff is a SIP packet.
 is_sip = Predicate "is_sip" () () () () () () () ()
 
--- | Evaluate to /True/ if the SkBuff is a VoIP packet (RTP|RTCP|SIP).
+-- | Evaluate to /True/ if the Qbuff is a VoIP packet (RTP|RTCP|SIP).
 is_voip = Predicate "is_voip" () () () () () () () ()
 
 
 has_port, has_src_port, has_dst_port :: Int16 -> NetPredicate
 
--- | Evaluate to /True/ if the SkBuff has the given source or destination port.
+-- | Evaluate to /True/ if the Qbuff has the given source or destination port.
 --
 -- If the transport protocol is not present or has no port, the predicate evaluates to False.
 --
 -- > has_port 80
 has_port x = Predicate "has_port" x () () () () () () ()
 
--- | Evaluate to /True/ if the SkBuff has the given source port.
+-- | Evaluate to /True/ if the Qbuff has the given source port.
 --
 -- If the transport protocol is not present or has no port, the predicate evaluates to False.
 has_src_port x = Predicate "has_src_port" x () () () () () () ()
 
--- | Evaluate to /True/ if the SkBuff has the given destination port.
+-- | Evaluate to /True/ if the Qbuff has the given destination port.
 --
 -- If the transport protocol is not present or has no port, the predicate evaluates to False.
 has_dst_port x = Predicate "has_dst_port" x () () () () () () ()
@@ -605,40 +605,40 @@ steer_field_symmetric offset1 offset2 size = Function "steer_field_symmetric" of
 filter :: NetPredicate -> NetFunction
 filter p = Function "filter" p () () () () () () ()
 
--- | Evaluate to /Pass SkBuff/ if it is an IPv4 packet, /Drop/ it otherwise.
+-- | Evaluate to /Pass Qbuff/ if it is an IPv4 packet, /Drop/ it otherwise.
 ip = Function "ip" () () () () () () () () :: NetFunction
 
--- | Evaluate to /Pass SkBuff/ if it is an UDP packet, /Drop/ it otherwise.
+-- | Evaluate to /Pass Qbuff/ if it is an UDP packet, /Drop/ it otherwise.
 udp = Function "udp" () () () () () () () () :: NetFunction
 
--- | Evaluate to /Pass SkBuff/ if it is a TCP packet, /Drop/ it otherwise.
+-- | Evaluate to /Pass Qbuff/ if it is a TCP packet, /Drop/ it otherwise.
 tcp = Function "tcp" () () () () () () () () :: NetFunction
 
--- | Evaluate to /Pass SkBuff/ if it is an ICMP packet, /Drop/ it otherwise.
+-- | Evaluate to /Pass Qbuff/ if it is an ICMP packet, /Drop/ it otherwise.
 icmp = Function "icmp" () () () () () () () () :: NetFunction
 
--- | Evaluate to /Pass SkBuff/ if it has a vlan tag, /Drop/ it otherwise.
+-- | Evaluate to /Pass Qbuff/ if it has a vlan tag, /Drop/ it otherwise.
 vlan = Function "vlan" () () () () () () () () :: NetFunction
 
--- | Evaluate to /Pass SkBuff/ if it is a TCP or UDP packet, /Drop/ it otherwise.
+-- | Evaluate to /Pass Qbuff/ if it is a TCP or UDP packet, /Drop/ it otherwise.
 flow = Function "flow" () () () () () () () () :: NetFunction
 
--- | Evaluate to /Pass SkBuff/ if it is a RTP packet, /Drop/ it otherwise.
+-- | Evaluate to /Pass Qbuff/ if it is a RTP packet, /Drop/ it otherwise.
 rtp = Function "rtp" () () () () () () () () :: NetFunction
 
--- | Evaluate to /Pass SkBuff/ if it is a RTCP packet, /Drop/ it otherwise.
+-- | Evaluate to /Pass Qbuff/ if it is a RTCP packet, /Drop/ it otherwise.
 rtcp = Function "rtcp" () () () () () () () () :: NetFunction
 
--- | Evaluate to /Pass SkBuff/ if it is a SIP packet, /Drop/ it otherwise.
+-- | Evaluate to /Pass Qbuff/ if it is a SIP packet, /Drop/ it otherwise.
 sip = Function "sip" () () () () () () () () :: NetFunction
 
--- | Evaluate to /Pass SkBuff/ if it is a VoIP packet (RTP|RTCP|SIP), /Drop/ it otherwise.
+-- | Evaluate to /Pass Qbuff/ if it is a VoIP packet (RTP|RTCP|SIP), /Drop/ it otherwise.
 voip = Function "voip" () () () () () () () () :: NetFunction
 
--- | Evaluate to /Pass SkBuff/ if it is not a fragment, /Drop/ it otherwise.
+-- | Evaluate to /Pass Qbuff/ if it is not a fragment, /Drop/ it otherwise.
 no_frag = Function "no_frag" () () () () () () () () :: NetFunction
 
--- | Evaluate to /Pass SkBuff/ if it is not a fragment or if it's the first fragment, /Drop/ it otherwise.
+-- | Evaluate to /Pass Qbuff/ if it is not a fragment or if it's the first fragment, /Drop/ it otherwise.
 no_more_frag = Function "no_more_frag" () () () () () () () () :: NetFunction
 
 -- | Forward the packet to the given device.
@@ -658,7 +658,7 @@ forward d = Function "forward" d () () () () () () ()
 bridge :: String -> NetFunction
 bridge d = Function "bridge" d () () () () () () ()
 
--- | Forward the packet to the given device and, evaluates to /Pass SkBuff/ or /Drop/,
+-- | Forward the packet to the given device and, evaluates to /Pass Qbuff/ or /Drop/,
 -- depending on the value returned by the predicate. Example:
 --
 -- > tee "eth1" is_udp >-> kernel
@@ -671,7 +671,7 @@ bridge d = Function "bridge" d () () () () () () ()
 tee :: String -> NetPredicate -> NetFunction
 tee d p = Function "tee" d p () () () () () ()
 
--- | Evaluate to /Pass SkBuff/, or forward the packet to the given device and evaluate to /Drop/,
+-- | Evaluate to /Pass Qbuff/, or forward the packet to the given device and evaluate to /Drop/,
 -- depending on the value returned by the predicate. Example:
 --
 -- > tap "eth1" is_udp >-> kernel

@@ -112,22 +112,22 @@ steer_gtp_usr :: IPv4 -> Int -> NetFunction
 steer_gtp_usr net prefix = Function "steer_gtp_usr" net prefix () () () () () () :: NetFunction
 
 
--- | Evaluate to /Pass SkBuff/ in case of GTP packet, /Drop/ it otherwise.
+-- | Evaluate to /Pass Qbuff/ in case of GTP packet, /Drop/ it otherwise.
 gtp    = Function "gtp" () () () () () () () () :: NetFunction
 
--- | Evaluate to /Pass SkBuff/ in case of GTP Control-Plane packet, /Drop/ it otherwise.
+-- | Evaluate to /Pass Qbuff/ in case of GTP Control-Plane packet, /Drop/ it otherwise.
 gtp_cp  = Function "gtp_cp" () () () () () () () () :: NetFunction
 
--- | Evaluate to /Pass SkBuff/ in case of GTP User-Plane packet, /Drop/ it otherwise.
+-- | Evaluate to /Pass Qbuff/ in case of GTP User-Plane packet, /Drop/ it otherwise.
 gtp_up  = Function "gtp_up" () () () () () () () () :: NetFunction
 
--- | Evaluate to /True/ if the SkBuff is a GTP packet.
+-- | Evaluate to /True/ if the Qbuff is a GTP packet.
 is_gtp = Predicate "is_gtp" () () () () () () () () :: NetPredicate
 
--- | Evaluate to /True/ if the SkBuff is a GTP Control-Plane packet.
+-- | Evaluate to /True/ if the Qbuff is a GTP Control-Plane packet.
 is_gtp_cp = Predicate "is_gtp_cp" () () () () () () () () :: NetPredicate
 
--- | Evaluate to /True/ if the SkBuff is a GTP User-Plane packet.
+-- | Evaluate to /True/ if the Qbuff is a GTP User-Plane packet.
 is_gtp_up = Predicate "is_gtp_up" () () () () () () () () :: NetPredicate
 
 
@@ -159,7 +159,7 @@ trace :: NetFunction
 trace = Function "trace" () () () () () () () ()
 
 
--- | Conditional forwarder to kernel. Evaluate to /Pass SkBuff/.
+-- | Conditional forwarder to kernel. Evaluate to /Pass Qbuff/.
 --
 -- > kernel_if is_tcp
 
@@ -174,43 +174,43 @@ kernel_if p = Function "kernel_if" p () () () () () () ()
 detour_if :: NetPredicate -> NetFunction
 detour_if p = Function "detour_if" p () () () () () () ()
 
--- | Evaluate to /True/ if the SkBuff is broadcast frame.
+-- | Evaluate to /True/ if the Qbuff is broadcast frame.
 is_broadcast = Predicate "is_broadcast" () () () () () () () ()
 
--- | Evaluate to /True/ if the SkBuff is multicast frame.
+-- | Evaluate to /True/ if the Qbuff is multicast frame.
 is_multicast = Predicate "is_multicast" () () () () () () () ()
 
--- | Evaluate to /True/ if the SkBuff is broadcast IP packet.
+-- | Evaluate to /True/ if the Qbuff is broadcast IP packet.
 is_ip_broadcast = Predicate "is_ip_broadcast" () () () () () () () ()
 
--- | Evaluate to /True/ if the SkBuff is multicast IP packet.
+-- | Evaluate to /True/ if the Qbuff is multicast IP packet.
 is_ip_multicast = Predicate "is_ip_multicast" () () () () () () () ()
 
--- | Evaluate to /True/ if the SkBuff IP address matches that of the incoming interface,
+-- | Evaluate to /True/ if the Qbuff IP address matches that of the incoming interface,
 -- /False/ otherwise.
 is_ip_host = Predicate "is_ip_host" () () () () () () () ()
 
--- | Evaluate to /True/ if the SkBuff IP address matches that of the incoming interface,
+-- | Evaluate to /True/ if the Qbuff IP address matches that of the incoming interface,
 --   is a broadcast or a multicast frame.
 is_incoming_host = Predicate "is_incoming_host" () () () () () () () ()
 
 
--- | Evaluate to /Pass SkBuff/ if it is a broadcast frame, /Drop/ it otherwise.
+-- | Evaluate to /Pass Qbuff/ if it is a broadcast frame, /Drop/ it otherwise.
 mac_broadcast = Function "mac_broadcast" () () () () () () () () :: NetFunction
 
--- | Evaluate to /Pass SkBuff/ if it is a multicast frame, /Drop/ it otherwise.
+-- | Evaluate to /Pass Qbuff/ if it is a multicast frame, /Drop/ it otherwise.
 mac_multicast = Function "mac_multicast" () () () () () () () () :: NetFunction
 
--- | Evaluate to /Pass SkBuff/ if it is a broadcast IP packet, /Drop/ it otherwise.
+-- | Evaluate to /Pass Qbuff/ if it is a broadcast IP packet, /Drop/ it otherwise.
 ip_broadcast = Function "ip_broadcast" () () () () () () () () :: NetFunction
 
--- | Evaluate to /Pass SkBuff/ if it is a multicast IP packet, /Drop/ it otherwise.
+-- | Evaluate to /Pass Qbuff/ if it is a multicast IP packet, /Drop/ it otherwise.
 ip_multicast = Function "ip_multicast" () () () () () () () () :: NetFunction
 
--- | Evaluate to /Pass SkBuff/ if the IP address matches that of the incoming interface, /Drop/ it otherwise.
+-- | Evaluate to /Pass Qbuff/ if the IP address matches that of the incoming interface, /Drop/ it otherwise.
 ip_host = Function "ip_host" () () () () () () () () :: NetFunction
 
--- | Evaluate to /Pass SkBuff/ if the IP address matches that of the incoming interface,
+-- | Evaluate to /Pass Qbuff/ if the IP address matches that of the incoming interface,
 -- is a broadcast or a multicast frame, /Drop/ it otherwise.
 incoming_host = Function "incoming_host" () () () () () () () () :: NetFunction
 

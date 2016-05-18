@@ -34,7 +34,7 @@ import Data.Maybe
 import Foreign.ForeignPtr
 
 
-load :: Q.Function (SkBuff -> Action SkBuff) -> OptionT IO String
+load :: Q.Function (Qbuff -> Action Qbuff) -> OptionT IO String
 load comp = do
     gid' <- liftM (fromJust . gid) ask
     lift $ Q.openNoGroup 64 4096 4096 >>= \fp ->

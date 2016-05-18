@@ -218,47 +218,47 @@ namespace pfq { namespace lang {
         // default predicates:
         //
 
-        //! Evaluate to \c true if the SkBuff is an IPv4 packet.
+        //! Evaluate to \c true if the Qbuff is an IPv4 packet.
 
         auto is_ip          = predicate ("is_ip");
 
-        //! Evaluate to \c true if the SkBuff is an UDP packet.
+        //! Evaluate to \c true if the Qbuff is an UDP packet.
 
         auto is_udp         = predicate ("is_udp");
 
-        //! Evaluate to \c true if the SkBuff is a TCP packet.
+        //! Evaluate to \c true if the Qbuff is a TCP packet.
 
         auto is_tcp         = predicate ("is_tcp");
 
-        //! Evaluate to \c true if the SkBuff is an ICMP packet.
+        //! Evaluate to \c true if the Qbuff is an ICMP packet.
 
         auto is_icmp        = predicate ("is_icmp");
 
-        //! Evaluate to \c true if the SkBuff is an UDP or TCP packet.
+        //! Evaluate to \c true if the Qbuff is an UDP or TCP packet.
 
         auto is_flow        = predicate ("is_flow");
 
-        //! Evaluate to \c true if the SkBuff is a TCP fragment.
+        //! Evaluate to \c true if the Qbuff is a TCP fragment.
 
         auto is_frag        = predicate ("is_frag");
 
-        //! Evaluate to \c true if the SkBuff is the first TCP fragment.
+        //! Evaluate to \c true if the Qbuff is the first TCP fragment.
 
         auto is_first_frag  = predicate ("is_first_frag");
 
-        //! Evaluate to \c true if the SkBuff is a TCP fragment, but the first.
+        //! Evaluate to \c true if the Qbuff is a TCP fragment, but the first.
 
         auto is_more_frag   = predicate ("is_more_frag");
 
-        //! Evaluate to \c true if the SkBuff has the given Layer3 protocol.
+        //! Evaluate to \c true if the Qbuff has the given Layer3 protocol.
 
         auto is_l3_proto    = [] (uint16_t type) { return predicate ("is_l3_proto", type); };
 
-        //! Evaluate to \c true if the SkBuff has the given Layer4 protocol.
+        //! Evaluate to \c true if the Qbuff has the given Layer4 protocol.
 
         auto is_l4_proto    = [] (uint8_t proto) { return predicate ("is_l4_proto", proto); };
 
-        //! Evaluate to \c true if the SkBuff has the given source or destination port.
+        //! Evaluate to \c true if the Qbuff has the given source or destination port.
         /*!
          * If the transport protocol is not present or has no port, the predicate evaluates to False.
          *
@@ -269,14 +269,14 @@ namespace pfq { namespace lang {
 
         auto has_port       = [] (uint16_t port) { return predicate ("is_port", port); };
 
-        //! Evaluate to \c true if the SkBuff has the given source port.
+        //! Evaluate to \c true if the Qbuff has the given source port.
         /*!
          * If the transport protocol is not present or has no port, the predicate evaluates to False.
          */
 
         auto has_src_port   = [] (uint16_t port) { return predicate ("is_src_port", port); };
 
-        //! Evaluate to \c true if the SkBuff has the given destination port.
+        //! Evaluate to \c true if the Qbuff has the given destination port.
         /*!
          * If the transport protocol is not present or has no port, the predicate evaluates to False.
          */
@@ -309,7 +309,7 @@ namespace pfq { namespace lang {
             return predicate("has_dst_addr", data);
         };
 
-        //! Evaluate to \c true if the SkBuff has the given \c mark, set by mark function.
+        //! Evaluate to \c true if the Qbuff has the given \c mark, set by mark function.
         /*!
          * Example:
          *
@@ -333,11 +333,11 @@ namespace pfq { namespace lang {
 
         auto has_state      = [] (uint32_t value) { return predicate("has_state", value); };
 
-        //! Evaluate to \c true if the SkBuff has a vlan tag.
+        //! Evaluate to \c true if the Qbuff has a vlan tag.
 
         auto has_vlan       = predicate ("has_vlan");
 
-        //! Evaluate to \c true if the SkBuff has the given vlan id.
+        //! Evaluate to \c true if the Qbuff has the given vlan id.
         /*!
          * Example:
          *
@@ -363,19 +363,19 @@ namespace pfq { namespace lang {
                                     return function("vlan_id_filter", vs);
                               };
 
-        //! Evaluate to \c true if the SkBuff is an RTP packet.
+        //! Evaluate to \c true if the Qbuff is an RTP packet.
 
         auto is_rtp          = predicate ("is_rtp");
 
-        //! Evaluate to \c true if the SkBuff is an RTCP packet.
+        //! Evaluate to \c true if the Qbuff is an RTCP packet.
 
         auto is_rtcp         = predicate ("is_rtcp");
 
-        //! Evaluate to \c true if the SkBuff is a SIP packet.
+        //! Evaluate to \c true if the Qbuff is a SIP packet.
 
         auto is_sip          = predicate ("is_sip");
 
-        //! Evaluate to \c true if the SkBuff is a VoIP packet (RTP|RTCP|SIP).
+        //! Evaluate to \c true if the Qbuff is a VoIP packet (RTP|RTCP|SIP).
 
         auto is_voip         = predicate ("is_voip");
 
@@ -659,52 +659,52 @@ namespace pfq { namespace lang {
             return function("filter", p);
         }
 
-        //! Evaluate to \c Pass SkBuff if it is an IPv4 packet, \c Drop it otherwise.
+        //! Evaluate to \c Pass Qbuff if it is an IPv4 packet, \c Drop it otherwise.
 
         auto ip             = function("ip");
 
-        //! Evaluate to \c Pass SkBuff if it is an UDP packet, \c Drop it otherwise.
+        //! Evaluate to \c Pass Qbuff if it is an UDP packet, \c Drop it otherwise.
 
         auto udp            = function("udp");
 
-        //! Evaluate to \c Pass SkBuff if it is a TCP packet, \c Drop it otherwise.
+        //! Evaluate to \c Pass Qbuff if it is a TCP packet, \c Drop it otherwise.
 
         auto tcp            = function("tcp");
 
-        //! Evaluate to \c Pass SkBuff if it is an ICMP packet, \c Drop it otherwise.
+        //! Evaluate to \c Pass Qbuff if it is an ICMP packet, \c Drop it otherwise.
 
         auto icmp           = function("icmp");
 
-        //! Evaluate to \c Pass SkBuff if it has a vlan tag, \c Drop it otherwise.
+        //! Evaluate to \c Pass Qbuff if it has a vlan tag, \c Drop it otherwise.
 
         auto vlan           = function("vlan");
 
-        //! Evaluate to \c Pass SkBuff if it is a TCP or UDP packet, \c Drop it otherwise.
+        //! Evaluate to \c Pass Qbuff if it is a TCP or UDP packet, \c Drop it otherwise.
 
         auto flow           = function("flow");
 
-        //! Evaluate to \c Pass SkBuff if it is a RTP packet, \c Drop it otherwise.
+        //! Evaluate to \c Pass Qbuff if it is a RTP packet, \c Drop it otherwise.
 
         auto rtp            = function("rtp");
 
-        //! Evaluate to \c Pass SkBuff if it is a RTCP packet, \c Drop it otherwise.
+        //! Evaluate to \c Pass Qbuff if it is a RTCP packet, \c Drop it otherwise.
 
         auto rtcp           = function("rtcp");
 
-        //! Evaluate to \c Pass SkBuff if it is a SIP packet, \c Drop it otherwise.
+        //! Evaluate to \c Pass Qbuff if it is a SIP packet, \c Drop it otherwise.
 
         auto sip            = function("sip");
 
-        //! Evaluate to \c Pass SkBuff if it is a VoIP packet (RTP|RTCP|SIP), \c Drop it otherwise.
+        //! Evaluate to \c Pass Qbuff if it is a VoIP packet (RTP|RTCP|SIP), \c Drop it otherwise.
 
         auto voip           = function("voip");
 
 
-        //! Evaluate to \c Pass SkBuff if it is not a fragment, \c Drop it otherwise.
+        //! Evaluate to \c Pass Qbuff if it is not a fragment, \c Drop it otherwise.
 
         auto no_frag        = function("no_frag");
 
-        //! Evaluate to \c Pass SkBuff if it is not a fragment or if it is the first fragment, \c Drop it otherwise.
+        //! Evaluate to \c Pass Qbuff if it is not a fragment or if it is the first fragment, \c Drop it otherwise.
 
         auto no_more_frag   = function("no_more_frag");
 
@@ -795,7 +795,7 @@ namespace pfq { namespace lang {
         auto bridge     = [] (std::string dev) { return function("bridge", std::move(dev)); };
 
         //! Forward the packet to the given device.
-        /*! It evaluates to \c Pass SkBuff or \c Drop,
+        /*! It evaluates to \c Pass Qbuff or \c Drop,
          * depending on the value returned by the predicate. Example:
          *
          * tee("eth1", is_udp) >> kernel
@@ -815,7 +815,7 @@ namespace pfq { namespace lang {
             return function("tee", dev, p);
         }
 
-        //! Evaluate to \c Pass SkBuff, or forward the packet to the given device.
+        //! Evaluate to \c Pass Qbuff, or forward the packet to the given device.
         /*!
          * It evaluates to \c Drop, depending on the value returned by the predicate. Example:
          *

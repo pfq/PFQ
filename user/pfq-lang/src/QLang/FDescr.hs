@@ -26,5 +26,5 @@ import Network.PFQ.Lang as Q
 import Options
 
 
-compile :: (Monad m) => Q.Function (SkBuff -> Action SkBuff) -> OptionT m String
+compile :: (Monad m) => Q.Function (Qbuff -> Action Qbuff) -> OptionT m String
 compile comp = return $ show (fst $ Q.serialize comp 0)

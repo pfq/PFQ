@@ -57,27 +57,27 @@ namespace pfq { namespace lang { namespace experimental {
         auto dummy_string  = [] (std::string s) { return function("dummy_string", std::move(s)); };
         auto dummy_strings = [] (std::vector<std::string> const &vec) { return function("dummy_strings", vec); };
 
-        //! Evaluate to \c Pass SkBuff if it is a GTP packet, \c Drop it otherwise.
+        //! Evaluate to \c Pass Qbuff if it is a GTP packet, \c Drop it otherwise.
 
         auto gtp            = function("gtp");
 
-        //! Evaluate to \c Pass SkBuff if it is a GTP Control-Plane packet, \c Drop it otherwise.
+        //! Evaluate to \c Pass Qbuff if it is a GTP Control-Plane packet, \c Drop it otherwise.
 
         auto gtp_cp         = function("gtp_cp");
 
-        //! Evaluate to \c Pass SkBuff if it is a GTP User-Plane packet, \c Drop it otherwise.
+        //! Evaluate to \c Pass Qbuff if it is a GTP User-Plane packet, \c Drop it otherwise.
 
         auto gtp_up         = function("gtp_up");
 
-        //! Evaluate to \c Pass SkBuff if it is a GTP packet, \c Drop it otherwise.
+        //! Evaluate to \c Pass Qbuff if it is a GTP packet, \c Drop it otherwise.
 
         auto is_gtp         = predicate("is_gtp");
 
-        //! Evaluate to \c Pass SkBuff if it is a GTP Control-Plane packet, \c Drop it otherwise.
+        //! Evaluate to \c Pass Qbuff if it is a GTP Control-Plane packet, \c Drop it otherwise.
 
         auto is_gtp_cp      = predicate("is_gtp_cp");
 
-        //! Evaluate to \c Pass SkBuff if it is a GTP Control-Plane packet, \c Drop it otherwise.
+        //! Evaluate to \c Pass Qbuff if it is a GTP Control-Plane packet, \c Drop it otherwise.
 
         auto is_gtp_up      = predicate("is_gtp_up");
 
@@ -127,51 +127,51 @@ namespace pfq { namespace lang { namespace experimental {
             return function("detour_if", p);
         }
 
-        //! Evaluate to \c true if the SkBuff is a broadcast frame, \c false otherwise.
+        //! Evaluate to \c true if the Qbuff is a broadcast frame, \c false otherwise.
 
         auto is_broadcast     = predicate("is_broadcast");
 
-        //! Evaluate to \c true if the SkBuff is a multicast frame, \c false otherwise.
+        //! Evaluate to \c true if the Qbuff is a multicast frame, \c false otherwise.
 
         auto is_multicast     = predicate("is_multicast");
 
-        //! Evaluate to \c true if the SkBuff is a broadcast IP packet, \c false otherwise.
+        //! Evaluate to \c true if the Qbuff is a broadcast IP packet, \c false otherwise.
 
         auto is_ip_broadcast  = predicate("is_ip_broadcast");
 
-        //! Evaluate to \c true if the SkBuff is a multicast IP packet, \c false otherwise.
+        //! Evaluate to \c true if the Qbuff is a multicast IP packet, \c false otherwise.
         auto is_ip_multicast  = predicate("is_ip_multicast");
 
-        //! Evaluate to \c true if the SkBuff IP address matches that of the incoming interface, \c false otherwise.
+        //! Evaluate to \c true if the Qbuff IP address matches that of the incoming interface, \c false otherwise.
 
         auto is_ip_host       = predicate("is_ip_host");
 
-        //! Evaluate to \c true if the SkBuff IP address matches that of the incoming interface, is a broadcast or a multicast frame, \c false otherwise.
+        //! Evaluate to \c true if the Qbuff IP address matches that of the incoming interface, is a broadcast or a multicast frame, \c false otherwise.
 
         auto is_incoming_host = predicate("is_incoming_host");
 
 
-        //! Evaluate to \c Pass SkBuff if it is a broadcast frame, \c Drop it otherwise.
+        //! Evaluate to \c Pass Qbuff if it is a broadcast frame, \c Drop it otherwise.
 
         auto mac_broadcast    = function("mac_broadcast");
 
-        //! Evaluate to \c Pass SkBuff if it is a multicast frame, \c Drop it otherwise.
+        //! Evaluate to \c Pass Qbuff if it is a multicast frame, \c Drop it otherwise.
 
         auto mac_multicast    = function("mac_multicast");
 
-        //! Evaluate to \c Pass SkBuff if it is a broadcast IP packet, \c Drop it otherwise.
+        //! Evaluate to \c Pass Qbuff if it is a broadcast IP packet, \c Drop it otherwise.
 
         auto ip_broadcast     = function("ip_broadcast");
 
-        //! Evaluate to \c Pass SkBuff if it is a multicast IP packet, \c Drop it otherwise.
+        //! Evaluate to \c Pass Qbuff if it is a multicast IP packet, \c Drop it otherwise.
 
         auto ip_multicast     = function("ip_multicast");
 
-        //! Evaluate to \c Pass SkBuff if the IP address matches that of the incoming interface, \c Drop otherwise.
+        //! Evaluate to \c Pass Qbuff if the IP address matches that of the incoming interface, \c Drop otherwise.
 
         auto ip_host          = function("ip_host");
 
-        //! Evaluate to \c Pass SkBuff if the IP address matches that of the incoming interface, is a broadcast or a multicast frame, \c Drop otherwise.
+        //! Evaluate to \c Pass Qbuff if the IP address matches that of the incoming interface, is a broadcast or a multicast frame, \c Drop otherwise.
 
         auto incoming_host    = function("incoming_host");
     }

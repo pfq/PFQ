@@ -1014,7 +1014,7 @@ instance Storable StorableFunDescr where
 
 setGroupComputation :: Ptr PFqTag
                     -> Int                                     -- ^ group id
-                    -> Function (SkBuff -> Action SkBuff)      -- ^ expression (pfq-Lang)
+                    -> Function (Qbuff -> Action Qbuff)      -- ^ expression (pfq-Lang)
                     -> IO ()
 
 setGroupComputation hdl gid comp =

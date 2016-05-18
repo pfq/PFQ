@@ -50,7 +50,7 @@ modToFilePath base n = base </> fixPath n <.> "hs"
     where fixPath = map (\c -> if c == '.' then '/' else c)
 
 
-compile :: String -> OptionT IO (Q.Function (SkBuff -> Action SkBuff))
+compile :: String -> OptionT IO (Q.Function (Qbuff -> Action Qbuff))
 compile raw = do
     let (code, localImports) = parseCode raw
 
@@ -91,7 +91,7 @@ compile raw = do
 
         -- interpret the pfq-lang computation:
 
-        interpret (mkMainFunction code) (as :: (Function (SkBuff -> Action SkBuff)))
+        interpret (mkMainFunction code) (as :: (Function (Qbuff -> Action Qbuff)))
 
     either throw return res
 

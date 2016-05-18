@@ -55,7 +55,7 @@ module Network.PFQ.Lang
     , Function(..)
     , Serializable(..)
     , FunctionDescr(..)
-    , SkBuff(..)
+    , Qbuff(..)
     , Action
 
     -- * Function types
@@ -94,9 +94,9 @@ import Network.PFQ.Types
 type Symbol = String
 
 
--- |SkBuff placeholder type is used to model the kernel sk_buff data structure.
+-- |Qbuff placeholder type is used to model the kernel sk_buff data structure.
 
-newtype SkBuff = SkBuff ()
+newtype Qbuff = Qbuff ()
 
 -- |Function pointer data type represents a function in a list of FunctionDescr.
 
@@ -256,15 +256,15 @@ instance FromJSON (Function f) where
 
 -- |Simple monadic in-kernel pfq-lang function.
 
-type NetFunction  = Function (SkBuff -> Action SkBuff)
+type NetFunction  = Function (Qbuff -> Action Qbuff)
 
 -- |Simple in-kernel pfq-lang predicate.
 
-type NetPredicate = Function (SkBuff -> Bool)
+type NetPredicate = Function (Qbuff -> Bool)
 
 -- |Simple in-kernel pfq-lang property function.
 
-type NetProperty  = Function (SkBuff -> Word64)
+type NetProperty  = Function (Qbuff -> Word64)
 
 
 

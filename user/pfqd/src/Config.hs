@@ -44,5 +44,5 @@ data Group = Group
             ,   gid       :: Int
             ,   input     :: [NetDevice]
             ,   output    :: [NetDevice]
-            ,   function  :: Function (SkBuff -> Action SkBuff)
+            ,   function  :: Function (Qbuff -> Action Qbuff)
             }

@@ -29,7 +29,7 @@ import qualified Data.ByteString.Lazy.Char8 as C
 import Options
 
 
-compile :: (Monad m) => Q.Function (SkBuff -> Action SkBuff) -> OptionT m String
+compile :: (Monad m) => Q.Function (Qbuff -> Action Qbuff) -> OptionT m String
 compile comp = return (C.unpack $ A.encode comp)
 
 

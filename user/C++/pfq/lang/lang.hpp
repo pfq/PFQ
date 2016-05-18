@@ -45,7 +45,7 @@ namespace pfq { namespace lang
     // sk_buff placeholder
     //
 
-    struct SkBuff { };
+    struct Qbuff { };
 
     //
     // Monadic Action
@@ -64,9 +64,9 @@ namespace pfq { namespace lang
         using type = KFunction<Sig>;
     };
 
-    using NetFunction  = KFunction< Action<SkBuff>(SkBuff) >;
-    using NetPredicate = KFunction< bool(SkBuff) >;
-    using NetProperty  = KFunction< uint64_t(SkBuff) >;
+    using NetFunction  = KFunction< Action<Qbuff>(Qbuff) >;
+    using NetPredicate = KFunction< bool(Qbuff) >;
+    using NetProperty  = KFunction< uint64_t(Qbuff) >;
 
     // ipv4_t, network byte order type with converting constructor
     //
