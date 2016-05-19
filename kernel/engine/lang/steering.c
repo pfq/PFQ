@@ -360,24 +360,24 @@ steering_flow(arguments_t args, struct qbuff * buff)
 
 struct pfq_lang_function_descr steering_functions[] = {
 
-	{ "steer_rrobin","Qbuff -> Action Qbuff", steering_rrobin  },
-	{ "steer_rss",   "Qbuff -> Action Qbuff", steering_rss     },
-	{ "steer_link",  "Qbuff -> Action Qbuff", steering_link    },
+	{ "steer_rrobin","Qbuff -> Action Qbuff", steering_rrobin  , NULL, NULL },
+	{ "steer_rss",   "Qbuff -> Action Qbuff", steering_rss     , NULL, NULL },
+	{ "steer_link",  "Qbuff -> Action Qbuff", steering_link    , NULL, NULL },
 	{ "steer_link_local",  "String -> Qbuff -> Action Qbuff", steering_link_local, steering_link_local_init },
-	{ "steer_mac",   "Qbuff -> Action Qbuff", steering_mac     },
-	{ "steer_vlan",  "Qbuff -> Action Qbuff", steering_vlan_id },
-	{ "steer_ip",    "Qbuff -> Action Qbuff", steering_ip      },
+	{ "steer_mac",   "Qbuff -> Action Qbuff", steering_mac     , NULL, NULL },
+	{ "steer_vlan",  "Qbuff -> Action Qbuff", steering_vlan_id , NULL, NULL },
+	{ "steer_ip",    "Qbuff -> Action Qbuff", steering_ip      , NULL, NULL },
 
-	{ "steer_ip_local","CIDR -> Qbuff -> Action Qbuff", steering_ip_local, steering_ip_local_init },
+	{ "steer_ip_local","CIDR -> Qbuff -> Action Qbuff", steering_ip_local, steering_ip_local_init, NULL},
 
-	{ "steer_p2p",   "Qbuff -> Action Qbuff", steering_p2p     },
-	{ "steer_flow",  "Qbuff -> Action Qbuff", steering_flow    },
-	{ "steer_to",    "CInt   -> Qbuff -> Action Qbuff", steering_to },
+	{ "steer_p2p",   "Qbuff -> Action Qbuff", steering_p2p     , NULL, NULL },
+	{ "steer_flow",  "Qbuff -> Action Qbuff", steering_flow    , NULL, NULL },
+	{ "steer_to",    "CInt   -> Qbuff -> Action Qbuff", steering_to , NULL, NULL },
 
-	{ "steer_field", "Word32 -> Word32 -> Qbuff -> Action Qbuff", steering_field },
-	{ "steer_field_double",   "Word32 -> Word32 -> Word32 -> Qbuff -> Action Qbuff", steering_field_double},
-	{ "steer_field_symmetric","Word32 -> Word32 -> Word32 -> Qbuff -> Action Qbuff", steering_field_symmetric },
+	{ "steer_field", "Word32 -> Word32 -> Qbuff -> Action Qbuff", steering_field , NULL, NULL},
+	{ "steer_field_double",   "Word32 -> Word32 -> Word32 -> Qbuff -> Action Qbuff", steering_field_double, NULL, NULL},
+	{ "steer_field_symmetric","Word32 -> Word32 -> Word32 -> Qbuff -> Action Qbuff", steering_field_symmetric, NULL, NULL},
 
-	{ "steer_net",   "Word32 -> Word32 -> Word32 -> Qbuff -> Action Qbuff", steering_net, steering_net_init },
+	{ "steer_net",   "Word32 -> Word32 -> Word32 -> Qbuff -> Action Qbuff", steering_net, steering_net_init, NULL },
 	{ NULL }};
 

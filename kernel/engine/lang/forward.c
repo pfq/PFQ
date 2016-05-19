@@ -268,20 +268,19 @@ detour_if_kernel(arguments_t args, struct qbuff * b)
 
 struct pfq_lang_function_descr forward_functions[] = {
 
-        { "drop",       "Qbuff -> Action Qbuff",		forward_drop		},
-        { "broadcast",  "Qbuff -> Action Qbuff",		forward_broadcast	},
-        { "classify",	"CInt -> Qbuff -> Action Qbuff",	forward_class		},
+        { "drop",       "Qbuff -> Action Qbuff",		forward_drop	   , NULL, NULL     },
+        { "broadcast",  "Qbuff -> Action Qbuff",		forward_broadcast  , NULL, NULL     },
+        { "classify",	"CInt -> Qbuff -> Action Qbuff",	forward_class	   , NULL, NULL     },
+        { "kernel",	"Qbuff -> Action Qbuff",		forward_kernel	   , NULL, NULL     },
+        { "detour",	"Qbuff -> Action Qbuff",		detour_kernel	   , NULL, NULL     },
 
-        { "kernel",	"Qbuff -> Action Qbuff",		forward_kernel		},
-        { "detour",	"Qbuff -> Action Qbuff",		detour_kernel		},
-
-        { "kernel_if",	"(Qbuff -> Bool) -> Qbuff -> Action Qbuff",	forward_if_kernel	},
-        { "detour_if",	"(Qbuff -> Bool) -> Qbuff -> Action Qbuff",	detour_if_kernel	},
+        { "kernel_if",	"(Qbuff -> Bool) -> Qbuff -> Action Qbuff",	forward_if_kernel  , NULL, NULL     },
+        { "detour_if",	"(Qbuff -> Bool) -> Qbuff -> Action Qbuff",	detour_if_kernel   , NULL, NULL     },
 
 
 	{ "forwardIO",  "String -> Qbuff -> Action Qbuff",			 forwardIO, forward_init, forward_fini },
 	{ "forward",    "String -> Qbuff -> Action Qbuff",			 forward,   forward_init, forward_fini },
-	{ "link",	"[String] -> Qbuff -> Action Qbuff",			 link,	    link_init,    link_fini    },
+	{ "link",	"[String] -> Qbuff -> Action Qbuff",			 link_,	    link_init,    link_fini    },
 
 	{ "bridge",     "String -> Qbuff -> Action Qbuff",			 bridge,    forward_init, forward_fini },
 	{ "tee",	"String -> (Qbuff -> Bool) -> Qbuff -> Action Qbuff", tee,	    forward_init, forward_fini },

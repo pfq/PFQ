@@ -214,15 +214,15 @@ trace(arguments_t args, struct qbuff * buff)
 
 struct pfq_lang_function_descr misc_functions[] = {
 
-        { "inc",	"CInt    -> Qbuff -> Action Qbuff",	inc_counter	},
-        { "dec",	"CInt    -> Qbuff -> Action Qbuff",	dec_counter	},
-	{ "mark",	"Word32  -> Qbuff -> Action Qbuff",	mark		},
-	{ "put_state",	"Word32  -> Qbuff -> Action Qbuff",	put_state	},
+        { "inc",	"CInt    -> Qbuff -> Action Qbuff",	inc_counter, NULL, NULL	},
+        { "dec",	"CInt    -> Qbuff -> Action Qbuff",	dec_counter, NULL, NULL	},
+	{ "mark",	"Word32  -> Qbuff -> Action Qbuff",	mark	   , NULL, NULL },
+	{ "put_state",	"Word32  -> Qbuff -> Action Qbuff",	put_state  , NULL, NULL },
 
-        { "log_msg",	"String -> Qbuff -> Action Qbuff",	log_msg		},
-        { "log_buff",   "Qbuff -> Action Qbuff",		log_buff	},
-        { "log_packet", "Qbuff -> Action Qbuff",		log_packet	},
-        { "trace",	"Qbuff -> Action Qbuff",		trace		},
+        { "log_msg",	"String -> Qbuff -> Action Qbuff",	log_msg	   , NULL, NULL },
+        { "log_buff",   "Qbuff -> Action Qbuff",		log_buff   , NULL, NULL },
+        { "log_packet", "Qbuff -> Action Qbuff",		log_packet , NULL, NULL },
+        { "trace",	"Qbuff -> Action Qbuff",		trace	   , NULL, NULL },
 
         { NULL }};
 

@@ -312,25 +312,25 @@ __get_state(arguments_t args, struct qbuff * buff)
 
 struct pfq_lang_function_descr property_functions[] = {
 
-	{ "ip_tos",	 "Qbuff -> Word64", ip_tos		},
-	{ "ip_tot_len",  "Qbuff -> Word64", ip_tot_len		},
-	{ "ip_id",	 "Qbuff -> Word64", ip_id		},
-	{ "ip_frag",	 "Qbuff -> Word64", ip_frag		},
-	{ "ip_ttl",	 "Qbuff -> Word64", ip_ttl		},
+	{ "ip_tos",	 "Qbuff -> Word64", ip_tos	 , NULL, NULL },
+	{ "ip_tot_len",  "Qbuff -> Word64", ip_tot_len	 , NULL, NULL },
+	{ "ip_id",	 "Qbuff -> Word64", ip_id	 , NULL, NULL },
+	{ "ip_frag",	 "Qbuff -> Word64", ip_frag	 , NULL, NULL },
+	{ "ip_ttl",	 "Qbuff -> Word64", ip_ttl	 , NULL, NULL },
 
-	{ "tcp_source",  "Qbuff -> Word64", tcp_source		},
-	{ "tcp_dest",	 "Qbuff -> Word64", tcp_dest		},
-	{ "tcp_hdrlen",  "Qbuff -> Word64", tcp_hdrlen_	},
+	{ "tcp_source",  "Qbuff -> Word64", tcp_source	 , NULL, NULL },
+	{ "tcp_dest",	 "Qbuff -> Word64", tcp_dest	 , NULL, NULL },
+	{ "tcp_hdrlen",  "Qbuff -> Word64", tcp_hdrlen_	 , NULL, NULL },
 
-	{ "udp_source",  "Qbuff -> Word64", udp_source		},
-	{ "udp_dest",	 "Qbuff -> Word64", udp_dest		},
-	{ "udp_len",	 "Qbuff -> Word64", udp_len		},
+	{ "udp_source",  "Qbuff -> Word64", udp_source	 , NULL, NULL },
+	{ "udp_dest",	 "Qbuff -> Word64", udp_dest	 , NULL, NULL },
+	{ "udp_len",	 "Qbuff -> Word64", udp_len	 , NULL, NULL },
 
-	{ "icmp_type",   "Qbuff -> Word64", icmp_type		},
-	{ "icmp_code",   "Qbuff -> Word64", icmp_code		},
+	{ "icmp_type",   "Qbuff -> Word64", icmp_type	 , NULL, NULL },
+	{ "icmp_code",   "Qbuff -> Word64", icmp_code	 , NULL, NULL },
 
-	{ "get_mark",	 "Qbuff -> Word64", __get_mark		},
-	{ "get_state",	 "Qbuff -> Word64", __get_state	},
+	{ "get_mark",	 "Qbuff -> Word64", __get_mark	 , NULL, NULL },
+	{ "get_state",	 "Qbuff -> Word64", __get_state	 , NULL, NULL },
 
 	{ NULL }};
 

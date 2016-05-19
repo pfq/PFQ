@@ -306,35 +306,35 @@ par8(arguments_t args, struct qbuff * buff)
 
 struct pfq_lang_function_descr control_functions[] = {
 
-        { "conditional", "(Qbuff -> Bool) -> (Qbuff -> Action Qbuff) -> (Qbuff -> Action Qbuff) -> Qbuff -> Action Qbuff ",  conditional  },
-        { "when",        "(Qbuff -> Bool) -> (Qbuff -> Action Qbuff) -> Qbuff -> Action Qbuff",	when	},
-        { "unless",      "(Qbuff -> Bool) -> (Qbuff -> Action Qbuff) -> Qbuff -> Action Qbuff",	unless	},
+        { "conditional", "(Qbuff -> Bool) -> (Qbuff -> Action Qbuff) -> (Qbuff -> Action Qbuff) -> Qbuff -> Action Qbuff ",  conditional , NULL, NULL },
+        { "when",        "(Qbuff -> Bool) -> (Qbuff -> Action Qbuff) -> Qbuff -> Action Qbuff",	when	, NULL, NULL },
+        { "unless",      "(Qbuff -> Bool) -> (Qbuff -> Action Qbuff) -> Qbuff -> Action Qbuff",	unless	, NULL, NULL },
 
-        { "shift",       "(Qbuff -> Action Qbuff) -> Qbuff -> Action Qbuff",  shift   },
-        { "src",	 "(Qbuff -> Action Qbuff) -> Qbuff -> Action Qbuff",  src_ctx },
-        { "dst",	 "(Qbuff -> Action Qbuff) -> Qbuff -> Action Qbuff",  dst_ctx },
+        { "shift",       "(Qbuff -> Action Qbuff) -> Qbuff -> Action Qbuff",  shift   , NULL, NULL },
+        { "src",	 "(Qbuff -> Action Qbuff) -> Qbuff -> Action Qbuff",  src_ctx , NULL, NULL },
+        { "dst",	 "(Qbuff -> Action Qbuff) -> Qbuff -> Action Qbuff",  dst_ctx , NULL, NULL },
 
-        { "inv",	"(Qbuff -> Action Qbuff) -> Qbuff -> Action Qbuff", inv },
-        { "par",	"(Qbuff -> Action Qbuff) -> (Qbuff -> Action Qbuff) -> Qbuff -> Action Qbuff", par },
+        { "inv",	"(Qbuff -> Action Qbuff) -> Qbuff -> Action Qbuff", inv , NULL, NULL },
+        { "par",	"(Qbuff -> Action Qbuff) -> (Qbuff -> Action Qbuff) -> Qbuff -> Action Qbuff", par , NULL, NULL },
 
 	{ "par3",	"(Qbuff -> Action Qbuff) -> (Qbuff -> Action Qbuff) -> "
-			"(Qbuff -> Action Qbuff) -> Qbuff -> Action Qbuff", par3 },
+			"(Qbuff -> Action Qbuff) -> Qbuff -> Action Qbuff", par3 , NULL, NULL },
 	{ "par4",	"(Qbuff -> Action Qbuff) -> (Qbuff -> Action Qbuff) -> "
-			"(Qbuff -> Action Qbuff) -> (Qbuff -> Action Qbuff) -> Qbuff -> Action Qbuff", par4 },
+			"(Qbuff -> Action Qbuff) -> (Qbuff -> Action Qbuff) -> Qbuff -> Action Qbuff", par4 , NULL, NULL },
 	{ "par5",	"(Qbuff -> Action Qbuff) -> (Qbuff -> Action Qbuff) -> "
 			"(Qbuff -> Action Qbuff) -> (Qbuff -> Action Qbuff) -> "
-			"(Qbuff -> Action Qbuff) -> Qbuff -> Action Qbuff", par5 },
+			"(Qbuff -> Action Qbuff) -> Qbuff -> Action Qbuff", par5 , NULL, NULL },
 	{ "par6",	"(Qbuff -> Action Qbuff) -> (Qbuff -> Action Qbuff) -> "
 			"(Qbuff -> Action Qbuff) -> (Qbuff -> Action Qbuff) -> "
-			"(Qbuff -> Action Qbuff) -> (Qbuff -> Action Qbuff) -> Qbuff -> Action Qbuff", par6 },
+			"(Qbuff -> Action Qbuff) -> (Qbuff -> Action Qbuff) -> Qbuff -> Action Qbuff", par6 , NULL, NULL },
 	{ "par7",	"(Qbuff -> Action Qbuff) -> (Qbuff -> Action Qbuff) -> "
 			"(Qbuff -> Action Qbuff) -> (Qbuff -> Action Qbuff) -> "
 			"(Qbuff -> Action Qbuff) -> (Qbuff -> Action Qbuff) -> "
-			"(Qbuff -> Action Qbuff) -> Qbuff -> Action Qbuff", par7 },
+			"(Qbuff -> Action Qbuff) -> Qbuff -> Action Qbuff", par7 , NULL, NULL },
 	{ "par8",	"(Qbuff -> Action Qbuff) -> (Qbuff -> Action Qbuff) -> "
 			"(Qbuff -> Action Qbuff) -> (Qbuff -> Action Qbuff) -> "
 			"(Qbuff -> Action Qbuff) -> (Qbuff -> Action Qbuff) -> "
-			"(Qbuff -> Action Qbuff) -> (Qbuff -> Action Qbuff) -> Qbuff -> Action Qbuff", par8 },
+			"(Qbuff -> Action Qbuff) -> (Qbuff -> Action Qbuff) -> Qbuff -> Action Qbuff", par8 , NULL, NULL },
         { NULL }};
 
 

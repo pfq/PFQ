@@ -26,10 +26,10 @@
 
 struct pfq_lang_function_descr combinator_functions[] = {
 
-        { "or",    "(Qbuff -> Bool) -> (Qbuff -> Bool) -> Qbuff -> Bool",    or  },
-        { "and",   "(Qbuff -> Bool) -> (Qbuff -> Bool) -> Qbuff -> Bool",    and },
-        { "xor",   "(Qbuff -> Bool) -> (Qbuff -> Bool) -> Qbuff -> Bool",    xor },
-        { "not",   "(Qbuff -> Bool) -> Qbuff -> Bool",			not },
+        { "or",    "(Qbuff -> Bool) -> (Qbuff -> Bool) -> Qbuff -> Bool",    or  , NULL, NULL },
+        { "and",   "(Qbuff -> Bool) -> (Qbuff -> Bool) -> Qbuff -> Bool",    and , NULL, NULL },
+        { "xor",   "(Qbuff -> Bool) -> (Qbuff -> Bool) -> Qbuff -> Bool",    xor , NULL, NULL },
+        { "not",   "(Qbuff -> Bool) -> Qbuff -> Bool",			     not , NULL, NULL },
 
         { NULL }};
 

@@ -161,34 +161,34 @@ filter_incoming_host(arguments_t args, struct qbuff * b)
 
 struct pfq_lang_function_descr filter_functions[] = {
 
-        { "unit",	  "SkBuff -> Action SkBuff",	unit			},
-        { "ip",           "SkBuff -> Action SkBuff",	filter_ip		},
-        { "udp",          "SkBuff -> Action SkBuff",	filter_udp		},
-        { "tcp",          "SkBuff -> Action SkBuff",	filter_tcp		},
-        { "icmp",         "SkBuff -> Action SkBuff",	filter_icmp		},
-        { "flow",         "SkBuff -> Action SkBuff",	filter_flow		},
-        { "vlan",         "SkBuff -> Action SkBuff",	filter_vlan		},
-	{ "no_frag",	  "SkBuff -> Action SkBuff",	filter_no_frag		},
-	{ "no_more_frag", "SkBuff -> Action SkBuff",	filter_no_more_frag     },
+        { "unit",	  "Qbuff -> Action Qbuff",	unit		     , NULL, NULL   },
+        { "ip",           "Qbuff -> Action Qbuff",	filter_ip	     , NULL, NULL   },
+        { "udp",          "Qbuff -> Action Qbuff",	filter_udp	     , NULL, NULL   },
+        { "tcp",          "Qbuff -> Action Qbuff",	filter_tcp	     , NULL, NULL   },
+        { "icmp",         "Qbuff -> Action Qbuff",	filter_icmp	     , NULL, NULL   },
+        { "flow",         "Qbuff -> Action Qbuff",	filter_flow	     , NULL, NULL   },
+        { "vlan",         "Qbuff -> Action Qbuff",	filter_vlan	     , NULL, NULL   },
+	{ "no_frag",	  "Qbuff -> Action Qbuff",	filter_no_frag	     , NULL, NULL   },
+	{ "no_more_frag", "Qbuff -> Action Qbuff",	filter_no_more_frag  , NULL, NULL   },
 
-        { "port",	  "Word16 -> SkBuff -> Action SkBuff",		 filter_port     },
-        { "src_port",	  "Word16 -> SkBuff -> Action SkBuff",		 filter_src_port },
-        { "dst_port",	  "Word16 -> SkBuff -> Action SkBuff",		 filter_dst_port },
+        { "port",	  "Word16 -> Qbuff -> Action Qbuff", filter_port     , NULL, NULL   },
+        { "src_port",	  "Word16 -> Qbuff -> Action Qbuff", filter_src_port , NULL, NULL   },
+        { "dst_port",	  "Word16 -> Qbuff -> Action Qbuff", filter_dst_port , NULL, NULL   },
 
-        { "addr",	  "CIDR -> SkBuff -> Action SkBuff", filter_addr     , filter_addr_init },
-        { "src_addr",	  "CIDR -> SkBuff -> Action SkBuff", filter_src_addr , filter_addr_init },
-        { "dst_addr",	  "CIDR -> SkBuff -> Action SkBuff", filter_dst_addr , filter_addr_init },
+        { "addr",	  "CIDR -> Qbuff -> Action Qbuff", filter_addr     , filter_addr_init , NULL},
+        { "src_addr",	  "CIDR -> Qbuff -> Action Qbuff", filter_src_addr , filter_addr_init , NULL},
+        { "dst_addr",	  "CIDR -> Qbuff -> Action Qbuff", filter_dst_addr , filter_addr_init , NULL},
 
-	{ "l3_proto",     "Word16 -> SkBuff -> Action SkBuff",           filter_l3_proto },
-        { "l4_proto",     "Word8  -> SkBuff -> Action SkBuff",           filter_l4_proto },
-        { "filter",       "(SkBuff -> Bool) -> SkBuff -> Action SkBuff", filter_generic  },
+	{ "l3_proto",     "Word16 -> Qbuff -> Action Qbuff",           filter_l3_proto , NULL, NULL},
+        { "l4_proto",     "Word8  -> Qbuff -> Action Qbuff",           filter_l4_proto , NULL, NULL},
+        { "filter",       "(Qbuff -> Bool) -> Qbuff -> Action Qbuff",  filter_generic  , NULL, NULL},
 
-	{ "mac_broadcast","SkBuff -> Action SkBuff",	filter_broadcast	},
-	{ "mac_multicast","SkBuff -> Action SkBuff",	filter_multicast	},
-	{ "incoming_host","SkBuff -> Action SkBuff",	filter_incoming_host	},
-	{ "ip_host",	  "SkBuff -> Action SkBuff",	filter_ip_host		},
-	{ "ip_broadcast", "SkBuff -> Action SkBuff",	filter_ip_broadcast	},
-	{ "ip_multicast", "SkBuff -> Action SkBuff",	filter_ip_multicast	},
+	{ "mac_broadcast","Qbuff -> Action Qbuff",	filter_broadcast     , NULL, NULL  },
+	{ "mac_multicast","Qbuff -> Action Qbuff",	filter_multicast     , NULL, NULL  },
+	{ "incoming_host","Qbuff -> Action Qbuff",	filter_incoming_host , NULL, NULL  },
+	{ "ip_host",	  "Qbuff -> Action Qbuff",	filter_ip_host	     , NULL, NULL  },
+	{ "ip_broadcast", "Qbuff -> Action Qbuff",	filter_ip_broadcast  , NULL, NULL  },
+	{ "ip_multicast", "Qbuff -> Action Qbuff",	filter_ip_multicast  , NULL, NULL  },
 
         { NULL }};
 
