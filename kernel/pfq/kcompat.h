@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef PF_Q_KCOMPACT_H
-#define PF_Q_KCOMPACT_H
+#ifndef PFQ_KCOMPACT_H
+#define PFQ_KCOMPACT_H
 
 #include <linux/version.h>
 #include <linux/netdevice.h>
@@ -56,4 +56,4 @@ netdev_notifier_info_to_dev(void *data)
 #endif
 
 
-#endif /* PF_Q_KCOMPACT_H */
+#endif /* PFQ_KCOMPACT_H */

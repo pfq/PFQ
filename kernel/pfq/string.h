@@ -21,11 +21,11 @@
  *
  ****************************************************************/
 
-#ifndef PF_Q_STRING_H
-#define PF_Q_STRING_H
+#ifndef PFQ_STRING_H
+#define PFQ_STRING_H
 
 #include <linux/string.h>
 #include <linux/ctype.h>
 
-#endif /* PF_Q_NET_STRING_H */
+#endif /* PFQ_NET_STRING_H */
 

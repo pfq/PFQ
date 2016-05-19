@@ -21,10 +21,10 @@
  *
  ****************************************************************/
 
-#ifndef PF_Q_MODULE_H
-#define PF_Q_MODULE_H
+#ifndef PFQ_MODULE_H
+#define PFQ_MODULE_H
 
 #include <lang/module.h>
 #include <lang/symtable.h>
 
-#endif /* PF_Q_MODULE_H */
+#endif /* PFQ_MODULE_H */

@@ -22,8 +22,8 @@
  *
  ****************************************************************/
 
-#ifndef PF_Q_BPF_H
-#define PF_Q_BPF_H
+#ifndef PFQ_BPF_H
+#define PFQ_BPF_H
 
 #include <pragma/diagnostic_push>
 #include <linux/filter.h>
@@ -33,4 +33,4 @@ struct sk_filter * pfq_alloc_sk_filter(struct sock_fprog *fprog);
 
 void pfq_free_sk_filter(struct sk_filter *filter);
 
-#endif /* PF_Q_BPF_H */
+#endif /* PFQ_BPF_H */

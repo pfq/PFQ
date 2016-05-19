@@ -21,10 +21,9 @@
  *
  ****************************************************************/
 
-#ifndef PF_Q_NET_HEADERS_H
-#define PF_Q_NET_HEADERS_H
-
 #include <engine/percpu.h>
+#include <engine/io.h>
+
 #include <pfq/timer.h>
 #include <pfq/io.h>
 
@@ -56,6 +55,4 @@ void pfq_del_timer(struct timer_list *timer)
 	del_timer(timer);
 }
 
-
-#endif /* PF_Q_NET_HEADERS_H */
 

@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef PF_Q_SKBUFF_POOL_H
-#define PF_Q_SKBUFF_POOL_H
+#ifndef PFQ_SKBUFF_POOL_H
+#define PFQ_SKBUFF_POOL_H
 
 #include <pragma/diagnostic_push>
 #include <linux/skbuff.h>
@@ -98,4 +98,4 @@ bool pfq_skb_pool_push(struct pfq_skb_pool *pool, struct sk_buff *nskb)
 	return ret;
 }
 
-#endif /* PF_Q_SKBUFF_POOL_H */
+#endif /* PFQ_SKBUFF_POOL_H */

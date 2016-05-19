@@ -25,8 +25,8 @@
  *
  */
 
-#ifndef PF_Q_THREAD_H
-#define PF_Q_THREAD_H
+#ifndef PFQ_THREAD_H
+#define PFQ_THREAD_H
 
 #include <pragma/diagnostic_push>
 #include <linux/kthread.h>
@@ -74,4 +74,4 @@ bool is_kthread_should_stop(void)
 }
 
 
-#endif /* PF_Q_THREAD_H */
+#endif /* PFQ_THREAD_H */

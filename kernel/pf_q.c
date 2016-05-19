@@ -65,9 +65,9 @@
 #include <engine/endpoint.h>
 #include <engine/define.h>
 #include <engine/GC.h>
+#include <engine/io.h>
 
 #include <pfq/percpu.h>
-#include <pfq/io.h>
 #include <pfq/shmem.h>
 #include <pfq/proc.h>
 #include <pfq/sockopt.h>
@@ -76,6 +76,7 @@
 #include <pfq/thread.h>
 #include <pfq/vlan.h>
 #include <pfq/pool.h>
+#include <pfq/io.h>
 #include <pfq/kcompat.h>
 
 
@@ -94,7 +95,6 @@ MODULE_DESCRIPTION("Functional Networking Framework for Multi-core Architectures
 #endif
 
 static DEFINE_MUTEX(sock_lock);
-
 
 /* simple packet HANDLER */
 

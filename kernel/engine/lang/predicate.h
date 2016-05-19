@@ -24,11 +24,15 @@
 #ifndef PFQ_LANG_PREDICATE_H
 #define PFQ_LANG_PREDICATE_H
 
+
 #include <engine/lang/module.h>
+#include <engine/lang/maybe.h>
 #include <engine/lang/qbuff.h>
 
+#include <pfq/kcompat.h>
 #include <pfq/nethdr.h>
 #include <pfq/qbuff.h>
+
 
 static inline bool
 less(arguments_t args, struct qbuff * buff)

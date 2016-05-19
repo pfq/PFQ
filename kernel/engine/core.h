@@ -25,9 +25,10 @@
 #ifndef Q_ENGINE_CORE_H
 #define Q_ENGINE_CORE_H
 
-#include <engine/lang/engine.h>
-#include <engine/percpu.h>
-#include <engine/GC.h>
+struct pfq_percpu_data;
+struct pfq_percpu_sock;
+struct pfq_percpu_pool;
+struct GC_data;
 
 int pfq_process_batch(struct pfq_percpu_data *data,
 		      struct pfq_percpu_sock *sock,

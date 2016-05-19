@@ -22,8 +22,8 @@
  *
  ****************************************************************/
 
-#ifndef PF_Q_SPARSE_H
-#define PF_Q_SPARSE_H
+#ifndef PFQ_SPARSE_H
+#define PFQ_SPARSE_H
 
 #include <pragma/diagnostic_push>
 #include <linux/smp.h>
@@ -93,4 +93,4 @@
 })
 
 
-#endif /* PF_Q_SPARSE_H */
+#endif /* PFQ_SPARSE_H */

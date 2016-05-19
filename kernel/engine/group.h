@@ -24,14 +24,15 @@
 #ifndef Q_ENGINE_GROUP_H
 #define Q_ENGINE_GROUP_H
 
+#include <engine/sock.h>
+#include <engine/stats.h>
+#include <engine/define.h>
+
 #include <pfq/kcompat.h>
 #include <pfq/sparse.h>
 #include <pfq/types.h>
 #include <pfq/bpf.h>
 
-#include <engine/sock.h>
-#include <engine/stats.h>
-#include <engine/define.h>
 
 struct pfq_group
 {

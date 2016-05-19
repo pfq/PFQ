@@ -24,7 +24,6 @@
 #ifndef Q_ENGINE_GLOBAL_H
 #define Q_ENGINE_GLOBAL_H
 
-#include <engine/stats.h>
 #include <engine/define.h>
 
 extern int capture_incoming;

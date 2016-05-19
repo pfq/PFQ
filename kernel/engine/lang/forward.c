@@ -21,12 +21,12 @@
  *
  ****************************************************************/
 
-#include <engine/lang/module.h>
 #include <engine/lang/forward.h>
 #include <engine/global.h>
+#include <engine/percpu.h>
+#include <engine/io.h>
 
-#include <pfq/io.h>
-
+#include <pfq/netdev.h>
 
 static int
 forward_init(arguments_t args)

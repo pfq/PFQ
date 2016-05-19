@@ -21,10 +21,10 @@
  *
  ****************************************************************/
 
-#ifndef PF_Q_ATOMIC_H
-#define PF_Q_ATOMIC_H
+#ifndef PFQ_ATOMIC_H
+#define PFQ_ATOMIC_H
 
 #include <asm/atomic.h>
 #include <asm/local.h>
 
-#endif /* PF_Q_ATOMIC_H */
+#endif /* PFQ_ATOMIC_H */

@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef PF_Q_VLAN_H
-#define PF_Q_VLAN_H
+#ifndef PFQ_VLAN_H
+#define PFQ_VLAN_H
 
 #include <pragma/diagnostic_push>
 #include <linux/version.h>
@@ -51,4 +51,4 @@ struct sk_buff *pfq_vlan_untag(struct sk_buff *skb)
 
 #endif
 
-#endif /* PF_Q_VLAN_H */
+#endif /* PFQ_VLAN_H */

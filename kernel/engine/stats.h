@@ -24,13 +24,14 @@
 #ifndef Q_ENGINE_STATS_H
 #define Q_ENGINE_STATS_H
 
+#include <engine/define.h>
+
 #include <pfq/kcompat.h>
 #include <pfq/atomic.h>
 #include <pfq/sparse.h>
 
 #include <linux/pf_q.h>
 
-#include <engine/define.h>
 
 
 struct pfq_kernel_stats

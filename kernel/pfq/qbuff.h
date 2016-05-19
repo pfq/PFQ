@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef PF_Q_QBUFF_H
-#define PF_Q_QBUFF_H
+#ifndef PFQ_QBUFF_H
+#define PFQ_QBUFF_H
 
 #include <engine/qbuff.h>
 #include <engine/global.h>
@@ -205,4 +205,4 @@ qbuff_run_vlan_filter(struct qbuff const *buff, pfq_gid_t gid)
 }
 
 
-#endif /* PF_Q_QBUFF_H */
+#endif /* PFQ_QBUFF_H */

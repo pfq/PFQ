@@ -24,13 +24,13 @@
 #ifndef Q_ENGINE_PERCPU_H
 #define Q_ENGINE_PERCPU_H
 
+#include <engine/define.h>
+#include <engine/GC.h>
+
 #include <pfq/kcompat.h>
 #include <pfq/timer.h>
 #include <pfq/printk.h>
 #include <pfq/pool.h>
-
-#include <engine/define.h>
-#include <engine/GC.h>
 
 
 int  pfq_percpu_alloc(void);

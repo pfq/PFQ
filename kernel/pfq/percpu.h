@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef PF_Q_PERCPU_H
-#define PF_Q_PERCPU_H
+#ifndef PFQ_PERCPU_H
+#define PFQ_PERCPU_H
 
 #include <pfq/pool.h>
 
@@ -39,5 +39,5 @@ struct pfq_percpu_pool
 } ____cacheline_aligned;
 
 
-#endif /* PF_Q_PERCPU_H */
+#endif /* PFQ_PERCPU_H */
 

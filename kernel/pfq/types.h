@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef PF_Q_TYPES_H
-#define PF_Q_TYPES_H
+#ifndef PFQ_TYPES_H
+#define PFQ_TYPES_H
 
 #include <linux/kernel.h>
 #include <linux/compiler.h>
@@ -31,4 +31,4 @@ typedef int __bitwise pfq_id_t;
 typedef int __bitwise pfq_gid_t;
 
 
-#endif  /* PF_Q_TYPES_H */
+#endif  /* PFQ_TYPES_H */

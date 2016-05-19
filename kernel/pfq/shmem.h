@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef PF_Q_SHMEM_H
-#define PF_Q_SHMEM_H
+#ifndef PFQ_SHMEM_H
+#define PFQ_SHMEM_H
 
 #include <pragma/diagnostic_push>
 #include <linux/vmalloc.h>
@@ -62,4 +62,4 @@ int pfq_hugepage_map(struct pfq_shmem_descr *shmem, unsigned long addr, size_t s
 int pfq_hugepage_unmap(struct pfq_shmem_descr *shmem);
 
 
-#endif /* PF_Q_SHMEM_H */
+#endif /* PFQ_SHMEM_H */

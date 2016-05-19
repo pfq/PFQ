@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef PF_Q_PRINTK_H
-#define PF_Q_PRINTK_H
+#ifndef PFQ_PRINTK_H
+#define PFQ_PRINTK_H
 
 #include <linux/printk.h>
 
@@ -39,4 +39,4 @@ extern void   pr_devel_computation_tree(struct pfq_lang_computation_tree const *
 extern size_t snprintf_functional_node(char *buffer, size_t size, struct pfq_lang_functional_node const *node, size_t index);
 
 
-#endif /* PF_Q_PRINTK_H */
+#endif /* PFQ_PRINTK_H */

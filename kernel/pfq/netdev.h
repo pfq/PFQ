@@ -25,8 +25,8 @@
  *
  */
 
-#ifndef PF_Q_NETDEV_H
-#define PF_Q_NETDEV_H
+#ifndef PFQ_NETDEV_H
+#define PFQ_NETDEV_H
 
 
 #include <pragma/diagnostic_push>
@@ -124,3 +124,4 @@ int dev_put_by_index(struct net *net, int ifindex)
 
 
 #endif /* PF_Q_NETDEV_H */
+#endif /* PFQ_NETDEV_H */

@@ -24,9 +24,7 @@
 #ifndef Q_ENGINE_QBUFF_H
 #define Q_ENGINE_QBUFF_H
 
-#include <engine/group.h>
 #include <engine/define.h>
-
 #include <pfq/types.h>
 
 struct pfq_lang_monad;

@@ -22,8 +22,8 @@
  *
  ****************************************************************/
 
-#ifndef PF_Q_MEMORY_H
-#define PF_Q_MEMORY_H
+#ifndef PFQ_MEMORY_H
+#define PFQ_MEMORY_H
 
 #include <pragma/diagnostic_push>
 #include <linux/version.h>
@@ -265,4 +265,4 @@ void pfq_kfree_skb_pool(struct sk_buff *skb, struct pfq_skb_pool *skb_pool)
 }
 
 
-#endif /* PF_Q_MEMORY_H */
+#endif /* PFQ_MEMORY_H */

@@ -31,7 +31,6 @@
 #include <pfq/sparse.h>
 #include <pfq/kcompat.h>
 
-
 #define ARGS_TYPE(a)		__builtin_choose_expr(__builtin_types_compatible_p(arguments_t, typeof(a)), a, (void)0)
 
 #define EVAL_FUNCTION(f,buff)    eval_function(f, buff)

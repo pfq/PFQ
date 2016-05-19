@@ -30,6 +30,7 @@
 
 #include <pfq/kcompat.h>
 
+
 struct net_device;
 
 struct GC_log

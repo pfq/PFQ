@@ -23,11 +23,13 @@
 
 #include <pfq/kcompat.h>
 #include <pfq/sparse.h>
-#include <pfq/io.h>
+#include <pfq/printk.h>
+#include <pfq/netdev.h>
 
 #include <engine/endpoint.h>
 #include <engine/queue.h>
 #include <engine/bitops.h>
+#include <engine/io.h>
 
 
 void

@@ -26,7 +26,6 @@
 #include <pfq/kcompat.h>
 #include <pfq/memory.h>
 #include <pfq/qbuff.h>
-#include <pfq/io.h>
 #include <pfq/vlan.h>
 
 #include <engine/percpu.h>
@@ -39,6 +38,7 @@
 #include <engine/queue.h>
 #include <engine/bitops.h>
 #include <engine/GC.h>
+#include <engine/io.h>
 
 
 /* send this packet to selected sockets */

@@ -41,8 +41,8 @@
 #include <engine/group.h>
 #include <engine/endpoint.h>
 #include <engine/queue.h>
+#include <engine/io.h>
 
-#include <pfq/io.h>
 #include <pfq/netdev.h>
 #include <pfq/thread.h>
 #include <pfq/memory.h>

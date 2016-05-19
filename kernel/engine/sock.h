@@ -24,6 +24,10 @@
 #ifndef Q_ENGINE_SOCK_H
 #define Q_ENGINE_SOCK_H
 
+#include <engine/endpoint.h>
+#include <engine/stats.h>
+#include <engine/define.h>
+
 #include <pfq/kcompat.h>
 #include <pfq/shmem.h>
 #include <pfq/types.h>
@@ -33,9 +37,6 @@
 #include <net/sock.h>
 #endif
 
-#include <engine/endpoint.h>
-#include <engine/stats.h>
-#include <engine/define.h>
 
 
 #define for_each_sk_mbuff(hdr, end, fix) \

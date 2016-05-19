@@ -38,11 +38,10 @@
 
 #include <engine/define.h>
 #include <engine/sock.h>
+#include <engine/io.h>
 
-#include <pfq/io.h>
 #include <pfq/thread.h>
 #include <pfq/memory.h>
-
 
 
 static DEFINE_MUTEX(pfq_thread_tx_pool_lock);

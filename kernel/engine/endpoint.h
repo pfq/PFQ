@@ -34,6 +34,7 @@ struct pfq_sock;
 struct net_device;
 struct qbuff;
 
+
 enum pfq_endpoint_type
 {
 	pfq_endpoint_socket,

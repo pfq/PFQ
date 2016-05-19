@@ -40,12 +40,14 @@
 #include <engine/bitops.h>
 #include <engine/qbuff.h>
 #include <engine/GC.h>
+#include <engine/io.h>
 
 #include <pfq/io.h>
 #include <pfq/vlan.h>
 #include <pfq/thread.h>
 #include <pfq/memory.h>
 #include <pfq/qbuff.h>
+#include <pfq/netdev.h>
 
 int
 pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)

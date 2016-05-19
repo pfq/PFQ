@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef PF_Q_NET_HEADERS_H
-#define PF_Q_NET_HEADERS_H
+#ifndef PFQ_NET_HEADERS_H
+#define PFQ_NET_HEADERS_H
 
 #include <net/ip.h>
 #include <linux/ip.h>
@@ -34,5 +34,5 @@
 #include <linux/in.h>
 #include <linux/etherdevice.h>
 
-#endif /* PF_Q_NET_HEADERS_H */
+#endif /* PFQ_NET_HEADERS_H */
 
