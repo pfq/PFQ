@@ -27,6 +27,7 @@
 #include <engine/lang/module.h>
 #include <engine/lang/predicate.h>
 
+#include <pfq/printk.h>
 
 static inline ActionQbuff
 forward_drop(arguments_t args, struct qbuff * b)
