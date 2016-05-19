@@ -36,6 +36,7 @@
 
 typedef uint64_t dev_queue_t;
 
+
 struct net_dev_queue
 {
 	dev_queue_t	     id;
@@ -44,7 +45,7 @@ struct net_dev_queue
 
 	struct net_device   *dev;
 	struct netdev_queue *queue;
-	u16		     queue_mapping;
+	uint16_t		     queue_mapping;
 
 };
 
@@ -64,8 +65,8 @@ extern struct net_dev_queue net_dev_queue_null;
 #define PFQ_DEVQ_ARG(id)		PFQ_DEVQ_IFINDEX(id), PFQ_DEVQ_QUEUE(id)
 
 
-extern int netdev_refcnt_read_by_index(struct net *net, int ifindex);
-extern int dev_queue_get(struct net *net, dev_queue_t id, struct net_dev_queue *dq);
+extern int pfq_dev_refcnt_read_by_index(struct net *net, int ifindex);
+extern int pfq_dev_queue_get(struct net *net, dev_queue_t id, struct net_dev_queue *dq);
 
 static inline int
 __pfq_dev_cap_txqueue(struct net_device *dev, int queue)
@@ -92,7 +93,7 @@ void pfq_hard_tx_unlock(struct net_dev_queue *dq)
 
 
 static inline
-void dev_queue_put(struct net *net, struct net_dev_queue *dq)
+void pfq_dev_queue_put(struct net *net, struct net_dev_queue *dq)
 {
 	if(likely(dq->dev)) {
 #ifdef PFQ_DEBUG
@@ -108,7 +109,7 @@ void dev_queue_put(struct net *net, struct net_dev_queue *dq)
 
 
 static inline
-int dev_put_by_index(struct net *net, int ifindex)
+int pfq_dev_put_by_index(struct net *net, int ifindex)
 {
 	struct net_device *dev;
 	int err = -EPERM;
@@ -123,5 +124,26 @@ int dev_put_by_index(struct net *net, int ifindex)
 }
 
 
-#endif /* PF_Q_NETDEV_H */
+static inline
+struct net_device *pfq_dev_get_by_index(int index)
+{
+	return dev_get_by_index(&init_net, index);
+}
+
+
+static inline
+struct net_device *pfq_dev_get_by_name(const char *name)
+{
+	return dev_get_by_name(&init_net, name);
+}
+
+
+static inline
+void pfq_dev_put(struct net_device *dev)
+{
+	dev_put(dev);
+}
+
+
+
 #endif /* PFQ_NETDEV_H */

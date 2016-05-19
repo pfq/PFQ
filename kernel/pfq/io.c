@@ -133,7 +133,7 @@ __pfq_xmit(struct sk_buff *skb, struct net_device *dev, int xmit_more);
 
 
 #if (LINUX_VERSION_CODE > KERNEL_VERSION(3,13,0))
-static u16 __pfq_pick_tx_default(struct net_device *dev, struct sk_buff *skb)
+static uint16_t __pfq_pick_tx_default(struct net_device *dev, struct sk_buff *skb)
 {
 	return 0;
 }
@@ -456,7 +456,6 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
 	return ret;
 }
 
-
 /*
  * transmit queues of packets (from memory mapped queue)...
  */
@@ -510,7 +509,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
 	/* lock the dev_queue and disable bh */
 
-	if (dev_queue_get(ctx.net, PFQ_DEVQ_ID(txinfo->def_ifindex, txinfo->def_queue), &dev_queue) < 0)
+	if (pfq_dev_queue_get(ctx.net, PFQ_DEVQ_ID(txinfo->def_ifindex, txinfo->def_queue), &dev_queue) < 0)
 	{
 		if (printk_ratelimit())
 			printk(KERN_INFO "[PFQ] sk_queue_xmit: could not lock default device!\n");
@@ -555,12 +554,12 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 				local_bh_enable();
 
 				/* release the device */
-				dev_queue_put(ctx.net, &dev_queue);
+				pfq_dev_queue_put(ctx.net, &dev_queue);
 			}
 
 			/* try to get the new dev_queue */
 
-			if (dev_queue_get(ctx.net, qid, &dev_queue) < 0)
+			if (pfq_dev_queue_get(ctx.net, qid, &dev_queue) < 0)
 			{
 				if (printk_ratelimit())
 					printk(KERN_INFO "[PFQ] sk_queue_xmit: could not lock " PFQ_DEVQ_FMT "!\n", PFQ_DEVQ_ARG(qid));
@@ -609,7 +608,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
 	/* release the dev_queue */
 
-	dev_queue_put(ctx.net, &dev_queue);
+	pfq_dev_queue_put(ctx.net, &dev_queue);
 
 	/* update the local consumer offset */
 
@@ -634,7 +633,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
  */
 
 tx_res_t
-pfq_skb_queue_xmit(struct pfq_qbuff_queue *buffs, unsigned long long mask, struct net_device *dev, int queue)
+pfq_qbuff_queue_xmit(struct pfq_qbuff_queue *buffs, unsigned long long mask, struct net_device *dev, int queue)
 {
 	struct netdev_queue *txq;
 	struct qbuff *buff;

@@ -27,10 +27,11 @@
 
 #include <pfq/netdev.h>
 
+
 struct net_dev_queue net_dev_queue_null = { PFQ_DEVQ_NULL, NULL, NULL, 0 };
 
 
-int netdev_refcnt_read_by_index(struct net *net, int ifindex)
+int pfq_dev_refcnt_read_by_index(struct net *net, int ifindex)
 {
 	struct net_device *dev;
 	int ref = -1;
@@ -44,7 +45,7 @@ int netdev_refcnt_read_by_index(struct net *net, int ifindex)
 }
 
 
-int dev_queue_get(struct net *net, dev_queue_t id, struct net_dev_queue *dq)
+int pfq_dev_queue_get(struct net *net, dev_queue_t id, struct net_dev_queue *dq)
 {
 	int ifindex = PFQ_DEVQ_IFINDEX(id);
 

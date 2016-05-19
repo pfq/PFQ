@@ -32,7 +32,7 @@ static int
 forward_init(arguments_t args)
 {
 	const char *name = GET_ARG(const char *, args);
-	struct net_device *dev = dev_get_by_name(&init_net, name);
+	struct net_device *dev = pfq_dev_get_by_name(name);
 	if (dev == NULL) {
                 printk(KERN_INFO "[PFQ|init] forward: %s no such device!\n", name);
                 return -EINVAL;
@@ -51,7 +51,7 @@ forward_fini(arguments_t args)
 {
 	struct net_device *dev = GET_ARG(struct net_device *, args);
 	if (dev) {
-		dev_put(dev);
+		pfq_dev_put(dev);
 		printk(KERN_INFO "[PFQ|fini] forward: device '%s' released\n", dev->name);
 	}
 	return 0;
@@ -66,7 +66,7 @@ link_init(arguments_t args)
 
 	for(n = 0; n < ndev; n++)
 	{
-		struct net_device *dev = dev_get_by_name(&init_net, dev_name[n]);
+		struct net_device *dev = pfq_dev_get_by_name(dev_name[n]);
 		if (dev == NULL) {
 			printk(KERN_INFO "[PFQ|init] link: %s no such device!\n", dev_name[n]);
 			dev_name[n] = NULL;
@@ -88,7 +88,7 @@ link_fini(arguments_t args)
 	for(n = 0; n < ndev; n++)
 	{
 		if (dev[n]) {
-			dev_put(dev[n]);
+			pfq_dev_put(dev[n]);
 			printk(KERN_INFO "[PFQ|fini] forward: device '%s' released\n", dev[n]->name);
 		}
 	}
