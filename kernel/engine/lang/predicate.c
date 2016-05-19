@@ -59,35 +59,35 @@ pred_is_flow(arguments_t args, struct qbuff * b)
 static bool
 pred_is_l3_proto(arguments_t args, struct qbuff * b)
 {
-	const u16 type = GET_ARG(u16, args);
+	const uint16_t type = GET_ARG(uint16_t, args);
 	return is_l3_proto(b, type);
 }
 
 static bool
 pred_is_l4_proto(arguments_t args, struct qbuff * b)
 {
-	const u8 protocol = GET_ARG(u8, args);
+	const uint8_t protocol = GET_ARG(uint8_t, args);
 	return is_l4_proto(b, protocol);
 }
 
 static bool
 pred_has_port(arguments_t args, struct qbuff * b)
 {
-	const u16 port = GET_ARG(u16, args);
+	const uint16_t port = GET_ARG(uint16_t, args);
 	return has_port(b, port);
 }
 
 static bool
 pred_has_src_port(arguments_t args, struct qbuff * b)
 {
-	const u16 port = GET_ARG(u16, args);
+	const uint16_t port = GET_ARG(uint16_t, args);
 	return has_src_port(b, port);
 }
 
 static bool
 pred_has_dst_port(arguments_t args, struct qbuff * b)
 {
-	const u16 port = GET_ARG(u16, args);
+	const uint16_t port = GET_ARG(uint16_t, args);
 	return has_dst_port(b, port);
 }
 

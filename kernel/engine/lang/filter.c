@@ -40,35 +40,35 @@ filter_generic(arguments_t args, struct qbuff * b)
 static ActionQbuff
 filter_l3_proto(arguments_t args, struct qbuff * b)
 {
-	const u16 type = GET_ARG(u16, args);
+	const uint16_t type = GET_ARG(uint16_t, args);
         return is_l3_proto(b, type) ? Pass(b) : Drop(b);
 }
 
 static ActionQbuff
 filter_l4_proto(arguments_t args, struct qbuff * b)
 {
-	const u8 proto = GET_ARG(u8, args);
+	const uint8_t proto = GET_ARG(uint8_t, args);
         return is_l4_proto(b, proto) ? Pass(b) : Drop(b);
 }
 
 static ActionQbuff
 filter_port(arguments_t args, struct qbuff * b)
 {
-	const u16 port = GET_ARG(u16, args);
+	const uint16_t port = GET_ARG(uint16_t, args);
         return has_port(b, port) ? Pass(b) : Drop(b);
 }
 
 static ActionQbuff
 filter_src_port(arguments_t args, struct qbuff * b)
 {
-	const u16 port = GET_ARG(u16, args);
+	const uint16_t port = GET_ARG(uint16_t, args);
         return has_src_port(b, port) ? Pass(b) : Drop(b);
 }
 
 static ActionQbuff
 filter_dst_port(arguments_t args, struct qbuff * b)
 {
-	const u16 port = GET_ARG(u16, args);
+	const uint16_t port = GET_ARG(uint16_t, args);
         return has_dst_port(b, port) ? Pass(b) : Drop(b);
 }
 

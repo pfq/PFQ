@@ -88,7 +88,7 @@ struct sk_buff *
 pfq_vlan_untag(struct sk_buff *skb)
 {
         struct vlan_hdr *vhdr;
-        u16 vlan_tci;
+        uint16_t vlan_tci;
 
         if (unlikely(vlan_tx_tag_present(skb))) {
                 /* vlan_tci is already set-up so leave this for another time */

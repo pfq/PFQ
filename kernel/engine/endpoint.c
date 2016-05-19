@@ -61,14 +61,13 @@ static
 size_t copy_to_user_qbuffs(struct pfq_sock *so, struct pfq_qbuff_refs *buffs,
 			 unsigned long long mask, int cpu, pfq_gid_t gid)
 {
-        unsigned int len = pfq_popcount(mask);
-        size_t cpy = 0;
+        size_t cpy, len = pfq_popcount(mask);
 
         if (likely(pfq_get_rx_queue(&so->opt) != NULL)) {
 
 		smp_rmb();
 
-                cpy = pfq_sk_queue_recv(&so->opt, buffs, mask, len, gid);
+                cpy = pfq_sk_queue_recv(&so->opt, buffs, mask, (int)len, gid);
 
 		__sparse_add(so->stats, recv, cpy, cpu);
 
@@ -80,7 +79,7 @@ size_t copy_to_user_qbuffs(struct pfq_sock *so, struct pfq_qbuff_refs *buffs,
 	else
 		__sparse_add(so->stats, lost, len, cpu);
 
-        return cpy;
+        return 0;
 }
 
 
@@ -89,11 +88,11 @@ size_t copy_to_dev_qbuffs(struct pfq_sock *so, struct pfq_qbuff_refs *buffs,
 			 unsigned long long mask, int cpu, pfq_gid_t gid)
 {
 	struct net_device *dev;
-	int sent;
+	size_t sent;
 
 	if (so->egress_index) {
 
-		dev = dev_get_by_index(&init_net, so->egress_index);
+		dev = pfq_dev_get_by_index(so->egress_index);
 		if (dev == NULL) {
 			if (printk_ratelimit())
 				printk(KERN_INFO "[PFQ] egress endpoint not existing (%d)\n",
@@ -101,8 +100,8 @@ size_t copy_to_dev_qbuffs(struct pfq_sock *so, struct pfq_qbuff_refs *buffs,
                         return false;
 		}
 
-		sent = pfq_qbuff_queue_lazy_xmit(buffs, mask, dev, so->egress_queue);
-                dev_put(dev);
+		sent = (size_t)pfq_qbuff_queue_lazy_xmit(buffs, mask, dev, so->egress_queue);
+                pfq_dev_put(dev);
 		return sent;
 	}
 

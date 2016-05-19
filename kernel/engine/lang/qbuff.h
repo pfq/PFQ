@@ -61,13 +61,13 @@ qbuff_next_ip_offset(struct qbuff *buff, int offset, int *proto)
 		if (qbuff_eth_hdr(buff)->h_proto == __constant_htons(ETH_P_IP))
 		{
 			*proto = IPPROTO_IP;
-			return qbuff_maclen(buff);
+			return (int)qbuff_maclen(buff);
 		}
 
 		if (qbuff_eth_hdr(buff)->h_proto == __constant_htons(ETH_P_IPV6))
 		{
 			*proto = IPPROTO_IPV6;
-			return qbuff_maclen(buff);
+			return (int)qbuff_maclen(buff);
 		}
 
 		return -1;

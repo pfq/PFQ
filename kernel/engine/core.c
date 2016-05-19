@@ -46,7 +46,7 @@
 static inline
 void mask_to_sock_queue(unsigned long n, unsigned long mask, unsigned long long *sock_queue)
 {
-	unsigned long bit;
+	unsigned long int bit;
 	pfq_bitwise_foreach(mask, bit,
 	{
 	        int index = (int)pfq_ctz(bit);
@@ -260,8 +260,8 @@ int pfq_process_batch(struct pfq_percpu_data *data,
 
 				pfq_bitwise_foreach(monad.fanout.class_mask, cbit,
 				{
-					int class = pfq_ctz(cbit);
-					eligible_mask |= atomic_long_read(&this_group->sock_id[class]);
+					int class = (int)pfq_ctz(cbit);
+					eligible_mask |= (unsigned long)atomic_long_read(&this_group->sock_id[class]);
 				})
 
 				/* logical dependency: when sock_masks of a
@@ -291,10 +291,10 @@ int pfq_process_batch(struct pfq_percpu_data *data,
 
 					if (likely(sock->cnt)) {
 
-						sock_mask |= sock->mask[pfq_fold(prefold(monad.fanout.hash), sock->cnt)];
+						sock_mask |= sock->mask[pfq_fold(prefold(monad.fanout.hash), (unsigned int)sock->cnt)];
 
 						if (is_double_steering(monad.fanout))
-							sock_mask |= sock->mask[pfq_fold(prefold(monad.fanout.hash2), sock->cnt)];
+							sock_mask |= sock->mask[pfq_fold(prefold(monad.fanout.hash2), (unsigned int)sock->cnt)];
 					}
 				}
 				else {  /* broadcast */
@@ -305,7 +305,7 @@ int pfq_process_batch(struct pfq_percpu_data *data,
 			else {
 				/* save a reference to the current packet */
 				refs.ref[refs.len++] = buff;
-				sock_mask |= atomic_long_read(&this_group->sock_id[0]);
+				sock_mask |= (unsigned long)atomic_long_read(&this_group->sock_id[0]);
 			}
 
 			mask_to_sock_queue(n, sock_mask, sock_queue);
@@ -328,7 +328,7 @@ int pfq_process_batch(struct pfq_percpu_data *data,
 
 	if (endpoints.cnt_total)
 	{
-		size_t total = pfq_qbuff_queue_lazy_xmit_run(PFQ_QBUFF_QUEUE(&GC_ptr->pool), &endpoints);
+		size_t total = (size_t)pfq_qbuff_queue_lazy_xmit_run(PFQ_QBUFF_QUEUE(&GC_ptr->pool), &endpoints);
 
 		__sparse_add(global_stats, frwd, total, cpu);
 		__sparse_add(global_stats, disc, endpoints.cnt_total - total, cpu);

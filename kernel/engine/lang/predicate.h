@@ -151,7 +151,7 @@ all_bit(arguments_t args, struct qbuff * buff)
 static inline bool
 qbuff_header_available(struct qbuff *buff, int offset, int len)
 {
-        if (qbuff_len(buff) - offset >= len)
+        if ((int)qbuff_len(buff) - offset >= len)
                 return true;
         return false;
 }
@@ -178,7 +178,7 @@ is_udp(struct qbuff * buff)
 	if (ip->protocol != IPPROTO_UDP)
                 return false;
 
-        return qbuff_header_available(buff, qbuff_maclen(buff)  + (ip->ihl<<2), sizeof(struct udphdr));
+        return qbuff_header_available(buff, (int)qbuff_maclen(buff)  + (ip->ihl<<2), sizeof(struct udphdr));
 }
 
 
@@ -195,7 +195,7 @@ is_tcp(struct qbuff * buff)
 	if (ip->protocol != IPPROTO_TCP)
                 return false;
 
-	return qbuff_header_available(buff, qbuff_maclen(buff) + (ip->ihl<<2), sizeof(struct tcphdr));
+	return qbuff_header_available(buff, (int)qbuff_maclen(buff) + (ip->ihl<<2), sizeof(struct tcphdr));
 }
 
 
@@ -212,7 +212,7 @@ is_icmp(struct qbuff * buff)
 	if (ip->protocol != IPPROTO_ICMP)
                 return false;
 
-	return qbuff_header_available(buff, qbuff_maclen(buff) + (ip->ihl<<2), sizeof(struct icmphdr));
+	return qbuff_header_available(buff, (int)qbuff_maclen(buff) + (ip->ihl<<2), sizeof(struct icmphdr));
 }
 
 
@@ -274,7 +274,7 @@ is_flow(struct qbuff * buff)
 	    ip->protocol != IPPROTO_TCP)
                 return false;
 
-	return qbuff_header_available(buff, qbuff_maclen(buff) + (ip->ihl<<2), ip->protocol == IPPROTO_UDP ?
+	return qbuff_header_available(buff, (int)qbuff_maclen(buff) + (ip->ihl<<2), ip->protocol == IPPROTO_UDP ?
 				    sizeof(struct udphdr) : sizeof(struct tcphdr));
 }
 
@@ -287,7 +287,7 @@ is_l3_proto(struct qbuff * buff, uint16_t type)
 
 
 static inline bool
-is_l4_proto(struct qbuff * buff, u8 protocol)
+is_l4_proto(struct qbuff * buff, uint8_t protocol)
 {
 	struct iphdr _iph;
 	const struct iphdr *ip;
@@ -419,13 +419,13 @@ has_port(struct qbuff * buff, uint16_t port)
 static inline bool
 has_vlan(struct qbuff * buff)
 {
-	return (qbuff_vlan_tci(buff) & VLAN_VID_MASK);
+	return (qbuff_vlan_tci(buff) & Q_VLAN_VID_MASK);
 }
 
 static inline bool
 has_vid(struct qbuff * buff, int vid)
 {
-	return (qbuff_vlan_tci(buff) & VLAN_VID_MASK) == vid;
+	return (qbuff_vlan_tci(buff) & Q_VLAN_VID_MASK) == vid;
 }
 
 
