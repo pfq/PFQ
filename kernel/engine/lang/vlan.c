@@ -32,7 +32,7 @@ static bool
 vlan_id(arguments_t args, struct qbuff * buff)
 {
 	char *mem = GET_ARG_1(char *, args);
-	return mem[ qbuff_vlan_tci(buff) & VLAN_VID_MASK ];
+	return mem[ qbuff_vlan_tci(buff) & Q_VLAN_VID_MASK ];
 }
 
 
@@ -47,9 +47,9 @@ vlan_id_filter(arguments_t args, struct qbuff * buff)
 
 static int vlan_init(arguments_t args)
 {
-	unsigned int n = LEN_ARRAY_0(args);
+	unsigned int i, n = (unsigned int)LEN_ARRAY_0(args);
 	int32_t * vids = GET_ARRAY_0(int32_t, args);
-	char *mem; int i;
+	char *mem;
 
 	mem = kzalloc(4096, GFP_KERNEL);
 	if (!mem) {
@@ -70,7 +70,7 @@ static int vlan_init(arguments_t args)
 			}
 		}
 		else
-			mem[vid & VLAN_VID_MASK] = 1;
+			mem[vid & Q_VLAN_VID_MASK] = 1;
 
 		pr_devel("[PFQ|init] vlan_id filter: -> vid %d\n", vid);
 	}

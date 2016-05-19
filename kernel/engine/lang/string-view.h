@@ -65,7 +65,7 @@ string_view_empty(string_view_t str)
 static inline size_t
 string_view_length(string_view_t str)
 {
-	return str.end - str.begin;
+	return (size_t)(str.end - str.begin);
 }
 
 
@@ -113,7 +113,7 @@ string_view_trim(string_view_t str)
 static inline char *
 string_view_to_string(string_view_t str)
 {
-	size_t len = str.end - str.begin;
+	size_t len = (size_t)(str.end - str.begin);
 
 #ifdef __KERNEL__
 	char * ret = kmalloc(len + 1, GFP_KERNEL);

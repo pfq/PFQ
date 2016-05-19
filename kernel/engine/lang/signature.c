@@ -206,16 +206,14 @@ pfq_lang_signature_arity(string_view_t str)
 }
 
 static
-string_view_t __signature_bind(string_view_t s, int stop, int n)
+string_view_t __signature_bind(string_view_t s, unsigned int stop, unsigned int n)
 {
 	string_view_t str  = pfq_lang_signature_simplify(s),
 		      tail;
-
 	if (stop == n)
 		return str;
 
 	tail = signature_tail(str);
-
 	if (!string_view_empty(tail))
 		return __signature_bind(tail, stop + 1, n);
 
@@ -223,14 +221,14 @@ string_view_t __signature_bind(string_view_t s, int stop, int n)
 }
 
 string_view_t
-pfq_lang_signature_bind(string_view_t str, int n)
+pfq_lang_signature_bind(string_view_t str, unsigned int n)
 {
 	return  pfq_lang_signature_simplify(__signature_bind(str, 0, n));
 }
 
 
 static string_view_t
-__signature_arg(string_view_t s, int stop, int index)
+__signature_arg(string_view_t s, unsigned int stop, unsigned int index)
 {
 	string_view_t str  = pfq_lang_signature_simplify(s);
 	string_view_t head = signature_head(str);
@@ -246,7 +244,7 @@ __signature_arg(string_view_t s, int stop, int index)
 }
 
 string_view_t
-pfq_lang_signature_arg(string_view_t str, int index)
+pfq_lang_signature_arg(string_view_t str, unsigned int index)
 {
 	return  pfq_lang_signature_simplify(__signature_arg(str, 0, index));
 }
@@ -290,7 +288,7 @@ pfq_lang_signature_sizeof(string_view_t str)
 	for(n = 0; n < sizeof(sizeof_table)/sizeof(sizeof_table[0]); n++)
 	{
 		if (!string_view_compare(str, sizeof_table[n].symb))
-			return sizeof_table[n].size;
+			return (ptrdiff_t)sizeof_table[n].size;
 	}
 	return -1;
 }
@@ -386,10 +384,14 @@ pfq_lang_signature_type_check(string_view_t type)
 bool
 pfq_lang_signature_check(string_view_t sig)
 {
-	int n, size = pfq_lang_signature_arity(sig);
+	int size = pfq_lang_signature_arity(sig);
 	bool ret = true;
+        unsigned int n;
 
-	for(n = 0; n <= size && ret; n++)
+	if (size < 0)
+		return false;
+
+	for(n = 0; n <= (unsigned int)size && ret; n++)
 	{
 		string_view_t arg = pfq_lang_signature_arg(sig, n);
 		ret = pfq_lang_signature_arity(sig) > 0 ? pfq_lang_signature_check(arg) : pfq_lang_signature_type_check(arg);

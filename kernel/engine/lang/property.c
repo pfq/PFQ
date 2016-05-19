@@ -40,7 +40,7 @@ ip_tos(arguments_t args, struct qbuff * buff)
 	if (ip == NULL)
 		return NOTHING;
 
-	return JUST(ip->tos);
+	return (uint64_t)JUST(ip->tos);
 }
 
 
@@ -54,7 +54,7 @@ ip_tot_len(arguments_t args, struct qbuff * buff)
 	if (ip == NULL)
 		return NOTHING;
 
-	return JUST(be16_to_cpu(ip->tot_len));
+	return (uint64_t)JUST(be16_to_cpu(ip->tot_len));
 }
 
 
@@ -68,7 +68,7 @@ ip_id(arguments_t args, struct qbuff * buff)
 	if (ip == NULL)
 		return NOTHING;
 
-	return JUST(be16_to_cpu(ip->id));
+	return (uint64_t)JUST(be16_to_cpu(ip->id));
 }
 
 
@@ -82,7 +82,7 @@ ip_ttl(arguments_t args, struct qbuff * buff)
 	if (ip == NULL)
 		return NOTHING;
 
-	return JUST(ip->ttl);
+	return (uint64_t)JUST(ip->ttl);
 }
 
 static uint64_t
@@ -95,7 +95,7 @@ ip_frag(arguments_t args, struct qbuff * buff)
 	if (ip == NULL)
 		return NOTHING;
 
-	return JUST(be16_to_cpu(ip->frag_off));
+	return (uint64_t)JUST(be16_to_cpu(ip->frag_off));
 }
 
 
@@ -123,7 +123,7 @@ tcp_source(arguments_t args, struct qbuff * buff)
 	if (tcp == NULL)
 		return NOTHING;
 
-	return JUST(be16_to_cpu(tcp->source));
+	return (uint64_t)JUST(be16_to_cpu(tcp->source));
 }
 
 
@@ -147,7 +147,7 @@ tcp_dest(arguments_t args, struct qbuff * buff)
 	if (tcp == NULL)
 		return NOTHING;
 
-	return JUST(be16_to_cpu(tcp->dest));
+	return (uint64_t)JUST(be16_to_cpu(tcp->dest));
 }
 
 static uint64_t
@@ -170,7 +170,7 @@ tcp_hdrlen_(arguments_t args, struct qbuff * buff)
 	if (tcp == NULL)
 		return NOTHING;
 
-	return JUST(tcp->doff * 4);
+	return (uint64_t)JUST(tcp->doff * 4);
 }
 
 /****************************************************************
@@ -197,7 +197,7 @@ udp_source(arguments_t args, struct qbuff * buff)
 	if (udp == NULL)
 		return NOTHING;
 
-	return JUST(be16_to_cpu(udp->source));
+	return (uint64_t)JUST(be16_to_cpu(udp->source));
 }
 
 
@@ -221,7 +221,7 @@ udp_dest(arguments_t args, struct qbuff * buff)
 	if (udp == NULL)
 		return NOTHING;
 
-	return JUST(be16_to_cpu(udp->dest));
+	return (uint64_t)JUST(be16_to_cpu(udp->dest));
 }
 
 static uint64_t
@@ -244,7 +244,7 @@ udp_len(arguments_t args, struct qbuff * buff)
 	if (udp == NULL)
 		return NOTHING;
 
-	return JUST(be16_to_cpu(udp->len));
+	return (uint64_t)JUST(be16_to_cpu(udp->len));
 }
 
 
@@ -268,7 +268,7 @@ icmp_type(arguments_t args, struct qbuff * buff)
 	if (icmp == NULL)
 		return NOTHING;
 
-	return JUST(icmp->type);
+	return (uint64_t)JUST(icmp->type);
 }
 
 
@@ -292,21 +292,21 @@ icmp_code(arguments_t args, struct qbuff * buff)
 	if (icmp == NULL)
 		return NOTHING;
 
-	return JUST(icmp->code);
+	return (uint64_t)JUST(icmp->code);
 }
 
 
 static uint64_t
 __get_mark(arguments_t args, struct qbuff * buff)
 {
-	return JUST(get_mark(buff));
+	return (uint64_t)JUST(get_mark(buff));
 }
 
 
 static uint64_t
 __get_state(arguments_t args, struct qbuff * buff)
 {
-	return JUST(get_state(buff));
+	return (uint64_t)JUST(get_state(buff));
 }
 
 

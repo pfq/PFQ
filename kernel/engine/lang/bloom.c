@@ -149,8 +149,8 @@ bloom_dst_filter(arguments_t args, struct qbuff * buff)
 
 static int bloom_init(arguments_t args)
 {
-	unsigned int m = GET_ARG_0(int, args);
-	unsigned int n = LEN_ARRAY_1(args);
+	unsigned int m = GET_ARG_0(unsigned int, args);
+	size_t n = LEN_ARRAY_1(args);
 	__be32 *ips = GET_ARRAY_1(__be32, args);
 	__be32 mask;
 	size_t i;
@@ -184,7 +184,7 @@ static int bloom_init(arguments_t args)
 
 	SET_ARG_2(args, mask);
 
-	pr_devel("[PFQ|init] bloom filter@%p: k=4, n=%d, m=%d size=%u netmask=%pI4 bytes.\n", mem, n, m, m>>3, &mask);
+	pr_devel("[PFQ|init] bloom filter@%p: k=4, n=%zu, m=%u size=%u netmask=%pI4 bytes.\n", mem, n, m, m>>3, &mask);
 
 	for(i = 0; i < n; i++)
 	{

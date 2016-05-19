@@ -34,7 +34,7 @@ const char *
 pfq_lang_signature_by_user_symbol(const char __user *symb)
 {
 	struct symtable_entry *entry;
-        const char *symbol;
+        char *symbol;
 
         symbol = strdup_user(symb);
         if (symbol == NULL) {
@@ -197,15 +197,15 @@ pfq_lang_context_alloc(struct pfq_lang_computation_descr const *descr)
         for(; n < descr->size; n++)
         {
 		struct pfq_lang_functional_descr const * fun = &descr->fun[n];
-		int i;
+		unsigned int i;
 
 		for(i = 0; i < sizeof(fun->arg)/sizeof(fun->arg[0]); i++)
 		{
 			if (fun->arg[i].addr) {
 
 				size_t s = is_arg_string(&fun->arg[i])     ?  strlen_user(fun->arg[i].addr) :
-					   is_arg_vector(&fun->arg[i])	   ?  fun->arg[i].size * fun->arg[i].nelem :
-					   is_arg_vector_str(&fun->arg[i]) ?  fun->arg[i].nelem * sizeof(char *) + strlen_vec_user((const char __user * __user const *)fun->arg[i].addr, fun->arg[i].nelem) :
+					   is_arg_vector(&fun->arg[i])	   ?  fun->arg[i].size * (size_t)fun->arg[i].nelem :
+					   is_arg_vector_str(&fun->arg[i]) ?  (size_t)fun->arg[i].nelem * sizeof(char *) + strlen_vec_user((const char __user * __user const *)fun->arg[i].addr, (size_t)fun->arg[i].nelem) :
 					   is_arg_data  (&fun->arg[i])	   ?  (fun->arg[i].size > 8 ? fun->arg[i].size : 0 ) : 0;
 
 				size += ALIGN(s, 8);
@@ -228,7 +228,7 @@ size_t
 pfq_lang_number_of_arguments(struct pfq_lang_functional_descr const *fun)
 {
 	size_t n = 0;
-	int i;
+	unsigned int i;
 
 	for(i = 0; i < sizeof(fun->arg)/sizeof(fun->arg[0]); i++)
 	{
@@ -246,20 +246,20 @@ function_signature_match(struct pfq_lang_functional_descr const *fun, string_vie
 {
 	const char *signature = pfq_lang_signature_by_user_symbol(fun->symbol);
 	string_view_t sig;
-	size_t nargs;
+	unsigned int nargs;
 
 	if (!signature) {
 		pr_devel("[PFQ] %zu: signature_matches: strdup_user error!\n", index);
 		return false;
 	}
 
-	nargs = pfq_lang_number_of_arguments(fun);
+	nargs = (unsigned int)pfq_lang_number_of_arguments(fun);
 
 	sig = pfq_lang_signature_bind(make_string_view(signature), nargs);
 
 	if (!pfq_lang_signature_equal(sig, fullsig)) {
 
-		pr_devel("[PFQ] %zu: invalid function: %s (%zu args bound)!\n", index, signature, nargs);
+		pr_devel("[PFQ] %zu: invalid function: %s (%d args bound)!\n", index, signature, nargs);
 		return false;
 	}
 
@@ -273,7 +273,7 @@ check_argument_descr(struct pfq_lang_functional_arg_descr const *arg, string_vie
 	if (is_arg_data(arg)) {
 		ptrdiff_t size = pfq_lang_signature_sizeof(expected);
 		if (size != -1) {
-			if (size != arg->size) {
+			if (size != (ptrdiff_t)arg->size) {
 				pr_devel("[PFQ] invalid argument: expected " SVIEW_FMT ", pod size = %zu (size mismatch)!\n", SVIEW_ARG(expected), arg->size);
 				return -EPERM;
 			}
@@ -299,7 +299,7 @@ check_argument_descr(struct pfq_lang_functional_arg_descr const *arg, string_vie
 
 		size = pfq_lang_signature_sizeof(type);
 		if (size != -1) {
-			if (size != arg->size) {
+			if (size != (ptrdiff_t)arg->size) {
 				pr_devel("[PFQ] invalid argument: expected " SVIEW_FMT ", pod size = %zu (size mismatch)!\n", SVIEW_ARG(type), arg->size);
 				return -EPERM;
 			}
@@ -349,7 +349,7 @@ pfq_lang_check_computation_descr(struct pfq_lang_computation_descr const *descr)
 		struct pfq_lang_functional_descr const * fun = &descr->fun[n];
 		const char *signature;
 		size_t nargs;
-		int i;
+		unsigned int i;
 
 		if (fun->symbol == NULL) {
 			printk(KERN_INFO "[PFQ] %zu: NULL symbol!\n", n);
@@ -422,7 +422,7 @@ resolve_user_symbol(struct list_head *cat, const char __user *symb, const char *
 		    init_ptr_t *init, fini_ptr_t *fini)
 {
 	struct symtable_entry *entry;
-        const char *symbol;
+        char *symbol;
 
         symbol = strdup_user(symb);
         if (symbol == NULL) {
@@ -489,7 +489,7 @@ pfq_lang_computation_destruct(struct pfq_lang_computation_tree *comp)
 static struct pfq_lang_functional_node *
 get_functional_node_by_index(struct pfq_lang_computation_descr const *descr, struct pfq_lang_computation_tree *comp, int index)
 {
-        if (index >= 0 && index < descr->size) {
+        if (index >= 0 && index < (int)descr->size) {
                 return &comp->node[index];
         }
 
@@ -533,7 +533,7 @@ pfq_lang_computation_rtlink(struct pfq_lang_computation_descr const *descr, stru
 			return -EPERM;
 		}
 
-		next = get_functional_node_by_index(descr, comp, descr->fun[n].next);
+		next = get_functional_node_by_index(descr, comp, (int)descr->fun[n].next);
 
 		comp->node[n].init = init;
 		comp->node[n].fini = fini;
@@ -558,15 +558,15 @@ pfq_lang_computation_rtlink(struct pfq_lang_computation_descr const *descr, stru
 				}
 
 				comp->node[n].fun.arg[i].value = (ptrdiff_t)str;
-				comp->node[n].fun.arg[i].nelem = -1;
+				comp->node[n].fun.arg[i].nelem = -1ULL;
 			}
 			else if (is_arg_vector_str(&fun->arg[i])) {
 
 				const char __user ** user_ptr;
 				char ** base_ptr;
-				size_t j;
+				ptrdiff_t j;
 
-				user_ptr = pod_user(&context, fun->arg[i].addr, fun->arg[i].nelem * sizeof(char *));
+				user_ptr = pod_user(&context, fun->arg[i].addr, (size_t)fun->arg[i].nelem * sizeof(char *));
                                 base_ptr = (char **)user_ptr;
 
 				if (!base_ptr) {
@@ -584,7 +584,7 @@ pfq_lang_computation_rtlink(struct pfq_lang_computation_descr const *descr, stru
 				}
 
 				comp->node[n].fun.arg[i].value = (ptrdiff_t)base_ptr;
-				comp->node[n].fun.arg[i].nelem = fun->arg[i].nelem;
+				comp->node[n].fun.arg[i].nelem = (size_t)fun->arg[i].nelem;
 			}
 			else if (is_arg_data(&fun->arg[i])) {
 
@@ -597,7 +597,7 @@ pfq_lang_computation_rtlink(struct pfq_lang_computation_descr const *descr, stru
 					}
 
 					comp->node[n].fun.arg[i].value = (ptrdiff_t)ptr;
-					comp->node[n].fun.arg[i].nelem = -1;
+					comp->node[n].fun.arg[i].nelem = -1ULL;
 				}
 				else {
 					ptrdiff_t arg = 0;
@@ -608,7 +608,7 @@ pfq_lang_computation_rtlink(struct pfq_lang_computation_descr const *descr, stru
 					}
 
 					comp->node[n].fun.arg[i].value = arg;
-					comp->node[n].fun.arg[i].nelem = -1;
+					comp->node[n].fun.arg[i].nelem = -1ULL;
 				}
 
 			}
@@ -617,14 +617,14 @@ pfq_lang_computation_rtlink(struct pfq_lang_computation_descr const *descr, stru
 				if (fun->arg[i].nelem > 0) {
 
 					char *ptr = pod_user(&context, fun->arg[i].addr,
-							     fun->arg[i].size * fun->arg[i].nelem);
+							     (size_t)fun->arg[i].size * (size_t)fun->arg[i].nelem);
 					if (ptr == NULL) {
 						printk(KERN_INFO "[PFQ] %zu: pod_user(4): internal error!\n", n);
 						return -EPERM;
 					}
 
 					comp->node[n].fun.arg[i].value = (ptrdiff_t)ptr;
-					comp->node[n].fun.arg[i].nelem = fun->arg[i].nelem;
+					comp->node[n].fun.arg[i].nelem = (size_t)fun->arg[i].nelem;
 				}
 				else {  /* empty vector */
 
@@ -634,9 +634,8 @@ pfq_lang_computation_rtlink(struct pfq_lang_computation_descr const *descr, stru
 			}
 			else if (is_arg_function(&fun->arg[i])) {
 
-				comp->node[n].fun.arg[i].value = (ptrdiff_t)get_functional_node_by_index(descr, comp,
-													fun->arg[i].size);
-				comp->node[n].fun.arg[i].nelem = -1;
+				comp->node[n].fun.arg[i].value = (ptrdiff_t)get_functional_node_by_index(descr, comp, (int)fun->arg[i].size);
+				comp->node[n].fun.arg[i].nelem = -1ULL;
 			}
 			else if (!is_arg_null(&fun->arg[i])) {
 

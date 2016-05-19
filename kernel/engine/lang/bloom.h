@@ -31,8 +31,8 @@
 /* macros to test/set bits in bitwise array */
 
 
-#define BF_TEST(mem, x)  (mem[(x) >> 3] &  (1<<((x) & 7)))
-#define BF_SET(mem, x)   (mem[(x) >> 3] |= (1<<((x) & 7)))
+#define BF_TEST(mem, x)  (mem[(x) >> 3] &  (char)(1<<((x) & 7)))
+#define BF_SET(mem, x)   (mem[(x) >> 3] |= (char)(1<<((x) & 7)))
 
 #define A(value)   (((value) & 0xff000000) >> 24)
 #define B(value)   (((value) & 0x00ff0000) >> 16)

@@ -28,8 +28,8 @@
 #include <engine/lang/string-view.h>
 
 string_view_t pfq_lang_signature_simplify(string_view_t sig);
-string_view_t pfq_lang_signature_bind(string_view_t sig, int n);
-string_view_t pfq_lang_signature_arg(string_view_t sig, int n);
+string_view_t pfq_lang_signature_bind(string_view_t sig, unsigned int n);
+string_view_t pfq_lang_signature_arg(string_view_t sig, unsigned int n);
 string_view_t pfq_lang_signature_remove_extent(string_view_t str);
 
 int    pfq_lang_signature_redundant_brackets(string_view_t sig);

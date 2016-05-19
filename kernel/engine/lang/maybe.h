@@ -25,7 +25,7 @@
 #ifndef PFQ_LANG_MAYBE_H
 #define PFQ_LANG_MAYBE_H
 
-#define NOTHING			~0LL
+#define NOTHING			~0ULL
 #define FROM_JUST(type, a)	((long long int)a < 0 ? (type)(a+1) : (type)a)
 
 #define JUST(a) \
