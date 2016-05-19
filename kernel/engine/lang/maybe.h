@@ -42,18 +42,23 @@
 	(void)0))))))))))
 
 
-#define _JUST(a) ({ long long int _a = (long long int)a; (_a < 0 ? _a-1: _a); })
+#define _JUST(a) ({ long long int _a = (long long int)(a); (_a < 0 ? _a-1: _a); })
 
 
 #define IS_JUST(a) \
-	__builtin_choose_expr(__builtin_types_compatible_p(long long int, typeof(a)),		(a != (typeof(a))~0LL),\
-	__builtin_choose_expr(__builtin_types_compatible_p(unsigned long long int, typeof(a)),  (a != (typeof(a))~0LL),\
-	(void)0))
+	__builtin_choose_expr(__builtin_types_compatible_p(long long int, typeof(a)),		((a) != (typeof(a))~0LL),\
+	__builtin_choose_expr(__builtin_types_compatible_p(unsigned long long int, typeof(a)),  ((a) != (typeof(a))~0LL),\
+	__builtin_choose_expr(__builtin_types_compatible_p(int64_t, typeof(a)),			((a) != (typeof(a))~0LL),\
+	__builtin_choose_expr(__builtin_types_compatible_p(uint64_t, typeof(a)),		((a) != (typeof(a))~0LL),\
+	(void)0))))
+
 
 #define IS_NOTHING(a) \
-	__builtin_choose_expr(__builtin_types_compatible_p(long long int, typeof(a)),		(a == (typeof(a))~0LL),\
-	__builtin_choose_expr(__builtin_types_compatible_p(unsigned long long int, typeof(a)),  (a == (typeof(a))~0LL),\
-	(void)0))
+	__builtin_choose_expr(__builtin_types_compatible_p(long long int, typeof(a)),		((a) == (typeof(a))~0LL),\
+	__builtin_choose_expr(__builtin_types_compatible_p(unsigned long long int, typeof(a)),  ((a) == (typeof(a))~0LL),\
+	__builtin_choose_expr(__builtin_types_compatible_p(int64_t, typeof(a)),			((a) == (typeof(a))~0LL),\
+	__builtin_choose_expr(__builtin_types_compatible_p(uint64_t, typeof(a)),		((a) == (typeof(a))~0LL),\
+	(void)0))))
 
 
 #endif /* PFQ_LANG_MAYBE_H */
