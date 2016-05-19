@@ -145,5 +145,12 @@ void pfq_dev_put(struct net_device *dev)
 }
 
 
+static inline
+const char *
+pfq_dev_name(struct net_device *dev)
+{
+	return dev->name;
+}
+
 
 #endif /* PFQ_NETDEV_H */

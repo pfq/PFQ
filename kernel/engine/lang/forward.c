@@ -41,7 +41,7 @@ forward_init(arguments_t args)
 	/* override the address of the string (it's safe because its memory is owned by the group)... */
 
 	SET_ARG(args, dev);
-	printk(KERN_INFO "[PFQ|init] forward: device '%s' locked\n", dev->name);
+	printk(KERN_INFO "[PFQ|init] forward: device '%s' locked\n", pfq_dev_name(dev));
 	return 0;
 }
 
@@ -52,7 +52,7 @@ forward_fini(arguments_t args)
 	struct net_device *dev = GET_ARG(struct net_device *, args);
 	if (dev) {
 		pfq_dev_put(dev);
-		printk(KERN_INFO "[PFQ|fini] forward: device '%s' released\n", dev->name);
+		printk(KERN_INFO "[PFQ|fini] forward: device '%s' released\n", pfq_dev_name(dev));
 	}
 	return 0;
 }
@@ -89,7 +89,7 @@ link_fini(arguments_t args)
 	{
 		if (dev[n]) {
 			pfq_dev_put(dev[n]);
-			printk(KERN_INFO "[PFQ|fini] forward: device '%s' released\n", dev[n]->name);
+			printk(KERN_INFO "[PFQ|fini] forward: device '%s' released\n", pfq_dev_name(dev[n]));
 		}
 	}
 	return 0;
@@ -116,7 +116,7 @@ forwardIO(arguments_t args, struct qbuff * buff)
 	nbuff = qbuff_clone(buff);
 	if (!nbuff) {
                 if (printk_ratelimit())
-			printk(KERN_INFO "[pfq-lang] forward pfq_xmit %s: no memory!\n", dev->name);
+			printk(KERN_INFO "[pfq-lang] forward pfq_xmit %s: no memory!\n", pfq_dev_name(dev));
 		sparse_inc(global_stats, disc);
 		local_inc(&stats->disc);
 		return Pass(buff);
@@ -124,7 +124,7 @@ forwardIO(arguments_t args, struct qbuff * buff)
 
 	if (pfq_xmit(nbuff, dev, qbuff_get_queue_mapping(nbuff), 0) != 1) {
                 if (printk_ratelimit())
-                        printk(KERN_INFO "[pfq-lang] forward pfq_xmit: error on device %s!\n", dev->name);
+                        printk(KERN_INFO "[pfq-lang] forward pfq_xmit: error on device %s!\n", pfq_dev_name(dev));
 
 		sparse_inc(global_stats, disc);
 		local_inc(&stats->disc);
@@ -179,7 +179,7 @@ bridge(arguments_t args, struct qbuff * buff)
 
 
 static ActionQbuff
-link(arguments_t args, struct qbuff * buff)
+link_(arguments_t args, struct qbuff * buff)
 {
         struct net_device **dev = GET_ARRAY(struct net_device *,args);
 	size_t n, ndev = LEN_ARRAY(args);

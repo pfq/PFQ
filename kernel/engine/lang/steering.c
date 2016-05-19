@@ -40,11 +40,7 @@ steering_rrobin(arguments_t args, struct qbuff * buff)
 static ActionQbuff
 steering_rss(arguments_t args, struct qbuff * buff)
 {
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,14,0))
-	uint32_t hash = 0;
-#else
 	uint32_t hash = qbuff_get_rss_hash(buff);
-#endif
 	return Steering(buff, hash);
 }
 

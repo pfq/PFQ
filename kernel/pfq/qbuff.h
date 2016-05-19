@@ -102,7 +102,11 @@ qbuff_clone(struct qbuff *buff)
 static inline uint32_t
 qbuff_get_rss_hash(struct qbuff *buff)
 {
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,14,0))
+	return 0;
+#else
 	return skb_get_hash(QBUFF_SKB(buff));
+#endif
 }
 
 static inline uint16_t
