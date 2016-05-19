@@ -24,15 +24,8 @@
 #ifndef PFQ_LANG_STRING_VIEW_H
 #define PFQ_LANG_STRING_VIEW_H
 
-#ifdef __KERNEL__
-
-#include "pfq/string.h"
-#include "pfq/kcompat.h"
-
-#else
-#include <stddef.h>
-#endif
-
+#include <pfq/kcompat.h>
+#include <pfq/string.h>
 
 #define SVIEW_FMT	"%.*s"
 #define SVIEW_ARG(x)	(int)string_view_length(x), x.begin

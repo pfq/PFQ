@@ -25,6 +25,7 @@
 #include <engine/lang/types.h>
 #include <engine/lang/qbuff.h>
 
+#include <pfq/kcompat.h>
 #include <pfq/qbuff.h>
 #include <pfq/vlan.h>
 

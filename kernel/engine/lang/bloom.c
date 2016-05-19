@@ -25,6 +25,7 @@
 #include <engine/lang/qbuff.h>
 #include <engine/lang/bloom.h>
 
+#include <pfq/printk.h>
 
 static bool
 bloom_src(arguments_t args, struct qbuff * buff)

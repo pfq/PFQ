@@ -25,6 +25,7 @@
 #include <engine/lang/filter.h>
 #include <engine/lang/types.h>
 
+#include <pfq/printk.h>
 
 static ActionQbuff
 filter_generic(arguments_t args, struct qbuff * b)

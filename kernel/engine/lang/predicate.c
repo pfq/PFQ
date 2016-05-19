@@ -25,6 +25,7 @@
 #include <engine/lang/types.h>
 #include <engine/lang/predicate.h>
 
+#include <pfq/printk.h>
 
 static bool
 pred_is_ip(arguments_t args, struct qbuff * b)

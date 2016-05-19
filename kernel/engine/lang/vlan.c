@@ -23,7 +23,9 @@
 
 #include <engine/lang/module.h>
 
+#include <pfq/kcompat.h>
 #include <pfq/vlan.h>
+#include <pfq/printk.h>
 
 
 static bool

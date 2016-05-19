@@ -21,9 +21,7 @@
  *
  ****************************************************************/
 
-#ifndef __KERNEL__
-#include <kcompat.h>
-#endif
+#include <pfq/kcompat.h>
 
 #include <engine/lang/signature.h>
 #include <engine/lang/types.h>

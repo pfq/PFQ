@@ -26,6 +26,8 @@
 #include <engine/lang/signature.h>
 #include <engine/lang/symtable.h>
 
+#include <pfq/kcompat.h>
+#include <pfq/printk.h>
 
 DECLARE_RWSEM(symtable_sem);
 
