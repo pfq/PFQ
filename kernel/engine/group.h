@@ -57,8 +57,6 @@ struct pfq_group
 };
 
 
-extern struct mutex group_lock;
-
 struct pfq_lang_computation_tree;
 
 extern int  pfq_join_free_group(pfq_id_t id, unsigned long class_mask, int policy);
@@ -85,6 +83,10 @@ extern bool pfq_group_access(pfq_gid_t gid, pfq_id_t id);
 
 extern int pfq_groups_init(void);
 extern void pfq_groups_destruct(void);
+
+extern void pfq_group_lock(void);
+extern void pfq_group_unlock(void);
+
 
 static inline
 bool pfq_has_joined_group(pfq_gid_t gid, pfq_id_t id)

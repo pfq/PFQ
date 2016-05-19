@@ -23,6 +23,8 @@
  ****************************************************************/
 
 #include <pfq/kcompat.h>
+#include <pfq/thread.h>
+#include <pfq/group.h>
 
 #include <engine/lang/engine.h>
 #include <engine/percpu.h>
@@ -31,10 +33,24 @@
 #include <engine/bitops.h>
 
 
-DEFINE_MUTEX(group_lock);
+static DEFINE_MUTEX(group_lock);
 
 
 static struct pfq_group pfq_groups[Q_MAX_GID];
+
+
+void
+pfq_group_lock(void)
+{
+        mutex_lock(&group_lock);
+}
+
+
+void
+pfq_group_unlock(void)
+{
+        mutex_unlock(&group_lock);
+}
 
 
 int
@@ -104,7 +120,7 @@ pfq_group_policy_access(pfq_gid_t gid, pfq_id_t id, int policy)
                 return group->owner == id; // __pfq_has_joined_group(gid,id);
 
         case Q_POLICY_GROUP_RESTRICTED:
-                return (policy == Q_POLICY_GROUP_RESTRICTED) && group->pid == current->tgid;
+                return (policy == Q_POLICY_GROUP_RESTRICTED) && group->pid == pfq_getpid();
 
         case Q_POLICY_GROUP_SHARED:
                 return policy == Q_POLICY_GROUP_SHARED;
@@ -132,7 +148,7 @@ pfq_group_access(pfq_gid_t gid, pfq_id_t id)
 		return group->owner == id;
 
         case Q_POLICY_GROUP_RESTRICTED:
-                return group->pid == current->tgid;
+                return group->pid == pfq_getpid();
 
         case Q_POLICY_GROUP_SHARED:
         case Q_POLICY_GROUP_UNDEFINED:
@@ -153,7 +169,7 @@ __pfq_group_init(pfq_gid_t gid)
         if (group == NULL)
                 return;
 
-	group->pid = current->tgid;
+	group->pid = pfq_getpid();
         group->owner = Q_INVALID_ID;
         group->policy = Q_POLICY_GROUP_UNDEFINED;
 

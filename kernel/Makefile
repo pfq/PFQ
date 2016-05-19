@@ -23,15 +23,15 @@ EXTRA_CFLAGS += -DPFQ_USE_SKB_POOL
 
 obj-m := $(TARGET).o
 
-pfq-objs := pf_q.o pfq/sockopt.o pfq/proc.o pfq/shmem.o pfq/memory.o pfq/pool.o \
-			pfq/bpf.o pfq/vlan.o pfq/thread.o pfq/netdev.o pfq/printk.o pfq/param.o pfq/timer.o pfq/io.o \
-			pfq/percpu.o pfq/qbuff.o \
+pfq-objs := pf_q.o pfq/sockopt.o pfq/proc.o pfq/shmem.o pfq/memory.o pfq/pool.o pfq/bpf.o pfq/vlan.o \
+		    pfq/thread.o pfq/netdev.o pfq/printk.o pfq/param.o pfq/timer.o pfq/io.o pfq/percpu.o pfq/qbuff.o \
 		    engine/core.o engine/GC.o engine/queue.o engine/global.o engine/percpu.o engine/devmap.o \
 		    engine/sock.o engine/group.o engine/endpoint.o engine/stats.o \
 		    engine/lang/engine.o engine/lang/signature.o engine/lang/symtable.o \
 		    engine/lang/filter.o engine/lang/steering.o engine/lang/forward.o \
 		    engine/lang/predicate.o engine/lang/combinator.o engine/lang/control.o \
-		    engine/lang/property.o engine/lang/bloom.o engine/lang/vlan.o engine/lang/misc.o engine/lang/dummy.o
+		    engine/lang/property.o engine/lang/bloom.o engine/lang/vlan.o engine/lang/misc.o \
+		    engine/lang/dummy.o
 
 KERNELVERSION := $(shell uname -r)
 

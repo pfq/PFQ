@@ -90,7 +90,7 @@ static int pfq_proc_comp(struct seq_file *m, void *v)
 	struct pfq_lang_computation_tree *comp;
 	size_t n;
 
-	mutex_lock(&group_lock);
+	pfq_group_lock();
 
 	for(n = 0; n < Q_MAX_GID; n++)
 	{
@@ -107,7 +107,7 @@ static int pfq_proc_comp(struct seq_file *m, void *v)
 		seq_printf_computation_tree(m, comp);
 	}
 
-	mutex_unlock(&group_lock);
+	pfq_group_unlock();
 	return 0;
 }
 
@@ -117,7 +117,7 @@ static int pfq_proc_groups(struct seq_file *m, void *v)
 
 	seq_printf(m, "group: recv      lost      drop      sent      disc.     failed    forward   kernel    pol pid   def.    uplane   cplane    ctrl\n");
 
-	mutex_lock(&group_lock);
+	pfq_group_lock();
 
 	for(n = 0; n < Q_MAX_GID; n++)
 	{
@@ -149,7 +149,7 @@ static int pfq_proc_groups(struct seq_file *m, void *v)
 
 	}
 
-	mutex_unlock(&group_lock);
+	pfq_group_unlock();
 	return 0;
 }
 
