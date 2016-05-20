@@ -17,13 +17,11 @@ include_directories(../C++)
 include_directories(../common/lib)
 
 
-add_executable(pfq-counters pfq-counters.cpp)
-add_executable(pfq-histogram pfq-histogram.cpp)
 add_executable(pfq-gen pfq-gen.cpp)
+add_executable(pfq-capture pfq-capture.cpp)
 add_executable(pfq-bridge pfq-bridge.cpp)
 
-target_link_libraries(pfq-counters  -pthread -lpfq)
-target_link_libraries(pfq-histogram -pthread -lpfq)
+target_link_libraries(pfq-capture   -pthread -lpfq)
 target_link_libraries(pfq-bridge    -pthread -lpfq)
 
 if (PCAP_HEADER_FOUND) 
@@ -32,7 +30,7 @@ else(PCAP_HEADER_FOUND)
 	target_link_libraries(pfq-gen -pthread -lpfq)
 endif(PCAP_HEADER_FOUND)
 
-install (TARGETS pfq-counters DESTINATION bin)
 install (TARGETS pfq-gen      DESTINATION bin)
+install (TARGETS pfq-capture  DESTINATION bin)
 install (TARGETS pfq-bridge   DESTINATION bin)
 

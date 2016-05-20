@@ -61,6 +61,7 @@ namespace opt
     bool flow      = false;
     bool use_comp  = false;
     bool promisc   = true;
+    bool dump      = false;
 
     std::string dumpfile;
 }
@@ -168,11 +169,17 @@ namespace thread
 
         void operator()()
         {
-            if (!m_filename.empty())
+            if (!m_filename.empty() || opt::dump)
             {
                 m_pfq.timestamping_enable(true);
+            }
+
+            if (!m_filename.empty())
+            {
                 pcap_open_();
             }
+
+            const bool dump = opt::dump || m_file;
 
             for(;;)
             {
@@ -181,7 +188,7 @@ namespace thread
                 m_read += many.size();
                 m_batch = std::max(m_batch, many.size());
 
-                if (m_file) {
+                if (dump) {
 
                     auto it = many.begin();
                     for(; it != many.end(); ++it)
@@ -190,11 +197,29 @@ namespace thread
                             std::this_thread::yield();
 
                         auto h = *it;
-                        const char *buff = static_cast<char *>(it.data());
+                        const unsigned char *buff = static_cast<unsigned char *>(it.data());
 
-                        pcap_write_(buff, h.len, h.caplen, h.tstamp.tv.sec, h.tstamp.tv.nsec/1000);
+                        if (m_file)
+                            pcap_write_(buff, h.len, h.caplen, h.tstamp.tv.sec, h.tstamp.tv.nsec/1000);
+
+                        if (opt::dump) {
+                            printf("%d:%d [%d] (%d/%d)",
+                                            h.tstamp.tv.sec,
+                                            h.tstamp.tv.nsec,
+                                            h.ifindex,
+                                            h.caplen,
+                                            h.len);
+                            printf("\n    |");
+                            for(auto n = 0U; n < std::min<size_t>(14, h.caplen); n++)
+                                printf("%02x ", buff[n]);
+                            printf("\n    |");
+                            for(auto n = 14U; n < std::min<size_t>(34, h.caplen); n++)
+                                printf("%02x ", buff[n]);
+                            printf("...\n");
+                        }
                     }
                 }
+
 
                 if (opt::flow)
                 {
@@ -273,7 +298,7 @@ namespace thread
             m_file = nullptr;
         }
 
-        void pcap_write_(const char *ptr, size_t len, size_t caplen, uint32_t sec, uint32_t usec)
+        void pcap_write_(const unsigned char *ptr, size_t len, size_t caplen, uint32_t sec, uint32_t usec)
         {
             pcap_emu::pkthdr header;
 
@@ -325,6 +350,7 @@ void usage(std::string name)
         " -h --help                     Display this help\n"
         " -c --caplen INT               Set caplen\n"
         " -w --write FILE               Write packets to file (pcap)\n"
+        " -d --dump                     Dump packets to stdout\n"
         " -l --flow                     Enable flow counter\n"
         " -s --slot INT                 Set slots\n"
         "    --seconds INT              Terminate after INT seconds\n"
@@ -406,6 +432,12 @@ try
                 throw std::runtime_error("filename missing");
 
             opt::dumpfile = argv[i];
+            continue;
+        }
+
+        if (any_strcmp(argv[i], "-d", "--dump"))
+        {
+            opt::dump = true;
             continue;
         }
 
@@ -511,6 +543,9 @@ try
     for(size_t y=0; y < opt::seconds; y++)
     {
         std::this_thread::sleep_for(std::chrono::seconds(1));
+
+        if (opt::dump)
+            continue;
 
         sum = 0;
         flow = 0;
