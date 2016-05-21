@@ -34,6 +34,7 @@
 #include <engine/global.h>
 
 #include <pfq/bpf.h>
+#include <pfq/atomic.h>
 
 void
 pfq_group_lock(void)
