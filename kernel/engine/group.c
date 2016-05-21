@@ -33,6 +33,7 @@
 #include <engine/bitops.h>
 #include <engine/global.h>
 
+#include <pfq/bpf.h>
 
 void
 pfq_group_lock(void)
@@ -236,8 +237,8 @@ static int
 __pfq_join_group(pfq_gid_t gid, pfq_id_t id, unsigned long class_mask, int policy)
 {
         struct pfq_group * group;
-        unsigned long tmp = 0;
         unsigned long bit;
+        long tmp = 0;
 
 	group = pfq_get_group(gid);
         if (group == NULL)
@@ -255,7 +256,7 @@ __pfq_join_group(pfq_gid_t gid, pfq_id_t id, unsigned long class_mask, int polic
 
         pfq_bitwise_foreach(class_mask, bit,
         {
-                 int class = pfq_ctz(bit);
+                 unsigned int class = pfq_ctz(bit);
                  tmp = atomic_long_read(&group->sock_id[class]);
                  tmp |= 1L << (__force int)id;
                  atomic_long_set(&group->sock_id[class], tmp);
@@ -284,7 +285,7 @@ static int
 __pfq_leave_group(pfq_gid_t gid, pfq_id_t id)
 {
         struct pfq_group * group;
-        unsigned long tmp;
+        long tmp;
         size_t i;
 
 	group = pfq_get_group(gid);
@@ -311,18 +312,18 @@ unsigned long
 pfq_get_all_groups_mask(pfq_gid_t gid)
 {
         struct pfq_group * group;
-        unsigned long mask = 0;
+        long mask = 0;
         size_t i;
 
 	group = pfq_get_group(gid);
         if (group == NULL)
-                return mask;
+                return (unsigned long)mask;
 
         for(i = 0; i < Q_CLASS_MAX; ++i)
         {
                 mask |= atomic_long_read(&group->sock_id[i]);
         }
-        return mask;
+        return (unsigned long)mask;
 }
 
 
@@ -465,7 +466,7 @@ pfq_get_groups(pfq_id_t id)
 		pfq_gid_t gid = (__force pfq_gid_t)n;
                 unsigned long mask = pfq_get_all_groups_mask(gid);
 
-                if(mask & (1L << (__force int)id))
+                if(mask & (1UL << (__force int)id))
                         ret |= (1UL << n);
         }
         mutex_unlock(&global->groups_lock);

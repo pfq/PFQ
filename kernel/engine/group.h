@@ -24,15 +24,18 @@
 #ifndef Q_ENGINE_GROUP_H
 #define Q_ENGINE_GROUP_H
 
-#include <engine/sock.h>
-#include <engine/stats.h>
 #include <engine/define.h>
 
 #include <pfq/kcompat.h>
+#include <pfq/atomic.h>
 #include <pfq/sparse.h>
 #include <pfq/types.h>
 #include <pfq/bpf.h>
 
+#include <linux/pf_q.h>
+
+typedef struct pfq_kernel_stats pfq_group_stats_t;
+struct pfq_group_counters;
 
 struct pfq_group
 {

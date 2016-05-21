@@ -26,14 +26,9 @@
 #define Q_ENGINE_IO_H
 
 #include <engine/GC.h>
+#include <engine/sock.h>
 
-// #include <engine/lang/module.h>
-// #include <engine/lang/engine.h>
-// #include <engine/lang/symtable.h>
-//
-// #include <engine/percpu.h>
-// #include <engine/sock.h>
-
+#include <pfq/types.h>
 
 struct napi_struct;
 

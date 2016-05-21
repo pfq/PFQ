@@ -25,8 +25,8 @@
 #define Q_ENGINE_SOCK_H
 
 #include <engine/endpoint.h>
-#include <engine/stats.h>
 #include <engine/define.h>
+#include <engine/stats.h>
 
 #include <pfq/kcompat.h>
 #include <pfq/shmem.h>

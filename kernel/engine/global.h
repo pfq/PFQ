@@ -29,11 +29,14 @@
 
 #include <pfq/thread.h>
 
+#include <linux/pf_q.h>
+
 struct pfq_kernel_stats __percpu;
 struct pfq_memory_stats __percpu;
 struct pfq_percpu_data  __percpu;
 struct pfq_percpu_sock  __percpu;
 struct pfq_percpu_pool  __percpu;
+
 
 struct global_data
 {
