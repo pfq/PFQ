@@ -40,9 +40,6 @@ struct symtable_entry
 	const char *		signature;
 };
 
-/* semaphore */
-
-extern struct rw_semaphore      symtable_sem;
 
 /* categories */
 

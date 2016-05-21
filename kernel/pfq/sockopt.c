@@ -818,8 +818,8 @@ int pfq_setsockopt(struct socket *sock,
 
 			sparse_add(so->stats, sent, tx.ok);
 			sparse_add(so->stats, fail, tx.fail);
-			sparse_add(global_stats, sent, tx.ok);
-			sparse_add(global_stats, fail, tx.fail);
+			sparse_add(global->percpu_stats, sent, tx.ok);
+			sparse_add(global->percpu_stats, fail, tx.fail);
 
 			return 0;
 		}

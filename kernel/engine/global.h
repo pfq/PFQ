@@ -25,6 +25,15 @@
 #define Q_ENGINE_GLOBAL_H
 
 #include <engine/define.h>
+#include <engine/group.h>
+
+#include <pfq/thread.h>
+
+struct pfq_kernel_stats __percpu;
+struct pfq_memory_stats __percpu;
+struct pfq_percpu_data  __percpu;
+struct pfq_percpu_sock  __percpu;
+struct pfq_percpu_pool  __percpu;
 
 struct global_data
 {
@@ -43,6 +52,25 @@ struct global_data
 	int tx_affinity[Q_MAX_CPU];
 	int tx_thread_nr;
 	int tx_rate_control_eager;
+
+	atomic_t        sockets_count;
+	atomic_long_t   sockets_vector[Q_MAX_ID];
+	struct mutex	sockets_lock;
+
+	atomic_long_t   devmap [Q_MAX_DEVICE][Q_MAX_HW_QUEUE];
+	atomic_t        devmap_monitor [Q_MAX_DEVICE];
+	struct mutex	devmap_lock;
+
+	struct pfq_group groups[Q_MAX_GID];
+	struct mutex	 groups_lock;
+
+	struct rw_semaphore symtable_sem;
+
+	struct pfq_kernel_stats __percpu   * percpu_stats;
+	struct pfq_memory_stats __percpu   * percpu_mem_stats;
+	struct pfq_percpu_data __percpu    * percpu_data;
+	struct pfq_percpu_sock __percpu    * percpu_sock;
+	struct pfq_percpu_pool __percpu    * percpu_pool;
 };
 
 

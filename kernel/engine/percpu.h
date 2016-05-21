@@ -24,6 +24,7 @@
 #ifndef Q_ENGINE_PERCPU_H
 #define Q_ENGINE_PERCPU_H
 
+#include <engine/global.h>
 #include <engine/define.h>
 #include <engine/GC.h>
 
@@ -56,13 +57,6 @@ struct pfq_percpu_data
 } ____cacheline_aligned;
 
 
-extern struct pfq_percpu_data  __percpu * percpu_data;
-extern struct pfq_percpu_sock  __percpu * percpu_sock;
-extern struct pfq_percpu_pool  __percpu * percpu_pool;
-extern struct pfq_memory_stats __percpu * memory_stats;
-extern pfq_global_stats_t      __percpu * global_stats;
-
-
 static inline void
 pfq_invalidate_percpu_eligible_mask(pfq_id_t id)
 {
@@ -71,7 +65,7 @@ pfq_invalidate_percpu_eligible_mask(pfq_id_t id)
 	(void)id;
 	for_each_possible_cpu(cpu)
 	{
-		struct pfq_percpu_sock * sock = per_cpu_ptr(percpu_sock, cpu);
+		struct pfq_percpu_sock * sock = per_cpu_ptr(global->percpu_sock, cpu);
 		sock->eligible_mask = 0;
 		sock->cnt = 0;
 	}

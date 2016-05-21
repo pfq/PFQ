@@ -36,7 +36,7 @@ void pfq_skb_pool_enable(bool value)
 	smp_wmb();
 	for_each_possible_cpu(cpu)
 	{
-		struct pfq_percpu_pool *pool = per_cpu_ptr(percpu_pool, cpu);
+		struct pfq_percpu_pool *pool = per_cpu_ptr(global->percpu_pool, cpu);
 		if (pool)
 			atomic_set(&pool->enable, value);
 	}
@@ -49,7 +49,7 @@ int pfq_skb_pool_init_all(void)
 	int cpu;
 	for_each_possible_cpu(cpu)
 	{
-		struct pfq_percpu_pool *pool = per_cpu_ptr(percpu_pool, cpu);
+		struct pfq_percpu_pool *pool = per_cpu_ptr(global->percpu_pool, cpu);
 		if (pool) {
 			if (pfq_skb_pool_init(&pool->tx_pool, global->skb_pool_size) != 0)
 				return -ENOMEM;
@@ -69,7 +69,7 @@ int pfq_skb_pool_free_all(void)
 	printk(KERN_INFO "[PFQ] flushing skbuff memory pool...\n");
 	for_each_possible_cpu(cpu)
 	{
-		struct pfq_percpu_pool *pool = per_cpu_ptr(percpu_pool, cpu);
+		struct pfq_percpu_pool *pool = per_cpu_ptr(global->percpu_pool, cpu);
 		if (pool) {
 			total += pfq_skb_pool_free(&pool->rx_pool);
 			total += pfq_skb_pool_free(&pool->tx_pool);
@@ -87,7 +87,7 @@ int pfq_skb_pool_flush_all(void)
 	printk(KERN_INFO "[PFQ] flushing skbuff memory pool...\n");
 	for_each_possible_cpu(cpu)
 	{
-		struct pfq_percpu_pool *pool = per_cpu_ptr(percpu_pool, cpu);
+		struct pfq_percpu_pool *pool = per_cpu_ptr(global->percpu_pool, cpu);
 		if (pool) {
 			total += pfq_skb_pool_flush(&pool->rx_pool);
 			total += pfq_skb_pool_flush(&pool->tx_pool);
@@ -129,7 +129,7 @@ pfq_skb_pool_flush(struct pfq_skb_pool *pool)
 		{
 			if (pool->skbs[n]) {
 				total++;
-				sparse_inc(memory_stats, os_free);
+				sparse_inc(global->percpu_mem_stats, os_free);
 				kfree_skb(pool->skbs[n]);
 				pool->skbs[n] = NULL;
 			}
@@ -160,21 +160,21 @@ pfq_get_skb_pool_stats(void)
 {
         struct pfq_pool_stat ret =
         {
-		sparse_read(memory_stats, os_alloc),
-		sparse_read(memory_stats, os_free),
+		sparse_read(global->percpu_mem_stats, os_alloc),
+		sparse_read(global->percpu_mem_stats, os_free),
 
-		sparse_read(memory_stats, pool_alloc),
-		sparse_read(memory_stats, pool_free),
-		sparse_read(memory_stats, pool_push),
-		sparse_read(memory_stats, pool_pop),
+		sparse_read(global->percpu_mem_stats, pool_alloc),
+		sparse_read(global->percpu_mem_stats, pool_free),
+		sparse_read(global->percpu_mem_stats, pool_push),
+		sparse_read(global->percpu_mem_stats, pool_pop),
 
-                sparse_read(memory_stats, err_norecyl),
-                sparse_read(memory_stats, err_pop),
-                sparse_read(memory_stats, err_push),
-                sparse_read(memory_stats, err_intdis),
-                sparse_read(memory_stats, err_shared),
-                sparse_read(memory_stats, err_cloned),
-                sparse_read(memory_stats, err_memory),
+                sparse_read(global->percpu_mem_stats, err_norecyl),
+                sparse_read(global->percpu_mem_stats, err_pop),
+                sparse_read(global->percpu_mem_stats, err_push),
+                sparse_read(global->percpu_mem_stats, err_intdis),
+                sparse_read(global->percpu_mem_stats, err_shared),
+                sparse_read(global->percpu_mem_stats, err_cloned),
+                sparse_read(global->percpu_mem_stats, err_memory),
 	};
 	return ret;
 }

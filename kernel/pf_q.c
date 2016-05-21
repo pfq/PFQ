@@ -94,7 +94,6 @@ MODULE_DESCRIPTION("Functional Networking Framework for Multi-core Architectures
 #pragma message "[PFQ] *** DEBUG mode ***"
 #endif
 
-static DEFINE_MUTEX(sock_lock);
 
 /* simple packet HANDLER */
 
@@ -136,7 +135,7 @@ pfq_packet_rcv
 
         return pfq_receive(NULL, skb, 0);
 out:
-	sparse_inc(memory_stats, os_free);
+	sparse_inc(global->percpu_mem_stats, os_free);
 	kfree_skb(skb);
 	return 0;
 }
@@ -174,14 +173,14 @@ pfq_release(struct socket *sock)
                 pfq_shared_queue_disable(so);
 	}
 
-        mutex_lock(&sock_lock);
+        mutex_lock(&global->sockets_lock);
 
         /* purge both batch and recycle queues if no socket is open */
 
         if (pfq_get_sock_count() == 0)
                 total += pfq_percpu_destruct();
 
-        mutex_unlock(&sock_lock);
+        mutex_unlock(&global->sockets_lock);
 
         if (total)
                 printk(KERN_INFO "[PFQ|%d] cleanup: %d skb purged.\n", id, total);
@@ -190,7 +189,7 @@ pfq_release(struct socket *sock)
 	sock->sk = NULL;
 	sock_put(sk);
 
-        up_read(&symtable_sem);
+        up_read(&global->symtable_sem);
 
 	pr_devel("[PFQ|%d] socket closed.\n", id);
         return 0;
@@ -413,14 +412,14 @@ pfq_create(
                 return -EBUSY;
         }
 
-        mutex_lock(&sock_lock);
+        mutex_lock(&global->sockets_lock);
 
         /* initialize sock */
 
 	if (pfq_sock_init(so, id) < 0) {
                 printk(KERN_WARNING "[PFQ] error: pfq_sock_init: no memory!\n");
 		sk_free(sk);
-		mutex_unlock(&sock_lock);
+		mutex_unlock(&global->sockets_lock);
 		return -EINVAL;
 	}
 
@@ -435,9 +434,9 @@ pfq_create(
 
         sk_refcnt_debug_inc(sk);
 
-        mutex_unlock(&sock_lock);
+        mutex_unlock(&global->sockets_lock);
 
-        down_read(&symtable_sem);
+        down_read(&global->symtable_sem);
         return 0;
 }
 
@@ -644,7 +643,7 @@ static void __exit pfq_exit_module(void)
 
 #ifdef PFQ_USE_SKB_POOL
         total += pfq_skb_pool_free_all();
-	sparse_add(memory_stats, pool_pop, total);
+	sparse_add(global->percpu_mem_stats, pool_pop, total);
 #endif
         if (total)
                 printk(KERN_INFO "[PFQ] %d skbuff freed.\n", total);

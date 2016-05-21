@@ -107,7 +107,7 @@ forwardIO(arguments_t args, struct qbuff * buff)
 	if (dev == NULL) {
                 if (printk_ratelimit())
                         printk(KERN_INFO "[pfq-lang] forward: device error!\n");
-		sparse_inc(global_stats, disc);
+		sparse_inc(global->percpu_stats, disc);
 		local_inc(&stats->disc);
 
                 return Pass(buff);
@@ -117,7 +117,7 @@ forwardIO(arguments_t args, struct qbuff * buff)
 	if (!nbuff) {
                 if (printk_ratelimit())
 			printk(KERN_INFO "[pfq-lang] forward pfq_xmit %s: no memory!\n", pfq_dev_name(dev));
-		sparse_inc(global_stats, disc);
+		sparse_inc(global->percpu_stats, disc);
 		local_inc(&stats->disc);
 		return Pass(buff);
 	}
@@ -126,11 +126,11 @@ forwardIO(arguments_t args, struct qbuff * buff)
                 if (printk_ratelimit())
                         printk(KERN_INFO "[pfq-lang] forward pfq_xmit: error on device %s!\n", pfq_dev_name(dev));
 
-		sparse_inc(global_stats, disc);
+		sparse_inc(global->percpu_stats, disc);
 		local_inc(&stats->disc);
 	}
 	else {
-		sparse_inc(global_stats, frwd);
+		sparse_inc(global->percpu_stats, frwd);
 		local_inc(&stats->frwd);
 	}
 

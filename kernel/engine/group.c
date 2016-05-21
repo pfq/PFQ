@@ -31,25 +31,20 @@
 #include <engine/devmap.h>
 #include <engine/group.h>
 #include <engine/bitops.h>
-
-
-static DEFINE_MUTEX(group_lock);
-
-
-static struct pfq_group pfq_groups[Q_MAX_GID];
+#include <engine/global.h>
 
 
 void
 pfq_group_lock(void)
 {
-        mutex_lock(&group_lock);
+        mutex_lock(&global->groups_lock);
 }
 
 
 void
 pfq_group_unlock(void)
 {
-        mutex_unlock(&group_lock);
+        mutex_unlock(&global->groups_lock);
 }
 
 
@@ -59,27 +54,30 @@ pfq_groups_init(void)
 	int n;
 	for(n = 0; n < Q_MAX_GID; n++)
 	{
-		pfq_groups[n].pid = 0;
-		pfq_groups[n].owner = Q_INVALID_ID;
-		pfq_groups[n].policy = Q_POLICY_GROUP_UNDEFINED;
+		struct pfq_group * group = &global->groups[n];
 
-		pfq_groups[n].stats = alloc_percpu(pfq_group_stats_t);
-		if (pfq_groups[n].stats == NULL) {
+		group->pid = 0;
+		group->owner = Q_INVALID_ID;
+		group->policy = Q_POLICY_GROUP_UNDEFINED;
+
+		group->stats = alloc_percpu(pfq_group_stats_t);
+		if (group->stats == NULL) {
 			goto err;
 		}
 
-		pfq_groups[n].counters = alloc_percpu(struct pfq_group_counters);
-		if (pfq_groups[n].counters == NULL) {
+		group->counters = alloc_percpu(struct pfq_group_counters);
+		if (group->counters == NULL) {
 			goto err;
 		}
 
-		pfq_group_stats_reset(pfq_groups[n].stats);
-		pfq_group_counters_reset(pfq_groups[n].counters);
+		pfq_group_stats_reset(group->stats);
+		pfq_group_counters_reset(group->counters);
 	}
 
 	return 0;
 err:
 	pfq_groups_destruct();
+
 	return -ENOMEM;
 }
 
@@ -90,10 +88,12 @@ pfq_groups_destruct(void)
 	int n;
 	for(n = 0; n < Q_MAX_GID; n++)
 	{
-		free_percpu(pfq_groups[n].stats);
-		free_percpu(pfq_groups[n].counters);
-		pfq_groups[n].stats = NULL;
-		pfq_groups[n].counters = NULL;
+		struct pfq_group * group = &global->groups[n];
+
+		free_percpu(group->stats);
+		free_percpu(group->counters);
+		group->stats = NULL;
+		group->counters = NULL;
 	}
 }
 
@@ -358,7 +358,7 @@ pfq_set_group_prog(pfq_gid_t gid, struct pfq_lang_computation_tree *comp, void *
         if (group == NULL)
                 return -EINVAL;
 
-        mutex_lock(&group_lock);
+        mutex_lock(&global->groups_lock);
 
         old_comp = (struct pfq_lang_computation_tree *)atomic_long_xchg(&group->comp, (long)comp);
         old_ctx  = (void *)atomic_long_xchg(&group->comp_ctx, (long)ctx);
@@ -375,7 +375,7 @@ pfq_set_group_prog(pfq_gid_t gid, struct pfq_lang_computation_tree *comp, void *
         kfree(old_comp);
         kfree(old_ctx);
 
-        mutex_unlock(&group_lock);
+        mutex_unlock(&global->groups_lock);
         return 0;
 }
 
@@ -390,11 +390,11 @@ pfq_join_group(pfq_gid_t gid, pfq_id_t id, unsigned long class_mask, int policy)
         if (group == NULL)
                 return -EINVAL;
 
-        mutex_lock(&group_lock);
+        mutex_lock(&global->groups_lock);
 
         ret = __pfq_join_group(gid, id, class_mask, policy);
 
-        mutex_unlock(&group_lock);
+        mutex_unlock(&global->groups_lock);
         return ret;
 }
 
@@ -404,18 +404,18 @@ pfq_join_free_group(pfq_id_t id, unsigned long class_mask, int policy)
 {
         int n = 0;
 
-        mutex_lock(&group_lock);
+        mutex_lock(&global->groups_lock);
         for(; n < Q_MAX_ID; n++)
         {
 		pfq_gid_t gid = (__force pfq_gid_t)n;
 
                 if(!pfq_get_group(gid)->pid) {
                         __pfq_join_group(gid, id, class_mask, policy);
-                        mutex_unlock(&group_lock);
+                        mutex_unlock(&global->groups_lock);
                         return n;
                 }
         }
-        mutex_unlock(&group_lock);
+        mutex_unlock(&global->groups_lock);
         return -EPERM;
 }
 
@@ -430,9 +430,9 @@ pfq_leave_group(pfq_gid_t gid, pfq_id_t id)
         if (group == NULL)
                 return -EINVAL;
 
-        mutex_lock(&group_lock);
+        mutex_lock(&global->groups_lock);
         ret = __pfq_leave_group(gid,id);
-        mutex_unlock(&group_lock);
+        mutex_unlock(&global->groups_lock);
         return ret;
 }
 
@@ -442,13 +442,13 @@ pfq_leave_all_groups(pfq_id_t id)
 {
         int n = 0;
 
-        mutex_lock(&group_lock);
+        mutex_lock(&global->groups_lock);
         for(; n < Q_MAX_ID; n++)
         {
 		pfq_gid_t gid = (__force pfq_gid_t)n;
                 __pfq_leave_group(gid, id);
         }
-        mutex_unlock(&group_lock);
+        mutex_unlock(&global->groups_lock);
 
         pr_devel("[PFQ|%d] all group left.\n", id);
 }
@@ -459,7 +459,7 @@ pfq_get_groups(pfq_id_t id)
 {
         unsigned long ret = 0;
         int n = 0;
-        mutex_lock(&group_lock);
+        mutex_lock(&global->groups_lock);
         for(; n < Q_MAX_ID; n++)
         {
 		pfq_gid_t gid = (__force pfq_gid_t)n;
@@ -468,7 +468,7 @@ pfq_get_groups(pfq_id_t id)
                 if(mask & (1L << (__force int)id))
                         ret |= (1UL << n);
         }
-        mutex_unlock(&group_lock);
+        mutex_unlock(&global->groups_lock);
         return ret;
 }
 
@@ -479,7 +479,7 @@ pfq_get_group(pfq_gid_t gid)
         if ((__force int)gid < 0 ||
             (__force int)gid >= Q_MAX_GID)
                 return NULL;
-        return &pfq_groups[(__force int)gid];
+        return &global->groups[(__force int)gid];
 }
 
 

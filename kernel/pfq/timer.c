@@ -33,7 +33,7 @@ static void pfq_timer(unsigned long cpu)
 	struct pfq_percpu_data *data;
 
 	pfq_receive(NULL, NULL, 0);
-	data = per_cpu_ptr(percpu_data, cpu);
+	data = per_cpu_ptr(global->percpu_data, cpu);
 	mod_timer_pinned(&data->timer, jiffies + msecs_to_jiffies(100));
 }
 

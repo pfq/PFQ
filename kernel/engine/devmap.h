@@ -25,6 +25,7 @@
 #ifndef Q_ENGINE_DEVMAP_H
 #define Q_ENGINE_DEVMAP_H
 
+#include <engine/global.h>
 #include <engine/group.h>
 #include <engine/define.h>
 
@@ -34,9 +35,6 @@
 /* pfq devmap */
 
 enum { map_reset, map_set };
-
-extern atomic_long_t pfq_devmap [Q_MAX_DEVICE][Q_MAX_HW_QUEUE];
-extern atomic_t      pfq_devmap_monitor [Q_MAX_DEVICE];
 
 
 /* called from u-context
@@ -58,14 +56,14 @@ int pfq_devmap_equal(int i1, int q1, int i2, int q2)
 static inline
 unsigned long pfq_devmap_get_groups(int dev, int queue)
 {
-        return (long unsigned)atomic_long_read(&pfq_devmap[dev][queue]);
+        return (long unsigned)atomic_long_read(&global->devmap[dev][queue]);
 }
 
 
 static inline
 int pfq_devmap_monitor_get(int index)
 {
-        return atomic_read(&pfq_devmap_monitor[index]);
+        return atomic_read(&global->devmap_monitor[index]);
 }
 
 
@@ -75,7 +73,7 @@ void pfq_devmap_monitor_reset(void)
         int n;
         for(n = 0; n < Q_MAX_DEVICE; n++)
         {
-                atomic_set(&pfq_devmap_monitor[n],0);
+                atomic_set(&global->devmap_monitor[n],0);
         }
 }
 

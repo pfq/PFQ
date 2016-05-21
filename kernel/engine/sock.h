@@ -38,13 +38,9 @@
 #endif
 
 
-
 #define for_each_sk_mbuff(hdr, end, fix) \
         for(; (hdr < (struct pfq_pkthdr *)end); \
                hdr = Q_SHARED_QUEUE_NEXT_PKTHDR(hdr, fix))
-
-
-extern atomic_long_t pfq_sock_vector[Q_MAX_ID];
 
 
 struct pfq_tx_info

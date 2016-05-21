@@ -60,12 +60,12 @@ int pfq_percpu_init(void)
         {
                 struct pfq_percpu_data *data;
 
-		memset(per_cpu_ptr(global_stats, cpu), 0, sizeof(pfq_global_stats_t));
-		memset(per_cpu_ptr(memory_stats, cpu), 0, sizeof(struct pfq_memory_stats));
+		memset(per_cpu_ptr(global->percpu_stats, cpu), 0, sizeof(pfq_global_stats_t));
+		memset(per_cpu_ptr(global->percpu_mem_stats, cpu), 0, sizeof(struct pfq_memory_stats));
 
 		preempt_disable();
 
-                data = per_cpu_ptr(percpu_data, cpu);
+                data = per_cpu_ptr(global->percpu_data, cpu);
 		pfq_setup_timer(&data->timer, cpu);
 		data->counter = 0;
 		data->GC = GCs[n++];
@@ -100,11 +100,11 @@ int pfq_percpu_destruct(void)
 
 		preempt_disable();
 
-                data = per_cpu_ptr(percpu_data, cpu);
+                data = per_cpu_ptr(global->percpu_data, cpu);
 
 		for_each_qbuff(&data->GC->pool, buff, n)
 		{
-			sparse_inc(memory_stats, os_free);
+			sparse_inc(global->percpu_mem_stats, os_free);
 			kfree_skb(QBUFF_SKB(buff));
 		}
 
@@ -117,7 +117,7 @@ int pfq_percpu_destruct(void)
 		preempt_enable();
         }
 
-	sparse_add(global_stats, lost, total);
+	sparse_add(global->percpu_stats, lost, total);
         return total;
 }
 

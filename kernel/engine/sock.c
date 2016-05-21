@@ -28,10 +28,6 @@
 
 /* vector of pointers to pfq_sock */
 
-static atomic_t      pfq_sock_count;
-
-atomic_long_t pfq_sock_vector[Q_MAX_ID];
-
 
 static void
 pfq_sock_init_once(void)
@@ -58,8 +54,8 @@ pfq_get_free_id(struct pfq_sock * so)
 
         for(; n < (__force int)Q_MAX_ID; n++)
         {
-                if (!atomic_long_cmpxchg(pfq_sock_vector + n, 0, (long)so)) {
-			if(atomic_inc_return(&pfq_sock_count) == 1)
+                if (!atomic_long_cmpxchg(global->sockets_vector + n, 0, (long)so)) {
+			if(atomic_inc_return(&global->sockets_count) == 1)
 				pfq_sock_init_once();
 			return (__force pfq_id_t)n;
                 }
@@ -70,7 +66,7 @@ pfq_get_free_id(struct pfq_sock * so)
 
 int pfq_get_sock_count(void)
 {
-        return atomic_read(&pfq_sock_count);
+        return atomic_read(&global->sockets_count);
 }
 
 
@@ -82,7 +78,7 @@ pfq_get_sock_by_id(pfq_id_t id)
                 pr_devel("[PFQ] pfq_get_sock_by_id: bad id=%d!\n", id);
                 return NULL;
         }
-	so = (struct pfq_sock *)atomic_long_read(&pfq_sock_vector[(__force int)id]);
+	so = (struct pfq_sock *)atomic_long_read(&global->sockets_vector[(__force int)id]);
 	smp_read_barrier_depends();
 	return so;
 }
@@ -96,8 +92,8 @@ void pfq_release_sock_id(pfq_id_t id)
                 return;
         }
 
-        atomic_long_set(pfq_sock_vector + (__force int)id, 0);
-        if (atomic_dec_return(&pfq_sock_count) == 0)
+        atomic_long_set(global->sockets_vector + (__force int)id, 0);
+        if (atomic_dec_return(&global->sockets_count) == 0)
 		pfq_sock_finish_once();
 }
 

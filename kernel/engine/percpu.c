@@ -31,42 +31,34 @@
 #include <engine/GC.h>
 
 
-pfq_global_stats_t	__percpu   * global_stats;
-struct pfq_memory_stats __percpu   * memory_stats;
-
-struct pfq_percpu_data __percpu    * percpu_data;
-struct pfq_percpu_sock __percpu    * percpu_sock;
-struct pfq_percpu_pool __percpu    * percpu_pool;
-
-
 int pfq_percpu_alloc(void)
 {
-	percpu_data = alloc_percpu(struct pfq_percpu_data);
-	if (!percpu_data) {
+	global->percpu_data = alloc_percpu(struct pfq_percpu_data);
+	if (!global->percpu_data) {
                 printk(KERN_ERR "[PFQ] could not allocate percpu data!\n");
 		return -ENOMEM;
         }
 
-	percpu_sock = alloc_percpu(struct pfq_percpu_sock);
-	if (!percpu_sock) {
+	global->percpu_sock = alloc_percpu(struct pfq_percpu_sock);
+	if (!global->percpu_sock) {
                 printk(KERN_ERR "[PFQ] could not allocate percpu sock!\n");
                 goto err0;
         }
 
-	percpu_pool = alloc_percpu(struct pfq_percpu_pool);
-	if (!percpu_pool) {
+	global->percpu_pool = alloc_percpu(struct pfq_percpu_pool);
+	if (!global->percpu_pool) {
                 printk(KERN_ERR "[PFQ] could not allocate percpu pool!\n");
                 goto err1;
         }
 
-	global_stats = alloc_percpu(pfq_global_stats_t);
-	if (!global_stats) {
+	global->percpu_stats = alloc_percpu(pfq_global_stats_t);
+	if (!global->percpu_stats) {
                 printk(KERN_ERR "[PFQ] could not allocate percpu pool!\n");
                 goto err2;
         }
 
-	memory_stats = alloc_percpu(struct pfq_memory_stats);
-	if (!memory_stats) {
+	global->percpu_mem_stats = alloc_percpu(struct pfq_memory_stats);
+	if (!global->percpu_mem_stats) {
                 printk(KERN_ERR "[PFQ] could not allocate percpu pool!\n");
                 goto err3;
         }
@@ -75,10 +67,10 @@ int pfq_percpu_alloc(void)
         return 0;
 
 
-err3:   free_percpu(global_stats);
-err2:   free_percpu(percpu_pool);
-err1:	free_percpu(percpu_sock);
-err0:	free_percpu(percpu_data);
+err3:   free_percpu(global->percpu_stats);
+err2:   free_percpu(global->percpu_pool);
+err1:	free_percpu(global->percpu_sock);
+err0:	free_percpu(global->percpu_data);
 
 	return -ENOMEM;
 }
@@ -90,16 +82,16 @@ void pfq_percpu_free(void)
 	int cpu;
 
 	for_each_possible_cpu(cpu) {
-                data = per_cpu_ptr(percpu_data, cpu);
+                data = per_cpu_ptr(global->percpu_data, cpu);
 		kfree(data->GC);
 	}
 
-	free_percpu(global_stats);
-	free_percpu(memory_stats);
+	free_percpu(global->percpu_stats);
+	free_percpu(global->percpu_mem_stats);
 
-	free_percpu(percpu_data);
-	free_percpu(percpu_sock);
-	free_percpu(percpu_pool);
+	free_percpu(global->percpu_data);
+	free_percpu(global->percpu_sock);
+	free_percpu(global->percpu_pool);
 }
 
 

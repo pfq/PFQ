@@ -29,7 +29,7 @@
 #include <pfq/kcompat.h>
 #include <pfq/printk.h>
 
-DECLARE_RWSEM(symtable_sem);
+
 
 
 LIST_HEAD(pfq_lang_functions);
@@ -169,7 +169,7 @@ pfq_lang_symtable_pr_devel(const char *hdr, struct list_head *category)
 	struct list_head *pos = NULL;
         size_t ret = 0;
 
-        down_read(&symtable_sem);
+        down_read(&global->symtable_sem);
 
 #ifdef PFQ_DEBUG
 	pr_devel("[PFQ] %s:\n", hdr);
@@ -184,7 +184,7 @@ pfq_lang_symtable_pr_devel(const char *hdr, struct list_head *category)
 		ret++;
 	}
 
-        up_read(&symtable_sem);
+        up_read(&global->symtable_sem);
         return ret;
 }
 
@@ -216,11 +216,11 @@ pfq_lang_symtable_init(void)
 void
 pfq_lang_symtable_free(void)
 {
-        down_write(&symtable_sem);
+        down_write(&global->symtable_sem);
 
         __pfq_lang_symtable_free(&pfq_lang_functions);
 
-        up_write(&symtable_sem);
+        up_write(&global->symtable_sem);
 
 	printk(KERN_INFO "[PFQ] symtable freed.\n");
 }
@@ -231,11 +231,11 @@ pfq_lang_symtable_search(struct list_head *category, const char *symbol)
 {
 	void *ptr;
 
-        down_read(&symtable_sem);
+        down_read(&global->symtable_sem);
 
 	ptr = __pfq_lang_symtable_search(category, symbol);
 
-	up_read(&symtable_sem);
+	up_read(&global->symtable_sem);
 
         return ptr;
 }
@@ -247,11 +247,11 @@ pfq_lang_symtable_register_function(const char *module, struct list_head *catego
 {
 	int rc;
 
-        down_write(&symtable_sem);
+        down_write(&global->symtable_sem);
 
 	rc = __pfq_lang_symtable_register_function(category, symbol, fun, init, fini, signature);
 
-	up_write(&symtable_sem);
+	up_write(&global->symtable_sem);
 
 	if (rc == 0 && module)
 		printk(KERN_INFO "[PFQ]%s '%s' @%pF function registered.\n", module, symbol, fun);
@@ -265,11 +265,11 @@ pfq_lang_symtable_unregister_function(const char *module, struct list_head *cate
 {
 	int rc;
 
-        down_write(&symtable_sem);
+        down_write(&global->symtable_sem);
 
         rc = __pfq_lang_symtable_unregister_function(category, symbol);
 
-        up_write(&symtable_sem);
+        up_write(&global->symtable_sem);
 
 	printk(KERN_INFO "[PFQ]%s '%s' function %s\n", module, symbol, rc == 0 ? "unregistered." : "not registered.");
 

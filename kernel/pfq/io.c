@@ -58,13 +58,13 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 	/* if no socket is open drop the packet */
 
 	if (unlikely(pfq_get_sock_count() == 0)) {
-		sparse_inc(memory_stats, os_free);
+		sparse_inc(global->percpu_mem_stats, os_free);
 		kfree_skb(skb);
 		return 0;
 	}
 
         cpu = smp_processor_id();
-	data = per_cpu_ptr(percpu_data, cpu);
+	data = per_cpu_ptr(global->percpu_data, cpu);
 
 	if (likely(skb))
 	{
@@ -80,7 +80,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 		if (global->vl_untag && skb->protocol == cpu_to_be16(ETH_P_8021Q)) {
 			skb = pfq_vlan_untag(skb);
 			if (unlikely(!skb)) {
-				__sparse_inc(global_stats, lost, cpu);
+				__sparse_inc(global->percpu_stats, lost, cpu);
 				return -1;
 			}
 		}
@@ -98,8 +98,8 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 		if (buff == NULL) {
 			if (printk_ratelimit())
 				printk(KERN_INFO "[PFQ] GC: memory exhausted!\n");
-			__sparse_inc(global_stats, lost, cpu);
-			__sparse_inc(memory_stats, os_free, cpu);
+			__sparse_inc(global->percpu_stats, lost, cpu);
+			__sparse_inc(global->percpu_mem_stats, os_free, cpu);
 			kfree_skb(skb);
 			return 0;
 		}
@@ -122,8 +122,8 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 	}
 
 	return pfq_process_batch(data,
-				 per_cpu_ptr(percpu_sock, cpu),
-				 per_cpu_ptr(percpu_pool, cpu),
+				 per_cpu_ptr(global->percpu_sock, cpu),
+				 per_cpu_ptr(global->percpu_pool, cpu),
 				 data->GC, cpu);
 }
 
@@ -319,7 +319,7 @@ __pfq_xmit_retry(struct sk_buff *skb, struct net_device *dev, int xmit_more, boo
 	}
 
 	if (!retry) {
-		sparse_inc(memory_stats, os_free);
+		sparse_inc(global->percpu_mem_stats, os_free);
 		kfree_skb(skb);
 	}
 
@@ -484,7 +484,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 	if (cpu != Q_NO_KTHREAD)
 	{
 		/* get local pool data */
-		struct pfq_percpu_pool *pool = this_cpu_ptr(percpu_pool);
+		struct pfq_percpu_pool *pool = this_cpu_ptr(global->percpu_pool);
 		ctx.skb_pool = likely(atomic_read(&pool->enable)) ? &pool->tx_pool : NULL;
 	}
 	else {
@@ -674,7 +674,7 @@ intr:
 	/* the ret-i packet is already freed by the driver */
 
 	for_each_qbuff_from(ret.ok + 1, buffs, buff, n) {
-		sparse_inc(memory_stats, os_free);
+		sparse_inc(global->percpu_mem_stats, os_free);
 		kfree_skb(QBUFF_SKB(buff));
 		++ret.fail;
 	}
@@ -768,7 +768,7 @@ pfq_qbuff_queue_lazy_xmit_run(struct pfq_qbuff_queue *buffs, struct pfq_endpoint
 				if (nskb && __pfq_xmit(nskb, dev, xmit_more) == NETDEV_TX_OK)
 					sent++;
 				else
-					sparse_inc(global_stats, disc);
+					sparse_inc(global->percpu_stats, disc);
 			}
 		}
 

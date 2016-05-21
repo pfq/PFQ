@@ -29,8 +29,11 @@
 #define PFQ_THREAD_H
 
 #include <pragma/diagnostic_push>
+
 #include <linux/kthread.h>
 #include <linux/mutex.h>
+#include <linux/rwsem.h>
+
 #include <pragma/diagnostic_pop>
 
 #include <engine/sock.h>

@@ -129,7 +129,7 @@ int pfq_process_batch(struct pfq_percpu_data *data,
 
 	current_batch_len = GC_size(GC_ptr);
 
-	__sparse_add(global_stats, recv, current_batch_len, cpu);
+	__sparse_add(global->percpu_stats, recv, current_batch_len, cpu);
 
 	/* cleanup sock_queue... */
 
@@ -330,8 +330,8 @@ int pfq_process_batch(struct pfq_percpu_data *data,
 	{
 		size_t total = (size_t)pfq_qbuff_queue_lazy_xmit_run(PFQ_QBUFF_QUEUE(&GC_ptr->pool), &endpoints);
 
-		__sparse_add(global_stats, frwd, total, cpu);
-		__sparse_add(global_stats, disc, endpoints.cnt_total - total, cpu);
+		__sparse_add(global->percpu_stats, frwd, total, cpu);
+		__sparse_add(global->percpu_stats, disc, endpoints.cnt_total - total, cpu);
 	}
 
 	/* forward buffs to kernel or release them... */
@@ -340,7 +340,7 @@ int pfq_process_batch(struct pfq_percpu_data *data,
 	{
 		if (buff->direct && fwd_to_kernel(buff)) {
 			qbuff_send_to_kernel(buff, cpu);
-			__sparse_inc(global_stats, kern, cpu);
+			__sparse_inc(global->percpu_stats, kern, cpu);
 		}
 		else {
 			qbuff_free(buff, &pool->rx_pool);

@@ -30,12 +30,6 @@
 #include <engine/group.h>
 
 
-static DEFINE_MUTEX(devmap_lock);
-
-atomic_long_t   pfq_devmap [Q_MAX_DEVICE][Q_MAX_HW_QUEUE];
-atomic_t        pfq_devmap_monitor [Q_MAX_DEVICE];
-
-
 void pfq_devmap_monitor_update(void)
 {
     int i,j;
@@ -44,10 +38,10 @@ void pfq_devmap_monitor_update(void)
         unsigned long val = 0;
         for(j=0; j < Q_MAX_HW_QUEUE; ++j)
         {
-            val |= (unsigned long)atomic_long_read(&pfq_devmap[i][j]);
+            val |= (unsigned long)atomic_long_read(&global->devmap[i][j]);
         }
 
-        atomic_set(&pfq_devmap_monitor[i], val ? 1 : 0);
+        atomic_set(&global->devmap_monitor[i], val ? 1 : 0);
     }
 }
 
@@ -62,7 +56,7 @@ int pfq_devmap_update(int action, int index, int queue, pfq_gid_t gid)
         return 0;
     }
 
-    mutex_lock(&devmap_lock);
+    mutex_lock(&global->devmap_lock);
 
     for(i=0; i < Q_MAX_DEVICE; ++i)
     {
@@ -76,18 +70,18 @@ int pfq_devmap_update(int action, int index, int queue, pfq_gid_t gid)
             /* map_set... */
             if (action == map_set) {
 
-                tmp = atomic_long_read(&pfq_devmap[i][q]);
+                tmp = atomic_long_read(&global->devmap[i][q]);
                 tmp |= 1L << (__force int)gid;
-                atomic_long_set(&pfq_devmap[i][q], tmp);
+                atomic_long_set(&global->devmap[i][q], tmp);
                 n++;
                 continue;
             }
 
             /* map_reset */
-            tmp = atomic_long_read(&pfq_devmap[i][q]);
+            tmp = atomic_long_read(&global->devmap[i][q]);
             if (tmp & (1L << (__force int)gid)) {
                 tmp &= ~(1L << (__force int)gid);
-                atomic_long_set(&pfq_devmap[i][q], tmp);
+                atomic_long_set(&global->devmap[i][q], tmp);
                 n++;
                 continue;
             }
@@ -98,7 +92,7 @@ int pfq_devmap_update(int action, int index, int queue, pfq_gid_t gid)
 
     pfq_devmap_monitor_update();
 
-    mutex_unlock(&devmap_lock);
+    mutex_unlock(&global->devmap_lock);
     return n;
 }
 

@@ -23,6 +23,7 @@
 
 #include <engine/global.h>
 
+#include <pfq/thread.h>
 
 struct global_data default_global =
 {
@@ -32,11 +33,32 @@ struct global_data default_global =
 	.xmit_slot_size		= 1514,
 	.xmit_batch_len		= 1,
 	.capt_batch_len		= 1,
+
 	.vl_untag		= 0,
+
 	.skb_pool_size		= 1024,
 	.tx_affinity		= {0},
 	.tx_thread_nr		= 0,
-	.tx_rate_control_eager  = 1
+	.tx_rate_control_eager  = 1,
+
+	.sockets_count		= {0},
+	.sockets_vector		= {0},
+	.sockets_lock		= { },
+
+	.devmap			= { },
+	.devmap_monitor		= { },
+	.devmap_lock		= { },
+
+	.groups			= { },
+	.groups_lock		= { },
+
+	.symtable_sem		= { },
+
+	.percpu_stats		= NULL,
+	.percpu_mem_stats	= NULL,
+	.percpu_data		= NULL,
+	.percpu_sock		= NULL,
+	.percpu_pool		= NULL,
 };
 
 
@@ -46,6 +68,16 @@ struct global_data * global;
 struct global_data *
 pfq_global_init(void)
 {
+	static bool one = false;
+	if (!one)
+	{
+		mutex_init(&default_global.sockets_lock);
+		mutex_init(&default_global.devmap_lock);
+		mutex_init(&default_global.groups_lock);
+
+		init_rwsem(&default_global.symtable_sem);
+	}
+
 	return &default_global;
 }
 
