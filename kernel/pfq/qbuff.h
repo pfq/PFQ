@@ -152,7 +152,7 @@ qbuff_send_to_kernel(struct qbuff *buff, int cpu)
 {
 	struct sk_buff *skb = QBUFF_SKB(buff);
 	skb_pull(skb, skb->mac_len);
-	skb->peeked = capture_incoming;
+	skb->peeked = global->capture_incoming;
 	netif_receive_skb(skb);
 }
 

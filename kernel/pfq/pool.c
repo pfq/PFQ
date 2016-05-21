@@ -51,9 +51,9 @@ int pfq_skb_pool_init_all(void)
 	{
 		struct pfq_percpu_pool *pool = per_cpu_ptr(percpu_pool, cpu);
 		if (pool) {
-			if (pfq_skb_pool_init(&pool->tx_pool, skb_pool_size) != 0)
+			if (pfq_skb_pool_init(&pool->tx_pool, global->skb_pool_size) != 0)
 				return -ENOMEM;
-			if (pfq_skb_pool_init(&pool->rx_pool, skb_pool_size) != 0)
+			if (pfq_skb_pool_init(&pool->rx_pool, global->skb_pool_size) != 0)
 				return -ENOMEM;
 		}
 	}

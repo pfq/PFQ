@@ -26,36 +26,34 @@
 
 #include <linux/module.h>
 
-module_param(capture_incoming,  int, 0644);
-module_param(capture_outgoing,  int, 0644);
+extern struct global_data default_global;
 
-module_param(capt_slot_size,    int, 0644);
-module_param(xmit_slot_size,    int, 0644);
 
-module_param(capt_batch_len,	int, 0644);
-module_param(xmit_batch_len,	int, 0644);
+module_param_named(capture_incoming,	 default_global.capture_incoming, int, 0644);
+module_param_named(capture_outgoing,	 default_global.capture_outgoing, int, 0644);
 
-module_param(skb_pool_size,	int, 0644);
-module_param(vl_untag,		int, 0644);
-module_param(tx_rate_control_eager, int, 0644);
+module_param_named(capt_slot_size,	 default_global.capt_slot_size,		int, 0644);
+module_param_named(xmit_slot_size,	 default_global.xmit_slot_size,		int, 0644);
+module_param_named(capt_batch_len,	 default_global.capt_batch_len,		int, 0644);
+module_param_named(xmit_batch_len,	 default_global.xmit_batch_len,		int, 0644);
+module_param_named(skb_pool_size,	 default_global.skb_pool_size,		int, 0644);
+module_param_named(vl_untag,		 default_global.vl_untag,		int, 0644);
+module_param_named(tx_rate_control_eager,default_global.tx_rate_control_eager,	int, 0644);
 
-module_param_array(tx_affinity, int, &tx_thread_nr, 0644);
+module_param_array_named(tx_affinity,	 default_global.tx_affinity,		int, &default_global.tx_thread_nr, 0644);
 
-MODULE_PARM_DESC(capture_incoming," Capture incoming packets: (1 default)");
-MODULE_PARM_DESC(capture_outgoing," Capture outgoing packets: (0 default)");
-
-MODULE_PARM_DESC(capt_slot_size, " Maximum capture length (bytes)");
-MODULE_PARM_DESC(xmit_slot_size, " Maximum transmission length (default=1514 bytes)");
-
-MODULE_PARM_DESC(capt_batch_len, " Capture batch queue length");
-MODULE_PARM_DESC(xmit_batch_len, " Transmit batch queue length");
-
-MODULE_PARM_DESC(vl_untag, " Enable vlan untagging (default=0)");
+MODULE_PARM_DESC(capture_incoming,	" Capture incoming packets: (1 default)");
+MODULE_PARM_DESC(capture_outgoing,	" Capture outgoing packets: (0 default)");
+MODULE_PARM_DESC(capt_slot_size,	" Maximum capture length (bytes)");
+MODULE_PARM_DESC(xmit_slot_size,	" Maximum transmission length (default=1514 bytes)");
+MODULE_PARM_DESC(capt_batch_len,	" Capture batch queue length");
+MODULE_PARM_DESC(xmit_batch_len,	" Transmit batch queue length");
+MODULE_PARM_DESC(vl_untag,		" Enable vlan untagging (default=0)");
 
 #ifdef PFQ_USE_SKB_POOL
-MODULE_PARM_DESC(skb_pool_size, " Socket buffer pool size (default=1024)");
+MODULE_PARM_DESC(skb_pool_size,		" Socket buffer pool size (default=1024)");
 #endif
 
-MODULE_PARM_DESC(tx_affinity, " Tx threads cpus' affinity");
+MODULE_PARM_DESC(tx_affinity,		" Tx threads cpus' affinity");
 MODULE_PARM_DESC(tx_rate_control_eager, " Tx rate control eager (default enabled = 1)");
 

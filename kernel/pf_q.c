@@ -123,14 +123,14 @@ pfq_packet_rcv
         switch(skb->pkt_type)
         {
             case PACKET_OUTGOING: {
-                if (!capture_outgoing)
+                if (!global->capture_outgoing)
                         goto out;
 
                 skb->mac_len = ETH_HLEN;
             } break;
 
             default:
-		if (!capture_incoming)
+		if (!global->capture_incoming)
 			goto out;
         }
 
@@ -304,7 +304,7 @@ static int pfq_netdev_notifier(struct notifier_block *this, unsigned long info,
 static
 void pfq_register_device_handler(void)
 {
-        if (capture_incoming || capture_outgoing) {
+        if (global->capture_incoming || global->capture_outgoing) {
                 pfq_prot_hook.func = pfq_packet_rcv;
                 pfq_prot_hook.type = __constant_htons(ETH_P_ALL);
                 dev_add_pack(&pfq_prot_hook);
@@ -315,7 +315,7 @@ void pfq_register_device_handler(void)
 static
 void unregister_device_handler(void)
 {
-        if (capture_incoming || capture_outgoing) {
+        if (global->capture_incoming || global->capture_outgoing) {
                 dev_remove_pack(&pfq_prot_hook); /* Remove protocol hook */
         }
 }
@@ -426,7 +426,7 @@ pfq_create(
 
         /* initialize sock opt */
 
-        pfq_sock_opt_init(&so->opt, capt_slot_size, xmit_slot_size);
+        pfq_sock_opt_init(&so->opt, global->capt_slot_size, global->xmit_slot_size);
 
         /* initialize socket */
 
@@ -463,21 +463,21 @@ check_tx_threads_affinity(void)
 {
 	int i, j;
 
-	for(i=0; i < tx_thread_nr; ++i)
+	for(i=0; i < global->tx_thread_nr; ++i)
 	{
-		if (tx_affinity[i] < 0 || tx_affinity[i] >= num_online_cpus())
+		if (global->tx_affinity[i] < 0 || global->tx_affinity[i] >= num_online_cpus())
 		{
-			printk(KERN_INFO "[PFQ] error: Tx thread bad affinity on cpu:%d!\n", tx_affinity[i]);
+			printk(KERN_INFO "[PFQ] error: Tx thread bad affinity on cpu:%d!\n", global->tx_affinity[i]);
 			return -EFAULT;
 		}
 	}
 
-	for(i=0; i < tx_thread_nr-1; ++i)
-	for(j=i+1; j < tx_thread_nr; ++j)
+	for(i=0; i < global->tx_thread_nr-1; ++i)
+	for(j=i+1; j < global->tx_thread_nr; ++j)
 	{
-		if (tx_affinity[i] == tx_affinity[j])
+		if (global->tx_affinity[i] == global->tx_affinity[j])
 		{
-			printk(KERN_INFO "[PFQ] error: Tx thread affinity for cpu:%d already in use!\n", tx_affinity[i]);
+			printk(KERN_INFO "[PFQ] error: Tx thread affinity for cpu:%d already in use!\n", global->tx_affinity[i]);
 			return -EFAULT;
 		}
 	}
@@ -492,23 +492,27 @@ static int __init pfq_init_module(void)
 
         printk(KERN_INFO "[PFQ] loading...\n");
 
+	/* initialize global data */
+
+	global = pfq_global_init();
+
 	/* check options */
 
-        if (capt_batch_len <= 0 || capt_batch_len > Q_BUFF_BATCH_LEN) {
+        if (global->capt_batch_len <= 0 || global->capt_batch_len > Q_BUFF_BATCH_LEN) {
                 printk(KERN_INFO "[PFQ] capt_batch_len=%d not allowed: valid range (0,%d]!\n",
-                       capt_batch_len, Q_BUFF_BATCH_LEN);
+                       global->capt_batch_len, Q_BUFF_BATCH_LEN);
                 return -EFAULT;
         }
 
-        if (xmit_batch_len <= 0 || xmit_batch_len > (Q_BUFF_BATCH_LEN*4)) {
+        if (global->xmit_batch_len <= 0 || global->xmit_batch_len > (Q_BUFF_BATCH_LEN*4)) {
                 printk(KERN_INFO "[PFQ] xmit_batch_len=%d not allowed: valid range (0,%d]!\n",
-                       xmit_batch_len, Q_BUFF_BATCH_LEN * 4);
+                       global->xmit_batch_len, Q_BUFF_BATCH_LEN * 4);
                 return -EFAULT;
         }
 
-	if (skb_pool_size > Q_MAX_POOL_SIZE) {
+	if (global->skb_pool_size > Q_MAX_POOL_SIZE) {
                 printk(KERN_INFO "[PFQ] skb_pool_size=%d not allowed: valid range [0,%d]!\n",
-                       skb_pool_size, Q_MAX_POOL_SIZE);
+                       global->skb_pool_size, Q_MAX_POOL_SIZE);
 		return -EFAULT;
 	}
 
@@ -553,6 +557,7 @@ static int __init pfq_init_module(void)
         printk(KERN_INFO "[PFQ] skb pool initialized.\n");
 #endif
 
+
 	/* register pfq-lang default functions */
 	pfq_lang_symtable_init();
 
@@ -563,7 +568,7 @@ static int __init pfq_init_module(void)
         register_netdevice_notifier(&pfq_netdev_notifier_block);
 
 	/* start Tx threads for asynchronous transmission */
-	if (tx_thread_nr)
+	if (global->tx_thread_nr)
 	{
 		if ((err = check_tx_threads_affinity()) < 0)
 			goto err6;

@@ -155,8 +155,8 @@ pfq_bind_tx_thread(int tid, struct pfq_sock *sock, int sock_queue)
 	struct pfq_thread_tx_data *thread_data;
 	int n;
 
-	if (tid >= tx_thread_nr) {
-		printk(KERN_INFO "[PFQ] Tx[%d] thread not available (%d Tx threads running)!\n", tid, tx_thread_nr);
+	if (tid >= global->tx_thread_nr) {
+		printk(KERN_INFO "[PFQ] Tx[%d] thread not available (%d Tx threads running)!\n", tid, global->tx_thread_nr);
 		return -ESRCH;
 	}
 
@@ -192,7 +192,7 @@ pfq_unbind_tx_thread(struct pfq_sock *sock)
 	int n, i;
 	mutex_lock(&pfq_thread_tx_pool_lock);
 
-	for(n = 0; n < tx_thread_nr; n++)
+	for(n = 0; n < global->tx_thread_nr; n++)
 	{
 		struct pfq_thread_tx_data *data = &pfq_thread_tx_pool[n];
 
@@ -220,18 +220,18 @@ pfq_start_all_tx_threads(void)
 {
 	int err = 0;
 
-	if (tx_thread_nr)
+	if (global->tx_thread_nr)
 	{
 		int n;
-		printk(KERN_INFO "[PFQ] starting %d Tx thread(s)...\n", tx_thread_nr);
+		printk(KERN_INFO "[PFQ] starting %d Tx thread(s)...\n", global->tx_thread_nr);
 
-		for(n = 0; n < tx_thread_nr; n++)
+		for(n = 0; n < global->tx_thread_nr; n++)
 		{
 			struct pfq_thread_tx_data *data = &pfq_thread_tx_pool[n];
 
 			data->id = n;
-			data->cpu = tx_affinity[n];
-			data->node = cpu_online(tx_affinity[n]) ? cpu_to_node(tx_affinity[n]) : NUMA_NO_NODE;
+			data->cpu = global->tx_affinity[n];
+			data->node = cpu_online(global->tx_affinity[n]) ? cpu_to_node(global->tx_affinity[n]) : NUMA_NO_NODE;
 			data->task = kthread_create_on_node(pfq_tx_thread,
 							    data, data->node,
 							    "kpfq/%d:%d", n, data->cpu);
@@ -258,13 +258,13 @@ pfq_start_all_tx_threads(void)
 void
 pfq_stop_all_tx_threads(void)
 {
-	if (tx_thread_nr)
+	if (global->tx_thread_nr)
 	{
 		int n;
 
-		printk(KERN_INFO "[PFQ] stopping %d Tx thread(s)...\n", tx_thread_nr);
+		printk(KERN_INFO "[PFQ] stopping %d Tx thread(s)...\n", global->tx_thread_nr);
 
-		for(n = 0; n < tx_thread_nr; n++)
+		for(n = 0; n < global->tx_thread_nr; n++)
 		{
 			struct pfq_thread_tx_data *data = &pfq_thread_tx_pool[n];
 

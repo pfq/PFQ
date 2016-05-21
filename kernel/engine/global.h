@@ -26,22 +26,28 @@
 
 #include <engine/define.h>
 
-extern int capture_incoming;
-extern int capture_outgoing;
+struct global_data
+{
+	int capture_incoming;
+	int capture_outgoing;
 
-extern int capt_slot_size;
-extern int xmit_slot_size;
+	int capt_slot_size;
+	int xmit_slot_size;
 
-extern int xmit_batch_len;
-extern int capt_batch_len;
+	int xmit_batch_len;
+	int capt_batch_len;
+	int skb_pool_size;
 
-extern int vl_untag;
+	int vl_untag;
 
-extern int skb_pool_size;
+	int tx_affinity[Q_MAX_CPU];
+	int tx_thread_nr;
+	int tx_rate_control_eager;
+};
 
-extern int tx_affinity[Q_MAX_CPU];
-extern int tx_thread_nr;
-extern int tx_rate_control_eager;
+
+extern struct global_data * global;
+extern struct global_data * pfq_global_init(void);
 
 
 #endif /* Q_ENGINE_GLOBAL_H */

@@ -197,9 +197,9 @@ int pfq_getsockopt(struct socket *sock,
 
         case Q_SO_GET_TX_MAXLEN:
         {
-                if (len != sizeof(xmit_slot_size))
+                if (len != sizeof(global->xmit_slot_size))
                         return -EINVAL;
-                if (copy_to_user(optval, &xmit_slot_size, sizeof(xmit_slot_size)))
+                if (copy_to_user(optval, &global->xmit_slot_size, sizeof(global->xmit_slot_size)))
                         return -EFAULT;
         } break;
 
@@ -514,8 +514,8 @@ int pfq_setsockopt(struct socket *sock,
                 if (copy_from_user(&caplen, optval, optlen))
                         return -EFAULT;
 
-                if (caplen > (size_t)capt_slot_size) {
-                        printk(KERN_INFO "[PFQ|%d] invalid caplen=%zu (max %d)\n", so->id, caplen, capt_slot_size);
+                if (caplen > (size_t)global->capt_slot_size) {
+                        printk(KERN_INFO "[PFQ|%d] invalid caplen=%zu (max %d)\n", so->id, caplen, global->capt_slot_size);
                         return -EPERM;
                 }
 

@@ -24,20 +24,29 @@
 #include <engine/global.h>
 
 
-int capture_incoming	= 1;
-int capture_outgoing	= 0;
+struct global_data default_global =
+{
+	.capture_incoming	= 1,
+	.capture_outgoing	= 0,
+	.capt_slot_size		= 1514,
+	.xmit_slot_size		= 1514,
+	.xmit_batch_len		= 1,
+	.capt_batch_len		= 1,
+	.vl_untag		= 0,
+	.skb_pool_size		= 1024,
+	.tx_affinity		= {0},
+	.tx_thread_nr		= 0,
+	.tx_rate_control_eager  = 1
+};
 
-int capt_slot_size	= 1514;
-int xmit_slot_size	= 1514;
 
-int xmit_batch_len	= 1;
-int capt_batch_len	= 1;
+struct global_data * global;
 
-int vl_untag		= 0;
 
-int skb_pool_size	= 1024;
+struct global_data *
+pfq_global_init(void)
+{
+	return &default_global;
+}
 
-int tx_affinity[Q_MAX_CPU] = {0};
-int tx_thread_nr;
-int tx_rate_control_eager = 1;
 

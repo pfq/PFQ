@@ -77,7 +77,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 		/* if vlan header is present, remove it */
 
-		if (vl_untag && skb->protocol == cpu_to_be16(ETH_P_8021Q)) {
+		if (global->vl_untag && skb->protocol == cpu_to_be16(ETH_P_8021Q)) {
 			skb = pfq_vlan_untag(skb);
 			if (unlikely(!skb)) {
 				__sparse_inc(global_stats, lost, cpu);
@@ -106,7 +106,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 		buff->direct = direct;
 
-		if ((GC_size(data->GC) < (size_t)capt_batch_len) &&
+		if ((GC_size(data->GC) < (size_t)global->capt_batch_len) &&
 		     (ktime_to_ns(ktime_sub(qbuff_get_ktime(buff), data->last_rx)) < 1000000))
 		{
 			return 0;
@@ -238,7 +238,7 @@ ktime_t wait_until(uint64_t tv64, ktime_t now, struct net_dev_queue *dev_queue, 
 		}
 	}
 	else {
-		if (!tx_rate_control_eager)
+		if (!global->tx_rate_control_eager)
 			return now;
 	}
 
@@ -391,7 +391,7 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
 
 	/* allocate a new socket buffer */
 
-	skb = pfq_alloc_skb_pool(LL_RESERVED_SPACE(dev_queue->dev) + xmit_slot_size, GFP_KERNEL, ctx->node, ctx->skb_pool);
+	skb = pfq_alloc_skb_pool(LL_RESERVED_SPACE(dev_queue->dev) + global->xmit_slot_size, GFP_KERNEL, ctx->node, ctx->skb_pool);
 	if (unlikely(skb == NULL)) {
 		if (printk_ratelimit())
 			printk(KERN_INFO "[PFQ] Tx could not allocate an skb!\n");
@@ -402,7 +402,7 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
 
 	skb_reserve(skb, LL_RESERVED_SPACE(dev_queue->dev));
 
-	len = min_t(size_t, hdr->caplen, xmit_slot_size);
+	len = min_t(size_t, hdr->caplen, global->xmit_slot_size);
 
 	skb_reset_tail_pointer(skb);
 	skb->dev = dev_queue->dev;
@@ -579,7 +579,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
                 /* set the xmit_more */
 
-		if (batch_cntr >= xmit_batch_len) {
+		if (batch_cntr >= global->xmit_batch_len) {
 			xmit_more = false;
 			batch_cntr = 0;
 		}
