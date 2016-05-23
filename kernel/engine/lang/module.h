@@ -93,10 +93,10 @@
 
 struct pfq_lang_function_descr;
 struct pfq_lang_exec;
+struct symtable;
 
-extern struct list_head pfq_lang_lang_functions;
-extern int pfq_lang_symtable_register_functions  (const char *module, struct list_head *category, struct pfq_lang_function_descr *fun);
-extern void pfq_lang_symtable_unregister_functions(const char *module, struct list_head *category, struct pfq_lang_function_descr *fun);
+extern int pfq_lang_symtable_register_functions  (const char *module, struct symtable *table, struct pfq_lang_function_descr *fun);
+extern void pfq_lang_symtable_unregister_functions(const char *module, struct symtable *table, struct pfq_lang_function_descr *fun);
 
 
 struct pfq_lang_functional_arg
@@ -120,7 +120,7 @@ typedef struct pfq_lang_functional * arguments_t;
 /**** function prototypes ****/
 
 
-typedef ActionQbuff  (*function_ptr_t) (arguments_t, struct qbuff *);
+typedef ActionQbuff  (*function_ptr_t)  (arguments_t, struct qbuff *);
 typedef uint64_t      (*property_ptr_t) (arguments_t, struct qbuff *);
 typedef bool	      (*predicate_ptr_t)(arguments_t, struct qbuff *);
 typedef int	      (*init_ptr_t)	(arguments_t);

@@ -52,13 +52,15 @@ struct global_data default_global =
 	.groups			= {{}},
      // .groups_lock		= {{0}},
 
-     // .symtable_sem		= {0},
 
 	.percpu_stats		= NULL,
 	.percpu_mem_stats	= NULL,
 	.percpu_data		= NULL,
 	.percpu_sock		= NULL,
 	.percpu_pool		= NULL,
+
+	.functions		= {}
+     // .symtable_sem		= {0},
 };
 
 

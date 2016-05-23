@@ -24,41 +24,47 @@
 #ifndef PFQ_LANG_SYMTABLE_H
 #define PFQ_LANG_SYMTABLE_H
 
-#include <engine/lang/module.h>
 #include <engine/define.h>
-
 
 /* symtable_entry */
 
 struct symtable_entry
 {
-	struct list_head	list;
 	char			symbol[Q_FUN_SYMB_LEN];
+	char			signature[Q_FUN_SIGN_LEN];
 	void *                  function;
 	void *			init;
 	void *			fini;
-	const char *		signature;
 };
 
 
-/* categories */
 
-extern struct list_head pfq_lang_functions;
+struct symtable
+{
+	size_t			size;
+	struct symtable_entry	entry[Q_FUN_MAX_ENTRIES];
+};
 
+
+/* forward declaration */
+
+struct pfq_lang_functional;
+struct pfq_lang_function_descr;
+
+typedef struct pfq_lang_functional * arguments_t;
+typedef int (*init_ptr_t)	(arguments_t);
+typedef int (*fini_ptr_t)	(arguments_t);
 
 /* symtable */
 
 extern void pfq_lang_symtable_init(void);
 extern void pfq_lang_symtable_free(void);
 
-extern int  pfq_lang_symtable_register_function(const char *module, struct list_head *category, const char *symbol,
-					        void * fun, init_ptr_t init, fini_ptr_t fini, const char *signature);
-extern int  pfq_lang_symtable_register_functions (const char *module, struct list_head *category, struct pfq_lang_function_descr *fun);
-
-extern int  pfq_lang_symtable_unregister_function(const char *module, struct list_head *category, const char *symbol);
-extern void pfq_lang_symtable_unregister_functions(const char *module, struct list_head *category, struct pfq_lang_function_descr *fun);
-
-extern struct symtable_entry *pfq_lang_symtable_search(struct list_head *category, const char *symbol);
+extern int  pfq_lang_symtable_register_function(const char *module, struct symtable *table, const char *symbol, void * fun, init_ptr_t init, fini_ptr_t fini, const char *signature);
+extern int  pfq_lang_symtable_register_functions(const char *module, struct symtable *table, struct pfq_lang_function_descr *fun);
+extern int  pfq_lang_symtable_unregister_function(const char *module, struct symtable *table, const char *symbol);
+extern void pfq_lang_symtable_unregister_functions(const char *module, struct symtable *table, struct pfq_lang_function_descr *fun);
+extern struct symtable_entry *pfq_lang_symtable_search(struct symtable *table, const char *symbol);
 
 
 #endif /* PFQ_LANG_SYMTABLE_H */

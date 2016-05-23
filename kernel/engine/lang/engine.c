@@ -27,6 +27,8 @@
 #include <engine/lang/signature.h>
 #include <engine/lang/module.h>
 
+#include <engine/global.h>
+
 #include <pfq/printk.h>
 
 
@@ -42,7 +44,7 @@ pfq_lang_signature_by_user_symbol(const char __user *symb)
                 return NULL;
         }
 
-        entry = pfq_lang_symtable_search(&pfq_lang_functions, symbol);
+        entry = pfq_lang_symtable_search(&global->functions, symbol);
         if (entry == NULL) {
                 kfree (symbol);
                 return NULL;
@@ -418,7 +420,7 @@ pfq_lang_check_computation_descr(struct pfq_lang_computation_descr const *descr)
 
 
 static void *
-resolve_user_symbol(struct list_head *cat, const char __user *symb, const char **signature,
+resolve_user_symbol(struct symtable *table, const char __user *symb, const char **signature,
 		    init_ptr_t *init, fini_ptr_t *fini)
 {
 	struct symtable_entry *entry;
@@ -430,7 +432,7 @@ resolve_user_symbol(struct list_head *cat, const char __user *symb, const char *
                 return NULL;
         }
 
-        entry = pfq_lang_symtable_search(cat, symbol);
+        entry = pfq_lang_symtable_search(table, symbol);
         if (entry == NULL) {
                 pr_devel("[PFQ] resolve_symbol: '%s' no such function!\n", symbol);
                 return NULL;
@@ -527,7 +529,7 @@ pfq_lang_computation_rtlink(struct pfq_lang_computation_descr const *descr, stru
 
                 fun = &descr->fun[n];
 
-		addr = resolve_user_symbol(&pfq_lang_functions, fun->symbol, &signature, &init, &fini);
+		addr = resolve_user_symbol(&global->functions, fun->symbol, &signature, &init, &fini);
 		if (addr == NULL) {
 			printk(KERN_INFO "[PFQ] %zu: rtlink: bad descriptor!\n", n);
 			return -EPERM;

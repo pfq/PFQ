@@ -24,6 +24,8 @@
 #ifndef Q_ENGINE_GLOBAL_H
 #define Q_ENGINE_GLOBAL_H
 
+#include <engine/lang/symtable.h>
+
 #include <engine/define.h>
 #include <engine/group.h>
 
@@ -67,13 +69,14 @@ struct global_data
 	struct pfq_group groups[Q_MAX_GID];
 	struct mutex	 groups_lock;
 
-	struct rw_semaphore symtable_sem;
-
 	struct pfq_kernel_stats __percpu   * percpu_stats;
 	struct pfq_memory_stats __percpu   * percpu_mem_stats;
 	struct pfq_percpu_data __percpu    * percpu_data;
 	struct pfq_percpu_sock __percpu    * percpu_sock;
 	struct pfq_percpu_pool __percpu    * percpu_pool;
+
+	struct symtable	 functions;
+	struct rw_semaphore symtable_sem;
 };
 
 
