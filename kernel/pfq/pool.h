@@ -41,17 +41,14 @@ struct pfq_skb_pool
 };
 
 
-
-void	pfq_skb_pool_enable(bool value);
-int     pfq_skb_pool_init_all(void);
-int	pfq_skb_pool_free_all(void);
-int	pfq_skb_pool_flush_all(void);
-
-int	pfq_skb_pool_init (struct pfq_skb_pool *pool, size_t size);
-size_t	pfq_skb_pool_free (struct pfq_skb_pool *pool);
-size_t	pfq_skb_pool_flush(struct pfq_skb_pool *pool);
-
-struct  pfq_pool_stat pfq_get_skb_pool_stats(void);
+extern void	pfq_skb_pool_enable(bool value);
+extern int	pfq_skb_pool_init_all(void);
+extern int	pfq_skb_pool_free_all(void);
+extern int	pfq_skb_pool_flush_all(void);
+extern int	pfq_skb_pool_init (struct pfq_skb_pool *pool, size_t size);
+extern size_t	pfq_skb_pool_free (struct pfq_skb_pool *pool);
+extern size_t	pfq_skb_pool_flush(struct pfq_skb_pool *pool);
+extern struct	pfq_pool_stat pfq_get_skb_pool_stats(void);
 
 
 static inline

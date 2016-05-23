@@ -29,8 +29,7 @@
 #include <linux/filter.h>
 #include <pragma/diagnostic_pop>
 
-struct sk_filter * pfq_alloc_sk_filter(struct sock_fprog *fprog);
-
-void pfq_free_sk_filter(struct sk_filter *filter);
+extern struct sk_filter * pfq_alloc_sk_filter(struct sock_fprog *fprog);
+extern void pfq_free_sk_filter(struct sk_filter *filter);
 
 #endif /* PFQ_BPF_H */

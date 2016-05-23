@@ -41,11 +41,10 @@
 
 extern struct task_struct *kthread_tx_pool [Q_MAX_CPU];
 
-extern int pfq_start_all_tx_threads(void);
+extern int  pfq_start_all_tx_threads(void);
 extern void pfq_stop_all_tx_threads(void);
-
-extern int pfq_bind_tx_thread(int tx_index, struct pfq_sock *sock, int sock_queue);
-extern int pfq_unbind_tx_thread(struct pfq_sock *sock);
+extern int  pfq_bind_tx_thread(int tx_index, struct pfq_sock *sock, int sock_queue);
+extern int  pfq_unbind_tx_thread(struct pfq_sock *sock);
 
 
 static inline

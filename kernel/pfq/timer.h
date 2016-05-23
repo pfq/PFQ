@@ -28,8 +28,8 @@
 #include <linux/timer.h>
 
 
-void pfq_setup_timer(struct timer_list *timer, unsigned long cpu);
-void pfq_del_timer(struct timer_list *timer);
+extern void pfq_setup_timer(struct timer_list *timer, unsigned long cpu);
+extern void pfq_del_timer(struct timer_list *timer);
 
 
 #endif /* PFQ_TIMER_H */

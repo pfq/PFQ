@@ -42,17 +42,17 @@ struct global_data default_global =
 	.tx_rate_control_eager  = 1,
 
 	.sockets_count		= {0},
-	.sockets_vector		= {0},
-	.sockets_lock		= { },
+	.sockets_vector		= {{0}},
+     // .sockets_lock		= {{0}},
 
-	.devmap			= { },
-	.devmap_monitor		= { },
-	.devmap_lock		= { },
+	.devmap			= {{{0}}},
+	.devmap_monitor		= {{0}},
+     // .devmap_lock		= {{0}},
 
-	.groups			= { },
-	.groups_lock		= { },
+	.groups			= {{}},
+     // .groups_lock		= {{0}},
 
-	.symtable_sem		= { },
+     // .symtable_sem		= {0},
 
 	.percpu_stats		= NULL,
 	.percpu_mem_stats	= NULL,

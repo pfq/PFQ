@@ -26,8 +26,8 @@
 
 #include <pfq/pool.h>
 
-int  pfq_percpu_init(void);
-int  pfq_percpu_destruct(void);
+extern int  pfq_percpu_init(void);
+extern int  pfq_percpu_destruct(void);
 
 
 struct pfq_percpu_pool
