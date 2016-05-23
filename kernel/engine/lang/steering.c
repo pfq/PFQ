@@ -26,6 +26,7 @@
 #include <engine/lang/qbuff.h>
 
 #include <pfq/kcompat.h>
+#include <pfq/printk.h>
 #include <pfq/qbuff.h>
 #include <pfq/vlan.h>
 
@@ -55,8 +56,8 @@ steering_to(arguments_t args, struct qbuff * buff)
 static ActionQbuff
 steering_field(arguments_t args, struct qbuff * buff)
 {
-	uint32_t offset = GET_ARG_0(uint32_t, args);
-	uint32_t size   = GET_ARG_1(uint32_t, args);
+	int offset = GET_ARG_0(int, args);
+	int size   = GET_ARG_1(int, args);
 	uint32_t *data, data_;
 
 	if (size > 4) {
@@ -75,9 +76,9 @@ steering_field(arguments_t args, struct qbuff * buff)
 static ActionQbuff
 steering_field_symmetric(arguments_t args, struct qbuff * buff)
 {
-	uint32_t offset1 = GET_ARG_0(uint32_t, args);
-	uint32_t offset2 = GET_ARG_1(uint32_t, args);
-	uint32_t size    = GET_ARG_2(uint32_t, args);
+	int offset1 = GET_ARG_0(int, args);
+	int offset2 = GET_ARG_1(int, args);
+	int size    = GET_ARG_2(int, args);
 	uint32_t *data1, *data2, data1_, data2_;
 
 	if (size > 4) {
@@ -98,9 +99,9 @@ steering_field_symmetric(arguments_t args, struct qbuff * buff)
 static ActionQbuff
 steering_field_double(arguments_t args, struct qbuff * buff)
 {
-	uint32_t offset1 = GET_ARG_0(uint32_t, args);
-	uint32_t offset2 = GET_ARG_1(uint32_t, args);
-	uint32_t size    = GET_ARG_2(uint32_t, args);
+	int offset1 = GET_ARG_0(int, args);
+	int offset2 = GET_ARG_1(int, args);
+	int size    = GET_ARG_2(int, args);
 	uint32_t *data1, *data2, data1_, data2_;
 
 	if (size > 4) {
@@ -190,7 +191,7 @@ steering_mac(arguments_t args, struct qbuff * buff)
 static ActionQbuff
 steering_vlan_id(arguments_t args, struct qbuff * buff)
 {
-	uint16_t vid = qbuff_vlan_tci(buff) & VLAN_VID_MASK;
+	uint16_t vid = qbuff_vlan_tci(buff) & Q_VLAN_VID_MASK;
 	if (vid)
 		return Steering(buff, vid);
 	else
@@ -359,7 +360,7 @@ struct pfq_lang_function_descr steering_functions[] = {
 	{ "steer_rrobin","Qbuff -> Action Qbuff", steering_rrobin  , NULL, NULL },
 	{ "steer_rss",   "Qbuff -> Action Qbuff", steering_rss     , NULL, NULL },
 	{ "steer_link",  "Qbuff -> Action Qbuff", steering_link    , NULL, NULL },
-	{ "steer_link_local",  "String -> Qbuff -> Action Qbuff", steering_link_local, steering_link_local_init },
+	{ "steer_link_local",  "String -> Qbuff -> Action Qbuff", steering_link_local, steering_link_local_init, NULL },
 	{ "steer_mac",   "Qbuff -> Action Qbuff", steering_mac     , NULL, NULL },
 	{ "steer_vlan",  "Qbuff -> Action Qbuff", steering_vlan_id , NULL, NULL },
 	{ "steer_ip",    "Qbuff -> Action Qbuff", steering_ip      , NULL, NULL },
