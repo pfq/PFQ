@@ -397,7 +397,7 @@ int pfq_setsockopt(struct socket *sock,
 
 #ifdef PFQ_DEBUG
 		{
-			int ref = netdev_refcnt_read_by_index(sock_net(&so->sk), bind.ifindex);
+			int ref = pfq_dev_refcnt_read_by_index(sock_net(&so->sk), bind.ifindex);
 			printk(KERN_INFO "[PFQ] GROUP_BIND: dev_get_by_index: ifindex=%d ref=%d\n", bind.ifindex, ref);
 		}
 #endif
@@ -437,7 +437,7 @@ int pfq_setsockopt(struct socket *sock,
 
 #ifdef PFQ_DEBUG
 		{
-			int ref = netdev_refcnt_read_by_index(sock_net(&so->sk), bind.ifindex);
+			int ref = pfq_dev_refcnt_read_by_index(sock_net(&so->sk), bind.ifindex);
 			printk(KERN_INFO "[PFQ] GROUP_UNBIND: dev_put_by_index: ifindex=%d ref=%d\n", bind.ifindex, ref);
 		}
 #endif

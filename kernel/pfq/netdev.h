@@ -98,7 +98,7 @@ void pfq_dev_queue_put(struct net *net, struct net_dev_queue *dq)
 	if(likely(dq->dev)) {
 #ifdef PFQ_DEBUG
 		int ifindex = PFQ_DEVQ_IFINDEX(dq->id);
-		printk(KERN_INFO "[PFQ] dev_queue_put: ifindex=%d, ref=%d\n", ifindex, netdev_refcnt_read_by_index(net, ifindex));
+		printk(KERN_INFO "[PFQ] dev_queue_put: ifindex=%d, ref=%d\n", ifindex, pfq_dev_refcnt_read_by_index(net, ifindex));
 #else
 		(void)net;
 #endif
