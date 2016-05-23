@@ -22,6 +22,8 @@
  *
  ****************************************************************/
 
+#include <engine/global.h>
+
 #include <pfq/kcompat.h>
 #include <pfq/printk.h>
 #include <pfq/memory.h>
@@ -37,7 +39,7 @@ pfq_shared_queue_enable(struct pfq_sock *so, unsigned long user_addr)
 
 		struct pfq_shared_queue * mapped_queue;
 		size_t n;
-                int i;
+                unsigned int i;
 
 		/* alloc queue memory */
 
@@ -53,9 +55,9 @@ pfq_shared_queue_enable(struct pfq_sock *so, unsigned long user_addr)
 		/* initialize Rx queue */
 
 		mapped_queue->rx.data      = 0;
-		mapped_queue->rx.len       = so->opt.rx_queue_len;
-		mapped_queue->rx.size      = pfq_mpsc_queue_mem(so)/2;
-		mapped_queue->rx.slot_size = so->opt.rx_slot_size;
+		mapped_queue->rx.len       = (unsigned int)so->opt.rx_queue_len;
+		mapped_queue->rx.size      = (unsigned int)pfq_mpsc_queue_mem(so)/2;
+		mapped_queue->rx.slot_size = (unsigned int)so->opt.rx_slot_size;
 
 		so->opt.rxq.base_addr = so->shmem.addr + sizeof(struct pfq_shared_queue);
 
@@ -67,7 +69,7 @@ pfq_shared_queue_enable(struct pfq_sock *so, unsigned long user_addr)
 			char * end = raw + mapped_queue->rx.size;
 			const int rst = !i;
 			for(;raw < end; raw += mapped_queue->rx.slot_size)
-				((struct pfq_pkthdr *)raw)->commit = rst;
+				((struct pfq_pkthdr *)raw)->commit = (uint8_t)rst;
 		}
 
 		/* initialize TX queues */
