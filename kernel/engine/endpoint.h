@@ -51,7 +51,7 @@ struct pfq_endpoint_info
 };
 
 
-void add_dev_to_endpoints(struct net_device *dev, struct pfq_endpoint_info *ts);
+extern void add_dev_to_endpoints(struct net_device *dev, struct pfq_endpoint_info *ts);
 
 
 extern size_t copy_to_endpoint_qbuffs(struct pfq_sock *so,

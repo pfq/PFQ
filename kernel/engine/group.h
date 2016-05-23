@@ -62,9 +62,9 @@ struct pfq_group
 
 struct pfq_lang_computation_tree;
 
-extern int  pfq_join_free_group(pfq_id_t id, unsigned long class_mask, int policy);
-extern int  pfq_join_group(pfq_gid_t gid, pfq_id_t id, unsigned long class_mask, int policy);
-extern int  pfq_leave_group(pfq_gid_t gid, pfq_id_t id);
+extern int  pfq_free_group_join(pfq_id_t id, unsigned long class_mask, int policy);
+extern int  pfq_group_join(pfq_gid_t gid, pfq_id_t id, unsigned long class_mask, int policy);
+extern int  pfq_group_leave(pfq_gid_t gid, pfq_id_t id);
 extern int  pfq_set_group_prog(pfq_gid_t gid, struct pfq_lang_computation_tree *prog, void *ctx);
 extern void pfq_leave_all_groups(pfq_id_t id);
 

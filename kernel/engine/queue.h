@@ -34,8 +34,8 @@
 
 
 
-int pfq_shared_queue_enable(struct pfq_sock *so, unsigned long addr);
-int pfq_shared_queue_disable(struct pfq_sock *so);
+extern int pfq_shared_queue_enable(struct pfq_sock *so, unsigned long addr);
+extern int pfq_shared_queue_disable(struct pfq_sock *so);
 
 
 static inline size_t pfq_mpsc_queue_mem(struct pfq_sock *so)

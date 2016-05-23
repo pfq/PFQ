@@ -90,7 +90,7 @@ int pfq_getsockopt(struct socket *sock,
 
                 if (group.gid == Q_ANY_GROUP) {
 
-                        group.gid = pfq_join_free_group(so->id, group.class_mask, group.policy);
+                        group.gid = pfq_free_group_join(so->id, group.class_mask, group.policy);
                         if (group.gid < 0)
                                 return -EFAULT;
                         if (copy_to_user(optval, &group, len))
@@ -105,7 +105,7 @@ int pfq_getsockopt(struct socket *sock,
 				return -EFAULT;
 			}
 
-                        if (pfq_join_group(gid, so->id, group.class_mask, group.policy) < 0) {
+                        if (pfq_group_join(gid, so->id, group.class_mask, group.policy) < 0) {
                                 printk(KERN_INFO "[PFQ|%d] join group error: permission denied (gid=%d)!\n",
                                        so->id, group.gid);
                                 return -EACCES;
@@ -603,7 +603,7 @@ int pfq_setsockopt(struct socket *sock,
                 if (copy_from_user(&gid, optval, optlen))
                         return -EFAULT;
 
-                if (pfq_leave_group(gid, so->id) < 0)
+                if (pfq_group_leave(gid, so->id) < 0)
                         return -EFAULT;
 
                 pr_devel("[PFQ|%d] group id=%d left.\n", so->id, gid);

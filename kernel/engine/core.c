@@ -37,6 +37,7 @@
 
 #include <engine/queue.h>
 #include <engine/bitops.h>
+#include <engine/sock.h>
 #include <engine/GC.h>
 #include <engine/io.h>
 

@@ -97,7 +97,6 @@ struct pfq_pool_stat
 
 
 extern void pfq_kernel_stats_read(struct pfq_kernel_stats __percpu *kstats, struct pfq_stats *stats);
-
 extern void pfq_kernel_stats_reset(struct pfq_kernel_stats __percpu *stats);
 extern void pfq_group_counters_reset(struct pfq_group_counters __percpu *counters);
 extern void pfq_memory_stats_reset(struct pfq_memory_stats __percpu *stats);

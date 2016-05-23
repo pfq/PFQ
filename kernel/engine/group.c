@@ -235,7 +235,7 @@ __pfq_group_free(pfq_gid_t gid)
 
 
 static int
-__pfq_join_group(pfq_gid_t gid, pfq_id_t id, unsigned long class_mask, int policy)
+__pfq_group_join(pfq_gid_t gid, pfq_id_t id, unsigned long class_mask, int policy)
 {
         struct pfq_group * group;
         unsigned long bit;
@@ -283,7 +283,7 @@ __pfq_join_group(pfq_gid_t gid, pfq_id_t id, unsigned long class_mask, int polic
 
 
 static int
-__pfq_leave_group(pfq_gid_t gid, pfq_id_t id)
+__pfq_group_leave(pfq_gid_t gid, pfq_id_t id)
 {
         struct pfq_group * group;
         long tmp;
@@ -383,7 +383,7 @@ pfq_set_group_prog(pfq_gid_t gid, struct pfq_lang_computation_tree *comp, void *
 
 
 int
-pfq_join_group(pfq_gid_t gid, pfq_id_t id, unsigned long class_mask, int policy)
+pfq_group_join(pfq_gid_t gid, pfq_id_t id, unsigned long class_mask, int policy)
 {
         struct pfq_group * group;
         int ret;
@@ -394,7 +394,7 @@ pfq_join_group(pfq_gid_t gid, pfq_id_t id, unsigned long class_mask, int policy)
 
         mutex_lock(&global->groups_lock);
 
-        ret = __pfq_join_group(gid, id, class_mask, policy);
+        ret = __pfq_group_join(gid, id, class_mask, policy);
 
         mutex_unlock(&global->groups_lock);
         return ret;
@@ -402,7 +402,7 @@ pfq_join_group(pfq_gid_t gid, pfq_id_t id, unsigned long class_mask, int policy)
 
 
 int
-pfq_join_free_group(pfq_id_t id, unsigned long class_mask, int policy)
+pfq_free_group_join(pfq_id_t id, unsigned long class_mask, int policy)
 {
         int n = 0;
 
@@ -412,7 +412,7 @@ pfq_join_free_group(pfq_id_t id, unsigned long class_mask, int policy)
 		pfq_gid_t gid = (__force pfq_gid_t)n;
 
                 if(!pfq_get_group(gid)->pid) {
-                        __pfq_join_group(gid, id, class_mask, policy);
+                        __pfq_group_join(gid, id, class_mask, policy);
                         mutex_unlock(&global->groups_lock);
                         return n;
                 }
@@ -423,7 +423,7 @@ pfq_join_free_group(pfq_id_t id, unsigned long class_mask, int policy)
 
 
 int
-pfq_leave_group(pfq_gid_t gid, pfq_id_t id)
+pfq_group_leave(pfq_gid_t gid, pfq_id_t id)
 {
         struct pfq_group * group;
         int ret;
@@ -433,7 +433,7 @@ pfq_leave_group(pfq_gid_t gid, pfq_id_t id)
                 return -EINVAL;
 
         mutex_lock(&global->groups_lock);
-        ret = __pfq_leave_group(gid,id);
+        ret = __pfq_group_leave(gid,id);
         mutex_unlock(&global->groups_lock);
         return ret;
 }
@@ -448,7 +448,7 @@ pfq_leave_all_groups(pfq_id_t id)
         for(; n < Q_MAX_ID; n++)
         {
 		pfq_gid_t gid = (__force pfq_gid_t)n;
-                __pfq_leave_group(gid, id);
+                __pfq_group_leave(gid, id);
         }
         mutex_unlock(&global->groups_lock);
 

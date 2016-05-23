@@ -68,6 +68,7 @@ struct pfq_rx_info
 	void			*base_addr;
 };
 
+
 static inline
 void pfq_rx_info_init(struct pfq_rx_info *info)
 {
@@ -172,19 +173,15 @@ pfq_sk(struct sock *sk)
         return (struct pfq_sock *)(sk);
 }
 
-pfq_id_t
-pfq_get_free_id(struct pfq_sock * so);
 
-void	pfq_sock_opt_init(struct pfq_sock_opt *that, size_t caplen, size_t maxlen);
-
-int	pfq_sock_init(struct pfq_sock *so, pfq_id_t id);
-void	pfq_sock_destruct(struct sock *sk);
-
-int     pfq_get_sock_count(void);
-struct	pfq_sock * pfq_get_sock_by_id(pfq_id_t id);
-void	pfq_release_sock_id(pfq_id_t id);
-
-int	pfq_sock_tx_bind(struct pfq_sock *so, int tid, int if_index, int queue);
-int	pfq_sock_tx_unbind(struct pfq_sock *so);
+extern  pfq_id_t pfq_get_free_id(struct pfq_sock * so);
+extern  void	pfq_sock_opt_init(struct pfq_sock_opt *that, size_t caplen, size_t maxlen);
+extern  int	pfq_sock_init(struct pfq_sock *so, pfq_id_t id);
+extern  void	pfq_sock_destruct(struct sock *sk);
+extern  struct	pfq_sock * pfq_get_sock_by_id(pfq_id_t id);
+extern  int     pfq_get_sock_count(void);
+extern  void	pfq_release_sock_id(pfq_id_t id);
+extern  int	pfq_sock_tx_bind(struct pfq_sock *so, int tid, int if_index, int queue);
+extern  int	pfq_sock_tx_unbind(struct pfq_sock *so);
 
 #endif /* Q_ENGINE_SOCK_H */
