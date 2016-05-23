@@ -21,31 +21,17 @@
  *
  ****************************************************************/
 
+#include <engine/global.h>
+#include <engine/sock.h>
+
+#include <pfq/printk.h>
 #include <pfq/kcompat.h>
 #include <pfq/thread.h>
+#include <pfq/atomic.h>
 #include <pfq/pool.h>
 
 
 /* vector of pointers to pfq_sock */
-
-
-static void
-pfq_sock_init_once(void)
-{
-#ifdef PFQ_USE_SKB_POOL
-	pfq_skb_pool_enable(true);
-#endif
-}
-
-
-static void
-pfq_sock_finish_once(void)
-{
-#ifdef PFQ_USE_SKB_POOL
-	pfq_skb_pool_enable(false);
-#endif
-}
-
 
 pfq_id_t
 pfq_get_free_id(struct pfq_sock * so)
@@ -54,7 +40,7 @@ pfq_get_free_id(struct pfq_sock * so)
 
         for(; n < (__force int)Q_MAX_ID; n++)
         {
-                if (!atomic_long_cmpxchg(global->sockets_vector + n, 0, (long)so)) {
+                if (!atomic_long_cmpxchg(&global->sockets_vector[n], (long)0, (long)so)) {
 			if(atomic_inc_return(&global->sockets_count) == 1)
 				pfq_sock_init_once();
 			return (__force pfq_id_t)n;
@@ -79,7 +65,7 @@ pfq_get_sock_by_id(pfq_id_t id)
                 return NULL;
         }
 	so = (struct pfq_sock *)atomic_long_read(&global->sockets_vector[(__force int)id]);
-	smp_read_barrier_depends();
+	// smp_read_barrier_depends();
 	return so;
 }
 
@@ -94,7 +80,7 @@ void pfq_release_sock_id(pfq_id_t id)
 
         atomic_long_set(global->sockets_vector + (__force int)id, 0);
         if (atomic_dec_return(&global->sockets_count) == 0)
-		pfq_sock_finish_once();
+		pfq_sock_fini_once();
 }
 
 
@@ -108,7 +94,7 @@ void pfq_sock_opt_init(struct pfq_sock_opt *that, size_t caplen, size_t maxlen)
 
         /* initialize waitqueue */
 
-        init_waitqueue_head(&that->waitqueue);
+        pfq_init_waitqueue_head(&that->waitqueue);
 
 	/* Rx queue setup */
 
@@ -183,30 +169,14 @@ int pfq_sock_init(struct pfq_sock *so, pfq_id_t id)
 }
 
 
-void pfq_sock_destruct(struct sock *sk)
-{
-	struct pfq_sock *so = pfq_sk(sk);
-
-	free_percpu(so->stats);
-        so->stats = NULL;
-
-        skb_queue_purge(&sk->sk_error_queue);
-
-        WARN_ON(atomic_read(&sk->sk_rmem_alloc));
-        WARN_ON(atomic_read(&sk->sk_wmem_alloc));
-
-        sk_refcnt_debug_dec(sk);
-}
-
-
 int
 pfq_sock_tx_bind(struct pfq_sock *so, int tid, int ifindex, int qindex)
 {
-	size_t queue = so->opt.tx_num_async_queues;
+	int queue = (int)so->opt.tx_num_async_queues;
 	int err = 0;
 
 	if (queue >= Q_MAX_TX_QUEUES) {
-		printk(KERN_INFO "[PFQ|%d] could not bind Tx[%d] thread to queue %zu (out of range)!\n", so->id, tid, queue);
+		printk(KERN_INFO "[PFQ|%d] could not bind Tx[%d] thread to queue %d (out of range)!\n", so->id, tid, queue);
 		return -EPERM;
 	}
 

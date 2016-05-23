@@ -29,9 +29,11 @@
 #include <engine/stats.h>
 
 #include <pfq/kcompat.h>
+#include <pfq/thread.h>
 #include <pfq/shmem.h>
 #include <pfq/types.h>
 #include <pfq/atomic.h>
+#include <pfq/sock.h>
 
 #ifdef __KERNEL__
 #include <net/sock.h>
@@ -88,9 +90,7 @@ struct pfq_sock_opt
 	size_t			tx_queue_len;
 	size_t			tx_slot_size;
 
-#ifdef __KERNEL__
 	wait_queue_head_t	waitqueue;
-#endif
 
         size_t			tx_num_async_queues;
 
@@ -110,7 +110,6 @@ struct pfq_sock
 	int			egress_type;
         int			egress_index;
         int			egress_queue;
-
 	int			weight;
 
 	struct pfq_shmem_descr  shmem;
@@ -174,14 +173,17 @@ pfq_sk(struct sock *sk)
 }
 
 
-extern  pfq_id_t pfq_get_free_id(struct pfq_sock * so);
-extern  void	pfq_sock_opt_init(struct pfq_sock_opt *that, size_t caplen, size_t maxlen);
-extern  int	pfq_sock_init(struct pfq_sock *so, pfq_id_t id);
-extern  void	pfq_sock_destruct(struct sock *sk);
-extern  struct	pfq_sock * pfq_get_sock_by_id(pfq_id_t id);
-extern  int     pfq_get_sock_count(void);
-extern  void	pfq_release_sock_id(pfq_id_t id);
-extern  int	pfq_sock_tx_bind(struct pfq_sock *so, int tid, int if_index, int queue);
-extern  int	pfq_sock_tx_unbind(struct pfq_sock *so);
+extern void     pfq_init_waitqueue_head(wait_queue_head_t *queue);
+extern void	pfq_sock_init_once(void);
+extern void	pfq_sock_fini_once(void);
+extern pfq_id_t pfq_get_free_id(struct pfq_sock * so);
+extern void	pfq_sock_opt_init(struct pfq_sock_opt *that, size_t caplen, size_t maxlen);
+extern int	pfq_sock_init(struct pfq_sock *so, pfq_id_t id);
+extern void	pfq_sock_destruct(struct sock *sk);
+extern struct	pfq_sock * pfq_get_sock_by_id(pfq_id_t id);
+extern int	pfq_get_sock_count(void);
+extern void	pfq_release_sock_id(pfq_id_t id);
+extern int	pfq_sock_tx_bind(struct pfq_sock *so, int tid, int if_index, int queue);
+extern int	pfq_sock_tx_unbind(struct pfq_sock *so);
 
 #endif /* Q_ENGINE_SOCK_H */
