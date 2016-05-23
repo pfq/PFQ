@@ -51,7 +51,8 @@ struct pfq_shmem_descr
 
 extern size_t pfq_total_queue_mem(struct pfq_sock *so);
 extern int    pfq_mmap(struct file *file, struct socket *sock, struct vm_area_struct *vma);
-extern int    pfq_shared_memory_alloc(struct pfq_shmem_descr *shmem, size_t size);
+extern int    pfq_vmalloc_user(struct pfq_shmem_descr *shmem, size_t size);
+extern int    pfq_shared_memory_alloc(struct pfq_shmem_descr *shmem, size_t size, unsigned long user_addr);
 extern void   pfq_shared_memory_free(struct pfq_shmem_descr *shmem);
 extern size_t pfq_shared_memory_size(struct pfq_sock *so);
 extern int    pfq_hugepage_map(struct pfq_shmem_descr *shmem, unsigned long addr, size_t size);

@@ -157,7 +157,7 @@ pfq_hugepage_unmap(struct pfq_shmem_descr *shmem)
 
 
 int
-pfq_shared_memory_alloc(struct pfq_shmem_descr *shmem, size_t mem_size)
+pfq_vmalloc_user(struct pfq_shmem_descr *shmem, size_t mem_size)
 {
 	size_t tot_mem = PAGE_ALIGN(mem_size);
 
@@ -173,6 +173,23 @@ pfq_shared_memory_alloc(struct pfq_shmem_descr *shmem, size_t mem_size)
 	}
 
 	pr_devel("[PFQ] total shared memory: %zu bytes.\n", tot_mem);
+	return 0;
+}
+
+
+int
+pfq_shared_memory_alloc(struct pfq_shmem_descr *shmem, size_t mem_size, unsigned long user_addr)
+{
+	if (user_addr) {
+
+		if (pfq_hugepage_map(shmem, user_addr, mem_size) < 0)
+			return -ENOMEM;
+	}
+	else {
+		if (pfq_vmalloc_user(shmem, mem_size) < 0)
+			return -ENOMEM;
+	}
+
 	return 0;
 }
 

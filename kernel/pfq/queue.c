@@ -41,13 +41,9 @@ pfq_shared_queue_enable(struct pfq_sock *so, unsigned long user_addr)
 
 		/* alloc queue memory */
 
-		if (user_addr) {
-			if (pfq_hugepage_map(&so->shmem, user_addr, pfq_shared_memory_size(so)) < 0)
-				return -ENOMEM;
-		}
-		else {
-			if (pfq_shared_memory_alloc(&so->shmem, pfq_shared_memory_size(so)) < 0)
-				return -ENOMEM;
+		if (pfq_shared_memory_alloc(&so->shmem, pfq_shared_memory_size(so), user_addr) < 0)
+		{
+			return -ENOMEM;
 		}
 
 		/* initialize queues headers */
