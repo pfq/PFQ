@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#include <engine/percpu.h>
-#include <engine/qbuff.h>
+#include <core/percpu.h>
+#include <core/qbuff.h>
 
 #include <pfq/percpu.h>
 #include <pfq/qbuff.h>
@@ -33,7 +33,7 @@ int pfq_percpu_init(void)
 	struct GC_data **GCs;
 	int cpu, i, n = 0;
 
-	GCs = (struct GC_data **)kzalloc(sizeof(struct GC_data *) * Q_MAX_CPU, GFP_KERNEL);
+	GCs = (struct GC_data **)kzalloc(sizeof(struct GC_data *) * Q_CORE_MAX_CPU, GFP_KERNEL);
 	if (!GCs) {
 		printk(KERN_ERR "[PFQ] percpu: out of memory!\n");
 		return -ENOMEM;
@@ -41,8 +41,8 @@ int pfq_percpu_init(void)
 
 	for_each_possible_cpu(cpu)
 	{
-		if (n == Q_MAX_CPU) {
-			printk(KERN_ERR "[PFQ] percpu: maximum number of cpu reached (%d)!\n", Q_MAX_CPU);
+		if (n == Q_CORE_MAX_CPU) {
+			printk(KERN_ERR "[PFQ] percpu: maximum number of cpu reached (%d)!\n", Q_CORE_MAX_CPU);
 			goto err;
 		}
 
@@ -58,10 +58,10 @@ int pfq_percpu_init(void)
 	n = 0;
         for_each_possible_cpu(cpu)
         {
-                struct pfq_percpu_data *data;
+                struct core_percpu_data *data;
 
-		memset(per_cpu_ptr(global->percpu_stats, cpu), 0, sizeof(pfq_global_stats_t));
-		memset(per_cpu_ptr(global->percpu_mem_stats, cpu), 0, sizeof(struct pfq_memory_stats));
+		memset(per_cpu_ptr(global->percpu_stats, cpu), 0, sizeof(core_global_stats_t));
+		memset(per_cpu_ptr(global->percpu_mem_stats, cpu), 0, sizeof(struct core_memory_stats));
 
 		preempt_disable();
 
@@ -94,7 +94,7 @@ int pfq_percpu_destruct(void)
 
         for_each_possible_cpu(cpu) {
 
-		struct pfq_percpu_data *data;
+		struct core_percpu_data *data;
 		struct qbuff *buff;
 		size_t n;
 

@@ -22,7 +22,6 @@
  ****************************************************************/
 
 #include <pfq/sock.h>
-
 #include <pfq/pool.h>
 
 void
@@ -43,7 +42,7 @@ pfq_sock_fini_once(void)
 }
 
 
-void pfq_init_waitqueue_head(wait_queue_head_t *queue)
+void pfq_sock_init_waitqueue_head(wait_queue_head_t *queue)
 {
 	init_waitqueue_head(queue);
 }
@@ -51,7 +50,7 @@ void pfq_init_waitqueue_head(wait_queue_head_t *queue)
 
 void pfq_sock_destruct(struct sock *sk)
 {
-	struct pfq_sock *so = pfq_sk(sk);
+	struct core_sock *so = pfq_sk(sk);
 
 	free_percpu(so->stats);
         so->stats = NULL;

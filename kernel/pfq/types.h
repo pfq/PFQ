@@ -24,8 +24,10 @@
 #ifndef PFQ_TYPES_H
 #define PFQ_TYPES_H
 
+#include <pragma/diagnostic_push>
 #include <linux/kernel.h>
 #include <linux/compiler.h>
+#include <pragma/diagnostic_pop>
 
 typedef int __bitwise pfq_id_t;
 typedef int __bitwise pfq_gid_t;

@@ -22,16 +22,14 @@
  ****************************************************************/
 
 #include <pragma/diagnostic_push>
-
 #include <linux/kernel.h>
 #include <linux/version.h>
 #include <linux/module.h>
 #include <linux/vmalloc.h>
 #include <linux/pagemap.h>
-
 #include <pragma/diagnostic_pop>
 
-#include <engine/queue.h>
+#include <core/queue.h>
 
 #include <pfq/shmem.h>
 
@@ -69,7 +67,7 @@ pfq_memory_map(struct vm_area_struct *vma, unsigned long size, char *ptr, unsign
 int
 pfq_mmap(struct file *file, struct socket *sock, struct vm_area_struct *vma)
 {
-        struct pfq_sock *so = pfq_sk(sock->sk);
+        struct core_sock *so = pfq_sk(sock->sk);
 
         unsigned long size = (unsigned long)(vma->vm_end - vma->vm_start);
         int ret;
@@ -213,16 +211,16 @@ pfq_shared_memory_free(struct pfq_shmem_descr *shmem)
 }
 
 
-size_t pfq_total_queue_mem(struct pfq_sock *so)
+size_t pfq_total_queue_mem(struct core_sock *so)
 {
-        return sizeof(struct pfq_shared_queue) + pfq_mpsc_queue_mem(so) + pfq_spsc_queue_mem(so) * (1 + Q_MAX_TX_QUEUES);
+        return sizeof(struct pfq_shared_queue) + core_mpsc_queue_mem(so) + core_spsc_queue_mem(so) * (1 + Q_MAX_TX_QUEUES);
 }
 
 
 
 #define HUGEPAGE_SIZE  (2*1024*1024)
 
-size_t pfq_shared_memory_size(struct pfq_sock *so)
+size_t pfq_shared_memory_size(struct core_sock *so)
 {
 	size_t tot_mem = pfq_total_queue_mem(so);
 

@@ -29,16 +29,13 @@
 #include <linux/net.h>
 #include <pragma/diagnostic_pop>
 
-extern int pfq_getsockopt(struct socket *sock,
+extern int core_getsockopt(struct socket *sock,
                 int level, int optname,
                 char __user * optval, int __user * optlen);
 
-extern int pfq_setsockopt(struct socket *sock,
+extern int core_setsockopt(struct socket *sock,
                 int level, int optname,
                 char __user * optval,
-#if(LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31))
-                unsigned
-#endif
-                int optlen);
+                unsigned int optlen);
 
 #endif /* PFQ_SOCKOPT_H */

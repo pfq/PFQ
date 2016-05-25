@@ -28,19 +28,18 @@
 #include <net/inet_common.h>
 #endif
 
-#include <engine/core.h>
-#include <engine/percpu.h>
-#include <engine/global.h>
-#include <engine/devmap.h>
+#include <core/core.h>
+#include <core/percpu.h>
+#include <core/global.h>
+#include <core/devmap.h>
 
-#include <engine/lang/engine.h>
-#include <engine/lang/symtable.h>
+#include <core/lang/engine.h>
+#include <core/lang/symtable.h>
 
-#include <engine/queue.h>
-#include <engine/bitops.h>
-#include <engine/qbuff.h>
-#include <engine/GC.h>
-#include <engine/io.h>
+#include <core/queue.h>
+#include <core/bitops.h>
+#include <core/qbuff.h>
+#include <core/GC.h>
 
 #include <pfq/io.h>
 #include <pfq/vlan.h>
@@ -52,12 +51,12 @@
 int
 pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 {
-	struct pfq_percpu_data * data;
+	struct core_percpu_data * data;
 	int cpu;
 
 	/* if no socket is open drop the packet */
 
-	if (unlikely(pfq_get_sock_count() == 0)) {
+	if (unlikely(core_sock_get_socket_count() == 0)) {
 		sparse_inc(global->percpu_mem_stats, os_free);
 		kfree_skb(skb);
 		return 0;
@@ -121,7 +120,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 		}
 	}
 
-	return pfq_process_batch(data,
+	return core_process_batch(data,
 				 per_cpu_ptr(global->percpu_sock, cpu),
 				 per_cpu_ptr(global->percpu_pool, cpu),
 				 data->GC, cpu);
@@ -291,8 +290,8 @@ unsigned int dev_tx_max_skb_copies(struct net_device *dev, unsigned int req_copi
 		return 1;
 	}
 
-	if (unlikely(req_copies > Q_MAX_TX_SKB_COPY))
-		return Q_MAX_TX_SKB_COPY;
+	if (unlikely(req_copies > Q_CORE_MAX_TX_SKB_COPY))
+		return Q_CORE_MAX_TX_SKB_COPY;
 
 	return req_copies;
 }
@@ -461,9 +460,9 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
  */
 
 tx_res_t
-pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic_t const *stop)
+pfq_sk_queue_xmit(struct core_sock *so, int sock_queue, int cpu, int node, atomic_t const *stop)
 {
-	struct pfq_tx_info const * txinfo = pfq_get_tx_queue_info(&so->opt, sock_queue);
+	struct core_tx_info const * txinfo = core_sock_get_tx_queue_info(&so->opt, sock_queue);
 	struct net_dev_queue dev_queue = net_dev_queue_null;
 	struct pfq_mbuff_xmit_context ctx;
 	int batch_cntr = 0, cons_idx;
@@ -475,7 +474,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
 	/* get the Tx queue descriptor */
 
-	txm = pfq_get_tx_queue(&so->opt, sock_queue);
+	txm = core_sock_get_tx_queue(&so->opt, sock_queue);
 	if (txm == NULL)
 		return ret; /* socket not enabled... */
 
@@ -633,7 +632,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
  */
 
 tx_res_t
-pfq_qbuff_queue_xmit(struct pfq_qbuff_queue *buffs, unsigned long long mask, struct net_device *dev, int queue)
+pfq_qbuff_queue_xmit(struct core_qbuff_queue *buffs, unsigned long long mask, struct net_device *dev, int queue)
 {
 	struct netdev_queue *txq;
 	struct qbuff *buff;
@@ -693,7 +692,7 @@ pfq_lazy_xmit(struct qbuff * buff, struct net_device *dev, int queue)
 {
 	struct GC_log *buff_log = buff->log;
 
-	if (buff_log->num_devs >= Q_BUFF_LOG_LEN) {
+	if (buff_log->num_devs >= Q_CORE_BUFF_LOG_LEN) {
 		if (printk_ratelimit())
 			printk(KERN_INFO "[PFQ] bridge %s: too many annotation!\n", dev->name);
 		return 0;
@@ -709,7 +708,7 @@ pfq_lazy_xmit(struct qbuff * buff, struct net_device *dev, int queue)
 
 
 int
-pfq_qbuff_queue_lazy_xmit_run(struct pfq_qbuff_queue *buffs, struct pfq_endpoint_info const *endpoints)
+pfq_qbuff_queue_lazy_xmit_run(struct core_qbuff_queue *buffs, struct core_endpoint_info const *endpoints)
 {
 	struct netdev_queue *txq;
 	struct net_device *dev;
@@ -792,13 +791,13 @@ void *pfq_skb_copy_from_linear_data(const struct sk_buff *skb, void *to, size_t 
 
 
 
-size_t pfq_sk_queue_recv(struct pfq_sock_opt *opt,
-			 struct pfq_qbuff_refs *buffs,
+size_t pfq_sk_queue_recv(struct core_sock_opt *opt,
+			 struct core_qbuff_refs *buffs,
 			 unsigned long long mask,
 			 int burst_len,
 			 pfq_gid_t gid)
 {
-	struct pfq_rx_queue *rx_queue = pfq_get_rx_queue(opt);
+	struct pfq_rx_queue *rx_queue = core_sock_get_rx_queue(opt);
 	struct pfq_pkthdr *hdr;
 	struct qbuff *buff;
 	int data, qlen, qindex;
@@ -816,7 +815,7 @@ size_t pfq_sk_queue_recv(struct pfq_sock_opt *opt,
 
 	qlen = Q_SHARED_QUEUE_LEN(data) - burst_len;
 	qindex = Q_SHARED_QUEUE_INDEX(data);
-	hdr = (struct pfq_pkthdr *) pfq_mpsc_slot_ptr(opt, rx_queue, qindex, qlen);
+	hdr = (struct pfq_pkthdr *) core_mpsc_slot_ptr(opt, rx_queue, qindex, qlen);
 
 	for_each_qbuff_with_mask(mask, buffs, buff, n)
 	{

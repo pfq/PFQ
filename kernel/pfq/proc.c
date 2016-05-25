@@ -22,22 +22,19 @@
  ****************************************************************/
 
 #include <pragma/diagnostic_push>
-
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/proc_fs.h>
 #include <linux/seq_file.h>
 #include <linux/pf_q.h>
-
 #include <net/net_namespace.h>
-
 #include <pragma/diagnostic_pop>
 
-#include <engine/lang/module.h>
-#include <engine/global.h>
-#include <engine/define.h>
-#include <engine/group.h>
-#include <engine/bitops.h>
+#include <core/lang/module.h>
+#include <core/global.h>
+#include <core/define.h>
+#include <core/group.h>
+#include <core/bitops.h>
 
 #include <pfq/sparse.h>
 #include <pfq/proc.h>
@@ -90,13 +87,13 @@ static int pfq_proc_comp(struct seq_file *m, void *v)
 	struct pfq_lang_computation_tree *comp;
 	size_t n;
 
-	pfq_group_lock();
+	core_group_lock();
 
-	for(n = 0; n < Q_MAX_GID; n++)
+	for(n = 0; n < Q_CORE_MAX_GID; n++)
 	{
 		pfq_gid_t gid = (__force pfq_gid_t)n;
 
-		struct pfq_group *this_group = pfq_get_group(gid);
+		struct core_group *this_group = core_group_get(gid);
 
 		if (!this_group->policy)
 			continue;
@@ -107,7 +104,7 @@ static int pfq_proc_comp(struct seq_file *m, void *v)
 		seq_printf_computation_tree(m, comp);
 	}
 
-	pfq_group_unlock();
+	core_group_unlock();
 	return 0;
 }
 
@@ -117,13 +114,13 @@ static int pfq_proc_groups(struct seq_file *m, void *v)
 
 	seq_printf(m, "group: recv      lost      drop      sent      disc.     failed    forward   kernel    pol pid   def.    uplane   cplane    ctrl\n");
 
-	pfq_group_lock();
+	core_group_lock();
 
-	for(n = 0; n < Q_MAX_GID; n++)
+	for(n = 0; n < Q_CORE_MAX_GID; n++)
 	{
 		pfq_gid_t gid = (__force pfq_gid_t)n;
 
-		struct pfq_group *this_group = pfq_get_group(gid);
+		struct core_group *this_group = core_group_get(gid);
 		if (!this_group->policy)
 			continue;
 
@@ -142,14 +139,14 @@ static int pfq_proc_groups(struct seq_file *m, void *v)
 		seq_printf(m, "%3d %3d ", this_group->policy, this_group->pid);
 
 		seq_printf(m, "%08lx %08lx %08lx %08lx \n",
-			   atomic_long_read(&this_group->sock_id[pfq_ctz(Q_CLASS_DEFAULT)]),
-			   atomic_long_read(&this_group->sock_id[pfq_ctz(Q_CLASS_USER_PLANE)]),
-			   atomic_long_read(&this_group->sock_id[pfq_ctz(Q_CLASS_CONTROL_PLANE)]),
+			   atomic_long_read(&this_group->sock_id[core_ctz(Q_CLASS_DEFAULT)]),
+			   atomic_long_read(&this_group->sock_id[core_ctz(Q_CLASS_USER_PLANE)]),
+			   atomic_long_read(&this_group->sock_id[core_ctz(Q_CLASS_CONTROL_PLANE)]),
 			   atomic_long_read(&this_group->sock_id[Q_CLASS_MAX-1]));
 
 	}
 
-	pfq_group_unlock();
+	core_group_unlock();
 	return 0;
 }
 
@@ -204,7 +201,7 @@ static int pfq_proc_memory_open(struct inode *inode, struct file *file)
 static ssize_t
 pfq_proc_memory_reset(struct file *file, const char __user *buf, size_t length, loff_t *ppos)
 {
-	pfq_memory_stats_reset(global->percpu_mem_stats);
+	core_memory_stats_reset(global->percpu_mem_stats);
 	pfq_skb_pool_flush_all();
 	return 1;
 }
@@ -238,7 +235,7 @@ static int pfq_proc_stats_open(struct inode *inode, struct file *file)
 static ssize_t
 pfq_proc_stats_reset(struct file *file, const char __user *buf, size_t length, loff_t *ppos)
 {
-	pfq_global_stats_reset(global->percpu_stats);
+	core_global_stats_reset(global->percpu_stats);
 	return 1;
 }
 

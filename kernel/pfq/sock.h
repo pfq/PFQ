@@ -24,12 +24,16 @@
 #ifndef PFQ_SOCK_H
 #define PFQ_SOCK_H
 
+#include <pragma/diagnostic_push>
 #include <linux/wait.h>
+#include <pragma/diagnostic_pop>
+
 #include <pfq/pool.h>
 
 extern void pfq_sock_init_once(void);
 extern void pfq_sock_fini_once(void);
-extern void pfq_init_waitqueue_head(wait_queue_head_t *queue);
+extern void pfq_sock_init_waitqueue_head(wait_queue_head_t *queue);
+extern void pfq_sock_destruct(struct sock *sk);
 
 
 #endif /* PFQ_SOCK_H */

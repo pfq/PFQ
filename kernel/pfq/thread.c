@@ -1,55 +1,49 @@
-/*
- * Copyright (c) 2011-16 Bonelli Nicola <nicola@pfq.io>
+/***************************************************************
  *
- * All rights reserved.
+ * (C) 2011-16 Nicola Bonelli <nicola@pfq.io>
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met: 1. Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer. 2.
- * Redistributions in binary form must reproduce the above copyright notice,
- * this list of conditions and the following disclaimer in the documentation
- * and/or other materials provided with the distribution.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE FOR
- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- */
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ * The full GNU General Public License is included in this distribution in
+ * the file called "COPYING".
+ *
+ ****************************************************************/
 
 #include <pragma/diagnostic_push>
-
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/version.h>
 #include <linux/kthread.h>
 #include <linux/mutex.h>
 #include <linux/jiffies.h>
-
 #include <pragma/diagnostic_pop>
 
-#include <engine/define.h>
-#include <engine/sock.h>
-#include <engine/io.h>
+#include <core/define.h>
+#include <core/sock.h>
 
 #include <pfq/thread.h>
 #include <pfq/memory.h>
+#include <pfq/io.h>
 
 
 static DEFINE_MUTEX(pfq_thread_tx_pool_lock);
 
 
-static struct pfq_thread_tx_data pfq_thread_tx_pool[Q_MAX_CPU] =
+static struct pfq_thread_tx_data pfq_thread_tx_pool[Q_CORE_MAX_CPU] =
 {
-	[0 ... Q_MAX_CPU-1] = {
+	[0 ... Q_CORE_MAX_CPU-1] = {
 		.id	= -1,
 		.cpu    = -1,
 		.node   = -1,
@@ -68,7 +62,7 @@ pfq_tx_thread_dump(struct pfq_thread_tx_data const *data)
 	char msg[256];
 	int n, off = 0;
 	off += sprintf(msg + off, "Tx[%d] cpu=%d node=%d ", data->id, data->cpu, data->node);
-	for(n = 0; n < Q_MAX_TX_QUEUES; ++n)
+	for(n = 0; n < Q_CORE_MAX_TX_QUEUES; ++n)
 	{
 		int sock_queue = atomic_read(&data->sock_queue[n]);
 		if (sock_queue != -1)
@@ -105,7 +99,7 @@ pfq_tx_thread(void *_data)
 
 		for(n = 0; n < Q_MAX_TX_QUEUES; n++)
 		{
-			struct pfq_sock *sock;
+			struct core_sock *sock;
 			int sock_queue;
 			tx_res_t tx;
 
@@ -150,7 +144,7 @@ pfq_tx_thread(void *_data)
 
 
 int
-pfq_bind_tx_thread(int tid, struct pfq_sock *sock, int sock_queue)
+pfq_bind_tx_thread(int tid, struct core_sock *sock, int sock_queue)
 {
 	struct pfq_thread_tx_data *thread_data;
 	int n;
@@ -187,7 +181,7 @@ pfq_bind_tx_thread(int tid, struct pfq_sock *sock, int sock_queue)
 
 
 int
-pfq_unbind_tx_thread(struct pfq_sock *sock)
+pfq_unbind_tx_thread(struct core_sock *sock)
 {
 	int n, i;
 	mutex_lock(&pfq_thread_tx_pool_lock);
@@ -203,7 +197,7 @@ pfq_unbind_tx_thread(struct pfq_sock *sock)
 				if (data->sock[i] == sock) {
 					atomic_set(&data->sock_queue[i], -1);
 					smp_wmb();
-					msleep(Q_GRACE_PERIOD);
+					msleep(Q_CORE_GRACE_PERIOD);
 					data->sock[i] = NULL;
 				}
 			}

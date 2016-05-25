@@ -23,7 +23,6 @@
  ****************************************************************/
 
 #include <pragma/diagnostic_push>
-
 #include <linux/kernel.h>
 #include <linux/version.h>
 #include <linux/module.h>
@@ -31,7 +30,6 @@
 #include <linux/slab.h>
 #include <linux/uaccess.h>
 #include <net/sock.h>
-
 #include <pragma/diagnostic_pop>
 
 #include <pfq/bpf.h>

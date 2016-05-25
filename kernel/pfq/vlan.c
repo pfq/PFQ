@@ -22,13 +22,11 @@
  ****************************************************************/
 
 #include <pragma/diagnostic_push>
-
 #include <linux/if_vlan.h>
 #include <linux/version.h>
-
 #include <pragma/diagnostic_pop>
 
-#include <engine/global.h>
+#include <core/global.h>
 
 #include <pfq/sparse.h>
 

@@ -24,15 +24,17 @@
 #ifndef PFQ_QBUFF_H
 #define PFQ_QBUFF_H
 
-#include <engine/qbuff.h>
-#include <engine/global.h>
-
-#include <pfq/vlan.h>
-#include <pfq/types.h>
-
+#include <pragma/diagnostic_push>
 #include <linux/kernel.h>
 #include <linux/version.h>
 #include <linux/skbuff.h>
+#include <pragma/diagnostic_pop>
+
+#include <core/qbuff.h>
+#include <core/global.h>
+
+#include <pfq/vlan.h>
+#include <pfq/types.h>
 
 
 #define QBUFF_SKB(buff) \
@@ -186,7 +188,7 @@ qbuff_get_rx_queue(struct qbuff const *buff)
 
 
 static inline bool
-qbuff_run_bp_filter(struct qbuff *buff, struct pfq_group *this_group)
+qbuff_run_bp_filter(struct qbuff *buff, struct core_group *this_group)
 {
 	struct sk_filter *bpf = (struct sk_filter *)atomic_long_read(&this_group->bp_filter);
 
@@ -205,7 +207,7 @@ qbuff_run_bp_filter(struct qbuff *buff, struct pfq_group *this_group)
 static inline bool
 qbuff_run_vlan_filter(struct qbuff const *buff, pfq_gid_t gid)
 {
-	return pfq_check_group_vlan_filter(gid, QBUFF_SKB(buff)->vlan_tci & ~VLAN_TAG_PRESENT);
+	return core_group_check_vlan_filter(gid, QBUFF_SKB(buff)->vlan_tci & ~VLAN_TAG_PRESENT);
 }
 
 

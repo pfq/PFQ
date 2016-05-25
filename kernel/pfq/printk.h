@@ -24,9 +24,11 @@
 #ifndef PFQ_PRINTK_H
 #define PFQ_PRINTK_H
 
+#include <pragma/diagnostic_push>
 #include <linux/printk.h>
+#include <pragma/diagnostic_pop>
 
-#include <engine/group.h>
+#include <core/group.h>
 
 struct pfq_lang_computation_descr;
 struct pfq_lang_computation_tree;

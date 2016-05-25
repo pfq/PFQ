@@ -27,8 +27,8 @@
 
 #include <linux/pf_q.h>
 
-#include "../../engine/lang/symtable.h"
-#include "../../engine/lang/module.h"
+#include "../../core/lang/symtable.h"
+#include "../../core/lang/module.h"
 
 #include "../../pfq/nethdr.h"
 

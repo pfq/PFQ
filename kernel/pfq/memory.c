@@ -23,14 +23,12 @@
  ****************************************************************/
 
 #include <pragma/diagnostic_push>
-
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/skbuff.h>
-
 #include <pragma/diagnostic_pop>
 
-#include <engine/global.h>
+#include <core/global.h>
 
 #include <pfq/memory.h>
 

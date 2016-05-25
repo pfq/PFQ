@@ -24,10 +24,12 @@
 #ifndef PFQ_KCOMPACT_H
 #define PFQ_KCOMPACT_H
 
+#include <pragma/diagnostic_push>
 #include <linux/version.h>
 #include <linux/netdevice.h>
 #include <linux/slab.h>
 #include <linux/inetdevice.h>
+#include <pragma/diagnostic_pop>
 
 #if (LINUX_VERSION_CODE <= KERNEL_VERSION(3,14,0))
 static inline bool netif_xmit_frozen_or_drv_stopped(const struct netdev_queue *queue)

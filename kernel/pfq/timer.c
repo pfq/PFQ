@@ -21,8 +21,7 @@
  *
  ****************************************************************/
 
-#include <engine/percpu.h>
-#include <engine/io.h>
+#include <core/percpu.h>
 
 #include <pfq/timer.h>
 #include <pfq/io.h>
@@ -30,7 +29,7 @@
 
 static void pfq_timer(unsigned long cpu)
 {
-	struct pfq_percpu_data *data;
+	struct core_percpu_data *data;
 
 	pfq_receive(NULL, NULL, 0);
 	data = per_cpu_ptr(global->percpu_data, cpu);

@@ -24,8 +24,79 @@
 #ifndef PFQ_IO_H
 #define PFQ_IO_H
 
+#include <core/GC.h>
+#include <core/sock.h>
+
+#include <pfq/types.h>
+
+
 struct napi_struct;
 struct sk_buff;
+
+struct napi_struct;
+
+
+typedef union
+{
+	uint64_t value;
+	struct {
+		uint32_t ok;
+		uint32_t fail;
+	};
+
+} tx_res_t;
+
+
+extern size_t pfq_sk_queue_recv(struct core_sock_opt *opt,
+		                struct core_qbuff_refs *buffs,
+		                unsigned long long buffs_mask,
+		                int burst_len,
+		                pfq_gid_t gid);
+
+struct pfq_mbuff_xmit_context
+{
+	struct pfq_skb_pool	       *skb_pool;
+	struct net		       *net;
+	ktime_t			        now;
+	unsigned long			jiffies;
+	int				node;
+};
+
+
+/* socket queues */
+
+extern tx_res_t pfq_sk_queue_xmit(struct core_sock *so, int qindex, int cpu, int node, atomic_t const *stop);
+
+
+/* skb queues */
+
+extern int pfq_xmit(struct qbuff *buff, struct net_device *dev, int queue, int more);
+extern tx_res_t pfq_qbuff_queue_xmit(struct core_qbuff_queue *buff, unsigned long long buffs_mask, struct net_device *dev, int queue_index);
+
+
+/* skb lazy xmit */
+
+extern int pfq_lazy_xmit(struct qbuff * buff, struct net_device *dev, int queue_index);
+extern int pfq_qbuff_queue_lazy_xmit_run(struct core_qbuff_queue *queue, struct core_endpoint_info const *info);
+
+
+#define pfq_qbuff_queue_lazy_xmit(buffs, mask, dev, queue_index) ({ \
+		int check = STATIC_TYPE(unsigned long long, mask) && \
+			    STATIC_TYPE(struct net_device *, dev) && \
+			    STATIC_TYPE(int, queue_index); \
+		struct qbuff * buff; \
+		unsigned int i; int n = 0; \
+		(void)check; \
+                \
+		for_each_qbuff_with_mask(mask, buffs, buff, i) \
+		{   \
+			if (pfq_lazy_xmit(buff, dev, queue_index)) \
+				++n; \
+		} \
+		n; \
+	})
+
+/* receive */
 
 extern int pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct);
 

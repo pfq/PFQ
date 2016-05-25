@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#include <engine/percpu.h>
-#include <engine/global.h>
+#include <core/percpu.h>
+#include <core/global.h>
 
 #include <pfq/percpu.h>
 #include <pfq/pool.h>
@@ -155,10 +155,10 @@ size_t pfq_skb_pool_free(struct pfq_skb_pool *pool)
 }
 
 
-struct pfq_pool_stat
+struct core_pool_stat
 pfq_get_skb_pool_stats(void)
 {
-        struct pfq_pool_stat ret =
+        struct core_pool_stat ret =
         {
 		sparse_read(global->percpu_mem_stats, os_alloc),
 		sparse_read(global->percpu_mem_stats, os_free),

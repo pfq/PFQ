@@ -21,6 +21,8 @@
  *
  ****************************************************************/
 
+#ifndef PFQ_GROUP_H
+#define PFQ_GROUP_H
 
 #include <pfq/kcompat.h>
 
@@ -30,3 +32,6 @@ int pfq_getpid(void)
 {
 	return current->tgid;
 }
+
+
+#endif /* PFQ_GROUP_H */

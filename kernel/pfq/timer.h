@@ -24,8 +24,10 @@
 #ifndef PFQ_TIMER_H
 #define PFQ_TIMER_H
 
+#include <pragma/diagnostic_push>
 #include <linux/module.h>
 #include <linux/timer.h>
+#include <pragma/diagnostic_pop>
 
 
 extern void pfq_setup_timer(struct timer_list *timer, unsigned long cpu);

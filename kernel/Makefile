@@ -23,15 +23,16 @@ EXTRA_CFLAGS += -DPFQ_USE_SKB_POOL
 
 obj-m := $(TARGET).o
 
-pfq-objs := pf_q.o pfq/sockopt.o pfq/proc.o pfq/shmem.o pfq/memory.o pfq/pool.o pfq/bpf.o pfq/vlan.o \
-		    pfq/sock.o pfq/thread.o pfq/netdev.o pfq/printk.o pfq/param.o pfq/timer.o pfq/io.o pfq/percpu.o pfq/qbuff.o \
-		    engine/core.o engine/queue.o engine/GC.o engine/global.o engine/percpu.o engine/devmap.o \
-		    engine/sock.o engine/group.o engine/endpoint.o engine/stats.o \
-		    engine/lang/engine.o engine/lang/signature.o engine/lang/symtable.o \
-		    engine/lang/filter.o engine/lang/steering.o engine/lang/forward.o \
-		    engine/lang/predicate.o engine/lang/combinator.o engine/lang/control.o \
-		    engine/lang/property.o engine/lang/bloom.o engine/lang/vlan.o engine/lang/misc.o \
-		    engine/lang/dummy.o
+pfq-objs := pf_q.o pfq/proc.o pfq/shmem.o pfq/memory.o pfq/pool.o pfq/bpf.o pfq/vlan.o \
+		    pfq/sock.o pfq/thread.o pfq/netdev.o pfq/global.o \
+			pfq/param.o pfq/timer.o pfq/io.o pfq/percpu.o pfq/qbuff.o \
+		    core/core.o core/sockopt.o core/queue.o core/GC.o core/global.o core/percpu.o core/devmap.o \
+		    core/sock.o core/group.o core/endpoint.o core/stats.o core/printk.o \
+		    core/lang/engine.o core/lang/signature.o core/lang/symtable.o \
+		    core/lang/filter.o core/lang/steering.o core/lang/forward.o \
+		    core/lang/predicate.o core/lang/combinator.o core/lang/control.o \
+		    core/lang/property.o core/lang/bloom.o core/lang/vlan.o core/lang/misc.o \
+		    core/lang/dummy.o
 
 KERNELVERSION := $(shell uname -r)
 

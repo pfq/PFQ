@@ -67,11 +67,16 @@ struct popen2
 #define ALIGN(x, a)            ALIGN_MASK(x, (__typeof__(x))(a) - 1)
 #define ALIGN_MASK(x, mask)    (((x) + (mask)) & ~(mask))
 
-#define Q_VALUE(q,value)   __builtin_choose_expr(__builtin_types_compatible_p(__typeof__(q), pfq_t *), (((pfq_t *)q)->error = NULL, (value)), \
-				( __builtin_choose_expr(__builtin_types_compatible_p(__typeof__(q), pfq_t const *), (((pfq_t *)q)->error = NULL, (value)), (void)0)))
 
-#define Q_ERROR(q,msg)	  __builtin_choose_expr(__builtin_types_compatible_p(__typeof__(q), pfq_t *), (((pfq_t *)q)->error = (msg), -1), \
-				( __builtin_choose_expr(__builtin_types_compatible_p(__typeof__(q), pfq_t const *), (((pfq_t *)q)->error = (msg), -1), (void)0)))
+#define Q_VALUE(q,value)  \
+	__builtin_choose_expr(__builtin_types_compatible_p(__typeof__(q), pfq_t *), (((pfq_t *)q)->error = NULL, (value)), \
+      ( __builtin_choose_expr(__builtin_types_compatible_p(__typeof__(q), pfq_t const *), (((pfq_t *)q)->error = NULL, (value)), (void)0)))
+
+
+#define Q_ERROR(q,msg)	 \
+	__builtin_choose_expr(__builtin_types_compatible_p(__typeof__(q), pfq_t *), (((pfq_t *)q)->error = (msg), -1), \
+      ( __builtin_choose_expr(__builtin_types_compatible_p(__typeof__(q), pfq_t const *), (((pfq_t *)q)->error = (msg), -1), (void)0)))
+
 
 #define Q_OK(q) Q_VALUE(q,0)
 

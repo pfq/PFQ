@@ -32,10 +32,10 @@
 #include <net/dst.h>
 #include <pragma/diagnostic_pop>
 
-#include <engine/global.h>
-#include <engine/percpu.h>
-#include <engine/define.h>
-#include <engine/stats.h>
+#include <core/global.h>
+#include <core/percpu.h>
+#include <core/define.h>
+#include <core/stats.h>
 
 #include <pfq/pool.h>
 #include <pfq/sparse.h>

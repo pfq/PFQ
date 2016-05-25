@@ -21,12 +21,13 @@
  *
  ****************************************************************/
 
-#include <engine/global.h>
-#include <engine/define.h>
+#include <core/global.h>
+#include <core/define.h>
 
 #include <linux/module.h>
 
-extern struct global_data default_global;
+
+extern struct core_global_data default_global;
 
 
 module_param_named(capture_incoming,	 default_global.capture_incoming, int, 0644);
