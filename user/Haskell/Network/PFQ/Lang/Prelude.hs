@@ -30,7 +30,8 @@
 {-# LANGUAGE RebindableSyntax #-}
 
 module Network.PFQ.Lang.Prelude
-    ( (>>)
+    ( ($)
+    , (>>)
     , (>>=)
     , return
     , fromInteger
@@ -63,4 +64,8 @@ fromString :: (S.IsString a) => P.String -> a
 fromString = S.fromString
 
 ifThenElse = conditional
+
+{-# INLINE ($) #-}
+($)   :: (a -> b) -> a -> b
+f $ x =  f x
 
