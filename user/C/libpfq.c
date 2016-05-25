@@ -87,8 +87,8 @@ struct popen2
 	  _a < _b ? _a : _b; })
 
 
-static char *
-hugepages_mountpoint()
+char *
+pfq_hugepages_mountpoint()
 {
 	FILE *mp;
 	char *line = NULL, *mount_point = NULL;
@@ -264,7 +264,7 @@ pfq_enable(pfq_t *q)
 	}
 
 	env = getenv("PFQ_HUGEPAGES");
-	hugepages = hugepages_mountpoint();
+	hugepages = pfq_hugepages_mountpoint();
 
 	if (hugepages && env && (atoi(env) != 0))
 	{
@@ -326,7 +326,7 @@ pfq_disable(pfq_t *q)
 
 		if (q->hd != -1) {
 			char filename[256];
-			char *hugepages = hugepages_mountpoint();
+			char *hugepages = pfq_hugepages_mountpoint();
 			if (hugepages) {
 				snprintf(filename, 256, "%s/pfq.%d", hugepages, q->fd);
 				unlink(filename);

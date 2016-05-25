@@ -203,6 +203,12 @@ extern const char *pfq_string_version;
 extern "C" {
 #endif
 
+
+/*! return the hugepages mountpoint... */
+
+extern char * pfq_hugepages_mountpoint(void);
+
+
 /*! pfq handler: function prototype. */
 
 typedef void (*pfq_handler_t)(char *user, const struct pfq_pkthdr *h, const char *data);
