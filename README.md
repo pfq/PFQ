@@ -11,7 +11,7 @@ functional processing and packets steering across sockets/end-points.
 PFQ is highly optimized for multi-core architecture, as well as for network devices 
 equipped with multiple hardware queues. It works with any network device driver and 
 provides a script designed to obtain accelerated versions starting from source 
-codes.
+code.
 
 The framework enables the development of high-performance networking applications with 
 different programming languages: C, C++ and Haskell. In addition, a pure functional 
