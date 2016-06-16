@@ -1102,13 +1102,12 @@ pfq_inject_linux(pcap_t *handle, const void * buf, size_t size)
 		ret = pfq_send_async(handle->md.pfq.q, buf, size, 1);
 	else
 		ret = pfq_send(handle->md.pfq.q, buf, size, handle->opt.pfq.tx_fhint, 1);
-
         if (ret == -1) {
-		/* snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "%s", pfq_error(handle->md.pfq.q)); */
+		snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "%s", pfq_error(handle->md.pfq.q));
 		return PCAP_ERROR;
         }
-	return ret;
 
+	return ret;
 }
 
 
