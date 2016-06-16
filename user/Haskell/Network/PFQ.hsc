@@ -1107,7 +1107,7 @@ send hdl xs copies fhint =
                         p
                         (fromIntegral l)
                         (fromIntegral fhint)
-                        (fromIntegral copies)
+                        (fromIntegral copies) >>= throwPFqIf hdl (== -1)
 
 
 -- |Store the packet and transmit the packets in the queue.
@@ -1129,7 +1129,7 @@ sendTo hdl xs ifindex qindex copies fhint =
                     (fromIntegral ifindex)
                     (fromIntegral qindex)
                     (fromIntegral fhint)
-                    (fromIntegral copies)
+                    (fromIntegral copies) >>= throwPFqIf hdl (== -1)
 
 
 -- |Transmit the packet asynchronously.
@@ -1152,7 +1152,7 @@ sendAsync hdl xs copies =
                         0
                         (fromIntegral copies)
                         1
-                        (fromIntegral $ getConstant any_queue)
+                        (fromIntegral $ getConstant any_queue) >>= throwPFqIf hdl (== -1)
 
 
 -- |Transmit the packet asynchronously.
@@ -1176,7 +1176,7 @@ sendAt hdl xs ts copies =
                         (fromIntegral (fromIntegral (sec ts) * (1000000000 :: Integer) + fromIntegral (nsec ts)))
                         (fromIntegral copies)
                         1
-                        (fromIntegral $ getConstant any_queue)
+                        (fromIntegral $ getConstant any_queue) >>= throwPFqIf hdl (== -1)
 
 
 -- C functions from libpfq
