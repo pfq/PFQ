@@ -169,9 +169,7 @@ log_packet(arguments_t args, struct qbuff * buff)
 
 	switch(qbuff_ip_version(buff))
 	{
-	case IPPROTO_IP: {
-		log_ip4_packet(args, buff);
-	} break;
+	case 4: log_ip4_packet(args, buff); break;
 	}
 
         return Pass(buff);
