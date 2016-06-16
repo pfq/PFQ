@@ -312,8 +312,20 @@ struct pfq_pcap_pkthdr {
     } data;
 
     int	    ifindex;
-    int	    queue;
     int	    gid;
+    int	    queue;
+
+    union
+    {
+            struct
+            {
+                    uint16_t vid:12,	    /* 8021q vlan id */
+                             reserved:1,    /* 8021q reserved bit */
+                             prio:3;	    /* 8021q vlan priority */
+            };
+
+            uint16_t     tci;
+    } vlan;
 };
 
 
