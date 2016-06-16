@@ -1652,7 +1652,7 @@ pfq_send_raw(pfq_t *q, const void *buf, size_t len, int ifindex, int qindex, uin
 		return Q_VALUE(q, (int)len);
 	}
 
-	return Q_VALUE(q, -1);
+	return Q_VALUE(q, 0);
 }
 
 int
