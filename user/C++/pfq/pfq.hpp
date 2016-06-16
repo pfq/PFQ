@@ -1117,7 +1117,7 @@ namespace pfq {
         send_raw(const_buffer pkt, int ifindex, int qindex, uint64_t nsec, unsigned int copies, bool async = false, int queue = any_queue)
         {
             if (unlikely(!data_->shm_addr))
-                throw system_error("PFQ: send_to: socket not enabled");
+                throw system_error("PFQ: send: socket not enabled");
 
             int tss;
 
@@ -1125,7 +1125,7 @@ namespace pfq {
 
                 if (async) {
                     if (unlikely(data_->tx_num_async == 0))
-                        throw system_error("PFQ: send_to: socket not bound to async threads");
+                        throw system_error("PFQ: send: socket not bound to async threads");
                     tss = static_cast<int>(fold(queue == any_queue ? symmetric_hash(pkt.first) : static_cast<uint32_t>(queue), static_cast<uint32_t>(data_->tx_num_async)));
                     return &static_cast<struct pfq_shared_queue *>(data_->shm_addr)->tx_async[tss];
                 }

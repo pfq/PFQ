@@ -1604,11 +1604,11 @@ pfq_send_raw(pfq_t *q, const void *buf, size_t len, int ifindex, int qindex, uin
         int tss;
 
 	if (unlikely(q->shm_addr == NULL))
-		return Q_ERROR(q, "PFQ: send_deferred: socket not enabled");
+		return Q_ERROR(q, "PFQ: send: socket not enabled");
 
 	if (async) {
 		if (unlikely(q->tx_num_async == 0))
-			return Q_ERROR(q, "PFQ: send_deferred: socket not bound to async thread");
+			return Q_ERROR(q, "PFQ: send: socket not bound to async thread");
 
 		tss = (int)pfq_fold((queue == Q_ANY_QUEUE ? pfq_symmetric_hash(buf) : (unsigned int)queue),
 										      (unsigned int)q->tx_num_async);
