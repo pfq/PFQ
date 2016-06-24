@@ -31,6 +31,7 @@
 #include <linux/ethtool.h>
 #include <linux/sockios.h>
 #include <net/if.h>
+#include <netinet/ether.h>
 
 #include <more/vt100.hpp>
 #include <more/binding.hpp>
@@ -101,6 +102,10 @@ namespace opt
     std::vector< std::vector<int> > kthread;
 
     std::string file;
+
+    std::string src_mac;
+    std::string dst_mac;
+
 #ifdef HAVE_PCAP_H
     char errbuf[PCAP_ERRBUF_SIZE];
 #endif
@@ -125,6 +130,23 @@ char *make_packets(size_t size, size_t numb)
         0x2e, 0x2f, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, /* ./012345 */
         0x36, 0x37                                      /* 67 */
     };
+
+    if (!opt::dst_mac.empty())
+    {
+        struct ether_addr addr;
+        if (ether_aton_r(opt::dst_mac.c_str(), &addr) == nullptr)
+            throw std::runtime_error("ether_addr: " + opt::dst_mac + " bad mac address!");
+        memcpy(ping, addr.ether_addr_octet, 6);
+    }
+
+
+    if (!opt::src_mac.empty())
+    {
+        struct ether_addr addr;
+        if (ether_aton_r(opt::src_mac.c_str(), &addr) == nullptr)
+            throw std::runtime_error("ether_addr: " + opt::src_mac + " bad mac address!");
+        memcpy(ping+6, addr.ether_addr_octet, 6);
+    }
 
     char * area = new char[size * numb];
 
@@ -560,6 +582,8 @@ void usage(std::string name)
         " -F --rand-flow                Randomize IP addresses per-flow\n"
         "    --rand-depth               Depth of flow randomization (0-32: default 8)\n"
 #endif
+        "    --dst-mac MAC              Specify dest MAC address\n"
+        "    --src-mac MAC              Specify source MAC address\n"
         " -P --preload INT              Preload INT packets (must be a power of 2)\n"
         "    --rate DOUBLE              Packet rate in Mpps\n"
         " -a --active-tstamp            Use active timestamp as rate control\n"
@@ -732,6 +756,28 @@ try
         if ( any_strcmp(argv[i], "-R", "--rand-ip") )
         {
             opt::rand_ip = true;
+            continue;
+        }
+
+        if ( any_strcmp(argv[i], "--src-mac") )
+        {
+            if (++i == argc)
+            {
+                throw std::runtime_error("MAC missing");
+            }
+
+            opt::src_mac = argv[i];
+            continue;
+        }
+
+        if ( any_strcmp(argv[i], "--dst-mac") )
+        {
+            if (++i == argc)
+            {
+                throw std::runtime_error("MAC missing");
+            }
+
+            opt::dst_mac = argv[i];
             continue;
         }
 
