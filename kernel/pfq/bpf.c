@@ -48,7 +48,12 @@ pfq_alloc_sk_filter(struct sock_fprog *fprog)
 #endif
         pr_devel("[PFQ] BPF: new fprog (len %d)\n", fprog->len);
 
-	if ((rv = sk_attach_filter(fprog, &sk))) {
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(4,5,0))
+	if ((rv = sk_attach_filter(fprog, &sk)))
+#else
+	if ((rv = __sk_attach_filter(fprog, &sk, sock_owned_by_user(&sk))))
+#endif
+	{
 		pr_devel("[PFQ] BPF: sk_attach_filter error: (%d)!\n", rv);
 		return NULL;
 	}
@@ -70,7 +75,11 @@ pfq_free_sk_filter(struct sk_filter *filter)
 	sock_reset_flag(&sk, SOCK_FILTER_LOCKED);
 #endif
 	sk.sk_filter = filter;
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(4,5,0))
 	if ((rv = sk_detach_filter(&sk)))
+#else
+	if ((rv = __sk_detach_filter(&sk, sock_owned_by_user(&sk))))
+#endif
 		pr_devel("[PFQ] BPF: sk_detach_filter error: (%d)!\n", rv);
 }
 
