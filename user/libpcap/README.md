@@ -51,24 +51,24 @@ If not specified otherwise, the default values are assumed.
 e.g. 10G links with short packets. 
 
 
-Variable          |    Default    |  > 1Mpps  | Meaning
-------------------|---------------|-----------|--------------------------------------------
-PFQ\_CONFIG       |               |           | Specify the PFQ/pcap config file
-PFQ\_GROUP        |  a free one   |           | Specify the PFQ group for the process
-PFQ\_CAPLEN       | pcap snapshot |           | Override the snaplen value for capture
-PFQ\_RX\_SLOTS    |    4096       |  131072   | Define the RX queue length of the socket   
-PFQ\_TX\_SLOTS    |    4096       |   8192    | Define the TX queue length of the socket   
-PFQ\_TX\_FHINT    |      1        | 16..512   | Hint used to flush the transmission queue
-PFQ\_TX\_QUEUE    | empty list    |e.g. 0,1,2 | Set the TX HW queue passed to the driver
-PFQ\_TX\_THREAD   | empty list    |e.g. 0,1,2 | Set the index of the PFQ TX kernel threads (optional)
-PFQ\_LANG         |    null       |           | Load the pfq-lang computation from file
-PFQ\_COMP         |    null       |           | Set the pfq-lang computation from the env. variable
-PFQ\_VLAN         | empty list    |           | Set the pfq vlan filter list for the group
+Variable             |    Default    |  > 1Mpps  | Meaning
+---------------------|---------------|-----------|--------------------------------------------
+PFQ\_CONFIG          |               |           | Specify the PFQ/pcap config file
+PFQ\_GROUP           |  a free one   |           | Specify the PFQ group for the process
+PFQ\_CAPLEN          | pcap snapshot |           | Override the snaplen value for capture
+PFQ\_RX\_SLOTS       |    4096       |  131072   | Define the RX queue length of the socket
+PFQ\_TX\_SLOTS       |    4096       |   8192    | Define the TX queue length of the socket
+PFQ\_TX\_FLUSH\_HINT |      1        | 16..512   | Hint used to flush the transmission queue
+PFQ\_TX\_HW\_QUEUE   | empty list    |e.g. 0,1,2 | Set the TX HW queue passed to the driver
+PFQ\_TX\_IDX\_THREAD | empty list    |e.g. 0,1,2 | Set the index of the PFQ TX kernel threads (optional)
+PFQ\_LANG\_SRC       |    null       |           | Load the pfq-lang computation from source file
+PFQ\_LANG\_LIT       |    null       |           | Set the pfq-lang computation from the env. variable
+PFQ\_VLAN            | empty list    |           | Set the pfq vlan id filter list for the group
 
 
-Note: PFQ\_TX\_QUEUE, PFQ\_TX\_THREAD, and PFQ\_VLAN are specified as comma separated list.
+Note: PFQ\_TX\_HW\_QUEUE, PFQ\_TX\_IDX\_THREAD, and PFQ\_VLAN are specified as comma separated list.
 
-Note(2): PFQ\_LANG specifies the name of the pfq-lang source code to load, whereas PFQ\_COMP
+Note(2): PFQ\_LANG\_SRC specifies the name of the pfq-lang source code to load, whereas PFQ\_LANG\_LIT
 directly contains the pfq-lang computation.
 
 
@@ -147,7 +147,7 @@ Load balancing TCP/UDP flows:
 ```
 # master process sets computation and binding to devices...
 
-PFQ_GROUP=42 PFQ_COMP="main = steer_flow" tcpdump -n -i pfq:eth0:eth1
+PFQ_GROUP=42 PFQ_LANG_LIT="main = steer_flow" tcpdump -n -i pfq:eth0:eth1
 
 # additional instances specify only the PFQ_GROUP...
 

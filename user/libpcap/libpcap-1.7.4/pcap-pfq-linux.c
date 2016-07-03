@@ -506,7 +506,7 @@ pfq_count_tx_thread(struct pfq_opt const *opt)
 {
 	size_t n, tx = 0;
         for(n = 0; n < 4; n++) {
-		if (opt->tx_thread[n] != Q_NO_KTHREAD)
+		if (opt->tx_idx_thread[n] != Q_NO_KTHREAD)
 			tx++;
 	}
 	return tx;
@@ -518,17 +518,17 @@ pfq_opt_default(pcap_t *handle)
 {
 	return (struct pfq_opt)
 	{
-		.group    = -1,
-		.caplen   = handle->snapshot,
-		.rx_slots = 4096,
-		.tx_slots = 4096,
-		.tx_fhint = 1,
-		.tx_async = 0,
-		.tx_queue = {-1, -1, -1, -1},
-		.tx_thread= { Q_NO_KTHREAD, Q_NO_KTHREAD, Q_NO_KTHREAD, Q_NO_KTHREAD },
-		.vlan     = NULL,
-		.lang     = NULL,
-		.lang_lit = NULL,
+		.group		= -1,
+		.caplen		= handle->snapshot,
+		.rx_slots	= 4096,
+		.tx_slots	= 4096,
+		.tx_fhint	= 1,
+		.tx_async	= 0,
+		.tx_hw_queue	= {-1, -1, -1, -1},
+		.tx_idx_thread	= { Q_NO_KTHREAD, Q_NO_KTHREAD, Q_NO_KTHREAD, Q_NO_KTHREAD },
+		.vlan		= NULL,
+		.lang		= NULL,
+		.lang_lit	= NULL,
 	};
 }
 
@@ -550,32 +550,32 @@ pfq_parse_env(struct pfq_opt *opt)
 	if ((var = pfq_getenv("PFQ_TX_SLOTS")))
 		opt->tx_slots = atoi(var);
 
-	if ((var = pfq_getenv("PFQ_TX_FHINT")))
+	if ((var = pfq_getenv("PFQ_TX_FLUSH_HINT")))
 		opt->tx_fhint = atoi(var);
 
 	if ((var = pfq_getenv("PFQ_VLAN")))
 		opt->vlan = var;
 
-	if ((var = pfq_getenv("PFQ_LANG"))) {
+	if ((var = pfq_getenv("PFQ_LANG_SRC"))) {
 		free(opt->lang);
 		opt->lang = var;
 	}
 
-	if ((var = pfq_getenv("PFQ_COMP"))) {
+	if ((var = pfq_getenv("PFQ_LANG_LIT"))) {
 		free(opt->lang_lit);
 		opt->lang_lit = var;
 	}
 
-	if ((var = pfq_getenv("PFQ_TX_QUEUE"))) {
-		if (pfq_parse_integers(opt->tx_queue, 4, var) < 0) {
-			fprintf(stderr, "[PFQ] PFQ_TX_QUEUE parse error!\n");
+	if ((var = pfq_getenv("PFQ_TX_HW_QUEUE"))) {
+		if (pfq_parse_integers(opt->tx_hw_queue, 4, var) < 0) {
+			fprintf(stderr, "[PFQ] PFQ_TX_HW_QUEUE parse error!\n");
 			return -1;
 		}
 	}
 
-	if ((var = pfq_getenv("PFQ_TX_THREAD"))) {
-		if (pfq_parse_integers(opt->tx_thread, 4, var) < 0) {
-			fprintf(stderr, "[PFQ] PFQ_TX_THREAD parse error!\n");
+	if ((var = pfq_getenv("PFQ_TX_IDX_THREAD"))) {
+		if (pfq_parse_integers(opt->tx_idx_thread, 4, var) < 0) {
+			fprintf(stderr, "[PFQ] PFQ_TX_IDX_THREAD parse error!\n");
 			return -1;
 		}
 	}
@@ -693,13 +693,13 @@ pfq_parse_config(struct pfq_opt *opt, const char *filename)
 			case KEY_tx_slots:	opt->tx_slots = atoi(value);  break;
 			case KEY_tx_fhint:	opt->tx_fhint = atoi(value);  break;
 			case KEY_tx_queue:  {
-				if (pfq_parse_integers(opt->tx_queue, 4, value) < 0) {
+				if (pfq_parse_integers(opt->tx_hw_queue, 4, value) < 0) {
 					fprintf(stderr, "[PFQ] %s: parse error at: %s\n", filename, tkey);
 					rc = -1;
 				}
 			} break;
 			case KEY_tx_thread:   {
-				if (pfq_parse_integers(opt->tx_thread, 4, value) < 0) {
+				if (pfq_parse_integers(opt->tx_idx_thread, 4, value) < 0) {
 					fprintf(stderr, "[PFQ] %s: parse error at: %s\n", filename, tkey);
 					rc = -1;
 				}
@@ -991,12 +991,12 @@ pfq_activate_linux(pcap_t *handle)
 
 				for(idx = 0; idx < tot; idx++)
 				{
-					fprintf(stdout, "[PFQ] binding Tx on %s, hw queue %d, tx-thread %d\n",
-						first_dev, handle->opt.pfq.tx_queue[idx], handle->opt.pfq.tx_thread[idx]);
+					fprintf(stdout, "[PFQ] binding Tx on %s, hw queue %d, Tx idex thread %d\n",
+						first_dev, handle->opt.pfq.tx_hw_queue[idx], handle->opt.pfq.tx_idx_thread[idx]);
 
 					if (pfq_bind_tx(handle->md.pfq.q, first_dev,
-							handle->opt.pfq.tx_queue[idx],
-							handle->opt.pfq.tx_thread[idx]) < 0) {
+							handle->opt.pfq.tx_hw_queue[idx],
+							handle->opt.pfq.tx_idx_thread[idx]) < 0) {
 						fprintf(stderr, "[PFQ] error: %s\n", pfq_error(handle->md.pfq.q));
 						goto fail;
 					}

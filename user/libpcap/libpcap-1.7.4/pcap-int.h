@@ -222,8 +222,8 @@ struct pcap_opt {
 		int tx_fhint;
 		int tx_async;
 
-		int tx_queue[4];
-		int tx_thread[4];
+		int tx_hw_queue[4];
+		int tx_idx_thread[4];
 
 		char *vlan;
 		char *lang;

@@ -452,20 +452,21 @@ pcap_create_interface(const char *device, char *ebuf)
 	pcap_t *handle;
 
 	#ifdef PCAP_SUPPORT_PFQ
-		if (strstr(device, "pfq")	||
-		    pfq_getenv("PFQ_CONFIG")	||
-		    pfq_getenv("PFQ_GROUP")	||
-		    pfq_getenv("PFQ_CAPLEN")	||
-		    pfq_getenv("PFQ_RX_SLOTS")	||
-		    pfq_getenv("PFQ_TX_SLOTS")	||
-		    pfq_getenv("PFQ_TX_FHINT")	||
-		    pfq_getenv("PFQ_TX_QUEUE")	||
-		    pfq_getenv("PFQ_TX_THREAD")	||
-		    pfq_getenv("PFQ_LANG")	||
-		    pfq_getenv("PFQ_VLAN")
-		   )
-			 //CHANGE added struct pcpa_linux because in linux 1.3.0 was not available
-			return pfq_create(device, ebuf, sizeof(struct pcap_linux));
+	if (strstr(device, "pfq")		||
+	    pfq_getenv("PFQ_CONFIG")		||
+	    pfq_getenv("PFQ_GROUP")		||
+	    pfq_getenv("PFQ_CAPLEN")		||
+	    pfq_getenv("PFQ_RX_SLOTS")		||
+	    pfq_getenv("PFQ_TX_SLOTS")		||
+	    pfq_getenv("PFQ_TX_FLUSH_HINT")	||
+	    pfq_getenv("PFQ_TX_HW_QUEUE")	||
+	    pfq_getenv("PFQ_TX_IDX_THREAD")	||
+	    pfq_getenv("PFQ_LANG_SRC")		||
+	    pfq_getenv("PFQ_LANG_LIT")		||
+	    pfq_getenv("PFQ_VLAN")
+	   )
+		 //CHANGE added struct pcpa_linux because in linux 1.3.0 was not available
+		return pfq_create(device, ebuf, sizeof(struct pcap_linux));
 	#endif
 
 	handle = pcap_create_common(device, ebuf, sizeof (struct pcap_linux));
