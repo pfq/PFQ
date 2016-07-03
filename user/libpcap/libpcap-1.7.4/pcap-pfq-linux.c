@@ -737,21 +737,20 @@ pfq_activate_linux(pcap_t *handle)
 	handle->linktype = DLT_EN10MB;
 
 	device = pfq_get_devname(handle->opt.source);
+
 	fprintf(stdout, "[PFQ] running on device %s...\n", device);
 
 	config = pfq_get_config_file(handle->opt.source);
-
-
 	if (config == NULL) {
 		char *conf = pfq_getenv("PFQ_CONFIG");
 		if (conf)
 			config = strdup(conf);
 	}
 
-	if (config)
+	if (config != NULL) {
+
 		fprintf(stdout, "[PFQ] configuration file %s...\n", config);
 
-        if (config != NULL) {
 		if (pfq_parse_config(&handle->opt.pfq, config) == -1) {
 			snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "pfq: config error");
 			return PCAP_ERROR;

@@ -4,14 +4,15 @@ PFQ/pcap
 Introduction
 ------------
 
-This version of pcap library is intended to support the PFQ framework, thus allowing 
+This version of pcap library is intended to support the PFQ socket, thus allowing 
 legacy applications to exploit the acceleration of packet capture/transmission of PFQ, 
 and at the same time to take advantage of pfq-lang computations to filter and dispatch 
-packets across sockets of the same group.
+packets across groups of sockets.
 
 The pcap library interface is *unchanged*. Additional data (e.g. pfq group) is passed 
 to the library as environment variables or specified via configuration file. Sniffing 
-from multiple devices is also possible by specifying their name in colon-separated fashion.
+from multiple devices is also possible by specifying their name in colon-separated 
+fashion.
 
 
 Features
@@ -27,11 +28,13 @@ Details
 
 This implementation of pcap library is extended to support the PFQ socket. By default
 the library makes use of AF\_PACKET sockets and only when the device name is prefixed 
-with the string "pfq" the PFQ acceleration takes place. 
-
-For applications that do not allow arbitrary names for devices, it is possible 
-to trigger the PFQ acceleration by specifying one of the environment variables
-described in the table below.
+with the string "pfq" the acceleration takes place.  
+For applications that do not allow arbitrary names for devices, it is also possible 
+to select the PFQ socket by specifying an environment variable with the name of the 
+device prefixed by PFQ\_ (e.g. PFQ\_eth0=1). This allows to selectively choose which 
+devices are to use PFQ sockets and which are not. 
+In the end, to force the PFQ socket for all devices, it suffices to set the 
+PFQ\_FORCE\_ALL environment variable.
 
 The syntax of the device name is the following:
 
@@ -42,8 +45,8 @@ pfq[/config_file]:[device[:device[:device..]]]
 Environment variables
 ---------------------
 
-The table summarize the PFQ parameters that cannot be passed through the 
-standard pcap APIs.
+PFQ parameters that cannot be passed through the standard pcap APIs can be optionally
+specified with environment variables. 
 
 If not specified otherwise, the default values are assumed. 
 
@@ -54,6 +57,7 @@ e.g. 10G links with short packets.
 Variable             |    Default    |  > 1Mpps  | Meaning
 ---------------------|---------------|-----------|--------------------------------------------
 PFQ\_CONFIG          |               |           | Specify the PFQ/pcap config file
+PFQ\_FORCE\_ALL      |               |           | Force PFQ sockets for all devices
 PFQ\_GROUP           |  a free one   |           | Specify the PFQ group for the process
 PFQ\_CAPLEN          | pcap snapshot |           | Override the snaplen value for capture
 PFQ\_RX\_SLOTS       |    4096       |  131072   | Define the RX queue length of the socket
@@ -79,7 +83,7 @@ In addition to the environment variables, it is possible to specify PFQ paramete
 a configuration file, on per-socket basis. This solves the problem of passing different values 
 to multiple pcap socket in multi-threaded applications.
 
-The path of the configuration file is passed to the library along with the device name:
+The path of the configuration file is specified along with the device name:
 
 ```
 pfq/config_file:[device[:device[:device..]]]
@@ -120,6 +124,14 @@ It is also possible to specify an external pfq-lang file using the keyword lang 
 ```
 lang = /etc/group-lang.hs
 ```
+
+Per-thread env. variables
+-------------------------
+
+For multi-threaded applications it is also possible to specify per-thread environment variables by
+postfixing each variable with _ and the thread id obtained with the Glib gettid() function, which returns
+the thread ID (TID) of the caller.
+
 
 Examples
 --------

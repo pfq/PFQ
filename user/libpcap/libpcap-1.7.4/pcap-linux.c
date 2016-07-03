@@ -450,24 +450,17 @@ pcap_t *
 pcap_create_interface(const char *device, char *ebuf)
 {
 	pcap_t *handle;
+	char pfq_dev[256];
 
-	#ifdef PCAP_SUPPORT_PFQ
-	if (strstr(device, "pfq")		||
-	    pfq_getenv("PFQ_CONFIG")		||
-	    pfq_getenv("PFQ_GROUP")		||
-	    pfq_getenv("PFQ_CAPLEN")		||
-	    pfq_getenv("PFQ_RX_SLOTS")		||
-	    pfq_getenv("PFQ_TX_SLOTS")		||
-	    pfq_getenv("PFQ_TX_FLUSH_HINT")	||
-	    pfq_getenv("PFQ_TX_HW_QUEUE")	||
-	    pfq_getenv("PFQ_TX_IDX_THREAD")	||
-	    pfq_getenv("PFQ_LANG_SRC")		||
-	    pfq_getenv("PFQ_LANG_LIT")		||
-	    pfq_getenv("PFQ_VLAN")
-	   )
-		 //CHANGE added struct pcpa_linux because in linux 1.3.0 was not available
+	strcpy (pfq_dev, "PFQ_");
+	strncat(pfq_dev, device, sizeof(pfq_dev)-4-1);
+
+#ifdef PCAP_SUPPORT_PFQ
+	if (strstr(device, "pfq") || pfq_getenv(pfq_dev) || pfq_getenv("PFQ_FORCE_ALL"))
+	{
 		return pfq_create(device, ebuf, sizeof(struct pcap_linux));
-	#endif
+	}
+#endif
 
 	handle = pcap_create_common(device, ebuf, sizeof (struct pcap_linux));
 	if (handle == NULL)
