@@ -776,7 +776,7 @@ int core_setsockopt(struct socket *sock,
 		core_sock_tx_unbind(so);
         } break;
 
-        case Q_SO_TX_QUEUE:
+        case Q_SO_TX_QUEUE_XMIT:
         {
 		int queue;
 
