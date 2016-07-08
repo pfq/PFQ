@@ -88,7 +88,7 @@ static inline void smp_wmb() { barrier(); }
 #define Q_SHARED_QUEUE_INDEX(data)		((data) >> 24)
 #define Q_SHARED_QUEUE_LEN(data)		((data) & 0x00ffffffu )
 #define Q_SHARED_QUEUE_SLOT_SIZE(x)		ALIGN(sizeof(struct pfq_pkthdr) + x, 8)
-#define Q_SHARED_QUEUE_NEXT_PKTHDR(hdr, fix)	((struct pfq_pkthdr *)((char *)hdr + (fix ? Q_SHARED_QUEUE_SLOT_SIZE(fix) : ALIGN(sizeof(struct pfq_pkthdr) + hdr->caplen, 8))))
+#define Q_SHARED_QUEUE_NEXT_PKTHDR(hdr, fix)	((struct pfq_pkthdr *)(fix ? ((char *)hdr + fix) : (char *)(hdr+1) + ALIGN(hdr->caplen, 8)))
 
 
 /* PFQ socket options */
