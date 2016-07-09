@@ -522,12 +522,12 @@ pfq_opt_default(pcap_t *handle)
 		.caplen		= handle->snapshot,
 		.rx_slots	= 4096,
 		.tx_slots	= 4096,
-		.tx_fhint	= 1,
+		.tx_flush_hint	= 1,
 		.tx_async	= 0,
 		.tx_hw_queue	= {-1, -1, -1, -1},
 		.tx_idx_thread	= { Q_NO_KTHREAD, Q_NO_KTHREAD, Q_NO_KTHREAD, Q_NO_KTHREAD },
 		.vlan		= NULL,
-		.lang		= NULL,
+		.lang_src	= NULL,
 		.lang_lit	= NULL,
 	};
 }
@@ -551,14 +551,14 @@ pfq_parse_env(struct pfq_opt *opt)
 		opt->tx_slots = atoi(var);
 
 	if ((var = pfq_getenv("PFQ_TX_FLUSH_HINT")))
-		opt->tx_fhint = atoi(var);
+		opt->tx_flush_hint = atoi(var);
 
 	if ((var = pfq_getenv("PFQ_VLAN")))
 		opt->vlan = var;
 
 	if ((var = pfq_getenv("PFQ_LANG_SRC"))) {
-		free(opt->lang);
-		opt->lang = var;
+		free(opt->lang_src);
+		opt->lang_src = var;
 	}
 
 	if ((var = pfq_getenv("PFQ_LANG_LIT"))) {
@@ -591,11 +591,12 @@ pfq_parse_env(struct pfq_opt *opt)
 #define KEY_caplen		1
 #define KEY_rx_slots		2
 #define KEY_tx_slots            3
-#define KEY_tx_fhint		4
-#define KEY_tx_queue		5
-#define KEY_tx_thread		6
+#define KEY_tx_flush_hint	4
+#define KEY_tx_hw_queue		5
+#define KEY_tx_idx_thread	6
 #define KEY_vlan		7
 #define KEY_lang		8
+
 
 struct pfq_conf_key
 {
@@ -606,9 +607,9 @@ struct pfq_conf_key
 	KEY(caplen),
 	KEY(rx_slots),
 	KEY(tx_slots),
-	KEY(tx_queue),
-	KEY(tx_fhint),
-	KEY(tx_thread),
+	KEY(tx_flush_hint),
+	KEY(tx_hw_queue),
+	KEY(tx_idx_thread),
 	KEY(vlan),
 	KEY(lang)
 };
@@ -691,21 +692,21 @@ pfq_parse_config(struct pfq_opt *opt, const char *filename)
 			case KEY_caplen:	opt->caplen   = atoi(value);  break;
 			case KEY_rx_slots:	opt->rx_slots = atoi(value);  break;
 			case KEY_tx_slots:	opt->tx_slots = atoi(value);  break;
-			case KEY_tx_fhint:	opt->tx_fhint = atoi(value);  break;
-			case KEY_tx_queue:  {
+			case KEY_tx_flush_hint:	opt->tx_flush_hint = atoi(value);  break;
+			case KEY_tx_hw_queue:  {
 				if (pfq_parse_integers(opt->tx_hw_queue, 4, value) < 0) {
 					fprintf(stderr, "[PFQ] %s: parse error at: %s\n", filename, tkey);
 					rc = -1;
 				}
 			} break;
-			case KEY_tx_thread:   {
+			case KEY_tx_idx_thread: {
 				if (pfq_parse_integers(opt->tx_idx_thread, 4, value) < 0) {
 					fprintf(stderr, "[PFQ] %s: parse error at: %s\n", filename, tkey);
 					rc = -1;
 				}
 			} break;
-			case KEY_vlan:		free (opt->vlan); opt->vlan = strdup(string_trim(value)); break;
-			case KEY_lang:		free (opt->lang); opt->lang = strdup(string_trim(value)); break;
+			case KEY_vlan: free (opt->vlan); opt->vlan = strdup(string_trim(value)); break;
+			case KEY_lang: free (opt->lang_src); opt->lang_src = strdup(string_trim(value)); break;
 			case KEY_ERR:
 			default: {
 				fprintf(stderr, "[PFQ] %s: parse error (unknown keyword '%s')\n", filename, tkey);
@@ -773,12 +774,12 @@ pfq_activate_linux(pcap_t *handle)
 		handle->opt.pfq.rx_slots = handle->opt.buffer_size/handle->opt.pfq.caplen;
 
 
-	fprintf(stdout, "[PFQ] buffer_size = %d caplen = %d, rx_slots = %d, tx_slots = %d, tx_fhint = %d\n",
+	fprintf(stdout, "[PFQ] buffer_size = %d caplen = %d, rx_slots = %d, tx_slots = %d, tx_flush_hint = %d\n",
 		handle->opt.buffer_size,
 		handle->opt.pfq.caplen,
 		handle->opt.pfq.rx_slots,
 		handle->opt.pfq.tx_slots,
-		handle->opt.pfq.tx_fhint);
+		handle->opt.pfq.tx_flush_hint);
 
 	handle->read_op		= pfq_read_linux;
 	handle->inject_op	= pfq_inject_linux;
@@ -1029,14 +1030,14 @@ pfq_activate_linux(pcap_t *handle)
 			fprintf(stderr, "[PFQ] error: %s\n", pfq_error(handle->md.pfq.q));
 		}
 	}
-	else if (handle->opt.pfq.lang) {
+	else if (handle->opt.pfq.lang_src) {
 
 		fprintf(stdout, "[PFQ] loading pfq-lang program '%s' for group %d\n",
-			handle->opt.pfq.lang, handle->opt.pfq.group);
+			handle->opt.pfq.lang_src, handle->opt.pfq.group);
 
 		if (pfq_set_group_computation_from_file(handle->md.pfq.q,
 							handle->opt.pfq.group,
-							handle->opt.pfq.lang) < 0) {
+							handle->opt.pfq.lang_src) < 0) {
 
 			fprintf(stderr, "[PFQ] error: %s\n", pfq_error(handle->md.pfq.q));
 		}
@@ -1100,7 +1101,7 @@ pfq_inject_linux(pcap_t *handle, const void * buf, size_t size)
 	if (handle->opt.pfq.tx_async)
 		ret = pfq_send_async(handle->md.pfq.q, buf, size, 1);
 	else
-		ret = pfq_send(handle->md.pfq.q, buf, size, handle->opt.pfq.tx_fhint, 1);
+		ret = pfq_send(handle->md.pfq.q, buf, size, handle->opt.pfq.tx_flush_hint, 1);
         if (ret == -1) {
 		snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "%s", pfq_error(handle->md.pfq.q));
 		return PCAP_ERROR;

@@ -219,14 +219,14 @@ struct pcap_opt {
 		int rx_slots;
 		int tx_slots;
 
-		int tx_fhint;
+		int tx_flush_hint;
 		int tx_async;
 
 		int tx_hw_queue[4];
 		int tx_idx_thread[4];
 
 		char *vlan;
-		char *lang;
+		char *lang_src;
 		char *lang_lit;
 	} pfq;
   #endif
