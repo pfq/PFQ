@@ -863,6 +863,11 @@ namespace pfq {
                     reinterpret_cast<pfq_pkthdr *>(raw)->commit = rst;
             }
 
+            // swap the net_queue...
+            //
+
+            data = __atomic_exchange_n(&q->rx.data, (unsigned int)((index+1) << 24), __ATOMIC_RELAXED);
+
             if (Q_SHARED_QUEUE_LEN(data) == 0)
             {
 #ifdef PFQ_USE_POLL
@@ -872,11 +877,6 @@ namespace pfq {
                 return net_queue();
 #endif
             }
-
-            // swap the net_queue...
-            //
-
-            data = __atomic_exchange_n(&q->rx.data, (unsigned int)((index+1) << 24), __ATOMIC_RELAXED);
 
             auto queue_len = std::min(static_cast<size_t>(Q_SHARED_QUEUE_LEN(data)), data_->rx_slots);
 

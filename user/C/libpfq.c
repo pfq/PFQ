@@ -1493,6 +1493,10 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
                 ((struct pfq_pkthdr *)raw)->commit = rst;
         }
 
+	/* swap the queue... */
+
+        data = __atomic_exchange_n(&qd->rx.data, (unsigned int)((index+1) << 24), __ATOMIC_RELAXED);
+
 	if (Q_SHARED_QUEUE_LEN(data) == 0) {
 #ifdef PFQ_USE_POLL
 		if (pfq_poll(q, microseconds) < 0)
@@ -1503,10 +1507,6 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 		return Q_VALUE(q, (int)0);
 #endif
 	}
-
-	/* swap the queue... */
-
-        data = __atomic_exchange_n(&qd->rx.data, (unsigned int)((index+1) << 24), __ATOMIC_RELAXED);
 
 	size_t queue_len = min(Q_SHARED_QUEUE_LEN(data), q->rx_slots);
 
