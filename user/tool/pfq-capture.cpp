@@ -586,7 +586,7 @@ try
         auto rate = (static_cast<int64_t>(sum-old)*1000000)/
                         std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count();
 
-        std::cout << "capture: " << vt100::BOLD << pretty_number(rate) << " pkt/sec" << vt100::RESET;
+        std::cout << "capture: " << vt100::BOLD << pretty_number<double>(rate) << " pkt/sec" << vt100::RESET;
 
         if (flow) {
             std::cout << " flow: " << flow;

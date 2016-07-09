@@ -44,7 +44,7 @@ namespace more {
     }
 
     template <typename T>
-    std::string
+    inline std::string
     pretty_number(T value)
     {
         if (value < 1000000000) {
