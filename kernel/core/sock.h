@@ -42,7 +42,7 @@
 
 #define for_each_sk_mbuff(hdr, end, fix) \
         for(; (hdr < (struct pfq_pkthdr *)end); \
-               hdr = Q_SHARED_QUEUE_NEXT_PKTHDR(hdr, fix))
+               hdr = PFQ_SHARED_QUEUE_NEXT_PKTHDR(hdr, fix))
 
 
 struct core_tx_info

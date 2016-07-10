@@ -51,23 +51,22 @@
 
 #endif /* __KERNEL__ */
 
-
 /* PFQ version as in Linux kernel */
 
-#define PFQ_VERSION(a,b,c)		(((a) << 16) + ((b) << 8) + (c))
-#define PFQ_MAJOR(a)			((a >> 16) & 0xff)
-#define PFQ_MINOR(a)			((a >> 8) & 0xff)
-#define PFQ_PATCHLEVEL(a)		(a & 0xff)
+#define PF_Q					27   /* pfq socket family */
 
-#define PFQ_VERSION_CODE		PFQ_VERSION(6,0,0)
-#define PFQ_VERSION_STRING		"6.0.0"
+#define PFQ_VERSION(a,b,c)			(((a) << 16) + ((b) << 8) + (c))
+#define PFQ_MAJOR(a)				((a >> 16) & 0xff)
+#define PFQ_MINOR(a)				((a >> 8) & 0xff)
+#define PFQ_PATCHLEVEL(a)			(a & 0xff)
 
-#define PF_Q				27   /* pfq socket family */
+#define PFQ_VERSION_CODE			PFQ_VERSION(6,0,0)
+#define PFQ_VERSION_STRING			"6.0.0"
 
-#define Q_SHARED_QUEUE_INDEX(data)		((data) >> 24)
-#define Q_SHARED_QUEUE_LEN(data)		((data) & 0x00ffffffu )
-#define Q_SHARED_QUEUE_SLOT_SIZE(x)		ALIGN(sizeof(struct pfq_pkthdr) + x, 8)
-#define Q_SHARED_QUEUE_NEXT_PKTHDR(hdr, fix)	((struct pfq_pkthdr *)(fix ? ((char *)hdr + fix) : (char *)(hdr+1) + ALIGN(hdr->caplen, 8)))
+#define PFQ_SHARED_QUEUE_INDEX(data)		((data) >> 24)
+#define PFQ_SHARED_QUEUE_LEN(data)		((data) & 0x00ffffffu )
+#define PFQ_SHARED_QUEUE_SLOT_SIZE(x)		ALIGN(sizeof(struct pfq_pkthdr) + x, 8)
+#define PFQ_SHARED_QUEUE_NEXT_PKTHDR(hdr, fix)	((struct pfq_pkthdr *)(fix ? ((char *)hdr + fix) : (char *)(hdr+1) + ALIGN(hdr->caplen, 8)))
 
 
 /* PFQ socket options */
@@ -112,7 +111,6 @@
 #define Q_SO_TX_BIND			40
 #define Q_SO_TX_UNBIND			41
 #define Q_SO_TX_QUEUE_XMIT	        42
-
 
 /* general placeholders */
 

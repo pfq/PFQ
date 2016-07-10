@@ -589,7 +589,7 @@ pfq_sk_queue_xmit(struct core_sock *so, int sock_queue, int cpu, int node, atomi
 			netif_carrier_ok(dev_queue.dev))) {
 
 			tmp = __pfq_mbuff_xmit(hdr, &dev_queue, &ctx, copies,
-				xmit_more && (Q_SHARED_QUEUE_NEXT_PKTHDR(hdr, 0) < (struct pfq_pkthdr *)end), stop, &intr);
+				xmit_more && (PFQ_SHARED_QUEUE_NEXT_PKTHDR(hdr, 0) < (struct pfq_pkthdr *)end), stop, &intr);
 
 			/* update the return value */
 
@@ -808,13 +808,13 @@ size_t pfq_sk_queue_recv(struct core_sock_opt *opt,
 
 	data = atomic_read((atomic_t *)&rx_queue->data);
 
-	if (Q_SHARED_QUEUE_LEN(data) > opt->rx_queue_len)
+	if (PFQ_SHARED_QUEUE_LEN(data) > opt->rx_queue_len)
 		return 0;
 
 	data = atomic_add_return(burst_len, (atomic_t *)&rx_queue->data);
 
-	qlen = Q_SHARED_QUEUE_LEN(data) - burst_len;
-	qindex = Q_SHARED_QUEUE_INDEX(data);
+	qlen = PFQ_SHARED_QUEUE_LEN(data) - burst_len;
+	qindex = PFQ_SHARED_QUEUE_INDEX(data);
 	hdr = (struct pfq_pkthdr *) core_mpsc_slot_ptr(opt, rx_queue, qindex, qlen);
 
 	for_each_qbuff_with_mask(mask, buffs, buff, n)
@@ -888,7 +888,7 @@ size_t pfq_sk_queue_recv(struct core_sock_opt *opt,
 
 		sent++;
 
-		hdr = Q_SHARED_QUEUE_NEXT_PKTHDR(hdr, opt->rx_slot_size);
+		hdr = PFQ_SHARED_QUEUE_NEXT_PKTHDR(hdr, opt->rx_slot_size);
 	}
 
 	return sent;

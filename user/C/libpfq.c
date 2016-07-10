@@ -1480,7 +1480,7 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 	qd = (struct pfq_shared_queue *)(q->shm_addr);
 
 	data = __atomic_load_n(&qd->rx.data, __ATOMIC_RELAXED);
-	index = Q_SHARED_QUEUE_INDEX(data);
+	index = PFQ_SHARED_QUEUE_INDEX(data);
 
         /* at wrap-around reset Rx slots... */
 
@@ -1497,7 +1497,7 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 
         data = __atomic_exchange_n(&qd->rx.data, (unsigned int)((index+1) << 24), __ATOMIC_RELAXED);
 
-	if (Q_SHARED_QUEUE_LEN(data) == 0) {
+	if (PFQ_SHARED_QUEUE_LEN(data) == 0) {
 #ifdef PFQ_USE_POLL
 		if (pfq_poll(q, microseconds) < 0)
 			return Q_ERROR(q, "PFQ: poll error");
@@ -1508,7 +1508,7 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 #endif
 	}
 
-	size_t queue_len = min(Q_SHARED_QUEUE_LEN(data), q->rx_slots);
+	size_t queue_len = min(PFQ_SHARED_QUEUE_LEN(data), q->rx_slots);
 
 	nq->queue = (char *)(q->rx_queue_addr) + (index & 1) * q->rx_queue_size;
 	nq->index = index;

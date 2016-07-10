@@ -55,7 +55,7 @@ size_t core_mpsc_queue_len(struct core_sock *p)
 	struct pfq_shared_queue *q = core_sock_get_shared_queue(p);
 	if (!q)
 		return 0;
-        return Q_SHARED_QUEUE_LEN(q->rx.data);
+        return PFQ_SHARED_QUEUE_LEN(q->rx.data);
 }
 
 
@@ -65,7 +65,7 @@ int core_mpsc_queue_index(struct core_sock *p)
 	struct pfq_shared_queue *q = core_sock_get_shared_queue(p);
 	if (!q)
 		return 0;
-        return Q_SHARED_QUEUE_INDEX(q->rx.data) & 1;
+        return PFQ_SHARED_QUEUE_INDEX(q->rx.data) & 1;
 }
 
 

@@ -849,7 +849,7 @@ namespace pfq {
             unsigned int data, index;
 
             data = __atomic_load_n(&q->rx.data, __ATOMIC_RELAXED);
-            index = Q_SHARED_QUEUE_INDEX(data);
+            index = PFQ_SHARED_QUEUE_INDEX(data);
 
             // at wrap-around reset Rx slots...
             //
@@ -868,7 +868,7 @@ namespace pfq {
 
             data = __atomic_exchange_n(&q->rx.data, (unsigned int)((index+1) << 24), __ATOMIC_RELAXED);
 
-            if (Q_SHARED_QUEUE_LEN(data) == 0)
+            if (PFQ_SHARED_QUEUE_LEN(data) == 0)
             {
 #ifdef PFQ_USE_POLL
                 this->poll(microseconds);
@@ -878,7 +878,7 @@ namespace pfq {
 #endif
             }
 
-            auto queue_len = std::min(static_cast<size_t>(Q_SHARED_QUEUE_LEN(data)), data_->rx_slots);
+            auto queue_len = std::min(static_cast<size_t>(PFQ_SHARED_QUEUE_LEN(data)), data_->rx_slots);
 
             return net_queue(static_cast<char *>(data_->rx_queue_addr) + (index & 1) * data_->rx_queue_size,
                          data_->rx_slot_size, queue_len, index);
@@ -890,7 +890,7 @@ namespace pfq {
         current_commit() const
         {
             auto q = static_cast<struct pfq_shared_queue *>(data_->shm_addr);
-            return static_cast<uint8_t>(Q_SHARED_QUEUE_INDEX(q->rx.data));
+            return static_cast<uint8_t>(PFQ_SHARED_QUEUE_INDEX(q->rx.data));
         }
 
         //! Receive packets in the given buffer.
