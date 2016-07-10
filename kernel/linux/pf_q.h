@@ -46,27 +46,6 @@
 #include <stdint.h>
 #include <stddef.h>
 
-static inline void barrier() { __asm__ volatile ("" ::: "memory"); }
-
-#if defined(__LP64__) /* 64 bit */
-
-static inline void mb()  { __asm__ volatile ("mfence" ::: "memory"); }
-static inline void rmb() { __asm__ volatile ("lfence" ::: "memory"); }
-static inline void wmb() { __asm__ volatile ("sfence" ::: "memory"); }
-
-#else /* 32-bit */
-
-static inline void mb()  { __asm__ volatile ("lock; addl $0,0(%%esp)" ::: "memory"); }
-static inline void rmb() { __asm__ volatile ("lock; addl $0,0(%%esp)" ::: "memory"); }
-static inline void wmb() { __asm__ volatile ("lock; addl $0,0(%%esp)" ::: "memory"); }
-
-#endif
-
-static inline void smp_mb()  { mb();      }
-static inline void smp_rmb() { barrier(); }
-static inline void smp_wmb() { barrier(); }
-
-
 #define likely(x)	__builtin_expect((x),1)
 #define unlikely(x)     __builtin_expect((x),0)
 
