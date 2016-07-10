@@ -1221,18 +1221,13 @@ pfq_read_linux(pcap_t *handle, int max_packets, pcap_handler callback, u_char *u
 
 		/* extended PFQ pcap header */
 
-		pcap_h.data.mark  = h->data.mark;
-		pcap_h.data.state = h->data.state;
-		pcap_h.ifindex    = h->ifindex;
-		pcap_h.queue	  = h->queue;
-		pcap_h.gid	  = h->gid;
-		pcap_h.vlan.tci   = h->vlan.tci;
+		memcpy(&pcap_h.info, &h->info, sizeof(struct pfq_pkthdr_info));
 
 		/* Add 802.1Q header if present */
 
 		pkt = pfq_pkt_data(it);
 
-		if ((vlan_tci = h->vlan.tci) != 0) {
+		if ((vlan_tci = h->info.vlan.tci) != 0) {
 
 			struct vlan_tag *tag;
 
