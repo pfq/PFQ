@@ -1180,9 +1180,9 @@ pfq_cleanup_linux(pcap_t *handle)
 static int
 pfq_read_linux(pcap_t *handle, int max_packets, pcap_handler callback, u_char *user)
 {
-        int start = handle->md.packets_read;
+        int start		 = handle->md.packets_read;
+	pfq_iterator_t it	 = handle->md.pfq.current;
 	struct pfq_net_queue *nq = &handle->md.pfq.nq;
-	pfq_iterator_t it = handle->md.pfq.current;
 	int n = max_packets;
 
         if (it == pfq_net_queue_end(nq)) {
@@ -1193,7 +1193,11 @@ pfq_read_linux(pcap_t *handle, int max_packets, pcap_handler callback, u_char *u
 		it = handle->md.pfq.current = pfq_net_queue_begin(nq);
 	}
 
-	for(; (max_packets <= 0 || n > 0) && (it != pfq_net_queue_end(nq)); it = pfq_net_queue_next(nq, it))
+        /* process the queue */
+
+	for(; (max_packets <= 0 || n > 0) &&
+	       (it != pfq_net_queue_end(nq))
+	    ;	it = pfq_net_queue_next(nq, it))
 	{
 		struct pfq_pcap_pkthdr pcap_h;
 		struct pfq_pkthdr *h;
@@ -1215,7 +1219,7 @@ pfq_read_linux(pcap_t *handle, int max_packets, pcap_handler callback, u_char *u
 		pcap_h.caplen     = h->caplen;
 		pcap_h.len        = h->len;
 
-		/* extended pcap header */
+		/* extended PFQ pcap header */
 
 		pcap_h.data.mark  = h->data.mark;
 		pcap_h.data.state = h->data.state;
@@ -1223,6 +1227,8 @@ pfq_read_linux(pcap_t *handle, int max_packets, pcap_handler callback, u_char *u
 		pcap_h.queue	  = h->queue;
 		pcap_h.gid	  = h->gid;
 		pcap_h.vlan.tci   = h->vlan.tci;
+
+		/* Add 802.1Q header if present */
 
 		pkt = pfq_pkt_data(it);
 
@@ -1240,6 +1246,8 @@ pfq_read_linux(pcap_t *handle, int max_packets, pcap_handler callback, u_char *u
 
 			pcap_h.len += VLAN_TAG_LEN;
 		}
+
+		/* pass packet and header to the given callback */
 
 		callback(user, (struct pcap_pkthdr *)&pcap_h, pkt);
 
