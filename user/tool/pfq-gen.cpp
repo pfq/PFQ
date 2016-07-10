@@ -78,22 +78,23 @@ namespace more
 
 namespace opt
 {
-    size_t flush_hint = 1;
-    size_t len      = 1514;
-    size_t slots    = 8192;
-    size_t npackets = std::numeric_limits<size_t>::max();
-    size_t seconds  = std::numeric_limits<size_t>::max();
-    size_t loop     = 1;
-    size_t preload  = 1;
+    size_t flush_hint   = 1;
+    size_t len          = 1514;
+    size_t slots        = 8192;
+    size_t npackets     = std::numeric_limits<size_t>::max();
+    size_t seconds      = std::numeric_limits<size_t>::max();
+    size_t loop         = 1;
+    size_t preload      = 1;
     unsigned int copies = 1;
 
     std::atomic_int nthreads;
     std::atomic_bool stop;
 
-    bool   rand_ip   = false;
-    bool   rand_flow = false;
-    bool   active_ts = false;
-    bool   poisson   = false;
+    bool   rand_ip     = false;
+    bool   rand_flow   = false;
+    bool   active_ts   = false;
+    bool   poisson     = false;
+    bool   interactive = false;
     double rate      = 0;
 
     uint32_t rand_depth = 8;
@@ -269,6 +270,12 @@ namespace thread
 
     private:
 
+        void wait_keyboard() 
+        {
+            std::cout << "# " << m_sent->load(std::memory_order_relaxed) << ": to transmit the next packet press ENTER..." << std::flush;
+            getchar();
+        }
+
         void generator()
         {
             std::cout << "generator  : online traffic started..." << std::endl;
@@ -284,6 +291,9 @@ namespace thread
             {
                 if (rc)
                     rate_control(now, delta, n);
+
+                if (opt::interactive)
+                    wait_keyboard();
 
                 if (m_async)
                 {
@@ -338,6 +348,9 @@ namespace thread
 
                 if (rc)
                     rate_control(now, delta, n);
+                
+                if (opt::interactive)
+                    wait_keyboard();
 
                 if (m_async)
                 {
@@ -408,6 +421,9 @@ namespace thread
 
             for(size_t n = 0; n < opt::npackets;)
             {
+                if (opt::interactive)
+                    wait_keyboard();
+
                 if (!m_pfq.send_at(pfq::const_buffer(reinterpret_cast<const char *>(m_packet.get()), len), now, opt::copies))
                 {
                     m_fail->fetch_add(1, std::memory_order_relaxed);
@@ -467,6 +483,9 @@ namespace thread
 
                     if (rc)
                         rate_control(now, delta, i);
+                
+                    if (opt::interactive)
+                        wait_keyboard();
 
                     if (auto ip = opt::rand_ip ? reinterpret_cast<iphdr *>(data + 14) : nullptr)
                     {
@@ -525,6 +544,7 @@ namespace thread
             {
                 while (std::chrono::system_clock::now() < (now + delta*8192))
                 {}
+
                 now = std::chrono::system_clock::now();
             }
         }
@@ -586,6 +606,7 @@ void usage(std::string name)
         "    --src-mac MAC              Specify source MAC address\n"
         " -P --preload INT              Preload INT packets (must be a power of 2)\n"
         "    --rate DOUBLE              Packet rate in Mpps\n"
+        "    --interactive              Transmit a packet at time\n"
         " -a --active-tstamp            Use active timestamp as rate control\n"
         " -p --poisson                  Use a Poisson process for inter-packet gaps, implies -a\n"
         " -f --flush INT                Set flush length, used in sync Tx\n"
@@ -756,6 +777,12 @@ try
         if ( any_strcmp(argv[i], "-R", "--rand-ip") )
         {
             opt::rand_ip = true;
+            continue;
+        }
+
+        if ( any_strcmp(argv[i], "--interactive") )
+        {
+            opt::interactive = true;
             continue;
         }
 
@@ -986,24 +1013,27 @@ try
         auto end   = std::chrono::system_clock::now();
         auto delta = end-begin;
 
-        std::cout << "stats    : { " << cur << " }" << std::endl;
+        if (!opt::interactive)
+        {
+            std::cout << "stats    : { " << cur << " }" << std::endl;
 
-        std::cout << "   app   : { "
-                  << vt100::BOLD
-                  << "sent: " << persecond<int64_t>(sent - sent_, delta)            << ' '
-                  << "fail: " << persecond<int64_t>(fail-fail_, delta)              << " ";
-       if (opt::copies > 1)
-           std::cout << " (x " << opt::copies << ") => ";
+            std::cout << "   app   : { "
+                      << vt100::BOLD
+                      << "sent: " << persecond<int64_t>(sent - sent_, delta)            << ' '
+                      << "fail: " << persecond<int64_t>(fail-fail_, delta)              << " ";
+            if (opt::copies > 1)
+               std::cout << " (x " << opt::copies << ") => ";
 
-       std::cout  << "band: " << pretty_number(persecond<double>((band-band_)*8 * opt::copies, delta))  << "bit/sec "
-                  << "gros: " << pretty_number(persecond<double>((gros-gros_)*8 * opt::copies, delta))  << "bit/sec "
-                  << vt100::RESET << " }" << std::endl;
+            std::cout << "band: " << pretty_number(persecond<double>((band-band_)*8 * opt::copies, delta))  << "bit/sec "
+                      << "gros: " << pretty_number(persecond<double>((gros-gros_)*8 * opt::copies, delta))  << "bit/sec "
+                      << vt100::RESET << " }" << std::endl;
 
-        std::cout << "   socket: { "
-                  << "sent: " << vt100::BOLD << persecond<int64_t>(cur.sent - prec.sent, delta) << vt100::RESET << " pkt/sec "
-                  << "disc: " << vt100::BOLD << persecond<int64_t>(cur.disc - prec.disc, delta) << vt100::RESET << " pkt/sec "
-                  << "fail: " << vt100::BOLD << persecond<int64_t>(cur.fail - prec.fail, delta) << vt100::RESET << " pkt/sec "
-                  << " }" << std::endl;
+            std::cout << "   socket: { "
+                      << "sent: " << vt100::BOLD << persecond<int64_t>(cur.sent - prec.sent, delta) << vt100::RESET << " pkt/sec "
+                      << "disc: " << vt100::BOLD << persecond<int64_t>(cur.disc - prec.disc, delta) << vt100::RESET << " pkt/sec "
+                      << "fail: " << vt100::BOLD << persecond<int64_t>(cur.fail - prec.fail, delta) << vt100::RESET << " pkt/sec "
+                      << " }" << std::endl;
+        }
 
         prec = cur, begin = end;
         sent_ = sent;
