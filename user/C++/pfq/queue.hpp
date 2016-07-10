@@ -94,7 +94,7 @@ namespace pfq {
             bool
             ready() const
             {
-                auto b = __atomic_load_n(&hdr_->commit, __ATOMIC_ACQUIRE) == index_;
+                auto b = __atomic_load_n(&hdr_->info.commit, __ATOMIC_ACQUIRE) == index_;
                 return b;
             }
 
@@ -171,7 +171,7 @@ namespace pfq {
             bool
             ready() const
             {
-                auto b = __atomic_load_n(&hdr_->commit, __ATOMIC_ACQUIRE) == index_;
+                auto b = __atomic_load_n(&hdr_->info.commit, __ATOMIC_ACQUIRE) == index_;
                 return b;
             }
 
@@ -336,9 +336,9 @@ namespace pfq {
      * return a nullptr otherwise.
      */
 
-    inline void * data_ready(pfq_pkthdr &h, uint8_t current_commit)
+    inline void * data_ready(pfq_pkthdr &h, uint16_t current_commit)
     {
-        if (__atomic_load_n(&h.commit, __ATOMIC_ACQUIRE) != current_commit)
+        if (__atomic_load_n(&h.info.commit, __ATOMIC_ACQUIRE) != current_commit)
             return nullptr;
         return &h + 1;
     }
@@ -349,9 +349,9 @@ namespace pfq {
      * return a nullptr otherwise.
      */
 
-    inline const void * data_ready(pfq_pkthdr const &h, uint8_t current_commit)
+    inline const void * data_ready(pfq_pkthdr const &h, uint16_t current_commit)
     {
-        if (__atomic_load_n(&h.commit, __ATOMIC_ACQUIRE) != current_commit)
+        if (__atomic_load_n(&h.info.commit, __ATOMIC_ACQUIRE) != current_commit)
             return nullptr;
         return &h + 1;
     }

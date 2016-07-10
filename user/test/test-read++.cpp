@@ -36,9 +36,9 @@ main(int argc, char *argv[])
             auto h = *it;
 
             printf("mark:%d state:0x%x caplen:%d len:%d ifindex:%d hw_queue:%d tstamp: %u:%u [commit:%d]-> ",
-					h.data.mark, h.data.state,
-				    h.caplen, h.len, h.ifindex, h.queue,
-                    h.tstamp.tv.sec, h.tstamp.tv.nsec, h.commit);
+					h.info.data.mark, h.info.data.state,
+				    h.caplen, h.len, h.info.ifindex, h.info.queue,
+                    h.tstamp.tv.sec, h.tstamp.tv.nsec, h.info.commit);
 
 			const char *buff = static_cast<char *>(it.data());
 

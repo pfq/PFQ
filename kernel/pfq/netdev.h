@@ -48,7 +48,7 @@ struct net_dev_queue
 extern struct net_dev_queue net_dev_queue_null;
 
 
-#define PFQ_DEVQ_ID(ifindex, queue)	((uint64_t)ifindex << 32 | (uint16_t)queue)
+#define PFQ_DEVQ_ID(ifindex, queue)	((uint64_t)ifindex << 32 | (uint32_t)queue)
 #define PFQ_DEVQ_IFINDEX(id)		((int)(id >> 32))
 #define PFQ_DEVQ_QUEUE(id)		((int)(id & 0xffffffff))
 

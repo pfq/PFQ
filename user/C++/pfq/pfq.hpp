@@ -854,13 +854,13 @@ namespace pfq {
             // at wrap-around reset Rx slots...
             //
 
-            if (((index+1) & 0xfe)== 0)
+            if (((index+1) & 0xfffe)== 0)
             {
                 auto raw = static_cast<char *>(data_->rx_queue_addr) + ((index+1) & 1) * data_->rx_queue_size;
                 auto end = raw + data_->rx_queue_size;
-                const uint8_t rst = index & 1;
+                const uint16_t rst = index & 1;
                 for(; raw < end; raw += data_->rx_slot_size)
-                    reinterpret_cast<pfq_pkthdr *>(raw)->commit = rst;
+                    reinterpret_cast<pfq_pkthdr *>(raw)->info.commit = rst;
             }
 
             // swap the net_queue...
@@ -886,11 +886,11 @@ namespace pfq {
 
         //! Return the current commit version (used internally by the memory mapped queue).
 
-        uint8_t
+        uint16_t
         current_commit() const
         {
             auto q = static_cast<struct pfq_shared_queue *>(data_->shm_addr);
-            return static_cast<uint8_t>(PFQ_SHARED_QUEUE_INDEX(q->rx.data));
+            return static_cast<uint16_t>(PFQ_SHARED_QUEUE_INDEX(q->rx.data));
         }
 
         //! Receive packets in the given buffer.
@@ -1166,9 +1166,9 @@ namespace pfq {
                 auto hdr = (struct pfq_pkthdr *)(base_addr + offset);
                 hdr->tstamp.tv64 = nsec;
                 hdr->caplen      = static_cast<uint16_t>(len);
-                hdr->data.copies = copies;
-                hdr->ifindex     = ifindex;
-                hdr->queue       = static_cast<uint8_t>(qindex);
+                hdr->info.data.copies = copies;
+                hdr->info.ifindex     = ifindex;
+                hdr->info.queue       = static_cast<uint16_t>(qindex);
                 memcpy(hdr+1, pkt.first, len);
 
                 __atomic_store_n((index & 1) ? &tx->prod.off1 : &tx->prod.off0, offset + static_cast<ptrdiff_t>(this_slot_size), __ATOMIC_RELEASE);

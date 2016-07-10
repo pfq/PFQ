@@ -206,7 +206,7 @@ namespace thread
                             printf("%d:%d [%d] (%d/%d)",
                                             h.tstamp.tv.sec,
                                             h.tstamp.tv.nsec,
-                                            h.ifindex,
+                                            h.info.ifindex,
                                             h.caplen,
                                             h.len);
                             printf("\n    |");

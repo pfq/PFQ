@@ -536,7 +536,7 @@ pfq_sk_queue_xmit(struct core_sock *so, int sock_queue, int cpu, int node, atomi
 
 		/* skip the current packet ? */
 
-		qid = PFQ_DEVQ_ID(hdr->ifindex, hdr->queue);
+		qid = PFQ_DEVQ_ID(hdr->info.ifindex, hdr->info.queue);
 		if (unlikely(PFQ_DEVQ_IS_NULL(qid)))
 			continue;
 
@@ -573,7 +573,7 @@ pfq_sk_queue_xmit(struct core_sock *so, int sock_queue, int cpu, int node, atomi
 
 		/* get the max number of copies */
 
-                copies = dev_tx_max_skb_copies(dev_queue.dev, hdr->data.copies);
+                copies = dev_tx_max_skb_copies(dev_queue.dev, hdr->info.data.copies);
 		batch_cntr += copies;
 
                 /* set the xmit_more */
@@ -854,12 +854,7 @@ size_t pfq_sk_queue_recv(struct core_sock_opt *opt,
 			pfq_skb_copy_from_linear_data(skb, pkt, bytes);
 		}
 
-		/* copy state from pfq_cb annotation */
-
-		hdr->data.mark  = skb->mark;
-		hdr->data.state = buff->state;
-
-		/* setup the header */
+		/* fill pkt header */
 
 		if (opt->tstamp != 0) {
 			struct timespec ts;
@@ -868,18 +863,26 @@ size_t pfq_sk_queue_recv(struct core_sock_opt *opt,
 			hdr->tstamp.tv.nsec = (uint32_t)ts.tv_nsec;
 		}
 
-		hdr->ifindex  = skb->dev->ifindex;
-		hdr->gid      = (__force int)gid;
-		hdr->len      = (uint16_t)skb->len;
-		hdr->caplen   = (uint16_t)bytes;
-		hdr->vlan.tci = skb->vlan_tci & ~VLAN_TAG_PRESENT;
-		hdr->queue    = skb_rx_queue_recorded(skb) ? (uint8_t)(skb_get_rx_queue(skb) & 0xff) : 0;
+		hdr->caplen	   = (uint16_t)bytes;
+		hdr->len	   = (uint16_t)skb->len;
+
+		/* copy state from pfq_cb annotation */
+
+		hdr->info.data.mark  = skb->mark;
+		hdr->info.data.state = buff->state;
+
+		/* setup the header */
+
+		hdr->info.ifindex  = skb->dev->ifindex;
+		hdr->info.gid	   = (__force uint16_t)gid;
+		hdr->info.vlan.tci = skb->vlan_tci & ~VLAN_TAG_PRESENT;
+		hdr->info.queue	   = skb_rx_queue_recorded(skb) ? (uint16_t)skb_get_rx_queue(skb) : 0;
 
 		/* commit the slot (release semantic) */
 
 		smp_wmb();
 
-		hdr->commit = (uint8_t)qindex;
+		hdr->info.commit = (uint16_t)qindex;
 
 		if ((slot_index & 8191) == 0 &&
 		    waitqueue_active(&opt->waitqueue)) {

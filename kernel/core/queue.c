@@ -69,7 +69,7 @@ core_shared_queue_enable(struct core_sock *so, unsigned long user_addr)
 			char * end = raw + mapped_queue->rx.size;
 			const int rst = !i;
 			for(;raw < end; raw += mapped_queue->rx.slot_size)
-				((struct pfq_pkthdr *)raw)->commit = (uint8_t)rst;
+				((struct pfq_pkthdr *)raw)->info.commit = (uint16_t)rst;
 		}
 
 		/* initialize TX queues */

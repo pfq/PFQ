@@ -1484,13 +1484,13 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 
         /* at wrap-around reset Rx slots... */
 
-        if (((index+1) & 0xfe)== 0)
+        if (((index+1) & 0xfffe)== 0)
         {
             char * raw = (char *)(q->rx_queue_addr) + ((index+1) & 1) * q->rx_queue_size;
             char * end = raw + q->rx_queue_size;
-            const uint8_t rst = index & 1;
+            const uint16_t rst = index & 1;
             for(; raw < end; raw += q->rx_slot_size)
-                ((struct pfq_pkthdr *)raw)->commit = rst;
+                ((struct pfq_pkthdr *)raw)->info.commit = rst;
         }
 
 	/* swap the queue... */
@@ -1641,9 +1641,9 @@ pfq_send_raw(pfq_t *q, const void *buf, size_t len, int ifindex, int qindex, uin
 		struct pfq_pkthdr *hdr = (struct pfq_pkthdr *)(base_addr + offset);
 		hdr->tstamp.tv64 = nsec;
 		hdr->caplen = (uint16_t)len;
-		hdr->data.copies = copies;
-                hdr->ifindex = ifindex;
-                hdr->queue = (uint8_t)qindex;
+		hdr->info.data.copies = copies;
+                hdr->info.ifindex = ifindex;
+                hdr->info.queue = (uint16_t)qindex;
 		memcpy(hdr+1, buf, len);
 
                 __atomic_store_n((index & 1) ? &tx->prod.off1 : &tx->prod.off0,

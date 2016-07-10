@@ -68,7 +68,7 @@ main(int argc, char *argv[])
 			const struct pfq_pkthdr *h = pfq_pkt_header(it);
 
 			printf("caplen:%d len:%d ifindex:%d hw_queue:%d tstamp: %u:%u -> ",
-					h->caplen, h->len, h->ifindex, h->queue,
+					h->caplen, h->len, h->info.ifindex, h->info.queue,
                                         h->tstamp.tv.sec, h->tstamp.tv.nsec);
 
 			const char *buff = pfq_pkt_data(it);

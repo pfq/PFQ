@@ -33,7 +33,7 @@ main(int argc, char *argv[])
                     }
 
                     printf("vlan:%d caplen:%d len:%d ifindex:%d hw_queue:%d -> ",
-                           it->vlan.vid, it->caplen, it->len, it->ifindex, it->queue);
+                           it->info.vlan.vid, it->caplen, it->len, it->info.ifindex, it->info.queue);
 
                     char *buff = static_cast<char *>(it.data());
 

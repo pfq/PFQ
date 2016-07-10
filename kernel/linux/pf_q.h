@@ -205,8 +205,11 @@ struct pfq_shared_queue
 
 /* packet headers */
 
-struct pfq_pkthdr
+
+struct pfq_pkthdr_info
 {
+        int         ifindex;			/* interface index */
+
 	union
 	{
 		struct
@@ -222,22 +225,6 @@ struct pfq_pkthdr
 		};
 	} data;
 
-
-        union
-        {
-                uint64_t	    tv64;
-                struct {
-                        uint32_t    sec;
-                        uint32_t    nsec;
-                } tv;               /* note: compact timespec for 64 bits arch. */
-        } tstamp;
-
-        int         ifindex;	/* interface index */
-        int         gid;        /* group id */
-
-        uint16_t    len;        /* length of the packet (off wire) */
-        uint16_t    caplen;     /* bytes captured */
-
         union
         {
                 struct
@@ -250,10 +237,30 @@ struct pfq_pkthdr
                 uint16_t     tci;
         } vlan;
 
-        uint8_t     queue;	/* max 256 queues per device */
-        uint8_t     commit;
+        uint16_t     gid;			/* group id */
+        uint16_t     queue;			/* max 256 queues per device */
+        uint16_t     commit;                    /* commit round */
+};
 
-} __attribute__((packed));
+
+struct pfq_pkthdr
+{
+        union
+        {
+                uint64_t	    tv64;
+                struct {
+                        uint32_t    sec;
+                        uint32_t    nsec;
+                } tv;				/* note: compact timespec */
+
+        } tstamp;
+
+        uint16_t    caplen;			/* bytes captured */
+        uint16_t    len;			/* length of the packet (off wire) */
+
+	struct pfq_pkthdr_info info;		/* additional information */
+};
+
 
 
 /*
@@ -268,41 +275,11 @@ struct pfq_pkthdr
 
 struct pfq_pcap_pkthdr {
 
-    struct timeval ts;		/* time stamp */
-    uint32_t caplen;		/* length of portion present */
-    uint32_t len;		/* length this packet (off wire) */
+    struct timeval ts;			/* time stamp */
+    uint32_t caplen;			/* length of portion present */
+    uint32_t len;			/* length this packet (off wire) */
 
-    union
-    {
-	struct
-	{
-	    uint32_t mark;	/* packet mark */
-	    uint32_t state;     /* monad state */
-	};
-
-	struct
-	{
-	    unsigned int copies; /* for packet Tx */
-	    int	inject;		 /* pkt to kernel */
-	};
-
-    } data;
-
-    int	    ifindex;
-    int	    gid;
-    int	    queue;
-
-    union
-    {
-            struct
-            {
-                    uint16_t vid:12,	    /* 8021q vlan id */
-                             reserved:1,    /* 8021q reserved bit */
-                             prio:3;	    /* 8021q vlan priority */
-            };
-
-            uint16_t     tci;
-    } vlan;
+    struct pfq_pkthdr_info info;        /* extended pcap packet header */
 };
 
 
