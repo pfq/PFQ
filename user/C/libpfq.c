@@ -1471,31 +1471,32 @@ int
 pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 {
 	struct pfq_shared_queue * qd;
-	unsigned int index, data;
+	unsigned long int data, qver;
 
         if (q->shm_addr == NULL) {
 		return Q_ERROR(q, "PFQ: read: socket not enabled");
 	}
 
-	qd = (struct pfq_shared_queue *)(q->shm_addr);
+	qd   = (struct pfq_shared_queue *)(q->shm_addr);
 
-	data = __atomic_load_n(&qd->rx.data, __ATOMIC_RELAXED);
-	index = PFQ_SHARED_QUEUE_INDEX(data);
+	data = __atomic_load_n(&qd->rx.shinfo, __ATOMIC_RELAXED);
+	qver = PFQ_SHARED_QUEUE_VER(data);
 
         /* at wrap-around reset Rx slots... */
 
-        if (((index+1) & 0xfffe)== 0)
+        if (((qver+1) & (PFQ_SHARED_QUEUE_VER_MASK^1))== 0)
         {
-            char * raw = (char *)(q->rx_queue_addr) + ((index+1) & 1) * q->rx_queue_size;
+            char * raw = (char *)(q->rx_queue_addr) + ((qver+1) & 1) * q->rx_queue_size;
             char * end = raw + q->rx_queue_size;
-            const uint16_t rst = index & 1;
+            const pfq_ver_t rst = qver & 1;
             for(; raw < end; raw += q->rx_slot_size)
                 ((struct pfq_pkthdr *)raw)->info.commit = rst;
         }
 
 	/* swap the queue... */
 
-        data = __atomic_exchange_n(&qd->rx.data, (unsigned int)((index+1) << 24), __ATOMIC_RELAXED);
+        data = __atomic_exchange_n(&qd->rx.shinfo, ((qver+1) << (PFQ_SHARED_QUEUE_LEN_SIZE<<3)), __ATOMIC_RELAXED);
+
 
 	if (PFQ_SHARED_QUEUE_LEN(data) == 0) {
 #ifdef PFQ_USE_POLL
@@ -1510,9 +1511,9 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 
 	size_t queue_len = min(PFQ_SHARED_QUEUE_LEN(data), q->rx_slots);
 
-	nq->queue = (char *)(q->rx_queue_addr) + (index & 1) * q->rx_queue_size;
-	nq->index = index;
-	nq->len = queue_len;
+	nq->queue = (char *)(q->rx_queue_addr) + (qver & 1) * q->rx_queue_size;
+	nq->index = (unsigned int)qver;
+	nq->len   = queue_len;
         nq->slot_size = q->rx_slot_size;
 
 	return Q_VALUE(q, (int)queue_len);

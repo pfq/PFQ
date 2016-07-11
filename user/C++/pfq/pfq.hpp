@@ -846,19 +846,19 @@ namespace pfq {
                 throw system_error("PFQ: read: socket not enabled");
 
             auto q = static_cast<struct pfq_shared_queue *>(data()->shm_addr);
-            unsigned int data, index;
+            unsigned long int data, qver;
 
-            data = __atomic_load_n(&q->rx.data, __ATOMIC_RELAXED);
-            index = PFQ_SHARED_QUEUE_INDEX(data);
+            data = __atomic_load_n(&q->rx.shinfo, __ATOMIC_RELAXED);
+            qver = PFQ_SHARED_QUEUE_VER(data);
 
             // at wrap-around reset Rx slots...
             //
 
-            if (((index+1) & 0xfffe)== 0)
+            if (((qver+1) & (PFQ_SHARED_QUEUE_VER_MASK^1))== 0)
             {
-                auto raw = static_cast<char *>(data_->rx_queue_addr) + ((index+1) & 1) * data_->rx_queue_size;
+                auto raw = static_cast<char *>(data_->rx_queue_addr) + ((qver+1) & 1) * data_->rx_queue_size;
                 auto end = raw + data_->rx_queue_size;
-                const uint16_t rst = index & 1;
+                const pfq_ver_t rst = qver & 1;
                 for(; raw < end; raw += data_->rx_slot_size)
                     reinterpret_cast<pfq_pkthdr *>(raw)->info.commit = rst;
             }
@@ -866,7 +866,7 @@ namespace pfq {
             // swap the net_queue...
             //
 
-            data = __atomic_exchange_n(&q->rx.data, (unsigned int)((index+1) << 24), __ATOMIC_RELAXED);
+            data = __atomic_exchange_n(&q->rx.shinfo, ((qver+1) << (PFQ_SHARED_QUEUE_LEN_SIZE<<3)), __ATOMIC_RELAXED);
 
             if (PFQ_SHARED_QUEUE_LEN(data) == 0)
             {
@@ -880,17 +880,18 @@ namespace pfq {
 
             auto queue_len = std::min(static_cast<size_t>(PFQ_SHARED_QUEUE_LEN(data)), data_->rx_slots);
 
-            return net_queue(static_cast<char *>(data_->rx_queue_addr) + (index & 1) * data_->rx_queue_size,
-                         data_->rx_slot_size, queue_len, index);
+            return net_queue(static_cast<char *>(data_->rx_queue_addr) + (qver & 1) * data_->rx_queue_size,
+                         data_->rx_slot_size, queue_len, qver);
         }
 
         //! Return the current commit version (used internally by the memory mapped queue).
 
-        uint16_t
+        pfq_ver_t
         current_commit() const
         {
             auto q = static_cast<struct pfq_shared_queue *>(data_->shm_addr);
-            return static_cast<uint16_t>(PFQ_SHARED_QUEUE_INDEX(q->rx.data));
+            auto data = __atomic_load_n(&q->rx.shinfo, __ATOMIC_RELAXED);
+            return static_cast<pfq_ver_t>(PFQ_SHARED_QUEUE_VER(data));
         }
 
         //! Receive packets in the given buffer.

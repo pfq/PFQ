@@ -54,7 +54,7 @@ core_shared_queue_enable(struct core_sock *so, unsigned long user_addr)
 
 		/* initialize Rx queue */
 
-		mapped_queue->rx.data      = 0;
+		mapped_queue->rx.shinfo    = 0;
 		mapped_queue->rx.len       = (unsigned int)so->opt.rx_queue_len;
 		mapped_queue->rx.size      = (unsigned int)core_mpsc_queue_mem(so)/2;
 		mapped_queue->rx.slot_size = (unsigned int)so->opt.rx_slot_size;

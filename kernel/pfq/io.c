@@ -800,22 +800,24 @@ size_t pfq_sk_queue_recv(struct core_sock_opt *opt,
 	struct pfq_rx_queue *rx_queue = core_sock_get_rx_queue(opt);
 	struct pfq_pkthdr *hdr;
 	struct qbuff *buff;
-	int data, qlen, qindex;
+	unsigned long data;
 	size_t n, sent = 0;
+	pfq_ver_t qver;
+	int qlen;
 
 	if (unlikely(rx_queue == NULL))
 		return 0;
 
-	data = atomic_read((atomic_t *)&rx_queue->data);
-
+	data = __atomic_load_n(&rx_queue->shinfo, __ATOMIC_RELAXED);
 	if (PFQ_SHARED_QUEUE_LEN(data) > opt->rx_queue_len)
 		return 0;
 
-	data = atomic_add_return(burst_len, (atomic_t *)&rx_queue->data);
+	data = __atomic_add_fetch(&rx_queue->shinfo, burst_len, __ATOMIC_RELAXED);
 
 	qlen = PFQ_SHARED_QUEUE_LEN(data) - burst_len;
-	qindex = PFQ_SHARED_QUEUE_INDEX(data);
-	hdr = (struct pfq_pkthdr *) core_mpsc_slot_ptr(opt, rx_queue, qindex, qlen);
+	qver = PFQ_SHARED_QUEUE_VER(data);
+
+	hdr  = (struct pfq_pkthdr *) core_mpsc_slot_ptr(opt, rx_queue, qver, qlen);
 
 	for_each_qbuff_with_mask(mask, buffs, buff, n)
 	{
@@ -880,9 +882,8 @@ size_t pfq_sk_queue_recv(struct core_sock_opt *opt,
 
 		/* commit the slot (release semantic) */
 
-		smp_wmb();
+		__atomic_store_n(&hdr->info.commit, qver, __ATOMIC_RELEASE);
 
-		hdr->info.commit = (uint16_t)qindex;
 
 		if ((slot_index & 8191) == 0 &&
 		    waitqueue_active(&opt->waitqueue)) {

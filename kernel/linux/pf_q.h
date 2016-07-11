@@ -63,8 +63,21 @@
 #define PFQ_VERSION_CODE			PFQ_VERSION(6,0,0)
 #define PFQ_VERSION_STRING			"6.0.0"
 
-#define PFQ_SHARED_QUEUE_INDEX(data)		((data) >> 24)
-#define PFQ_SHARED_QUEUE_LEN(data)		((data) & 0x00ffffffu )
+#ifdef __x86_64__
+typedef uint16_t pfq_ver_t;
+#else
+typedef uint8_t  pfq_ver_t;
+#endif
+
+#define PFQ_SHARED_QUEUE_VER_SIZE		(sizeof(pfq_ver_t))
+#define PFQ_SHARED_QUEUE_LEN_SIZE		(sizeof(unsigned long) - PFQ_SHARED_QUEUE_VER_SIZE)
+
+#define PFQ_SHARED_QUEUE_VER_MASK		((1UL << (PFQ_SHARED_QUEUE_VER_SIZE<<3))-1)
+#define PFQ_SHARED_QUEUE_LEN_MASK		((1UL << (PFQ_SHARED_QUEUE_LEN_SIZE<<3))-1)
+
+#define PFQ_SHARED_QUEUE_VER(shinfo)		((shinfo) >> (PFQ_SHARED_QUEUE_LEN_SIZE<<3))
+#define PFQ_SHARED_QUEUE_LEN(shinfo)		((shinfo) &   PFQ_SHARED_QUEUE_LEN_MASK)
+
 #define PFQ_SHARED_QUEUE_SLOT_SIZE(x)		ALIGN(sizeof(struct pfq_pkthdr) + x, 8)
 #define PFQ_SHARED_QUEUE_NEXT_PKTHDR(hdr, fix)	((struct pfq_pkthdr *)(fix ? ((char *)hdr + fix) : (char *)(hdr+1) + ALIGN(hdr->caplen, 8)))
 
@@ -164,7 +177,7 @@
 
 struct pfq_rx_queue
 {
-        unsigned int		data;
+        unsigned long		shinfo;	    /* atomic */
         unsigned int            len;        /* queue length in slots */
         unsigned int            size;       /* queue size in bytes */
         unsigned int            slot_size;  /* sizeof(pfq_pkthdr) + caplen  */
