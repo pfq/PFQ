@@ -68,14 +68,23 @@ Contributors (in chronological order)
 -------------------------------------
 
 Andrea Di Pietro <andrea.dipietro@for.unipi.it>  
+
 Loris Gazzarrini <loris.gazzarrini@iet.unipi.it>  
+
 Gregorio Procissi <g.procissi@iet.unipi.it>
+
 Luca Abeni <abeni@dit.unitn.it>
+
 Tolysz <tolysz@gmail.com>
+
 LSB <leebutterman@gmail.com>
+
 Andrey Korolyov <andrey@xdel.ru>
+
 MrClick <valerio.click@gmx.com>
+
 Paul Emmerich <emmericp@net.in.tum.de>
+
 Bach Le <bach@bullno1.com>
 
 
