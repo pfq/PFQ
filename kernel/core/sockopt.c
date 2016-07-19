@@ -169,7 +169,7 @@ int core_getsockopt(struct socket *sock,
 
         case Q_SO_GET_SHMEM_SIZE:
 	{
-		size_t size = pfq_shared_memory_size(so);
+		size_t size = pfq_total_queue_mem_aligned(so);
 
                 if (len != sizeof(size))
                         return -EINVAL;

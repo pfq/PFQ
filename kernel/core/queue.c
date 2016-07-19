@@ -43,7 +43,7 @@ core_shared_queue_enable(struct core_sock *so, unsigned long user_addr)
 
 		/* alloc queue memory */
 
-		if (pfq_shared_memory_alloc(&so->shmem, pfq_shared_memory_size(so), user_addr) < 0)
+		if (pfq_shared_memory_alloc(&so->shmem, pfq_total_queue_mem_aligned(so), user_addr) < 0)
 		{
 			return -ENOMEM;
 		}

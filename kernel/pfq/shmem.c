@@ -217,13 +217,11 @@ size_t pfq_total_queue_mem(struct core_sock *so)
 }
 
 
-
 #define HUGEPAGE_SIZE  (2*1024*1024)
 
-size_t pfq_shared_memory_size(struct core_sock *so)
+size_t pfq_total_queue_mem_aligned(struct core_sock *so)
 {
 	size_t tot_mem = pfq_total_queue_mem(so);
-
 	return (1 + tot_mem/HUGEPAGE_SIZE) * HUGEPAGE_SIZE;
 }
 
