@@ -739,7 +739,7 @@ pfq_conf_find_key(const char *key)
 	return -1;
 }
 
-char *
+static char *
 str_append(char *str1, const char *str2)
 {
 	char *ret;
@@ -797,6 +797,13 @@ pfq_parse_config(struct pfq_opt *opt, const char *filename)
 
 		if (tkey[0] == '#') /* skip comments */
 			continue;
+
+		if (strncasecmp(tkey, "group_", 6) == 0)
+		{
+			char *dev = strdup(pfq_getenv_name(tkey + sizeof("group_")-1));
+			pfq_group_map_set(&opt->group_map, dev, atoi(value));
+			continue;
+		}
 
 		switch(pfq_conf_find_key(tkey))
 		{
