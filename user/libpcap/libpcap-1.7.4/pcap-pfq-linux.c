@@ -242,6 +242,7 @@ fix_program(pcap_t *handle, struct sock_fprog *fcode, int is_mmapped)
 }
 
 
+
 static int
 pfq_setfilter_linux(pcap_t *handle, struct bpf_program *filter)
 {
@@ -871,7 +872,7 @@ pfq_activate_linux(pcap_t *handle)
 
 	device = pfq_get_devname(handle->opt.source);
 
-	fprintf(stdout, "[PFQ] running on device %s...\n", device);
+	fprintf(stdout, "[PFQ] socket on device %s...\n", device);
 
 	config = pfq_get_config_file(handle->opt.source);
 	if (config == NULL) {
@@ -881,19 +882,19 @@ pfq_activate_linux(pcap_t *handle)
 	}
 
 	if (config != NULL) {
-
-		fprintf(stdout, "[PFQ] configuration file %s...\n", config);
+		fprintf(stdout, "[PFQ] parsing config file %s...\n", config);
 
 		if (pfq_parse_config(&handle->opt.pfq, config) == -1) {
 			snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "pfq: config error");
 			return PCAP_ERROR;
 		}
+
 		free(config);
 	}
 
 
 	if (pfq_parse_env(&handle->opt.pfq) == -1) {
-		snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "pfq: env error!");
+		snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "pfq: environ variable error!");
 		return PCAP_ERROR;
 	}
 
@@ -906,12 +907,16 @@ pfq_activate_linux(pcap_t *handle)
 		handle->opt.pfq.rx_slots = handle->opt.buffer_size/handle->opt.pfq.caplen;
 
 
-	fprintf(stdout, "[PFQ] buffer_size = %d caplen = %d, rx_slots = %d, tx_slots = %d, tx_flush_hint = %d\n",
-		handle->opt.buffer_size,
+	fprintf(stdout, "[PFQ] config caplen = %d, rx_slots = %d, tx_slots = %d, tx_flush_hint = %d\n",
 		handle->opt.pfq.caplen,
 		handle->opt.pfq.rx_slots,
 		handle->opt.pfq.tx_slots,
 		handle->opt.pfq.tx_flush_hint);
+
+
+	pfq_group_map_dump(&handle->opt.pfq.group_map);
+
+	fprintf(stdout, "[PFQ] config group default %d\n", handle->opt.pfq.def_group);
 
 	handle->read_op		= pfq_read_linux;
 	handle->inject_op	= pfq_inject_linux;
@@ -923,9 +928,9 @@ pfq_activate_linux(pcap_t *handle)
 	handle->cleanup_op	= pfq_cleanup_linux;
 	handle->set_datalink_op	= NULL;	/* can't change data link type */
 
-
 	handle->md.pfq.q	= NULL;
 	handle->md.pfq.current	= NULL;
+
 	pfq_net_queue_init(&handle->md.pfq.nq);
 	handle->md.pfq.ifs_promisc = 0;
 
@@ -974,6 +979,9 @@ pfq_activate_linux(pcap_t *handle)
 						"SIOCGIFFLAGS: %s", pcap_strerror(errno));
 				return PCAP_ERROR;
 			}
+
+			fprintf(stdout, "[PFQ] set promisc on dev %s...\n", dev);
+
 			if ((ifr.ifr_flags & IFF_PROMISC) == 0) {
 
 				/*
@@ -997,7 +1005,6 @@ pfq_activate_linux(pcap_t *handle)
 					return PCAP_ERROR;
 				}
 
-				fprintf(stdout, "[PFQ] set promisc on dev %s...\n", dev);
 
 				ifr.ifr_flags |= IFF_PROMISC;
 				if (ioctl(handle->fd, SIOCSIFFLAGS, &ifr) == -1) {
@@ -1130,7 +1137,11 @@ pfq_activate_linux(pcap_t *handle)
 		}
 	}
 
-	/* bind TX to device/queue */
+	fprintf(stdout, "[PFQ] socket (%d) is using Rx group %d\n", pfq_id(handle->md.pfq.q), handle->opt.pfq.group);
+
+	/* 
+	 * Bind TX to device/queue 
+	 */
 
 	if (device && strcmp(device, "any"))
 	{
@@ -1169,7 +1180,9 @@ pfq_activate_linux(pcap_t *handle)
 		}
 	}
 
-	/* set pfq-lang computation */
+	/* 
+	 * Set pfq-lang computation 
+	 */
 
 	/* Haskell bird style? */
 
@@ -1198,7 +1211,9 @@ pfq_activate_linux(pcap_t *handle)
 		}
 	}
 
-	/* set vlan filters */
+	/* 
+	 * Set vlan filters 
+	 */
 
 	if (handle->opt.pfq.vlan) {
 
@@ -1223,14 +1238,18 @@ pfq_activate_linux(pcap_t *handle)
                         goto fail;
         }
 
-	/* enable timestamping */
+	/* 
+	 * Enable timestamping 
+	 */
 
 	if (pfq_timestamping_enable(handle->md.pfq.q, 1) == -1) {
 		snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "%s", pfq_error(handle->md.pfq.q));
 		goto fail;
 	}
 
-	/* enable socket */
+	/* 
+	 * Enable PFQ socket 
+	 */
 
 	if (pfq_enable(handle->md.pfq.q) == -1) {
 		snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "%s", pfq_error(handle->md.pfq.q));

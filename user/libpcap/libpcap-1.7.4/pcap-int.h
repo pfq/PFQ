@@ -245,6 +245,7 @@ struct pcap_opt {
 		char *lang_src;
 		char *lang_lit;
 	} pfq;
+
   #endif
 };
 
@@ -325,7 +326,7 @@ struct pcap {
 	int oldstyle;		/* if we're opening with pcap_open_live() */
 
 	struct pcap_opt opt;
-  struct pcap_md md;
+	struct pcap_md md;
 
 	/*
 	 * Place holder for pcap_next().
