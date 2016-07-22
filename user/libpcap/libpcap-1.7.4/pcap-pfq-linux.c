@@ -638,7 +638,7 @@ pfq_opt_default(pcap_t *handle)
 static int
 pfq_parse_env(struct pfq_opt *opt)
 {
-	char *var;
+	char *var, **vars;
 
 	if ((var = getenv("PFQ_DEF_GROUP")))
 		opt->def_group = atoi(var);
@@ -680,6 +680,16 @@ pfq_parse_env(struct pfq_opt *opt)
 			fprintf(stderr, "[PFQ] PFQ_TX_IDX_THREAD parse error!\n");
 			return -1;
 		}
+	}
+
+        vars = pfq_getenv("PFQ_GROUP_");
+        for(; *vars; vars++)
+	{
+		char *p, *dev = strdup(pfq_getenv_name(*vars + sizeof("PFQ_GROUP_")-1));
+		for(p = dev; *p != '\0'; ++p)
+			if (*p == '_')
+				*p = ':';
+		pfq_group_map_set(&opt->group_map, dev, atoi(pfq_getenv_value(*vars)));
 	}
 
 	return 0;
