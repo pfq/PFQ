@@ -345,6 +345,62 @@ pfq_setfilter_linux(pcap_t *handle, struct bpf_program *filter)
 }
 
 
+/***********************************************/
+
+
+static int
+pfq_group_map_dump(struct pfq_group_map *map)
+{
+	int n = 0;
+	for(; n < map->size; n++)
+		fprintf(stderr, "[PFQ] config group for dev '%s' = %d\n", map->entry[n].dev, map->entry[n].group);
+}
+
+
+static int
+pfq_group_map_free(struct pfq_group_map *map)
+{
+	int n = 0;
+	for(; n < map->size; n++)
+		free(map->entry[n].dev);
+}
+
+
+static int
+pfq_group_map_set(struct pfq_group_map *map, const char *dev, int group)
+{
+	int n = 0;
+	for(; n < map->size; n++) {
+		if (strcmp(map->entry[n].dev, dev) == 0)
+			break;
+	}
+
+	if (n == PFQ_GROUP_MAP_SIZE)
+		return -1;
+
+	free(map->entry[n].dev);
+	map->entry[n].dev = strdup(dev);
+	map->entry[n].group = group;
+
+	if (n == map->size)
+		map->size++;
+
+	return 0;
+}
+
+
+static int
+pfq_group_map_get(struct pfq_group_map const *map, const char *dev)
+{
+	int n = 0;
+	for(; n < map->size; n++) {
+		if (strcmp(map->entry[n].dev, dev) == 0)
+			return map->entry[n].group;
+	}
+	return -1;
+}
+
+
 typedef int (*pfq_token_handler_t)(const char *);
 
 static int
@@ -563,7 +619,7 @@ pfq_opt_default(pcap_t *handle)
 	return (struct pfq_opt)
 	{
 		.def_group	= -1,
-		.group_map      = {},
+		.group_map      = {{[0 ... PFQ_GROUP_MAP_SIZE-1]{NULL, -1}}, 0},
 		.group		= -1,
 		.caplen		= handle->snapshot,
 		.rx_slots	= 4096,
