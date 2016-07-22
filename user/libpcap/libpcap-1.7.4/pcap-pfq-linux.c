@@ -864,6 +864,7 @@ pfq_activate_linux(pcap_t *handle)
         const int maxlen = 1514;
 	const int queue = Q_ANY_QUEUE;
 	char *first_dev;
+	int group;
 
 	handle->opt.pfq  = pfq_opt_default(handle);
 	handle->linktype = DLT_EN10MB;
@@ -963,6 +964,9 @@ pfq_activate_linux(pcap_t *handle)
 		{
 			struct ifreq ifr;
 
+			if (pfq_is_alias_device_name(dev))
+				return 0;
+
 			memset(&ifr, 0, sizeof(ifr));
 			strncpy(ifr.ifr_name, dev, sizeof(ifr.ifr_name));
 			if (ioctl(handle->fd, SIOCGIFFLAGS, &ifr) == -1) {
@@ -1036,74 +1040,94 @@ pfq_activate_linux(pcap_t *handle)
 	if (handle->opt.promisc)
 		handle->md.proc_dropped = handle->md.device ? linux_if_drops(handle->md.device) : 0;
 
-	if (handle->opt.pfq.group != -1) {
 
-		int bind_group(const char *dev)
-		{
-			fprintf(stdout, "[PFQ] binding group %d on dev %s...\n", handle->opt.pfq.group, dev);
+	/***************************
+	 *   Configure PFQ socket  *
+	 ***************************/
 
-			if (pfq_bind_group(handle->md.pfq.q, handle->opt.pfq.group, dev, queue) == -1) {
-				fprintf(stderr, "[PFQ] error: %s\n", pfq_error(handle->md.pfq.q));
-			}
-			return 0;
-		}
-
-		handle->md.pfq.q = pfq_open_nogroup(handle->opt.pfq.caplen,
-						    handle->opt.pfq.rx_slots,
-						    handle->opt.pfq.tx_slots);
-		if (handle->md.pfq.q == NULL) {
-
-			snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "%s", pfq_error(handle->md.pfq.q));
-			goto fail;
-		}
-
-                fprintf(stdout, "[PFQ] group = %d\n", handle->opt.pfq.group);
-
-		if (pfq_join_group(handle->md.pfq.q,
-				   handle->opt.pfq.group, Q_CLASS_DEFAULT, Q_POLICY_GROUP_SHARED) < 0) {
-			fprintf(stderr, "[PFQ] error: %s\n", pfq_error(handle->md.pfq.q));
-		}
-
-		/* bind to device(es) if specified */
-
-		if (device && strcmp(device, "any") != 0) {
-			if (string_for_each_token(device, ":", bind_group) < 0)
-				goto fail;
-		}
-	}
-	else
 	{
-		int bind_socket(const char *dev)
-		{
-			fprintf(stdout, "[PFQ] binding socket on dev %s...\n", dev);
+		int group = pfq_group_map_get(&handle->opt.pfq.group_map, handle->md.device);
+		if (group == -1)
+			group = handle->opt.pfq.def_group;
 
-			if (pfq_bind(handle->md.pfq.q, dev, queue) == -1) {
+		/* 
+		 * Bind Rx to groups
+		 */
+
+		if (group != -1) {
+
+			int bind_group(const char *dev)
+			{
+				if (pfq_is_alias_device_name(dev))
+					return 0;
+
+				fprintf(stdout, "[PFQ] binding Rx group %d on dev %s...\n", group, dev);
+
+				if (pfq_bind_group(handle->md.pfq.q, group, dev, queue) == -1) {
+					fprintf(stderr, "[PFQ] error: %s\n", pfq_error(handle->md.pfq.q));
+				}
+				return 0;
+			}
+
+			handle->md.pfq.q = pfq_open_nogroup(handle->opt.pfq.caplen,
+							    handle->opt.pfq.rx_slots,
+							    handle->opt.pfq.tx_slots);
+			if (handle->md.pfq.q == NULL) {
+
+				snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "%s", pfq_error(handle->md.pfq.q));
+				goto fail;
+			}
+
+			if (pfq_join_group(handle->md.pfq.q, group, Q_CLASS_DEFAULT, Q_POLICY_GROUP_SHARED) < 0) {
 				fprintf(stderr, "[PFQ] error: %s\n", pfq_error(handle->md.pfq.q));
 			}
-			return 0;
+
+			/* bind to device(es) if specified */
+
+			if (device && strcmp(device, "any") != 0) {
+				if (string_for_each_token(device, ":", bind_group) < 0)
+					goto fail;
+			}
+
+			handle->opt.pfq.group = group;
+		}
+		else
+		{
+			int bind_socket(const char *dev)
+			{
+				if (pfq_is_alias_device_name(dev))
+					return 0;
+
+				fprintf(stdout, "[PFQ] binding socket on dev %s...\n", dev);
+
+				if (pfq_bind(handle->md.pfq.q, dev, queue) == -1) {
+					fprintf(stderr, "[PFQ] error: %s\n", pfq_error(handle->md.pfq.q));
+				}
+				return 0;
+			}
+
+			handle->md.pfq.q = pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_SHARED,
+							  handle->opt.pfq.caplen,
+							  handle->opt.pfq.rx_slots,
+							  handle->opt.pfq.tx_slots);
+			if (handle->md.pfq.q == NULL) {
+				snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "%s", pfq_error(handle->md.pfq.q));
+				goto fail;
+			}
+
+			/* bind to device(es) if specified */
+
+			if (device && strcmp(device, "any") != 0) {
+				if (string_for_each_token(device, ":", bind_socket) < 0)
+					goto fail;
+			}
 		}
 
-		handle->md.pfq.q = pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_SHARED,
-						  handle->opt.pfq.caplen,
-						  handle->opt.pfq.rx_slots,
-						  handle->opt.pfq.tx_slots);
-		if (handle->md.pfq.q == NULL) {
+		handle->opt.pfq.group = pfq_group_id(handle->md.pfq.q);
+		if (handle->opt.pfq.group == -1) {
 			snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "%s", pfq_error(handle->md.pfq.q));
 			goto fail;
 		}
-
-		/* bind to device(es) if specified */
-
-		if (device && strcmp(device, "any") != 0) {
-			if (string_for_each_token(device, ":", bind_socket) < 0)
-				goto fail;
-		}
-	}
-
-        handle->opt.pfq.group = pfq_group_id(handle->md.pfq.q);
-	if (handle->opt.pfq.group == -1) {
-		snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "%s", pfq_error(handle->md.pfq.q));
-		goto fail;
 	}
 
 	/* bind TX to device/queue */
