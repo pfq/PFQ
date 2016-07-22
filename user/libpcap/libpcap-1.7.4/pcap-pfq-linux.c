@@ -543,39 +543,39 @@ pfq_parse_env(struct pfq_opt *opt)
 	if ((var = getenv("PFQ_DEF_GROUP")))
 		opt->def_group = atoi(var);
 
-	if ((var = pfq_getenv("PFQ_CAPLEN")))
+	if ((var = getenv("PFQ_CAPLEN")))
 		opt->caplen = atoi(var);
 
-	if ((var = pfq_getenv("PFQ_RX_SLOTS")))
+	if ((var = getenv("PFQ_RX_SLOTS")))
 		opt->rx_slots = atoi(var);
 
-	if ((var = pfq_getenv("PFQ_TX_SLOTS")))
+	if ((var = getenv("PFQ_TX_SLOTS")))
 		opt->tx_slots = atoi(var);
 
-	if ((var = pfq_getenv("PFQ_TX_FLUSH_HINT")))
+	if ((var = getenv("PFQ_TX_FLUSH_HINT")))
 		opt->tx_flush_hint = atoi(var);
 
-	if ((var = pfq_getenv("PFQ_VLAN")))
+	if ((var = getenv("PFQ_VLAN")))
 		opt->vlan = var;
 
-	if ((var = pfq_getenv("PFQ_LANG_SRC"))) {
+	if ((var = getenv("PFQ_LANG_SRC"))) {
 		free(opt->lang_src);
 		opt->lang_src = var;
 	}
 
-	if ((var = pfq_getenv("PFQ_LANG_LIT"))) {
+	if ((var = getenv("PFQ_LANG_LIT"))) {
 		free(opt->lang_lit);
 		opt->lang_lit = var;
 	}
 
-	if ((var = pfq_getenv("PFQ_TX_HW_QUEUE"))) {
+	if ((var = getenv("PFQ_TX_HW_QUEUE"))) {
 		if (pfq_parse_integers(opt->tx_hw_queue, 4, var) < 0) {
 			fprintf(stderr, "[PFQ] PFQ_TX_HW_QUEUE parse error!\n");
 			return -1;
 		}
 	}
 
-	if ((var = pfq_getenv("PFQ_TX_IDX_THREAD"))) {
+	if ((var = getenv("PFQ_TX_IDX_THREAD"))) {
 		if (pfq_parse_integers(opt->tx_idx_thread, 4, var) < 0) {
 			fprintf(stderr, "[PFQ] PFQ_TX_IDX_THREAD parse error!\n");
 			return -1;
@@ -745,7 +745,7 @@ pfq_activate_linux(pcap_t *handle)
 
 	config = pfq_get_config_file(handle->opt.source);
 	if (config == NULL) {
-		char *conf = pfq_getenv("PFQ_CONFIG");
+		char *conf = getenv("PFQ_CONFIG");
 		if (conf)
 			config = strdup(conf);
 	}

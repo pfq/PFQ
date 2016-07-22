@@ -455,7 +455,7 @@ pcap_create_interface(const char *device, char *ebuf)
 	strncat(pfq_dev, device, sizeof(pfq_dev)-4-1);
 
 #ifdef PCAP_SUPPORT_PFQ
-	if (strstr(device, "pfq") || pfq_getenv(pfq_dev) || pfq_getenv("PFQ_FORCE_ALL"))
+	if (strstr(device, "pfq") || getenv(pfq_dev) || getenv("PFQ_FORCE_ALL"))
 	{
 		return pfq_create(device, ebuf, sizeof(struct pcap_linux));
 	}
