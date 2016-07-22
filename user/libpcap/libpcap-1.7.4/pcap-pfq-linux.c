@@ -518,6 +518,8 @@ pfq_opt_default(pcap_t *handle)
 {
 	return (struct pfq_opt)
 	{
+		.def_group	= -1,
+		.group_map      = {},
 		.group		= -1,
 		.caplen		= handle->snapshot,
 		.rx_slots	= 4096,

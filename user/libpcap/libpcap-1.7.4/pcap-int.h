@@ -211,9 +211,18 @@ struct pcap_opt {
 	int	tstamp_precision;
 
   #ifdef PCAP_SUPPORT_PFQ
+
 	struct pfq_opt
 	{
-		int group;
+		int def_group;
+
+		struct pfq_group_map {
+			const char     *dev;
+			int		group;
+			int		size;
+		} group_map[64];
+
+		int group;		/* actual group of this socket */
 		int caplen;
 
 		int rx_slots;
