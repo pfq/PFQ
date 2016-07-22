@@ -212,15 +212,22 @@ struct pcap_opt {
 
   #ifdef PCAP_SUPPORT_PFQ
 
+  #define PFQ_GROUP_MAP_SIZE	64
+
 	struct pfq_opt
 	{
 		int def_group;
 
 		struct pfq_group_map {
-			const char     *dev;
-			int		group;
+			struct
+			{
+				char		*dev;
+				int		group;
+
+			} entry[PFQ_GROUP_MAP_SIZE];
+
 			int		size;
-		} group_map[64];
+		} group_map;
 
 		int group;		/* actual group of this socket */
 		int caplen;
