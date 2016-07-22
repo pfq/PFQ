@@ -62,6 +62,9 @@
 
 #include "pcap-pfq-linux.h"
 
+extern char **environ;
+
+
 static void pfq_cleanup_linux(pcap_t *);
 static	int pfq_activate_linux(pcap_t *);
 static	int pfq_inject_linux(pcap_t *, const void *, size_t);
@@ -427,6 +430,47 @@ pfq_get_devname(const char *fullname)
 	if (dev = strchr(dev, ':'))
 		return strdup(dev+1);
 	return NULL;
+}
+
+static char *
+pfq_getenv_name(char *var)
+{
+	static __thread char name[64];
+	char * end = strchr(var, '=');
+	if (end) {
+		strncpy(name, var, (size_t)(end-var));
+		name[end-var] = '\0';
+	}
+	else {
+		strcpy(name, var);
+	}
+	return name;
+}
+
+
+static char *
+pfq_getenv_value(char *var)
+{
+	char *eq = strchr(var, '=');
+	return eq ? eq+1 : NULL;
+}
+
+
+static char **
+pfq_getenv(char *name)
+{
+	static __thread char *env[64];
+        char **cur = environ;
+	int size = 0;
+
+	while (*cur && size < 64) {
+		if (strncmp(*cur, name, strlen(name)) == 0) {
+			env[size++] = *cur;
+		}
+		cur++;
+	}
+	env[size] = NULL;
+	return env;
 }
 
 
