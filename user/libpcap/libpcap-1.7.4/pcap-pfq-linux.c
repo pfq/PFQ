@@ -845,6 +845,18 @@ err:
 	return rc;
 }
 
+
+static int
+pfq_is_alias_device_name(const char *dev)
+{
+	char *endptr;
+	strtol(dev, &endptr, 10);
+	if (*endptr == '\0')
+		return 1;
+	return 0;
+}
+
+
 static int
 pfq_activate_linux(pcap_t *handle)
 {
