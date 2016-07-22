@@ -540,8 +540,8 @@ pfq_parse_env(struct pfq_opt *opt)
 {
 	char *var;
 
-	if ((var = pfq_getenv("PFQ_GROUP")))
-		opt->group = atoi(var);
+	if ((var = getenv("PFQ_DEF_GROUP")))
+		opt->def_group = atoi(var);
 
 	if ((var = pfq_getenv("PFQ_CAPLEN")))
 		opt->caplen = atoi(var);
@@ -589,7 +589,7 @@ pfq_parse_env(struct pfq_opt *opt)
 #define KEY(value) [KEY_ ## value] = # value
 
 #define KEY_ERR			-1
-#define KEY_group		0
+#define KEY_def_group		0
 #define KEY_caplen		1
 #define KEY_rx_slots		2
 #define KEY_tx_slots            3
@@ -605,7 +605,7 @@ struct pfq_conf_key
 	const char *value;
 } pfq_conf_keys[] =
 {
-	KEY(group),
+	KEY(def_group),
 	KEY(caplen),
 	KEY(rx_slots),
 	KEY(tx_slots),
@@ -690,7 +690,7 @@ pfq_parse_config(struct pfq_opt *opt, const char *filename)
 
 		switch(pfq_conf_find_key(tkey))
 		{
-			case KEY_group:		opt->group    = atoi(value);  break;
+			case KEY_def_group:     opt->def_group= atoi(value);  break;
 			case KEY_caplen:	opt->caplen   = atoi(value);  break;
 			case KEY_rx_slots:	opt->rx_slots = atoi(value);  break;
 			case KEY_tx_slots:	opt->tx_slots = atoi(value);  break;
