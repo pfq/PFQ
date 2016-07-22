@@ -450,9 +450,8 @@ pcap_t *
 pcap_create_interface(const char *device, char *ebuf)
 {
 	pcap_t *handle;
-	char pfq_dev[256];
+	char pfq_dev[256] = "PFQ_";
 
-	strcpy (pfq_dev, "PFQ_");
 	strncat(pfq_dev, device, sizeof(pfq_dev)-4-1);
 
 #ifdef PCAP_SUPPORT_PFQ
