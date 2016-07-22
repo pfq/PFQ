@@ -451,11 +451,22 @@ pcap_create_interface(const char *device, char *ebuf)
 {
 	pcap_t *handle;
 	char pfq_dev[256] = "PFQ_";
+	char pfq_group_dev[256] = "PFQ_GROUP_";
+	char *p;
 
 	strncat(pfq_dev, device, sizeof(pfq_dev)-4-1);
+	strncat(pfq_group_dev, device, sizeof(pfq_dev)-4-1);
+
+	for(p = pfq_dev + sizeof("PFQ_")-1; *p != '\0'; ++p)
+		if (*p == ':') *p = '_';
+	for(p = pfq_group_dev + sizeof("PFQ_GROUP_")-1; *p != '\0'; ++p)
+		if (*p == ':') *p = '_';
 
 #ifdef PCAP_SUPPORT_PFQ
-	if (strstr(device, "pfq") || getenv(pfq_dev) || getenv("PFQ_FORCE_ALL"))
+	if (strstr(device, "pfq") ||
+	    getenv(pfq_dev)	  ||
+	    getenv(pfq_group_dev) ||
+	    getenv("PFQ_FORCE_ALL"))
 	{
 		return pfq_create(device, ebuf, sizeof(struct pcap_linux));
 	}
