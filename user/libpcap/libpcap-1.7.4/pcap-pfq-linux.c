@@ -1245,14 +1245,18 @@ pfq_activate_linux(pcap_t *handle)
 
 	/* Haskell bird style? */
 
-	if (handle->opt.pfq.lang_src[handle->opt.pfq.group]) {
+	char *cur_lang_src = handle->opt.pfq.lang_src[handle->opt.pfq.group] ?
+			     handle->opt.pfq.lang_src[handle->opt.pfq.group] :
+			     handle->opt.pfq.lang_src[PFQ_GROUP_DEF];
+
+	if (cur_lang_src) {
 
 		fprintf(stdout, "[PFQ] loading pfq-lang program '%s' for group %d\n",
-			handle->opt.pfq.lang_src[handle->opt.pfq.group], handle->opt.pfq.group);
+			cur_lang_src, handle->opt.pfq.group);
 
 		if (pfq_set_group_computation_from_file(handle->md.pfq.q,
 							handle->opt.pfq.group,
-							handle->opt.pfq.lang_src[handle->opt.pfq.group]) < 0) {
+							cur_lang_src) < 0) {
 
 			fprintf(stderr, "[PFQ] error: %s\n", pfq_error(handle->md.pfq.q));
 		}
