@@ -35,9 +35,11 @@
 #include "config.h"
 #endif
 
+#define _GNU_SOURCE
+#include <string.h>
+
 #include <pcap-int.h>
 #include <assert.h>
-#include <string.h>
 #include <errno.h>
 #include <stdlib.h>
 
@@ -253,7 +255,7 @@ pfq_setfilter_linux(pcap_t *handle, struct bpf_program *filter)
 	if (!handle)
 		return -1;
 	if (!filter) {
-	        strncpy(handle->errbuf, "[PFQ] setfilter: No filter specified",
+	        strlcpy(handle->errbuf, "[PFQ] setfilter: No filter specified",
 			PCAP_ERRBUF_SIZE);
 		return -1;
 	}
@@ -1072,7 +1074,7 @@ pfq_activate_linux(pcap_t *handle)
 				return 0;
 
 			memset(&ifr, 0, sizeof(ifr));
-			strncpy(ifr.ifr_name, dev, sizeof(ifr.ifr_name));
+			strlcpy(ifr.ifr_name, dev, sizeof(ifr.ifr_name));
 			if (ioctl(handle->fd, SIOCGIFFLAGS, &ifr) == -1) {
 				snprintf(handle->errbuf, PCAP_ERRBUF_SIZE,
 						"SIOCGIFFLAGS: %s", pcap_strerror(errno));
@@ -1311,8 +1313,7 @@ pfq_cleanup_linux(pcap_t *handle)
 			return 0;
 
 		memset(&ifr, 0, sizeof(ifr));
-		strncpy(ifr.ifr_name, dev,
-				sizeof(ifr.ifr_name));
+		strlcpy(ifr.ifr_name, dev, sizeof(ifr.ifr_name));
 		if (ioctl(handle->fd, SIOCGIFFLAGS, &ifr) == -1) {
 			fprintf(stderr,
 					"Can't restore interface %s flags (SIOCGIFFLAGS failed: %s).\n"
