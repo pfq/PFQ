@@ -213,6 +213,7 @@ struct pcap_opt {
   #ifdef PCAP_SUPPORT_PFQ
 
   #define PFQ_GROUP_MAP_SIZE	64
+  #define PFQ_GROUP_DEF		64
 
 	struct pfq_opt
 	{
@@ -241,8 +242,8 @@ struct pcap_opt {
 		int tx_hw_queue[4];
 		int tx_idx_thread[4];
 
-		char *vlan;
-		char *lang_src;
+		char *vlan[PFQ_GROUP_DEF+1];
+		char *lang_src[PFQ_GROUP_DEF+1];
 		char *lang_lit;
 	} pfq;
 
