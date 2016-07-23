@@ -497,8 +497,8 @@ pfq_getenv_name(char *var)
 	static __thread char name[64];
 	char * end = strchr(var, '=');
 	if (end) {
-		strncpy(name, var, (size_t)(end-var));
-		name[end-var] = '\0';
+		strncpy(name, var, (size_t)min(63,end-var));
+		name[min(63,end-var)] = '\0';
 	}
 	else {
 		strcpy(name, var);
@@ -1026,7 +1026,6 @@ pfq_activate_linux(pcap_t *handle)
 
 		free(config);
 	}
-
 
 	if (pfq_parse_env(&handle->opt.pfq) == -1) {
 		snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "pfq: environ variable(s) error!");
