@@ -690,7 +690,11 @@ pfq_parse_env(struct pfq_opt *opt)
 		for(p = dev; *p != '\0'; ++p)
 			if (*p == '_')
 				*p = ':';
-		pfq_group_map_set(&opt->group_map, dev, atoi(pfq_getenv_value(*vars)));
+		if (pfq_group_map_set(&opt->group_map, dev, atoi(pfq_getenv_value(*vars))) < 0) {
+			fprintf(stderr, "[PFQ] %s: group map error!\n", *vars);
+			return -1;
+		}
+
 	}
 
 	return 0;
@@ -802,7 +806,11 @@ pfq_parse_config(struct pfq_opt *opt, const char *filename)
 		if (strncasecmp(tkey, "group_", 6) == 0)
 		{
 			char *dev = strdup(pfq_getenv_name(tkey + sizeof("group_")-1));
-			pfq_group_map_set(&opt->group_map, dev, atoi(value));
+			if (pfq_group_map_set(&opt->group_map, dev, atoi(value)) < 0) {
+				fprintf(stderr, "[PFQ] %s: '%s': group map error!\n", filename, tkey);
+				rc = -1;
+				goto next;
+			}
 			continue;
 		}
 
@@ -894,7 +902,7 @@ pfq_activate_linux(pcap_t *handle)
 
 
 	if (pfq_parse_env(&handle->opt.pfq) == -1) {
-		snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "pfq: environ variable error!");
+		snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "pfq: environ variable(s) error!");
 		return PCAP_ERROR;
 	}
 
