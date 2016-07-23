@@ -791,6 +791,14 @@ str_append(char *str1, const char *str2)
 }
 
 
+static void
+pfq_warn_if(int index, const char *filename, const char *key)
+{
+	if (index != PFQ_GROUP_DEF)
+		fprintf(stderr, "[PFQ] WARNING: %s: key %s: group ignored!\n", filename, key);
+}
+
+
 static int
 pfq_parse_config(struct pfq_opt *opt, const char *filename)
 {
@@ -852,18 +860,20 @@ pfq_parse_config(struct pfq_opt *opt, const char *filename)
 
 		switch(ktype)
 		{
-			case KEY_def_group:     opt->def_group= atoi(value);  break;
-			case KEY_caplen:	opt->caplen   = atoi(value);  break;
-			case KEY_rx_slots:	opt->rx_slots = atoi(value);  break;
-			case KEY_tx_slots:	opt->tx_slots = atoi(value);  break;
-			case KEY_tx_flush_hint:	opt->tx_flush_hint = atoi(value);  break;
+			case KEY_def_group:     pfq_warn_if(index, filename, tkey); opt->def_group= atoi(value);  break;
+			case KEY_caplen:	pfq_warn_if(index, filename, tkey); opt->caplen   = atoi(value);  break;
+			case KEY_rx_slots:	pfq_warn_if(index, filename, tkey); opt->rx_slots = atoi(value);  break;
+			case KEY_tx_slots:	pfq_warn_if(index, filename, tkey); opt->tx_slots = atoi(value);  break;
+			case KEY_tx_flush_hint:	pfq_warn_if(index, filename, tkey); opt->tx_flush_hint = atoi(value);  break;
 			case KEY_tx_hw_queue:  {
+				pfq_warn_if(index, filename, tkey);
 				if (pfq_parse_integers(opt->tx_hw_queue, 4, value) < 0) {
 					fprintf(stderr, "[PFQ] %s: parse error at: %s\n", filename, tkey);
 					rc = -1;
 				}
 			} break;
 			case KEY_tx_idx_thread: {
+				pfq_warn_if(index, filename, tkey);
 				if (pfq_parse_integers(opt->tx_idx_thread, 4, value) < 0) {
 					fprintf(stderr, "[PFQ] %s: parse error at: %s\n", filename, tkey);
 					rc = -1;
