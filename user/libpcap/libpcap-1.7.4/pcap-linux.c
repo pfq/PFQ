@@ -461,12 +461,14 @@ pcap_create_interface(const char *device, char *ebuf)
 
 	for(p = pfq_dev + sizeof("PFQ_")-1; *p != '\0'; ++p)
 		if (*p == ':') *p = '_';
+
 	for(p = pfq_group_dev + sizeof("PFQ_GROUP_")-1; *p != '\0'; ++p)
 		if (*p == ':') *p = '_';
 
-	if (strstr(device, "pfq") ||
-	    getenv(pfq_dev)	  ||
-	    getenv(pfq_group_dev) ||
+	if (strstr(device, "pfq")   ||
+	    getenv(pfq_dev)	    ||
+	    getenv(pfq_group_dev)   ||
+	    getenv("PFQ_DEF_GROUP") ||
 	    getenv("PFQ_FORCE_ALL"))
 	{
 		return pfq_create(device, ebuf, sizeof(struct pcap_linux));

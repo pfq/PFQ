@@ -76,6 +76,7 @@ static	int pfq_stats_linux(pcap_t *, struct pcap_stat *);
 
 
 #define MUST_CLEAR_PROMISC	0x00000001
+#define DEV_SEP			"^"
 
 pcap_t
 *pfq_create(const char *device, char *ebuf, size_t size)
@@ -901,14 +902,20 @@ err:
 }
 
 
-static int
-pfq_is_alias_device_name(const char *dev)
+static char *
+pfq_get_real_devname(const char *var)
 {
-	char *endptr;
-	strtol(dev, &endptr, 10);
-	if (*endptr == '\0')
-		return 1;
-	return 0;
+	static __thread char name[64];
+	char * end = strchr(var, ':');
+	if (end) {
+		size_t len = (size_t)min(63, end-var);
+		strncpy(name, var, len);
+		name[len] = '\0';
+	}
+	else {
+		strcpy(name, var);
+	}
+	return name;
 }
 
 
@@ -927,10 +934,9 @@ pfq_activate_socket_for_device(pcap_t *handle, const char *device)
 
 	if (group != -1) {
 
-		int bind_group(const char *dev)
+		int bind_group(const char *_dev)
 		{
-			if (pfq_is_alias_device_name(dev))
-				return 0;
+			const char *dev = pfq_get_real_devname(_dev);
 
 			fprintf(stdout, "[PFQ] binding Rx group %d on dev %s...\n", group, dev);
 
@@ -944,7 +950,6 @@ pfq_activate_socket_for_device(pcap_t *handle, const char *device)
 						    handle->opt.pfq.rx_slots,
 						    handle->opt.pfq.tx_slots);
 		if (handle->md.pfq.q == NULL) {
-
 			snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "%s", pfq_error(handle->md.pfq.q));
 			return -1;
 		}
@@ -956,7 +961,7 @@ pfq_activate_socket_for_device(pcap_t *handle, const char *device)
 		/* bind to device(es) if specified */
 
 		if (device && strcmp(device, "any") != 0) {
-			if (string_for_each_token(device, ":", bind_group) < 0)
+			if (string_for_each_token(device, DEV_SEP, bind_group) < 0)
 				return -1;
 		}
 
@@ -964,10 +969,9 @@ pfq_activate_socket_for_device(pcap_t *handle, const char *device)
 	}
 	else
 	{
-		int bind_socket(const char *dev)
+		int bind_socket(const char *_dev)
 		{
-			if (pfq_is_alias_device_name(dev))
-				return 0;
+			const char *dev = pfq_get_real_devname(_dev);
 
 			fprintf(stdout, "[PFQ] binding socket on dev %s...\n", dev);
 
@@ -989,7 +993,7 @@ pfq_activate_socket_for_device(pcap_t *handle, const char *device)
 		/* bind to device(es) if specified */
 
 		if (device && strcmp(device, "any") != 0) {
-			if (string_for_each_token(device, ":", bind_socket) < 0)
+			if (string_for_each_token(device, DEV_SEP, bind_socket) < 0)
 				return -1;
 		}
 	}
@@ -1109,12 +1113,11 @@ pfq_activate_linux(pcap_t *handle)
 		/* put all devic(es) in promisc mode */
                 int n = 0;
 
-		int set_promisc(const char *dev)
+		int set_promisc(const char *_dev)
 		{
 			struct ifreq ifr;
 
-			if (pfq_is_alias_device_name(dev))
-				return 0;
+			const char *dev = pfq_get_real_devname(_dev);
 
 			memset(&ifr, 0, sizeof(ifr));
 			strlcpy(ifr.ifr_name, dev, sizeof(ifr.ifr_name));
@@ -1167,7 +1170,7 @@ pfq_activate_linux(pcap_t *handle)
 		}
 
 		if (device && strcmp(device, "any")) {
-			if (string_for_each_token(device, ":", set_promisc) < 0) {
+			if (string_for_each_token(device, DEV_SEP, set_promisc) < 0) {
 				goto fail;
 			}
 		}
@@ -1204,7 +1207,7 @@ pfq_activate_linux(pcap_t *handle)
 
 	if (device && strcmp(device, "any"))
 	{
-		if ((first_dev = string_first_token(device, ":"))) {
+		if ((first_dev = string_first_token(device, DEV_SEP))) {
 
 			size_t tot, idx;
 
@@ -1399,7 +1402,7 @@ pfq_cleanup_linux(pcap_t *handle)
 	if (handle->md.must_do_on_close & MUST_CLEAR_PROMISC) {
 
 		if (handle->md.device && strcmp(handle->md.device, "any") != 0) {
-			string_for_each_token(handle->md.device, ":", clear_promisc);
+			string_for_each_token(handle->md.device, DEV_SEP, clear_promisc);
 		}
 	}
 
