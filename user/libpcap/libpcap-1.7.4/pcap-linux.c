@@ -450,9 +450,11 @@ pcap_t *
 pcap_create_interface(const char *device, char *ebuf)
 {
 	pcap_t *handle;
+
+#ifdef PCAP_SUPPORT_PFQ
+	char *p;
 	char pfq_dev[256] = "PFQ_";
 	char pfq_group_dev[256] = "PFQ_GROUP_";
-	char *p;
 
 	strncat(pfq_dev, device, sizeof(pfq_dev)-4-1);
 	strncat(pfq_group_dev, device, sizeof(pfq_dev)-4-1);
@@ -462,7 +464,6 @@ pcap_create_interface(const char *device, char *ebuf)
 	for(p = pfq_group_dev + sizeof("PFQ_GROUP_")-1; *p != '\0'; ++p)
 		if (*p == ':') *p = '_';
 
-#ifdef PCAP_SUPPORT_PFQ
 	if (strstr(device, "pfq") ||
 	    getenv(pfq_dev)	  ||
 	    getenv(pfq_group_dev) ||
