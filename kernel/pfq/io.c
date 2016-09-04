@@ -582,18 +582,16 @@ pfq_sk_queue_xmit(struct core_sock *so, int sock_queue, int cpu, int node, atomi
 
                 /* set the xmit_more bit */
 
-		if (batch_cntr >= global->xmit_batch_len) {
-			xmit_more = false;
-			batch_cntr = 0;
-		}
+		xmit_more = (batch_cntr >= global->xmit_batch_len) ?
+				batch_cntr=0, false :
+				PFQ_SHARED_QUEUE_NEXT_PKTHDR(hdr, 0) < (struct pfq_pkthdr *)end;
 
 		/* transmit this packet */
 
 		if (likely(netif_running(dev_queue.dev) &&
 			netif_carrier_ok(dev_queue.dev))) {
 
-			tmp = __pfq_mbuff_xmit(hdr, &dev_queue, &ctx, copies,
-				xmit_more && (PFQ_SHARED_QUEUE_NEXT_PKTHDR(hdr, 0) < (struct pfq_pkthdr *)end), stop, &intr);
+			tmp = __pfq_mbuff_xmit(hdr, &dev_queue, &ctx, copies, xmit_more, stop, &intr);
 
 			/* update the return value */
 
