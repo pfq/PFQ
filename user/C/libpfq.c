@@ -1600,8 +1600,8 @@ pfq_send_raw(pfq_t *q, const void *buf, size_t len, int ifindex, int qindex, uin
         struct pfq_tx_queue *tx;
         unsigned int index;
         size_t this_slot_size;
+        ptrdiff_t offset, *poff_addr;
         char *base_addr;
-        ptrdiff_t offset;
         int tss;
 
 	if (unlikely(q->shm_addr == NULL))
@@ -1625,13 +1625,19 @@ pfq_send_raw(pfq_t *q, const void *buf, size_t len, int ifindex, int qindex, uin
 	if (index == __atomic_load_n(&tx->prod.index, __ATOMIC_RELAXED))
 	{
 		++index;
-                __atomic_store_n((index & 1) ? &tx->prod.off1 : &tx->prod.off0, 0, __ATOMIC_RELEASE);
+
+		poff_addr = (index & 1) ? &tx->prod.off1 : &tx->prod.off0;
+                __atomic_store_n(poff_addr, 0, __ATOMIC_RELEASE);
                 __atomic_store_n(&tx->prod.index, index, __ATOMIC_RELEASE);
+	}
+	else
+	{
+		poff_addr = (index & 1) ? &tx->prod.off1 : &tx->prod.off0;
 	}
 
 	base_addr = q->tx_queue_addr + q->tx_queue_size * (size_t)(2 * (1+tss) + (index & 1 ? 1 : 0));
 
-        offset = __atomic_load_n((index & 1) ? &tx->prod.off1 : &tx->prod.off0, __ATOMIC_RELAXED);
+        offset = __atomic_load_n(poff_addr, __ATOMIC_RELAXED);
 
 	len = min(len, q->tx_slot_size - sizeof(struct pfq_pkthdr));
 
@@ -1640,16 +1646,14 @@ pfq_send_raw(pfq_t *q, const void *buf, size_t len, int ifindex, int qindex, uin
 	if (((size_t)(offset) + this_slot_size) < q->tx_queue_size)
 	{
 		struct pfq_pkthdr *hdr = (struct pfq_pkthdr *)(base_addr + offset);
-		hdr->tstamp.tv64 = nsec;
-		hdr->caplen = (uint16_t)len;
-		hdr->info.data.copies = copies;
-                hdr->info.ifindex = ifindex;
-                hdr->info.queue = (uint16_t)qindex;
+		hdr->tstamp.tv64	= nsec;
+		hdr->caplen		= (uint16_t)len;
+		hdr->info.data.copies	= copies;
+                hdr->info.ifindex	= ifindex;
+                hdr->info.queue		= (uint16_t)qindex;
 		memcpy(hdr+1, buf, len);
 
-                __atomic_store_n((index & 1) ? &tx->prod.off1 : &tx->prod.off0,
-			offset + (ptrdiff_t)this_slot_size, __ATOMIC_RELEASE);
-
+                __atomic_store_n(poff_addr, offset + (ptrdiff_t)this_slot_size, __ATOMIC_RELEASE);
 		return Q_VALUE(q, (int)len);
 	}
 

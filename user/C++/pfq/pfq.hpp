@@ -1120,6 +1120,8 @@ namespace pfq {
             if (unlikely(!data_->shm_addr))
                 throw system_error("PFQ: send: socket not enabled");
 
+            ptrdiff_t *poff_addr;
+
             int tss;
 
             auto tx = [&] {
@@ -1142,15 +1144,22 @@ namespace pfq {
             if (index == __atomic_load_n(&tx->prod.index, __ATOMIC_RELAXED))
             {
                 ++index;
-                __atomic_store_n((index & 1) ? &tx->prod.off1 : &tx->prod.off0, 0, __ATOMIC_RELEASE);
+
+                poff_addr = (index & 1) ? &tx->prod.off1 : &tx->prod.off0;
+
+                __atomic_store_n(poff_addr, 0, __ATOMIC_RELEASE);
                 __atomic_store_n(&tx->prod.index, index, __ATOMIC_RELEASE);
+            }
+            else
+            {
+                poff_addr = (index & 1) ? &tx->prod.off1 : &tx->prod.off0;
             }
 
             char * base_addr = static_cast<char *>(data_->tx_queue_addr) + data_->tx_queue_size * static_cast<size_t>(2 * (1+tss) + (index & 1 ? 1 : 0));
 
             // get the current offset...
             //
-            auto offset = __atomic_load_n((index & 1) ? &tx->prod.off1 : &tx->prod.off0, __ATOMIC_RELAXED);
+            auto offset = __atomic_load_n(poff_addr, __ATOMIC_RELAXED);
 
             // cut the packet to maxlen:
             //
@@ -1165,14 +1174,15 @@ namespace pfq {
             if ((static_cast<size_t>(offset) + this_slot_size) < data_->tx_queue_size)
             {
                 auto hdr = (struct pfq_pkthdr *)(base_addr + offset);
-                hdr->tstamp.tv64 = nsec;
-                hdr->caplen      = static_cast<uint16_t>(len);
+
+                hdr->tstamp.tv64      = nsec;
+                hdr->caplen           = static_cast<uint16_t>(len);
                 hdr->info.data.copies = copies;
                 hdr->info.ifindex     = ifindex;
                 hdr->info.queue       = static_cast<uint16_t>(qindex);
                 memcpy(hdr+1, pkt.first, len);
 
-                __atomic_store_n((index & 1) ? &tx->prod.off1 : &tx->prod.off0, offset + static_cast<ptrdiff_t>(this_slot_size), __ATOMIC_RELEASE);
+                __atomic_store_n(poff_addr, offset + static_cast<ptrdiff_t>(this_slot_size), __ATOMIC_RELEASE);
                 return true;
             }
 
