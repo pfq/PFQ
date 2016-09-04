@@ -66,6 +66,7 @@ int pfq_percpu_init(void)
 		preempt_disable();
 
                 data = per_cpu_ptr(global->percpu_data, cpu);
+
 		pfq_setup_timer(&data->timer, cpu);
 		data->counter = 0;
 		data->GC = GCs[n++];

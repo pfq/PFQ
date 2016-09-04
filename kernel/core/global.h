@@ -37,7 +37,7 @@ struct core_kernel_stats __percpu;
 struct core_memory_stats __percpu;
 struct core_percpu_data  __percpu;
 struct core_percpu_sock  __percpu;
-struct pfq_percpu_pool  __percpu;
+struct pfq_percpu_pool   __percpu;
 
 
 struct core_global_data
@@ -73,7 +73,7 @@ struct core_global_data
 	struct core_memory_stats __percpu   * percpu_mem_stats;
 	struct core_percpu_data __percpu    * percpu_data;
 	struct core_percpu_sock __percpu    * percpu_sock;
-	struct pfq_percpu_pool __percpu    * percpu_pool;
+	struct pfq_percpu_pool __percpu     * percpu_pool;
 
 	struct symtable	 functions;
 	struct rw_semaphore symtable_sem;

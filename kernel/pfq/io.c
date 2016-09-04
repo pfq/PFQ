@@ -469,6 +469,7 @@ pfq_sk_queue_xmit(struct core_sock *so, int sock_queue, int cpu, int node, atomi
 	struct core_tx_info const * txinfo = core_sock_get_tx_queue_info(&so->opt, sock_queue);
 	struct net_dev_queue dev_queue = net_dev_queue_null;
 	struct pfq_mbuff_xmit_context ctx;
+	struct pfq_percpu_pool *pool;
 	int batch_cntr = 0, cons_idx;
 	struct pfq_tx_queue *txm;
 	struct pfq_pkthdr *hdr;
@@ -484,15 +485,18 @@ pfq_sk_queue_xmit(struct core_sock *so, int sock_queue, int cpu, int node, atomi
 
 	/* enable skb_pool for Tx threads */
 
-	if (cpu != Q_NO_KTHREAD)
-	{
-		/* get local pool data */
-		struct pfq_percpu_pool *pool = this_cpu_ptr(global->percpu_pool);
-		ctx.skb_pool = likely(atomic_read(&pool->enable)) ? &pool->tx_pool : NULL;
+	pool = this_cpu_ptr(global->percpu_pool);
+	ctx.skb_pool = likely(atomic_read(&pool->enable)) ? &pool->tx_pool : NULL;
+
+	/* lock the Tx pool */
+
+	if (ctx.skb_pool) {
+		spin_lock(&pool->tx_pool_lock);
 	}
-	else {
+
+	if (cpu == Q_NO_KTHREAD)
+	{
 		cpu = smp_processor_id();
-		ctx.skb_pool = NULL;
 	}
 
 	/* initialize the boundaries of this queue */
@@ -516,7 +520,11 @@ pfq_sk_queue_xmit(struct core_sock *so, int sock_queue, int cpu, int node, atomi
 	{
 		if (printk_ratelimit())
 			printk(KERN_INFO "[PFQ] sk_queue_xmit: could not lock default device!\n");
-		return ret;
+		{
+			if (ctx.skb_pool)
+				spin_unlock(&pool->tx_pool_lock);
+			return ret;
+		}
 	}
 
 	local_bh_disable();
@@ -624,6 +632,9 @@ pfq_sk_queue_xmit(struct core_sock *so, int sock_queue, int cpu, int node, atomi
 			break;
 		ret.fail++;
 	}
+
+	if (ctx.skb_pool);
+		spin_unlock(&pool->tx_pool_lock);
 
 	return ret;
 }
