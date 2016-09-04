@@ -116,7 +116,7 @@ namespace pfq { namespace lang
 
         CIDR(const char *descr)
         {
-            auto slash = strchr(descr, '/');
+            const char *slash = strchr(descr, '/');
             if (slash == nullptr)
                 throw std::runtime_error("CIDR: bad format (slash missing)");
 

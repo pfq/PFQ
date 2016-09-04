@@ -71,7 +71,7 @@ namespace more
         }
 
         ::close(sock);
-        return std::move(ecmd);
+        return ecmd;
     }
 }
 
