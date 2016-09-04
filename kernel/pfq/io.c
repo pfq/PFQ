@@ -254,23 +254,23 @@ ptrdiff_t acquire_sk_tx_prod_off_by(int index, struct pfq_tx_queue *txm)
 
 
 static inline
-ptrdiff_t maybe_swap_sk_tx_queue(struct pfq_tx_queue *txm, unsigned int *cons_ret)
+ptrdiff_t maybe_swap_sk_tx_queue(struct pfq_tx_queue *txm, unsigned int *cons_idx_ret)
 {
 	unsigned int prod_idx = __atomic_load_n(&txm->prod.index, __ATOMIC_ACQUIRE);
 	unsigned int cons_idx = __atomic_load_n(&txm->cons.index, __ATOMIC_RELAXED);
 
 	ptrdiff_t prod_off = acquire_sk_tx_prod_off_by(cons_idx, txm);
 
-	if (prod_idx != cons_idx && txm->cons.off == prod_off)
+	if (prod_idx != cons_idx && txm->cons.off == prod_off) /* swap this queue */
 	{
 		__atomic_store_n(&txm->cons.index, prod_idx, __ATOMIC_RELAXED);
 		txm->cons.off = 0;
-		*cons_ret = prod_idx;
+		*cons_idx_ret = prod_idx;
 		return acquire_sk_tx_prod_off_by(prod_idx, txm);
 	}
 	else
 	{
-		*cons_ret = cons_idx;
+		*cons_idx_ret = cons_idx;
 	}
 
 	return prod_off;
@@ -377,7 +377,7 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
         tx_res_t ret = { 0 };
 	size_t len;
 
-	if (!dev_queue->dev)
+	if (unlikely(!dev_queue->dev))
 		return (tx_res_t){.ok = 0, .fail = copies};
 
 	/* wait until for the timestap to expire (if specified) */
@@ -408,6 +408,8 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
 	skb->len = 0;
 	__skb_put(skb, len);
 
+	/* set the tx queue */
+
 	skb_set_queue_mapping(skb, dev_queue->queue_mapping);
 
 	skb_copy_to_linear_data(skb, hdr+1, len < 64 ? 64 : len);
@@ -419,7 +421,7 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
 	do {
 		const bool xmit_more_ = xmit_more || copies != 1;
 
-		/* if copies > 1, then the device support TX_SKB_SHARING */
+		/* if copies > 1, when the device support TX_SKB_SHARING */
 
 		if (likely(!netif_xmit_frozen_or_drv_stopped(dev_queue->queue)) &&
 			__pfq_xmit_retry(skb, dev_queue->dev, xmit_more_, true) == NETDEV_TX_OK) {
@@ -447,6 +449,8 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
 	}
 	while (copies > 0);
 
+	/* release the packet */
+
 	pfq_kfree_skb_pool(skb, ctx->skb_pool);
 
 	if (ret.ok)
@@ -456,7 +460,7 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
 }
 
 /*
- * transmit queues of packets (from memory mapped queue)...
+ * transmit a queue of packets (from socket queue)...
  */
 
 tx_res_t
@@ -475,7 +479,7 @@ pfq_sk_queue_xmit(struct core_sock *so, int sock_queue, int cpu, int node, atomi
 	/* get the Tx queue descriptor */
 
 	txm = core_sock_get_tx_queue(&so->opt, sock_queue);
-	if (txm == NULL)
+	if (unlikely(txm == NULL))
 		return ret; /* socket not enabled... */
 
 	/* enable skb_pool for Tx threads */
@@ -526,7 +530,7 @@ pfq_sk_queue_xmit(struct core_sock *so, int sock_queue, int cpu, int node, atomi
 		dev_queue_t qid; int copies;
                 tx_res_t tmp = {0};
 
-		/* because of dynamic slot size, ensure that caplen is not set to 0 */
+		/* because of dynamic slot size, ensure the caplen is not set to 0 */
 
 		if (unlikely(!hdr->caplen)) {
 			if (printk_ratelimit())
@@ -571,12 +575,12 @@ pfq_sk_queue_xmit(struct core_sock *so, int sock_queue, int cpu, int node, atomi
 			pfq_hard_tx_lock(&dev_queue);
 		}
 
-		/* get the max number of copies */
+		/* get the number of copies to transmit */
 
                 copies = dev_tx_max_skb_copies(dev_queue.dev, hdr->info.data.copies);
 		batch_cntr += copies;
 
-                /* set the xmit_more */
+                /* set the xmit_more bit */
 
 		if (batch_cntr >= global->xmit_batch_len) {
 			xmit_more = false;
