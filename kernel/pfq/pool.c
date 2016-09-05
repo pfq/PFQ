@@ -73,7 +73,9 @@ int pfq_skb_pool_free_all(void)
 		struct pfq_percpu_pool *pool = per_cpu_ptr(global->percpu_pool, cpu);
 		if (pool) {
 			total += pfq_skb_pool_free(&pool->rx_pool);
+			spin_lock(&pool->tx_pool_lock);
 			total += pfq_skb_pool_free(&pool->tx_pool);
+			spin_unlock(&pool->tx_pool_lock);
 		}
 	}
 
@@ -91,7 +93,10 @@ int pfq_skb_pool_flush_all(void)
 		struct pfq_percpu_pool *pool = per_cpu_ptr(global->percpu_pool, cpu);
 		if (pool) {
 			total += pfq_skb_pool_flush(&pool->rx_pool);
+
+			spin_lock(&pool->tx_pool_lock);
 			total += pfq_skb_pool_flush(&pool->tx_pool);
+			spin_unlock(&pool->tx_pool_lock);
 		}
 	}
 
