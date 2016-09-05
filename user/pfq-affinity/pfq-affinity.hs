@@ -95,7 +95,7 @@ data IrqBinding = IrqBinding
 makeIrqBinding :: [String] -> Int -> IrqBinding
 makeIrqBinding ["round-robin"]    first  = IrqBinding (-1)      1       1       none
 makeIrqBinding ["naive"]          first  = IrqBinding first     1       1       none
-makeIrqBinding ["multiple", m]    first  = IrqBinding first     1    (read m)   none
+makeIrqBinding ["multiple", m]    first  = IrqBinding (-1)      1    (read m)   none
 makeIrqBinding ["even"]           first  = IrqBinding first     1       1       even
 makeIrqBinding ["odd"]            first  = IrqBinding first     1       1       odd
 makeIrqBinding ["all-in", n]      _      = IrqBinding (read n)  0       1       none
