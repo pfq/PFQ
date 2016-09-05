@@ -184,7 +184,7 @@ steering_mac(arguments_t args, struct qbuff * buff)
 		return Broadcast(buff);
 
 	return DoubleSteering(buff, w[0] ^ w[1] ^ w[2],
-				   w[3] ^ w[4] ^ w[5]);
+				    w[3] ^ w[4] ^ w[5]);
 }
 
 
@@ -259,7 +259,7 @@ steering_ip_local(arguments_t args, struct qbuff * buff)
         if ((ip->daddr & data->mask) == data->addr &&
             (ip->saddr & data->mask) == data->addr)
 		return DoubleSteering(buff, (__force uint32_t)ip->saddr,
-					   (__force uint32_t)ip->daddr);
+					    (__force uint32_t)ip->daddr);
 
         if ((ip->saddr & data->mask) == data->addr)
 		return Steering(buff, (__force uint32_t)ip->saddr);
@@ -342,15 +342,15 @@ steering_flow(arguments_t args, struct qbuff * buff)
 		return Drop(buff);
 
 	if (ip->protocol != IPPROTO_UDP &&
-	    ip->protocol != IPPROTO_TCP)
-		return Drop(buff);
+	    ip->protocol != IPPROTO_TCP) {
+		return Steering(buff, (__force uint32_t)ip->saddr ^ ip->daddr);
+	}
 
 	udp = qbuff_ip_header_pointer(buff, (ip->ihl<<2), sizeof(_udp), &_udp);
 	if (udp == NULL)
 		return Drop(buff);  /* broken */
 
 	hash = ip->saddr ^ ip->daddr ^ (__force __be32)udp->source ^ (__force __be32)udp->dest;
-
 	return Steering(buff, (__force uint32_t)hash);
 }
 
@@ -364,7 +364,6 @@ struct pfq_lang_function_descr steering_functions[] = {
 	{ "steer_mac",   "Qbuff -> Action Qbuff", steering_mac     , NULL, NULL },
 	{ "steer_vlan",  "Qbuff -> Action Qbuff", steering_vlan_id , NULL, NULL },
 	{ "steer_ip",    "Qbuff -> Action Qbuff", steering_ip      , NULL, NULL },
-
 	{ "steer_ip_local","CIDR -> Qbuff -> Action Qbuff", steering_ip_local, steering_ip_local_init, NULL},
 
 	{ "steer_p2p",   "Qbuff -> Action Qbuff", steering_p2p     , NULL, NULL },
