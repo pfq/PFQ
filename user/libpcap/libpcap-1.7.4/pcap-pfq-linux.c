@@ -1219,7 +1219,7 @@ pfq_activate_linux(pcap_t *handle)
 
 				for(idx = 0; idx < tot; idx++)
 				{
-					fprintf(stdout, "[PFQ] binding Tx on %s, hw queue %d, Tx idex thread %d\n",
+					fprintf(stdout, "[PFQ] binding Tx on dev %s, hw queue %d, Tx thread %d\n",
 						first_dev, handle->opt.pfq.tx_hw_queue[idx], handle->opt.pfq.tx_idx_thread[idx]);
 
 					if (pfq_bind_tx(handle->md.pfq.q, first_dev,
@@ -1231,8 +1231,9 @@ pfq_activate_linux(pcap_t *handle)
 				}
 			}
 			else {
-				fprintf(stdout, "[PFQ] enabling Tx on dev %s...\n", first_dev);
-				if (pfq_bind_tx(handle->md.pfq.q, first_dev, 0, -1)) {
+				fprintf(stdout, "[PFQ] enabling Tx on dev %s, hw queue %d\n", first_dev,
+					handle->opt.pfq.tx_hw_queue[0]);
+				if (pfq_bind_tx(handle->md.pfq.q, first_dev, handle->opt.pfq.tx_hw_queue[0], -1)) {
 					fprintf(stderr, "[PFQ] error: %s\n", pfq_error(handle->md.pfq.q));
 					goto fail;
 				}
