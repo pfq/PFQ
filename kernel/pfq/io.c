@@ -494,8 +494,7 @@ pfq_sk_queue_xmit(struct core_sock *so, int sock_queue, int cpu, int node, atomi
 		spin_lock(&pool->tx_pool_lock);
 	}
 
-	if (cpu == Q_NO_KTHREAD)
-	{
+	if (cpu == Q_NO_KTHREAD) {
 		cpu = smp_processor_id();
 	}
 
@@ -516,6 +515,7 @@ pfq_sk_queue_xmit(struct core_sock *so, int sock_queue, int cpu, int node, atomi
 
 	/* lock the dev_queue and disable bh */
 
+
 	if (pfq_dev_queue_get(ctx.net, PFQ_DEVQ_ID(txinfo->def_ifindex, txinfo->def_queue), &dev_queue) < 0)
 	{
 		if (printk_ratelimit())
@@ -529,6 +529,7 @@ pfq_sk_queue_xmit(struct core_sock *so, int sock_queue, int cpu, int node, atomi
 
 	local_bh_disable();
 	pfq_hard_tx_lock(&dev_queue);
+
 
 	/* traverse the socket queue */
 
@@ -619,6 +620,11 @@ pfq_sk_queue_xmit(struct core_sock *so, int sock_queue, int cpu, int node, atomi
 
 	pfq_dev_queue_put(ctx.net, &dev_queue);
 
+	/* unlock the tx pool... */
+
+	if (ctx.skb_pool);
+		spin_unlock(&pool->tx_pool_lock);
+
 	/* update the local consumer offset */
 
 	txm->cons.off = prod_off;
@@ -632,9 +638,6 @@ pfq_sk_queue_xmit(struct core_sock *so, int sock_queue, int cpu, int node, atomi
 			break;
 		ret.fail++;
 	}
-
-	if (ctx.skb_pool);
-		spin_unlock(&pool->tx_pool_lock);
 
 	return ret;
 }
