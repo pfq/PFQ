@@ -5,7 +5,7 @@
 TARGET = pfq
 
 EXTRA_CFLAGS += -I$(obj)
-EXTRA_CFLAGS += -O3 -march=native -Wno-attributes
+EXTRA_CFLAGS += -g -O3 -march=native -Wno-attributes
 EXTRA_CFLAGS += -DEXPORT_SYMTAB
 
 EXTRA_CFLAGS += -DPFQ_USE_SKB_LINEARIZE
@@ -23,16 +23,16 @@ EXTRA_CFLAGS += -DPFQ_USE_SKB_POOL
 
 obj-m := $(TARGET).o
 
-pfq-objs := pf_q.o pfq/proc.o pfq/shmem.o pfq/memory.o pfq/pool.o pfq/bpf.o pfq/vlan.o \
-		    pfq/sock.o pfq/thread.o pfq/netdev.o pfq/global.o \
-			pfq/param.o pfq/timer.o pfq/io.o pfq/percpu.o pfq/qbuff.o \
-		    core/core.o core/sockopt.o core/queue.o core/GC.o core/global.o core/percpu.o core/devmap.o \
-		    core/sock.o core/group.o core/endpoint.o core/stats.o core/printk.o \
-		    core/lang/engine.o core/lang/signature.o core/lang/symtable.o \
-		    core/lang/filter.o core/lang/steering.o core/lang/forward.o \
-		    core/lang/predicate.o core/lang/combinator.o core/lang/control.o \
-		    core/lang/property.o core/lang/bloom.o core/lang/vlan.o core/lang/misc.o \
-		    core/lang/dummy.o
+pfq-y := pf_q.o pfq/proc.o pfq/shmem.o pfq/memory.o pfq/pool.o pfq/bpf.o pfq/vlan.o \
+				pfq/sock.o pfq/thread.o pfq/netdev.o pfq/global.o \
+		 		pfq/param.o pfq/timer.o pfq/io.o pfq/percpu.o pfq/qbuff.o \
+		 		core/core.o core/sockopt.o core/queue.o core/GC.o core/global.o core/percpu.o core/devmap.o \
+		 		core/sock.o core/group.o core/endpoint.o core/stats.o core/printk.o \
+		 		core/lang/engine.o core/lang/signature.o core/lang/symtable.o \
+		 		core/lang/filter.o core/lang/steering.o core/lang/forward.o \
+		 		core/lang/predicate.o core/lang/combinator.o core/lang/control.o \
+		 		core/lang/property.o core/lang/bloom.o core/lang/vlan.o core/lang/misc.o \
+		 		core/lang/dummy.o
 
 KERNELVERSION := $(shell uname -r)
 
