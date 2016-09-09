@@ -269,9 +269,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a6004249d3abfe8a2329b44ba797d1909"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpfq_1_1net__queue.html">net_queue</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpfq_1_1socket.html#a6004249d3abfe8a2329b44ba797d1909">read</a> (long int microseconds=-1)</td></tr>
 <tr class="memdesc:a6004249d3abfe8a2329b44ba797d1909"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read packets in place.  <a href="#a6004249d3abfe8a2329b44ba797d1909">More...</a><br /></td></tr>
 <tr class="separator:a6004249d3abfe8a2329b44ba797d1909"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aba44de6422e3e10b65474e7f3999ebd0"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpfq_1_1socket.html#aba44de6422e3e10b65474e7f3999ebd0">current_commit</a> () const </td></tr>
-<tr class="memdesc:aba44de6422e3e10b65474e7f3999ebd0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the current commit version (used internally by the memory mapped queue).  <a href="#aba44de6422e3e10b65474e7f3999ebd0">More...</a><br /></td></tr>
-<tr class="separator:aba44de6422e3e10b65474e7f3999ebd0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aad339d83d02f01da6ed3596178d21350"><td class="memItemLeft" align="right" valign="top">pfq_ver_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpfq_1_1socket.html#aad339d83d02f01da6ed3596178d21350">current_commit</a> () const </td></tr>
+<tr class="memdesc:aad339d83d02f01da6ed3596178d21350"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the current commit version (used internally by the memory mapped queue).  <a href="#aad339d83d02f01da6ed3596178d21350">More...</a><br /></td></tr>
+<tr class="separator:aad339d83d02f01da6ed3596178d21350"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a57643b9011269682bf716254c2b72907"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classpfq_1_1net__queue.html">net_queue</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpfq_1_1socket.html#a57643b9011269682bf716254c2b72907">recv</a> (const <a class="el" href="namespacepfq.html#ad7b88920eaf729154354741132483ea8">mutable_buffer</a> &amp;buff, long int microseconds=-1)</td></tr>
 <tr class="memdesc:a57643b9011269682bf716254c2b72907"><td class="mdescLeft">&#160;</td><td class="mdescRight">Receive packets in the given buffer.  <a href="#a57643b9011269682bf716254c2b72907">More...</a><br /></td></tr>
 <tr class="separator:a57643b9011269682bf716254c2b72907"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -823,7 +823,7 @@ template&lt;typename... Ts&gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="aba44de6422e3e10b65474e7f3999ebd0"></a>
+<a class="anchor" id="aad339d83d02f01da6ed3596178d21350"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -831,7 +831,7 @@ template&lt;typename... Ts&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">uint8_t pfq::socket::current_commit </td>
+          <td class="memname">pfq_ver_t pfq::socket::current_commit </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td> const</td>
@@ -2753,7 +2753,7 @@ template&lt;typename Iter &gt; </div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="namespacepfq.html">pfq</a></li><li class="navelem"><a class="el" href="classpfq_1_1socket.html">socket</a></li>
-    <li class="footer">Generated on Tue May 3 2016 18:55:37 for PFQ C++ library by
+    <li class="footer">Generated on Fri Sep 9 2016 11:52:00 for PFQ C++ library by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.11 </li>
   </ul>

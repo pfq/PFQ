@@ -2,7 +2,6 @@ var experimental_8hpp =
 [
     [ "detour_if", "experimental_8hpp.html#a93e32ea5a9dd3c95f4811c4ad24e7ba0", null ],
     [ "kernel_if", "experimental_8hpp.html#a805cf466389c487e6b2db6126a42d675", null ],
-    [ "crc16", "experimental_8hpp.html#a8152d34c5c69cc26aaa2b4a14ed37af1", null ],
     [ "dst", "experimental_8hpp.html#a7b3e8ac44ecebbfd41420b39a269aeb9", null ],
     [ "dummy", "experimental_8hpp.html#a5fc8274e9598b8524f833264174b62b7", null ],
     [ "dummy_cidr", "experimental_8hpp.html#a331aab492ad841b1c7a0d95efea00e76", null ],

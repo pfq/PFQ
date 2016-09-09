@@ -1,6 +1,6 @@
 var lang_8hpp =
 [
-    [ "SkBuff", "structpfq_1_1lang_1_1SkBuff.html", null ],
+    [ "Qbuff", "structpfq_1_1lang_1_1Qbuff.html", null ],
     [ "Action", "structpfq_1_1lang_1_1Action.html", null ],
     [ "KFunction", "structpfq_1_1lang_1_1KFunction.html", "structpfq_1_1lang_1_1KFunction" ],
     [ "ipv4_t", "structpfq_1_1lang_1_1ipv4__t.html", "structpfq_1_1lang_1_1ipv4__t" ],
@@ -24,9 +24,9 @@ var lang_8hpp =
     [ "Kleisli", "structpfq_1_1lang_1_1Kleisli.html", "structpfq_1_1lang_1_1Kleisli" ],
     [ "kleisly< KFunction< M< B >(A) >, KFunction< M< C >(B)> >", "structpfq_1_1lang_1_1kleisly_3_01KFunction_3_01M_3_01B_01_4_07A_08_01_4_00_01KFunction_3_01M_3_01C_01_4_07B_08_4_01_4.html", "structpfq_1_1lang_1_1kleisly_3_01KFunction_3_01M_3_01B_01_4_07A_08_01_4_00_01KFunction_3_01M_3_01C_01_4_07B_08_4_01_4" ],
     [ "kleisly< KFunction< M< B >(A) >, Kleisli< F, G > >", "structpfq_1_1lang_1_1kleisly_3_01KFunction_3_01M_3_01B_01_4_07A_08_01_4_00_01Kleisli_3_01F_00_01G_01_4_01_4.html", "structpfq_1_1lang_1_1kleisly_3_01KFunction_3_01M_3_01B_01_4_07A_08_01_4_00_01Kleisli_3_01F_00_01G_01_4_01_4" ],
-    [ "NetFunction", "lang_8hpp.html#a683f79c96532eb04a9750215004f6da3", null ],
-    [ "NetPredicate", "lang_8hpp.html#ac239a78ab8b48b8248a19910fa06e25c", null ],
-    [ "NetProperty", "lang_8hpp.html#a57429ebee2d34e07e521ffd16d714d89", null ],
+    [ "NetFunction", "lang_8hpp.html#aa68bcd4318570ab85efa3d1aa4c997eb", null ],
+    [ "NetPredicate", "lang_8hpp.html#a81905bab0f0cbcdb83d62b840af6943e", null ],
+    [ "NetProperty", "lang_8hpp.html#a0c784c3d4623b8b9fd1d8fd8f67a4854", null ],
     [ "function", "lang_8hpp.html#a1a4638059d700ae08d0ca63886ff2bb3", null ],
     [ "make_argument", "lang_8hpp.html#ac28f404ec59b7aea311721e0f26b5577", null ],
     [ "make_arguments", "lang_8hpp.html#aacc9139aafd72e1f19af3a74c1fdc6dc", null ],

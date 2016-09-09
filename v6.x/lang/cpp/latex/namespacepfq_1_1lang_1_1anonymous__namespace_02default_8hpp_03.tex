@@ -8,7 +8,7 @@
 {\footnotesize template$<$typename Predicate $>$ }\\auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a94260a88b04b7d42e471b954ba48d617}{tee\+\_\+} (std\+::string dev, \hyperlink{structpfq_1_1lang_1_1Predicate}{Predicate} p) -\/$>$ decltype(\hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(nullptr, dev, p))
 \begin{DoxyCompactList}\small\item\em Forward the packet to the given device. \end{DoxyCompactList}\item 
 {\footnotesize template$<$typename Predicate $>$ }\\auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_aa8b81192a22fb62555e19afe4560e326}{tap} (std\+::string dev, \hyperlink{structpfq_1_1lang_1_1Predicate}{Predicate} p) -\/$>$ decltype(\hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(nullptr, dev, p))
-\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff}, or forward the packet to the given device. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff}, or forward the packet to the given device. \end{DoxyCompactList}\item 
 {\footnotesize template$<$typename Predicate , typename Fun $>$ }\\auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a2d4da33f2a8bc0abe351c8531bfd161f}{when} (\hyperlink{structpfq_1_1lang_1_1Predicate}{Predicate} p, Fun f) -\/$>$ decltype(\hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(nullptr, p, f))
 \begin{DoxyCompactList}\small\item\em Conditional execution of monadic Net\+Functions. \end{DoxyCompactList}\item 
 {\footnotesize template$<$typename Predicate , typename Fun $>$ }\\auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a02b7a7ced297504fd2fac0c627c60394}{unless} (\hyperlink{structpfq_1_1lang_1_1Predicate}{Predicate} p, Fun f) -\/$>$ decltype(\hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(nullptr, p, f))
@@ -41,39 +41,31 @@ double \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03
 \begin{DoxyCompactItemize}
 \item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_aa97a34e12e4c6bc2d85a5c169800cfa4}{is\+\_\+ip} = \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate} (\char`\"{}is\+\_\+ip\char`\"{})
-\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} is an I\+Pv4 packet. \end{DoxyCompactList}\item 
-auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a5fa35e94e399b76838b7be894d85b83c}{is\+\_\+ip6} = \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate} (\char`\"{}is\+\_\+ip6\char`\"{})
-\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} is an I\+Pv6 packet. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} is an I\+Pv4 packet. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a42701f36d9dde7f3636b90244d520a16}{is\+\_\+udp} = \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate} (\char`\"{}is\+\_\+udp\char`\"{})
-\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} is an U\+DP packet. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} is an U\+DP packet. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a67fe3072aa5353c1526aa04320d40137}{is\+\_\+tcp} = \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate} (\char`\"{}is\+\_\+tcp\char`\"{})
-\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} is a T\+CP packet. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} is a T\+CP packet. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a01ccba89c8582ba423393226b54f12de}{is\+\_\+icmp} = \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate} (\char`\"{}is\+\_\+icmp\char`\"{})
-\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} is an I\+C\+MP packet. \end{DoxyCompactList}\item 
-auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a8f3f79760f7be2ce30db5025bff887a6}{is\+\_\+udp6} = \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate} (\char`\"{}is\+\_\+udp6\char`\"{})
-\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} is an U\+DP packet, on top of I\+Pv6. \end{DoxyCompactList}\item 
-auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a56d9bafc51ca6775da4ec3b816b1c7bb}{is\+\_\+tcp6} = \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate} (\char`\"{}is\+\_\+tcp6\char`\"{})
-\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} is a T\+CP packet, on top of I\+Pv6. \end{DoxyCompactList}\item 
-auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a01d6e9764945cc33a11f3ce6a9925549}{is\+\_\+icmp6} = \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate} (\char`\"{}is\+\_\+icmp6\char`\"{})
-\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} is an I\+C\+MP packet, on top of I\+Pv6. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} is an I\+C\+MP packet. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_ae52890434121a999589d48bccae3c3e2}{is\+\_\+flow} = \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate} (\char`\"{}is\+\_\+flow\char`\"{})
-\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} is an U\+DP or T\+CP packet. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} is an U\+DP or T\+CP packet. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_af042e092c925ae6306ae85ae5a56563d}{is\+\_\+frag} = \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate} (\char`\"{}is\+\_\+frag\char`\"{})
-\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} is a T\+CP fragment. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} is a T\+CP fragment. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_afb797cc442d04e614a9ac68c7c4c35ff}{is\+\_\+first\+\_\+frag} = \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate} (\char`\"{}is\+\_\+first\+\_\+frag\char`\"{})
-\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} is the first T\+CP fragment. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} is the first T\+CP fragment. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a0b169afb2f21c8626f06f77ca75feded}{is\+\_\+more\+\_\+frag} = \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate} (\char`\"{}is\+\_\+more\+\_\+frag\char`\"{})
-\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} is a T\+CP fragment, but the first. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} is a T\+CP fragment, but the first. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a814bb9c3c833dc2af342d695b1d503e8}{is\+\_\+l3\+\_\+proto} = \mbox{[}$\,$\mbox{]} (uint16\+\_\+t type) \{ return \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate} (\char`\"{}is\+\_\+l3\+\_\+proto\char`\"{}, type); \}
-\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} has the given Layer3 protocol. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} has the given Layer3 protocol. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a9d06d4dedca1ebdc3b270cb2f3e9e42b}{is\+\_\+l4\+\_\+proto} = \mbox{[}$\,$\mbox{]} (uint8\+\_\+t proto) \{ return \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate} (\char`\"{}is\+\_\+l4\+\_\+proto\char`\"{}, proto); \}
-\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} has the given Layer4 protocol. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} has the given Layer4 protocol. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a9f7161b8dfb842c5a845f413eb6bc82f}{has\+\_\+port} = \mbox{[}$\,$\mbox{]} (uint16\+\_\+t \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a868eca03290a037cb4e9b7075085888b}{port}) \{ return \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate} (\char`\"{}is\+\_\+port\char`\"{}, port); \}
-\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} has the given source or destination port. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} has the given source or destination port. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a964d5ed41f50a1f3a04176f8e54d7a5a}{has\+\_\+src\+\_\+port} = \mbox{[}$\,$\mbox{]} (uint16\+\_\+t \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a868eca03290a037cb4e9b7075085888b}{port}) \{ return \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate} (\char`\"{}is\+\_\+src\+\_\+port\char`\"{}, port); \}
-\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} has the given source port. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} has the given source port. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_afa71ece0f4178d0200c0388f503eef14}{has\+\_\+dst\+\_\+port} = \mbox{[}$\,$\mbox{]} (uint16\+\_\+t \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a868eca03290a037cb4e9b7075085888b}{port}) \{ return \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate} (\char`\"{}is\+\_\+dst\+\_\+port\char`\"{}, port); \}
-\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} has the given destination port. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} has the given destination port. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a74c6b7e812fb3d312ebf534960a6a91d}{has\+\_\+addr}
 \begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the source or destination IP address matches the given network address. I.\+e.,. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_acb03dd3e34d6dd7e83d621fa9077194c}{has\+\_\+src\+\_\+addr}
@@ -81,25 +73,25 @@ auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a0a53822af0ed8ea341f16a1da5ea83e3}{has\+\_\+dst\+\_\+addr}
 \begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the destination IP address matches the given network address. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_aa4ce1fdb0d99e1ca0afdf76619c58d12}{has\+\_\+mark} = \mbox{[}$\,$\mbox{]} (uint32\+\_\+t value) \{ return \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate}(\char`\"{}has\+\_\+mark\char`\"{}, value); \}
-\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} has the given {\ttfamily mark}, set by mark function. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} has the given {\ttfamily mark}, set by mark function. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a8efacc41a17e01f17a25e8fc1d784c74}{has\+\_\+state} = \mbox{[}$\,$\mbox{]} (uint32\+\_\+t value) \{ return \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate}(\char`\"{}has\+\_\+state\char`\"{}, value); \}
 \begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the state of the computation is set to the given {\ttfamily value}, possibly by put\+\_\+state function. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a1f0378ddfa90777d11ffae5fbb57b4e0}{has\+\_\+vlan} = \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate} (\char`\"{}has\+\_\+vlan\char`\"{})
-\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} has a vlan tag. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} has a vlan tag. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a99c204d8095fdccd50d4cb24d32e5b5b}{has\+\_\+vid} = \mbox{[}$\,$\mbox{]} (int value) \{ return \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate} (\char`\"{}has\+\_\+vid\char`\"{}, value); \}
-\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} has the given vlan id. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} has the given vlan id. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_ad2a631020f34bf10335ebb0e79f03920}{vlan\+\_\+id}
 \begin{DoxyCompactList}\small\item\em \hyperlink{structpfq_1_1lang_1_1Predicate}{Predicate} which evaluates to {\ttfamily true} when the packet has one of the. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_ab843ad210e98a7c8a4218efaf60f8c01}{vlan\+\_\+id\+\_\+filter}
 \begin{DoxyCompactList}\small\item\em Monadic function, counterpart of {\ttfamily vlan\+\_\+id} function. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_afef6f6217cb5e1bc0a8d1c88dbab0307}{is\+\_\+rtp} = \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate} (\char`\"{}is\+\_\+rtp\char`\"{})
-\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} is an R\+TP packet. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} is an R\+TP packet. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a2cbe73f955007e35d4a627c2cfb38566}{is\+\_\+rtcp} = \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate} (\char`\"{}is\+\_\+rtcp\char`\"{})
-\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} is an R\+T\+CP packet. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} is an R\+T\+CP packet. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a8be76da99d48c27e0377a7b32e1b5d7d}{is\+\_\+sip} = \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate} (\char`\"{}is\+\_\+sip\char`\"{})
-\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} is a S\+IP packet. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} is a S\+IP packet. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a79aa9beec811d735d03b40f85b4773c5}{is\+\_\+voip} = \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate} (\char`\"{}is\+\_\+voip\char`\"{})
-\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} is a Vo\+IP packet (R\+T\+P$\vert$\+R\+T\+C\+P$\vert$\+S\+IP). \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} is a Vo\+IP packet (R\+T\+P$\vert$\+R\+T\+C\+P$\vert$\+S\+IP). \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_acd2598e95a0ebc3c21e84f9c861d0d98}{get\+\_\+state} = \hyperlink{namespacepfq_1_1lang_a1249450e72229273b0db707a286aea91}{property}(\char`\"{}get\+\_\+state\char`\"{})
 \begin{DoxyCompactList}\small\item\em Evaluate to the state of the computation, possibly set by {\ttfamily state} function. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_ab733e24b3ca86450bea0b0888a6327d2}{get\+\_\+mark} = \hyperlink{namespacepfq_1_1lang_a1249450e72229273b0db707a286aea91}{property}(\char`\"{}get\+\_\+mark\char`\"{})
@@ -150,10 +142,6 @@ auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a
 \begin{DoxyCompactList}\small\item\em Dispatch the packet across the sockets. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a93e5f91a2b955269de017225cf62e711}{steer\+\_\+p2p} = \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(\char`\"{}steer\+\_\+p2p\char`\"{})
 \begin{DoxyCompactList}\small\item\em Dispatch the packet across the sockets. \end{DoxyCompactList}\item 
-auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a02291b124a4aa900d78797e386517f69}{steer\+\_\+ip6} = \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(\char`\"{}steer\+\_\+ip6\char`\"{})
-\begin{DoxyCompactList}\small\item\em Dispatch the packet across the sockets. \end{DoxyCompactList}\item 
-auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a53212b58bc49e8eab255da084295b015}{steer\+\_\+p2p6} = \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(\char`\"{}steer\+\_\+p2p6\char`\"{})
-\begin{DoxyCompactList}\small\item\em Dispatch the packet across the sockets. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_adeb44c976ac903e7b13addb65ac41f9f}{steer\+\_\+flow} = \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(\char`\"{}steer\+\_\+flow\char`\"{})
 \begin{DoxyCompactList}\small\item\em Dispatch the packet across the sockets. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_ac3bc5ec07d93fa5d9266e0e08191fe22}{steer\+\_\+rtp} = \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(\char`\"{}steer\+\_\+rtp\char`\"{})
@@ -169,37 +157,29 @@ auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a422c7bafe8240549d193903890f9ec48}{steer\+\_\+field\+\_\+symmetric}
 \begin{DoxyCompactList}\small\item\em Dispatch the packet across the sockets. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a738d1b52bf88feb4f7b1a17b97cdc8df}{ip} = \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(\char`\"{}ip\char`\"{})
-\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is an I\+Pv4 packet, {\ttfamily Drop} it otherwise. \end{DoxyCompactList}\item 
-auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a5df1535f3c8090b714928b77f5a9cf18}{ip6} = \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(\char`\"{}ip6\char`\"{})
-\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is an I\+Pv6 packet, {\ttfamily Drop} it otherwise. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} if it is an I\+Pv4 packet, {\ttfamily Drop} it otherwise. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a0b8b927aad3be7034521ebde0dabf7d3}{udp} = \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(\char`\"{}udp\char`\"{})
-\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is an U\+DP packet, {\ttfamily Drop} it otherwise. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} if it is an U\+DP packet, {\ttfamily Drop} it otherwise. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a5b8ca91a33a120e7e0807e63c8b51b28}{tcp} = \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(\char`\"{}tcp\char`\"{})
-\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is a T\+CP packet, {\ttfamily Drop} it otherwise. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} if it is a T\+CP packet, {\ttfamily Drop} it otherwise. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a3becf93771a800904f002e39b1cc388f}{icmp} = \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(\char`\"{}icmp\char`\"{})
-\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is an I\+C\+MP packet, {\ttfamily Drop} it otherwise. \end{DoxyCompactList}\item 
-auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a37f7f4eb5cff8508b956eba7dee75a45}{udp6} = \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(\char`\"{}udp6\char`\"{})
-\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is an U\+DP packet (on top of I\+Pv6), {\ttfamily Drop} it otherwise. \end{DoxyCompactList}\item 
-auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_ad5806a9b77c5975d08f0d0d317faa7a0}{tcp6} = \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(\char`\"{}tcp6\char`\"{})
-\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is a T\+CP packet (on top of I\+Pv6), {\ttfamily Drop} it otherwise. \end{DoxyCompactList}\item 
-auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a8fda9498af823eec4f9f8d81d4a171d5}{icmp6} = \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(\char`\"{}icmp6\char`\"{})
-\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is an I\+C\+MP packet (on top of I\+Pv6), {\ttfamily Drop} it otherwise. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} if it is an I\+C\+MP packet, {\ttfamily Drop} it otherwise. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a747e907a678ad69c5bfdd3048a239b6a}{vlan} = \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(\char`\"{}vlan\char`\"{})
-\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it has a vlan tag, {\ttfamily Drop} it otherwise. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} if it has a vlan tag, {\ttfamily Drop} it otherwise. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_af6c7518847c8c960b0e98cd856871a1b}{flow} = \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(\char`\"{}flow\char`\"{})
-\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is a T\+CP or U\+DP packet, {\ttfamily Drop} it otherwise. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} if it is a T\+CP or U\+DP packet, {\ttfamily Drop} it otherwise. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_aa8ac230fe8eeb0bccee8e31ba032cb8e}{rtp} = \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(\char`\"{}rtp\char`\"{})
-\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is a R\+TP packet, {\ttfamily Drop} it otherwise. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} if it is a R\+TP packet, {\ttfamily Drop} it otherwise. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_ad16ac0dfb9ae7abc1db76ab8041bada3}{rtcp} = \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(\char`\"{}rtcp\char`\"{})
-\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is a R\+T\+CP packet, {\ttfamily Drop} it otherwise. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} if it is a R\+T\+CP packet, {\ttfamily Drop} it otherwise. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a3ac0338626e771b43b200663e095aa36}{sip} = \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(\char`\"{}sip\char`\"{})
-\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is a S\+IP packet, {\ttfamily Drop} it otherwise. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} if it is a S\+IP packet, {\ttfamily Drop} it otherwise. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a814df3093ef905eedf9a9add4c625147}{voip} = \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(\char`\"{}voip\char`\"{})
-\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is a Vo\+IP packet (R\+T\+P$\vert$\+R\+T\+C\+P$\vert$\+S\+IP), {\ttfamily Drop} it otherwise. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} if it is a Vo\+IP packet (R\+T\+P$\vert$\+R\+T\+C\+P$\vert$\+S\+IP), {\ttfamily Drop} it otherwise. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a4cfaf018f687a1563161b8f4245a6652}{no\+\_\+frag} = \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(\char`\"{}no\+\_\+frag\char`\"{})
-\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is not a fragment, {\ttfamily Drop} it otherwise. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} if it is not a fragment, {\ttfamily Drop} it otherwise. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a88628ce70e2a650af1338851373b9891}{no\+\_\+more\+\_\+frag} = \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(\char`\"{}no\+\_\+more\+\_\+frag\char`\"{})
-\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is not a fragment or if it is the first fragment, {\ttfamily Drop} it otherwise. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} if it is not a fragment or if it is the first fragment, {\ttfamily Drop} it otherwise. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a93294225145f96c6aa6cf0cedfa19103}{kernel} = \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(\char`\"{}kernel\char`\"{})
 \begin{DoxyCompactList}\small\item\em Send a copy of the packet to the kernel and evaluates to {\ttfamily Pass}. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_ac8ba4f5ff06c1e099ac888ba4faa697a}{detour} = \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(\char`\"{}detour\char`\"{})
@@ -478,7 +458,7 @@ par3 (udp, tcp, icmp) $>$$>$ log\+\_\+msg (\char`\"{}\+This is an U\+D\+P/\+T\+C
         }\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_aa8b81192a22fb62555e19afe4560e326}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_aa8b81192a22fb62555e19afe4560e326}
 
 
-Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff}, or forward the packet to the given device. 
+Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff}, or forward the packet to the given device. 
 
 It evaluates to {\ttfamily Drop}, depending on the value returned by the predicate. Example\+:
 
@@ -501,7 +481,7 @@ Only a little bit more efficient. \index{pfq\+::lang\+::anonymous\+\_\+namespace
 
 Forward the packet to the given device. 
 
-It evaluates to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} or {\ttfamily Drop}, depending on the value returned by the predicate. Example\+:
+It evaluates to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} or {\ttfamily Drop}, depending on the value returned by the predicate. Example\+:
 
 tee(\char`\"{}eth1\char`\"{}, is\+\_\+udp) $>$$>$ kernel
 
@@ -738,7 +718,7 @@ Monadic version of {\ttfamily has\+\_\+dst\+\_\+port} predicate.
 \subsubsection[{\texorpdfstring{flow}{flow}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::flow = {\bf function}(\char`\"{}flow\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_af6c7518847c8c960b0e98cd856871a1b}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_af6c7518847c8c960b0e98cd856871a1b}
 
 
-Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is a T\+CP or U\+DP packet, {\ttfamily Drop} it otherwise. 
+Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} if it is a T\+CP or U\+DP packet, {\ttfamily Drop} it otherwise. 
 
 \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!forward@{forward}}
 \index{forward@{forward}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
@@ -812,14 +792,14 @@ Evaluate to {\ttfamily true} if the destination IP address matches the given net
 \subsubsection[{\texorpdfstring{has\+\_\+dst\+\_\+port}{has_dst_port}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::has\+\_\+dst\+\_\+port = \mbox{[}$\,$\mbox{]} (uint16\+\_\+t {\bf port}) \{ return {\bf predicate} (\char`\"{}is\+\_\+dst\+\_\+port\char`\"{}, port); \}}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_afa71ece0f4178d0200c0388f503eef14}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_afa71ece0f4178d0200c0388f503eef14}
 
 
-Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} has the given destination port. 
+Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} has the given destination port. 
 
 If the transport protocol is not present or has no port, the predicate evaluates to False. \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!has\+\_\+mark@{has\+\_\+mark}}
 \index{has\+\_\+mark@{has\+\_\+mark}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
 \subsubsection[{\texorpdfstring{has\+\_\+mark}{has_mark}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::has\+\_\+mark = \mbox{[}$\,$\mbox{]} (uint32\+\_\+t value) \{ return {\bf predicate}(\char`\"{}has\+\_\+mark\char`\"{}, value); \}}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_aa4ce1fdb0d99e1ca0afdf76619c58d12}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_aa4ce1fdb0d99e1ca0afdf76619c58d12}
 
 
-Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} has the given {\ttfamily mark}, set by mark function. 
+Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} has the given {\ttfamily mark}, set by mark function. 
 
 Example\+:
 
@@ -833,7 +813,7 @@ has\+\_\+mark(11)
 \subsubsection[{\texorpdfstring{has\+\_\+port}{has_port}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::has\+\_\+port = \mbox{[}$\,$\mbox{]} (uint16\+\_\+t {\bf port}) \{ return {\bf predicate} (\char`\"{}is\+\_\+port\char`\"{}, port); \}}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a9f7161b8dfb842c5a845f413eb6bc82f}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a9f7161b8dfb842c5a845f413eb6bc82f}
 
 
-Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} has the given source or destination port. 
+Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} has the given source or destination port. 
 
 If the transport protocol is not present or has no port, the predicate evaluates to False.
 
@@ -858,7 +838,7 @@ Evaluate to {\ttfamily true} if the source IP address matches the given network 
 \subsubsection[{\texorpdfstring{has\+\_\+src\+\_\+port}{has_src_port}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::has\+\_\+src\+\_\+port = \mbox{[}$\,$\mbox{]} (uint16\+\_\+t {\bf port}) \{ return {\bf predicate} (\char`\"{}is\+\_\+src\+\_\+port\char`\"{}, port); \}}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a964d5ed41f50a1f3a04176f8e54d7a5a}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a964d5ed41f50a1f3a04176f8e54d7a5a}
 
 
-Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} has the given source port. 
+Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} has the given source port. 
 
 If the transport protocol is not present or has no port, the predicate evaluates to False. \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!has\+\_\+state@{has\+\_\+state}}
 \index{has\+\_\+state@{has\+\_\+state}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
@@ -879,7 +859,7 @@ state
 \subsubsection[{\texorpdfstring{has\+\_\+vid}{has_vid}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::has\+\_\+vid = \mbox{[}$\,$\mbox{]} (int value) \{ return {\bf predicate} (\char`\"{}has\+\_\+vid\char`\"{}, value); \}}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a99c204d8095fdccd50d4cb24d32e5b5b}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a99c204d8095fdccd50d4cb24d32e5b5b}
 
 
-Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} has the given vlan id. 
+Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} has the given vlan id. 
 
 Example\+:
 
@@ -888,21 +868,14 @@ has\+\_\+vid(42) \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.
 \subsubsection[{\texorpdfstring{has\+\_\+vlan}{has_vlan}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::has\+\_\+vlan = {\bf predicate} (\char`\"{}has\+\_\+vlan\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a1f0378ddfa90777d11ffae5fbb57b4e0}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a1f0378ddfa90777d11ffae5fbb57b4e0}
 
 
-Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} has a vlan tag. 
+Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} has a vlan tag. 
 
 \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!icmp@{icmp}}
 \index{icmp@{icmp}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
 \subsubsection[{\texorpdfstring{icmp}{icmp}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::icmp = {\bf function}(\char`\"{}icmp\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a3becf93771a800904f002e39b1cc388f}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a3becf93771a800904f002e39b1cc388f}
 
 
-Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is an I\+C\+MP packet, {\ttfamily Drop} it otherwise. 
-
-\index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!icmp6@{icmp6}}
-\index{icmp6@{icmp6}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
-\subsubsection[{\texorpdfstring{icmp6}{icmp6}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::icmp6 = {\bf function}(\char`\"{}icmp6\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a8fda9498af823eec4f9f8d81d4a171d5}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a8fda9498af823eec4f9f8d81d4a171d5}
-
-
-Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is an I\+C\+MP packet (on top of I\+Pv6), {\ttfamily Drop} it otherwise. 
+Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} if it is an I\+C\+MP packet, {\ttfamily Drop} it otherwise. 
 
 \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!icmp\+\_\+code@{icmp\+\_\+code}}
 \index{icmp\+\_\+code@{icmp\+\_\+code}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
@@ -930,14 +903,7 @@ Increment the i-\/th counter of the current group.
 \subsubsection[{\texorpdfstring{ip}{ip}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::ip = {\bf function}(\char`\"{}ip\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a738d1b52bf88feb4f7b1a17b97cdc8df}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a738d1b52bf88feb4f7b1a17b97cdc8df}
 
 
-Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is an I\+Pv4 packet, {\ttfamily Drop} it otherwise. 
-
-\index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!ip6@{ip6}}
-\index{ip6@{ip6}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
-\subsubsection[{\texorpdfstring{ip6}{ip6}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::ip6 = {\bf function}(\char`\"{}ip6\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a5df1535f3c8090b714928b77f5a9cf18}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a5df1535f3c8090b714928b77f5a9cf18}
-
-
-Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is an I\+Pv6 packet, {\ttfamily Drop} it otherwise. 
+Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} if it is an I\+Pv4 packet, {\ttfamily Drop} it otherwise. 
 
 \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!ip\+\_\+frag@{ip\+\_\+frag}}
 \index{ip\+\_\+frag@{ip\+\_\+frag}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
@@ -979,126 +945,98 @@ Evaluate to the {\ttfamily T\+TL} field of the IP header.
 \subsubsection[{\texorpdfstring{is\+\_\+first\+\_\+frag}{is_first_frag}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::is\+\_\+first\+\_\+frag = {\bf predicate} (\char`\"{}is\+\_\+first\+\_\+frag\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_afb797cc442d04e614a9ac68c7c4c35ff}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_afb797cc442d04e614a9ac68c7c4c35ff}
 
 
-Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} is the first T\+CP fragment. 
+Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} is the first T\+CP fragment. 
 
 \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!is\+\_\+flow@{is\+\_\+flow}}
 \index{is\+\_\+flow@{is\+\_\+flow}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
 \subsubsection[{\texorpdfstring{is\+\_\+flow}{is_flow}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::is\+\_\+flow = {\bf predicate} (\char`\"{}is\+\_\+flow\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_ae52890434121a999589d48bccae3c3e2}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_ae52890434121a999589d48bccae3c3e2}
 
 
-Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} is an U\+DP or T\+CP packet. 
+Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} is an U\+DP or T\+CP packet. 
 
 \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!is\+\_\+frag@{is\+\_\+frag}}
 \index{is\+\_\+frag@{is\+\_\+frag}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
 \subsubsection[{\texorpdfstring{is\+\_\+frag}{is_frag}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::is\+\_\+frag = {\bf predicate} (\char`\"{}is\+\_\+frag\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_af042e092c925ae6306ae85ae5a56563d}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_af042e092c925ae6306ae85ae5a56563d}
 
 
-Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} is a T\+CP fragment. 
+Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} is a T\+CP fragment. 
 
 \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!is\+\_\+icmp@{is\+\_\+icmp}}
 \index{is\+\_\+icmp@{is\+\_\+icmp}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
 \subsubsection[{\texorpdfstring{is\+\_\+icmp}{is_icmp}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::is\+\_\+icmp = {\bf predicate} (\char`\"{}is\+\_\+icmp\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a01ccba89c8582ba423393226b54f12de}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a01ccba89c8582ba423393226b54f12de}
 
 
-Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} is an I\+C\+MP packet. 
-
-\index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!is\+\_\+icmp6@{is\+\_\+icmp6}}
-\index{is\+\_\+icmp6@{is\+\_\+icmp6}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
-\subsubsection[{\texorpdfstring{is\+\_\+icmp6}{is_icmp6}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::is\+\_\+icmp6 = {\bf predicate} (\char`\"{}is\+\_\+icmp6\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a01d6e9764945cc33a11f3ce6a9925549}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a01d6e9764945cc33a11f3ce6a9925549}
-
-
-Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} is an I\+C\+MP packet, on top of I\+Pv6. 
+Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} is an I\+C\+MP packet. 
 
 \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!is\+\_\+ip@{is\+\_\+ip}}
 \index{is\+\_\+ip@{is\+\_\+ip}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
 \subsubsection[{\texorpdfstring{is\+\_\+ip}{is_ip}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::is\+\_\+ip = {\bf predicate} (\char`\"{}is\+\_\+ip\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_aa97a34e12e4c6bc2d85a5c169800cfa4}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_aa97a34e12e4c6bc2d85a5c169800cfa4}
 
 
-Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} is an I\+Pv4 packet. 
-
-\index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!is\+\_\+ip6@{is\+\_\+ip6}}
-\index{is\+\_\+ip6@{is\+\_\+ip6}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
-\subsubsection[{\texorpdfstring{is\+\_\+ip6}{is_ip6}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::is\+\_\+ip6 = {\bf predicate} (\char`\"{}is\+\_\+ip6\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a5fa35e94e399b76838b7be894d85b83c}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a5fa35e94e399b76838b7be894d85b83c}
-
-
-Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} is an I\+Pv6 packet. 
+Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} is an I\+Pv4 packet. 
 
 \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!is\+\_\+l3\+\_\+proto@{is\+\_\+l3\+\_\+proto}}
 \index{is\+\_\+l3\+\_\+proto@{is\+\_\+l3\+\_\+proto}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
 \subsubsection[{\texorpdfstring{is\+\_\+l3\+\_\+proto}{is_l3_proto}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::is\+\_\+l3\+\_\+proto = \mbox{[}$\,$\mbox{]} (uint16\+\_\+t type) \{ return {\bf predicate} (\char`\"{}is\+\_\+l3\+\_\+proto\char`\"{}, type); \}}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a814bb9c3c833dc2af342d695b1d503e8}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a814bb9c3c833dc2af342d695b1d503e8}
 
 
-Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} has the given Layer3 protocol. 
+Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} has the given Layer3 protocol. 
 
 \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!is\+\_\+l4\+\_\+proto@{is\+\_\+l4\+\_\+proto}}
 \index{is\+\_\+l4\+\_\+proto@{is\+\_\+l4\+\_\+proto}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
 \subsubsection[{\texorpdfstring{is\+\_\+l4\+\_\+proto}{is_l4_proto}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::is\+\_\+l4\+\_\+proto = \mbox{[}$\,$\mbox{]} (uint8\+\_\+t proto) \{ return {\bf predicate} (\char`\"{}is\+\_\+l4\+\_\+proto\char`\"{}, proto); \}}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a9d06d4dedca1ebdc3b270cb2f3e9e42b}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a9d06d4dedca1ebdc3b270cb2f3e9e42b}
 
 
-Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} has the given Layer4 protocol. 
+Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} has the given Layer4 protocol. 
 
 \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!is\+\_\+more\+\_\+frag@{is\+\_\+more\+\_\+frag}}
 \index{is\+\_\+more\+\_\+frag@{is\+\_\+more\+\_\+frag}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
 \subsubsection[{\texorpdfstring{is\+\_\+more\+\_\+frag}{is_more_frag}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::is\+\_\+more\+\_\+frag = {\bf predicate} (\char`\"{}is\+\_\+more\+\_\+frag\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a0b169afb2f21c8626f06f77ca75feded}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a0b169afb2f21c8626f06f77ca75feded}
 
 
-Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} is a T\+CP fragment, but the first. 
+Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} is a T\+CP fragment, but the first. 
 
 \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!is\+\_\+rtcp@{is\+\_\+rtcp}}
 \index{is\+\_\+rtcp@{is\+\_\+rtcp}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
 \subsubsection[{\texorpdfstring{is\+\_\+rtcp}{is_rtcp}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::is\+\_\+rtcp = {\bf predicate} (\char`\"{}is\+\_\+rtcp\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a2cbe73f955007e35d4a627c2cfb38566}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a2cbe73f955007e35d4a627c2cfb38566}
 
 
-Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} is an R\+T\+CP packet. 
+Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} is an R\+T\+CP packet. 
 
 \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!is\+\_\+rtp@{is\+\_\+rtp}}
 \index{is\+\_\+rtp@{is\+\_\+rtp}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
 \subsubsection[{\texorpdfstring{is\+\_\+rtp}{is_rtp}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::is\+\_\+rtp = {\bf predicate} (\char`\"{}is\+\_\+rtp\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_afef6f6217cb5e1bc0a8d1c88dbab0307}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_afef6f6217cb5e1bc0a8d1c88dbab0307}
 
 
-Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} is an R\+TP packet. 
+Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} is an R\+TP packet. 
 
 \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!is\+\_\+sip@{is\+\_\+sip}}
 \index{is\+\_\+sip@{is\+\_\+sip}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
 \subsubsection[{\texorpdfstring{is\+\_\+sip}{is_sip}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::is\+\_\+sip = {\bf predicate} (\char`\"{}is\+\_\+sip\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a8be76da99d48c27e0377a7b32e1b5d7d}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a8be76da99d48c27e0377a7b32e1b5d7d}
 
 
-Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} is a S\+IP packet. 
+Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} is a S\+IP packet. 
 
 \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!is\+\_\+tcp@{is\+\_\+tcp}}
 \index{is\+\_\+tcp@{is\+\_\+tcp}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
 \subsubsection[{\texorpdfstring{is\+\_\+tcp}{is_tcp}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::is\+\_\+tcp = {\bf predicate} (\char`\"{}is\+\_\+tcp\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a67fe3072aa5353c1526aa04320d40137}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a67fe3072aa5353c1526aa04320d40137}
 
 
-Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} is a T\+CP packet. 
-
-\index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!is\+\_\+tcp6@{is\+\_\+tcp6}}
-\index{is\+\_\+tcp6@{is\+\_\+tcp6}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
-\subsubsection[{\texorpdfstring{is\+\_\+tcp6}{is_tcp6}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::is\+\_\+tcp6 = {\bf predicate} (\char`\"{}is\+\_\+tcp6\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a56d9bafc51ca6775da4ec3b816b1c7bb}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a56d9bafc51ca6775da4ec3b816b1c7bb}
-
-
-Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} is a T\+CP packet, on top of I\+Pv6. 
+Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} is a T\+CP packet. 
 
 \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!is\+\_\+udp@{is\+\_\+udp}}
 \index{is\+\_\+udp@{is\+\_\+udp}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
 \subsubsection[{\texorpdfstring{is\+\_\+udp}{is_udp}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::is\+\_\+udp = {\bf predicate} (\char`\"{}is\+\_\+udp\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a42701f36d9dde7f3636b90244d520a16}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a42701f36d9dde7f3636b90244d520a16}
 
 
-Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} is an U\+DP packet. 
-
-\index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!is\+\_\+udp6@{is\+\_\+udp6}}
-\index{is\+\_\+udp6@{is\+\_\+udp6}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
-\subsubsection[{\texorpdfstring{is\+\_\+udp6}{is_udp6}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::is\+\_\+udp6 = {\bf predicate} (\char`\"{}is\+\_\+udp6\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a8f3f79760f7be2ce30db5025bff887a6}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a8f3f79760f7be2ce30db5025bff887a6}
-
-
-Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} is an U\+DP packet, on top of I\+Pv6. 
+Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} is an U\+DP packet. 
 
 \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!is\+\_\+voip@{is\+\_\+voip}}
 \index{is\+\_\+voip@{is\+\_\+voip}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
 \subsubsection[{\texorpdfstring{is\+\_\+voip}{is_voip}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::is\+\_\+voip = {\bf predicate} (\char`\"{}is\+\_\+voip\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a79aa9beec811d735d03b40f85b4773c5}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a79aa9beec811d735d03b40f85b4773c5}
 
 
-Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} is a Vo\+IP packet (R\+T\+P$\vert$\+R\+T\+C\+P$\vert$\+S\+IP). 
+Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} is a Vo\+IP packet (R\+T\+P$\vert$\+R\+T\+C\+P$\vert$\+S\+IP). 
 
 \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!kernel@{kernel}}
 \index{kernel@{kernel}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
@@ -1181,14 +1119,14 @@ Mark the packet with the given value.
 \subsubsection[{\texorpdfstring{no\+\_\+frag}{no_frag}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::no\+\_\+frag = {\bf function}(\char`\"{}no\+\_\+frag\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a4cfaf018f687a1563161b8f4245a6652}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a4cfaf018f687a1563161b8f4245a6652}
 
 
-Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is not a fragment, {\ttfamily Drop} it otherwise. 
+Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} if it is not a fragment, {\ttfamily Drop} it otherwise. 
 
 \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!no\+\_\+more\+\_\+frag@{no\+\_\+more\+\_\+frag}}
 \index{no\+\_\+more\+\_\+frag@{no\+\_\+more\+\_\+frag}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
 \subsubsection[{\texorpdfstring{no\+\_\+more\+\_\+frag}{no_more_frag}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::no\+\_\+more\+\_\+frag = {\bf function}(\char`\"{}no\+\_\+more\+\_\+frag\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a88628ce70e2a650af1338851373b9891}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a88628ce70e2a650af1338851373b9891}
 
 
-Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is not a fragment or if it is the first fragment, {\ttfamily Drop} it otherwise. 
+Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} if it is not a fragment or if it is the first fragment, {\ttfamily Drop} it otherwise. 
 
 \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!port@{port}}
 \index{port@{port}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
@@ -1216,21 +1154,21 @@ Set the state of the computation to the given value.
 \subsubsection[{\texorpdfstring{rtcp}{rtcp}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::rtcp = {\bf function}(\char`\"{}rtcp\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_ad16ac0dfb9ae7abc1db76ab8041bada3}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_ad16ac0dfb9ae7abc1db76ab8041bada3}
 
 
-Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is a R\+T\+CP packet, {\ttfamily Drop} it otherwise. 
+Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} if it is a R\+T\+CP packet, {\ttfamily Drop} it otherwise. 
 
 \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!rtp@{rtp}}
 \index{rtp@{rtp}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
 \subsubsection[{\texorpdfstring{rtp}{rtp}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::rtp = {\bf function}(\char`\"{}rtp\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_aa8ac230fe8eeb0bccee8e31ba032cb8e}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_aa8ac230fe8eeb0bccee8e31ba032cb8e}
 
 
-Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is a R\+TP packet, {\ttfamily Drop} it otherwise. 
+Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} if it is a R\+TP packet, {\ttfamily Drop} it otherwise. 
 
 \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!sip@{sip}}
 \index{sip@{sip}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
 \subsubsection[{\texorpdfstring{sip}{sip}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::sip = {\bf function}(\char`\"{}sip\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a3ac0338626e771b43b200663e095aa36}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a3ac0338626e771b43b200663e095aa36}
 
 
-Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is a S\+IP packet, {\ttfamily Drop} it otherwise. 
+Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} if it is a S\+IP packet, {\ttfamily Drop} it otherwise. 
 
 \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!src\+\_\+addr@{src\+\_\+addr}}
 \index{src\+\_\+addr@{src\+\_\+addr}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
@@ -1320,17 +1258,7 @@ Dispatch the packet across the sockets.
 Dispatch with a randomized algorithm that maintains the coherence of both IP addresses. This alter the total amount of traffic (\begin{DoxySeeAlso}{See also}
 \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_ad51e91e3b485c729ac1ba39a46e337a0}{steer\+\_\+mac}).
 \end{DoxySeeAlso}
-steer\+\_\+ip \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!steer\+\_\+ip6@{steer\+\_\+ip6}}
-\index{steer\+\_\+ip6@{steer\+\_\+ip6}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
-\subsubsection[{\texorpdfstring{steer\+\_\+ip6}{steer_ip6}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::steer\+\_\+ip6 = {\bf function}(\char`\"{}steer\+\_\+ip6\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a02291b124a4aa900d78797e386517f69}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a02291b124a4aa900d78797e386517f69}
-
-
-Dispatch the packet across the sockets. 
-
-Dispatch with a randomized algorithm that maintains the coherence of both I\+Pv6 addresses. This alter the total amount of traffic (\begin{DoxySeeAlso}{See also}
-\hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_ad51e91e3b485c729ac1ba39a46e337a0}{steer\+\_\+mac}).
-\end{DoxySeeAlso}
-steer\+\_\+ip6 $>$$>$ log\+\_\+msg(\char`\"{}\+Steering an I\+Pv6 packet\char`\"{}) \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!steer\+\_\+ip\+\_\+local@{steer\+\_\+ip\+\_\+local}}
+steer\+\_\+ip \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!steer\+\_\+ip\+\_\+local@{steer\+\_\+ip\+\_\+local}}
 \index{steer\+\_\+ip\+\_\+local@{steer\+\_\+ip\+\_\+local}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
 \subsubsection[{\texorpdfstring{steer\+\_\+ip\+\_\+local}{steer_ip_local}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::steer\+\_\+ip\+\_\+local = \mbox{[}$\,$\mbox{]} ({\bf C\+I\+DR} data) \{ return {\bf function}(\char`\"{}steer\+\_\+ip\+\_\+local\char`\"{}, data); \}}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a573c7621db324727daedc11fd27ab709}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a573c7621db324727daedc11fd27ab709}
 
@@ -1401,16 +1329,7 @@ Dispatch the packet across the sockets.
 
 Dispatch with a randomized algorithm that maintains the coherence of IP flows. Example\+:
 
-ip $>$-\/$>$ steer\+\_\+p2p \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!steer\+\_\+p2p6@{steer\+\_\+p2p6}}
-\index{steer\+\_\+p2p6@{steer\+\_\+p2p6}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
-\subsubsection[{\texorpdfstring{steer\+\_\+p2p6}{steer_p2p6}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::steer\+\_\+p2p6 = {\bf function}(\char`\"{}steer\+\_\+p2p6\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a53212b58bc49e8eab255da084295b015}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a53212b58bc49e8eab255da084295b015}
-
-
-Dispatch the packet across the sockets. 
-
-Dispatch with a randomized algorithm that maintains the coherence of I\+Pv6 flows. Example\+:
-
-steer\+\_\+p2p6 $>$$>$ log\+\_\+msg(\char`\"{}\+Steering an I\+Pv6 packet\char`\"{}) \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!steer\+\_\+rrobin@{steer\+\_\+rrobin}}
+ip $>$-\/$>$ steer\+\_\+p2p \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!steer\+\_\+rrobin@{steer\+\_\+rrobin}}
 \index{steer\+\_\+rrobin@{steer\+\_\+rrobin}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
 \subsubsection[{\texorpdfstring{steer\+\_\+rrobin}{steer_rrobin}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::steer\+\_\+rrobin = {\bf function}(\char`\"{}steer\+\_\+rrobin\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a98f503710ebfe66f6866d642af30b1a8}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a98f503710ebfe66f6866d642af30b1a8}
 
@@ -1463,14 +1382,7 @@ steer\+\_\+voip \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\
 \subsubsection[{\texorpdfstring{tcp}{tcp}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::tcp = {\bf function}(\char`\"{}tcp\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a5b8ca91a33a120e7e0807e63c8b51b28}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a5b8ca91a33a120e7e0807e63c8b51b28}
 
 
-Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is a T\+CP packet, {\ttfamily Drop} it otherwise. 
-
-\index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!tcp6@{tcp6}}
-\index{tcp6@{tcp6}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
-\subsubsection[{\texorpdfstring{tcp6}{tcp6}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::tcp6 = {\bf function}(\char`\"{}tcp6\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_ad5806a9b77c5975d08f0d0d317faa7a0}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_ad5806a9b77c5975d08f0d0d317faa7a0}
-
-
-Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is a T\+CP packet (on top of I\+Pv6), {\ttfamily Drop} it otherwise. 
+Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} if it is a T\+CP packet, {\ttfamily Drop} it otherwise. 
 
 \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!tcp\+\_\+dest@{tcp\+\_\+dest}}
 \index{tcp\+\_\+dest@{tcp\+\_\+dest}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
@@ -1498,14 +1410,7 @@ Evaluate to the {\ttfamily source\+\_\+port} of the T\+CP header.
 \subsubsection[{\texorpdfstring{udp}{udp}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::udp = {\bf function}(\char`\"{}udp\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a0b8b927aad3be7034521ebde0dabf7d3}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a0b8b927aad3be7034521ebde0dabf7d3}
 
 
-Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is an U\+DP packet, {\ttfamily Drop} it otherwise. 
-
-\index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!udp6@{udp6}}
-\index{udp6@{udp6}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
-\subsubsection[{\texorpdfstring{udp6}{udp6}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::udp6 = {\bf function}(\char`\"{}udp6\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a37f7f4eb5cff8508b956eba7dee75a45}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a37f7f4eb5cff8508b956eba7dee75a45}
-
-
-Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is an U\+DP packet (on top of I\+Pv6), {\ttfamily Drop} it otherwise. 
+Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} if it is an U\+DP packet, {\ttfamily Drop} it otherwise. 
 
 \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!udp\+\_\+dest@{udp\+\_\+dest}}
 \index{udp\+\_\+dest@{udp\+\_\+dest}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
@@ -1540,7 +1445,7 @@ Unit operation implements left-\/ and right-\/identity for \hyperlink{structpfq_
 \subsubsection[{\texorpdfstring{vlan}{vlan}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::vlan = {\bf function}(\char`\"{}vlan\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a747e907a678ad69c5bfdd3048a239b6a}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a747e907a678ad69c5bfdd3048a239b6a}
 
 
-Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it has a vlan tag, {\ttfamily Drop} it otherwise. 
+Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} if it has a vlan tag, {\ttfamily Drop} it otherwise. 
 
 \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!vlan\+\_\+id@{vlan\+\_\+id}}
 \index{vlan\+\_\+id@{vlan\+\_\+id}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
@@ -1578,5 +1483,5 @@ Monadic function, counterpart of {\ttfamily vlan\+\_\+id} function.
 \subsubsection[{\texorpdfstring{voip}{voip}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::voip = {\bf function}(\char`\"{}voip\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a814df3093ef905eedf9a9add4c625147}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a814df3093ef905eedf9a9add4c625147}
 
 
-Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is a Vo\+IP packet (R\+T\+P$\vert$\+R\+T\+C\+P$\vert$\+S\+IP), {\ttfamily Drop} it otherwise. 
+Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1Qbuff}{Qbuff} if it is a Vo\+IP packet (R\+T\+P$\vert$\+R\+T\+C\+P$\vert$\+S\+IP), {\ttfamily Drop} it otherwise. 
 
