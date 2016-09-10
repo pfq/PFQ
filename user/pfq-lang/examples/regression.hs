@@ -278,16 +278,16 @@ steerings = do
     steer_rss
     steer_to 1
     steer_link
-    steer_link_local "4c:60:de:86:55:46"
-    steer_mac
+    steer_local_link "4c:60:de:86:55:46"
+    double_steer_mac
     steer_vlan
     steer_p2p
-    steer_ip
-    steer_ip_local "192.168.1.0/24"
+    double_steer_ip
+    steer_local_ip "192.168.1.0/24"
     steer_flow
-    steer_net "192.168.0.0" 16 24
+    steer_local_net "192.168.0.0" 16 24
     steer_field 14 2
-    steer_field_double 14 18 2
+    double_steer_field 14 18 2
     steer_field_symmetric 14 18 4
     steer_rtp
     steer_voip

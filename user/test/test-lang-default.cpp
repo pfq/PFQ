@@ -34,9 +34,9 @@ main()
     // computations:
 
     check_computation(q, ip >> udp >> inc(2) );
-    check_computation(q, when   (has_vid(1), ip >> steer_ip) );
-    check_computation(q, unless (is_ip, ip >> steer_ip) );
-    check_computation(q, conditional (is_ip, steer_ip, drop  ) );
+    check_computation(q, when   (has_vid(1), ip >> double_steer_ip) );
+    check_computation(q, unless (is_ip, ip >> double_steer_ip) );
+    check_computation(q, conditional (is_ip, double_steer_ip, drop  ) );
 
     return 0;
 }

@@ -146,10 +146,12 @@ PFQ 6.0
     * `steer_rss`
     * `steer_mac`
     * `steer_p2p`
-    * `steer_field_double`
+    * `double_steer_field`
+    * `double_steer_ip`
+    * `double_steer_mac`
     * `steer_field_symmetric`
-    * `steer_ip_local`
-    * `steer_link_local`
+    * `steer_local_ip`
+    * `steer_local_link`
     * `detour`
  * Transmission APIs updated.
  * General improvements.

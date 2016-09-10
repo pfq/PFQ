@@ -97,7 +97,7 @@ steering_field_symmetric(arguments_t args, struct qbuff * buff)
 
 
 static ActionQbuff
-steering_field_double(arguments_t args, struct qbuff * buff)
+double_steering_field(arguments_t args, struct qbuff * buff)
 {
 	int offset1 = GET_ARG_0(int, args);
 	int offset2 = GET_ARG_1(int, args);
@@ -106,7 +106,7 @@ steering_field_double(arguments_t args, struct qbuff * buff)
 
 	if (size > 4) {
 		if (printk_ratelimit())
-			printk(KERN_INFO "[pfq-lang] steering_field_double: size too big (max. 4 bytes)!\n");
+			printk(KERN_INFO "[pfq-lang] double_steer_field: size too big (max. 4 bytes)!\n");
 		return Drop(buff);
 	}
 
@@ -133,24 +133,24 @@ steering_link(arguments_t args, struct qbuff * buff)
 }
 
 
-static int steering_link_local_init(arguments_t args)
+static int steering_local_link_init(arguments_t args)
 {
 	char *mac = GET_ARG(char *, args);
 	char mac_addr[6];
 
 	if (!mac_pton(mac, mac_addr)) {
-		printk(KERN_INFO "[pfq-lang] steering_link_local: bad mac address format!\n");
+		printk(KERN_INFO "[pfq-lang] steering_local_link: bad mac address format!\n");
 		return -EINVAL;
 	}
 
 	memcpy(mac, mac_addr, 6);
-	printk(KERN_INFO "[pfq-lang] steering_link_local: gateway MAC -> %*phC\n", 6, mac);
+	printk(KERN_INFO "[pfq-lang] steering_local_link: gateway MAC -> %*phC\n", 6, mac);
 	return 0;
 }
 
 
 static ActionQbuff
-steering_link_local(arguments_t args, struct qbuff * buff)
+steering_local_link(arguments_t args, struct qbuff * buff)
 {
 	uint16_t * gw_mac = GET_ARG(uint16_t *, args);
 	uint16_t * w;
@@ -173,8 +173,9 @@ steering_link_local(arguments_t args, struct qbuff * buff)
 	return DoubleSteering(buff, w[0] ^ w[1] ^ w[2], w[3] ^ w[4] ^ w[5]);
 }
 
+
 static ActionQbuff
-steering_mac(arguments_t args, struct qbuff * buff)
+double_steering_mac(arguments_t args, struct qbuff * buff)
 {
 	uint16_t * w;
 	w = (uint16_t *)qbuff_eth_hdr(buff);
@@ -218,7 +219,7 @@ steering_p2p(arguments_t args, struct qbuff * buff)
 
 
 static ActionQbuff
-steering_ip(arguments_t args, struct qbuff * buff)
+double_steering_ip(arguments_t args, struct qbuff * buff)
 {
 	struct iphdr _iph;
 	const struct iphdr *ip;
@@ -235,14 +236,14 @@ steering_ip(arguments_t args, struct qbuff * buff)
 				   (__force uint32_t)ip->daddr);
 }
 
-static int steering_ip_local_init(arguments_t args)
+static int steering_local_ip_init(arguments_t args)
 {
 	CIDR_INIT(args, 0);
 	return 0;
 }
 
 static ActionQbuff
-steering_ip_local(arguments_t args, struct qbuff * buff)
+steering_local_ip(arguments_t args, struct qbuff * buff)
 {
 	struct CIDR_ *data = GET_PTR_0(struct CIDR_, args);
 	struct iphdr _iph;
@@ -286,14 +287,14 @@ static int steering_net_init(arguments_t args)
 	SET_ARG_1(args, mask);
 	SET_ARG_2(args, submask);
 
-	pr_devel("[PFQ|init] steer_net: addr=%pI4 mask=%pI4 submask=%pI4\n", &addr, &mask, &submask);
+	pr_devel("[PFQ|init] steer_local_net: addr=%pI4 mask=%pI4 submask=%pI4\n", &addr, &mask, &submask);
 
 	return 0;
 }
 
 
 static ActionQbuff
-steering_net(arguments_t args, struct qbuff * buff)
+steering_local_net(arguments_t args, struct qbuff * buff)
 {
 	__be32 addr    = GET_ARG_0(__be32, args);
 	__be32 mask    = GET_ARG_1(__be32, args);
@@ -360,20 +361,21 @@ struct pfq_lang_function_descr steering_functions[] = {
 	{ "steer_rrobin","Qbuff -> Action Qbuff", steering_rrobin  , NULL, NULL },
 	{ "steer_rss",   "Qbuff -> Action Qbuff", steering_rss     , NULL, NULL },
 	{ "steer_link",  "Qbuff -> Action Qbuff", steering_link    , NULL, NULL },
-	{ "steer_link_local",  "String -> Qbuff -> Action Qbuff", steering_link_local, steering_link_local_init, NULL },
-	{ "steer_mac",   "Qbuff -> Action Qbuff", steering_mac     , NULL, NULL },
+	{ "steer_local_link",  "String -> Qbuff -> Action Qbuff", steering_local_link, steering_local_link_init, NULL },
 	{ "steer_vlan",  "Qbuff -> Action Qbuff", steering_vlan_id , NULL, NULL },
-	{ "steer_ip",    "Qbuff -> Action Qbuff", steering_ip      , NULL, NULL },
-	{ "steer_ip_local","CIDR -> Qbuff -> Action Qbuff", steering_ip_local, steering_ip_local_init, NULL},
+	{ "steer_local_ip","CIDR -> Qbuff -> Action Qbuff", steering_local_ip, steering_local_ip_init, NULL},
 
 	{ "steer_p2p",   "Qbuff -> Action Qbuff", steering_p2p     , NULL, NULL },
 	{ "steer_flow",  "Qbuff -> Action Qbuff", steering_flow    , NULL, NULL },
 	{ "steer_to",    "CInt   -> Qbuff -> Action Qbuff", steering_to , NULL, NULL },
 
 	{ "steer_field", "Word32 -> Word32 -> Qbuff -> Action Qbuff", steering_field , NULL, NULL},
-	{ "steer_field_double",   "Word32 -> Word32 -> Word32 -> Qbuff -> Action Qbuff", steering_field_double, NULL, NULL},
 	{ "steer_field_symmetric","Word32 -> Word32 -> Word32 -> Qbuff -> Action Qbuff", steering_field_symmetric, NULL, NULL},
 
-	{ "steer_net",   "Word32 -> Word32 -> Word32 -> Qbuff -> Action Qbuff", steering_net, steering_net_init, NULL },
+	{ "double_steer_mac",  "Qbuff -> Action Qbuff", double_steering_mac, NULL, NULL },
+	{ "double_steer_ip",   "Qbuff -> Action Qbuff", double_steering_ip, NULL, NULL },
+	{ "double_steer_field","Word32 -> Word32 -> Word32 -> Qbuff -> Action Qbuff", double_steering_field, NULL, NULL},
+
+	{ "steer_local_net", "Word32 -> Word32 -> Word32 -> Qbuff -> Action Qbuff", steering_local_net, steering_net_init, NULL },
 	{ NULL }};
 

@@ -55,7 +55,7 @@ main = do
         let comp = par (ip >-> udp) (ip >-> tcp) >-> steer_rtp >->
                          Q.when is_tcp (inc 2) >->
                          addr "192.168.0.0/24" >->
-                         steer_link_local "4c:60:de:86:55:46" >->
+                         steer_local_link "4c:60:de:86:55:46" >->
                          dummy 42 >->
                          dummy_string "hello world" >->
                          dummy_strings ["hello", "world"] >->

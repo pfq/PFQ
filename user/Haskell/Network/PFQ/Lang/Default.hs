@@ -157,16 +157,16 @@ module Network.PFQ.Lang.Default
     , steer_rss
     , steer_to
     , steer_link
-    , steer_link_local
-    , steer_mac
+    , steer_local_link
+    , double_steer_mac
     , steer_vlan
     , steer_p2p
-    , steer_ip
-    , steer_ip_local
+    , double_steer_ip
+    , steer_local_ip
     , steer_flow
-    , steer_net
+    , steer_local_net
     , steer_field
-    , steer_field_double
+    , double_steer_field
     , steer_field_symmetric
     , steer_rtp
     , steer_voip
@@ -491,17 +491,17 @@ steer_link = Function "steer_link" () () () () () () () () :: NetFunction
 -- with a randomized algorithm that maintains the coherence of
 -- local mac addresses.
 --
--- > steer_link_local "4c:60:de:86:55:46"
-steer_link_local :: String -> NetFunction
-steer_link_local mac_gw = Function "steer_link_local" mac_gw () () () () () () () :: NetFunction
+-- > steer_local_link "4c:60:de:86:55:46"
+steer_local_link :: String -> NetFunction
+steer_local_link mac_gw = Function "steer_local_link" mac_gw () () () () () () () :: NetFunction
 
 -- | Dispatch the packet across the sockets
 -- with a randomized algorithm that maintains the coherence of both
 -- mac addresses. This alter the total amount of traffic, as the
 -- packets can be steered to at most two sockets.
 --
--- > steer_mac
-steer_mac = Function "steer_mac" () () () () () () () () :: NetFunction
+-- > double_steer_mac
+double_steer_mac = Function "double_steer_mac" () () () () () () () () :: NetFunction
 
 -- | Dispatch the packet across the sockets
 -- with a randomized algorithm that maintains the coherence of
@@ -520,19 +520,19 @@ steer_p2p = Function "steer_p2p" () () () () () () () () :: NetFunction
 -- | Dispatch the packet across the sockets
 -- with a randomized algorithm that maintains the coherence of both
 -- IP addresses.
--- This alter the total amount of traffic (see 'steer_mac').
+-- This alter the total amount of traffic (see 'double_steer_mac').
 --
--- > steer_ip
-steer_ip = Function "steer_ip" () () () () () () () () :: NetFunction
+-- > double_steer_ip
+double_steer_ip = Function "double_steer_ip" () () () () () () () () :: NetFunction
 
 -- | Dispatch the packet across the sockets
 -- with a randomized algorithm that maintains the coherence of local
 -- IP addresses.
--- This alter the total amount of traffic (see 'steer_mac').
+-- This alter the total amount of traffic (see 'double_steer_mac').
 --
--- > steer_ip_local "192.168.1.0/24"
-steer_ip_local :: CIDR -> NetFunction
-steer_ip_local d = Function "steer_ip_local" d () () () () () () () :: NetFunction
+-- > steer_local_ip "192.168.1.0/24"
+steer_local_ip :: CIDR -> NetFunction
+steer_local_ip d = Function "steer_local_ip" d () () () () () () () :: NetFunction
 
 -- | Dispatch the packet across the sockets
 -- with a randomized algorithm that maintains the coherence of
@@ -559,9 +559,9 @@ steer_voip = Function "steer_voip" () () () () () () () () :: NetFunction
 -- with a randomized algorithm that maintains the coherence of
 -- sub networks.
 --
--- > steer_net "192.168.0.0" 16 24
-steer_net :: IPv4 -> Int -> Int -> NetFunction
-steer_net net p sub = Function "steer_net" net p sub () () () () ()
+-- > steer_local_net "192.168.0.0" 16 24
+steer_local_net :: IPv4 -> Int -> Int -> NetFunction
+steer_local_net net p sub = Function "steer_local_net" net p sub () () () () ()
 
 -- | Dispatch the packet across the sockets
 -- with a randomized algorithm. The function uses as /hash/ the field
@@ -575,12 +575,12 @@ steer_field offset size = Function "steer_field" offset size () () () () () ()
 -- with a randomized algorithm. The function uses as /hash/ the xor operation
 -- of the fields of /size/ bytes taken at /offset1/ and /offset2/ bytes from the
 -- beginning of the packet.
--- This alter the total amount of traffic (see 'steer_mac').
-steer_field_double :: Int -- ^ offset1 from the beginning of the packet, in bytes
+-- This alter the total amount of traffic (see 'double_steer_mac').
+double_steer_field :: Int -- ^ offset1 from the beginning of the packet, in bytes
                    -> Int -- ^ offset2 from the beginning of the packet, in bytes
                    -> Int -- ^ sizeof field in bytes (max 4)
                    -> NetFunction
-steer_field_double offset1 offset2 size = Function "steer_field_double" offset1 offset2 size () () () () ()
+double_steer_field offset1 offset2 size = Function "double_steer_field" offset1 offset2 size () () () () ()
 
 -- | Dispatch the packet across the sockets
 -- with a randomized algorithm. The function uses as /hash/ the xor operation

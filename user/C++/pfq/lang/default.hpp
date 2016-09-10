@@ -491,10 +491,10 @@ namespace pfq { namespace lang {
          * Dispatch with a randomized algorithm that maintains the coherence
          * of local mac addresses. Example:
          *
-         * steer_link_local("4c:60:de:86:55:46")
+         * steer_local_link("4c:60:de:86:55:46")
          */
 
-        auto steer_link_local = [](std::string mac_gw) { return function("steer_link_local", std::move(mac_gw)); };
+        auto steer_local_link = [](std::string mac_gw) { return function("steer_local_link", std::move(mac_gw)); };
 
 
         //! Dispatch the packet across the sockets.
@@ -503,10 +503,10 @@ namespace pfq { namespace lang {
          * of mac address. This alter the total amount of traffic, as the packets
          * can be steered to at most two sockets. Example:
          *
-         * steer_mac
+         * double_steer_mac
          */
 
-        auto steer_mac = function("steer_mac");
+        auto double_steer_mac = function("double_steer_mac");
 
         //! Dispatch the packet across the sockets
         /*!
@@ -522,23 +522,23 @@ namespace pfq { namespace lang {
         /*!
          * Dispatch with a randomized algorithm that maintains the coherence
          * of both IP addresses.
-         * This alter the total amount of traffic (\see steer_mac).
+         * This alter the total amount of traffic (\see double_steer_mac).
          *
-         * steer_ip
+         * double_steer_ip
          */
 
-        auto steer_ip   = function("steer_ip");
+        auto double_steer_ip   = function("double_steer_ip");
 
         //! Dispatch the packet across the sockets
         /*!
          * Dispatch with a randomized algorithm that maintains the coherence
          * of local IP addresses.
-         * This alter the total amount of traffic (\see steer_mac).
+         * This alter the total amount of traffic (\see double_steer_mac).
          *
-         * steer_ip_local "192.168.1.0/24"
+         * steer_local_ip "192.168.1.0/24"
          */
 
-        auto steer_ip_local = [] (CIDR data) { return function("steer_ip_local", data); };
+        auto steer_local_ip = [] (CIDR data) { return function("steer_local_ip", data); };
 
         //! Dispatch the packet across the sockets
         /*!
@@ -585,10 +585,10 @@ namespace pfq { namespace lang {
          * Dispatch with a randomized algorithm that maintains the coherence
          * of sub networks. Example:
          *
-         * steer_net("192.168.0.0", 16, 24)
+         * steer_local_net("192.168.0.0", 16, 24)
          */
 
-        auto steer_net  = [] (const char *net, int prefix, int subprefix)
+        auto steer_local_net  = [] (const char *net, int prefix, int subprefix)
         {
             struct supernet {
                 uint32_t addr;
@@ -597,9 +597,9 @@ namespace pfq { namespace lang {
             } na = { 0, prefix, subprefix };
 
             if (inet_pton(AF_INET, net, &na.addr) <= 0)
-                throw std::runtime_error("pfq::lang::steer_net");
+                throw std::runtime_error("pfq::lang::steer_local_net");
 
-            return function("steer_net", na);
+            return function("steer_local_net", na);
         };
 
         //! Dispatch the packet across the sockets
@@ -618,11 +618,11 @@ namespace pfq { namespace lang {
          * Dispatch with a randomized algorithm. The function uses as hashes
          * the fields of \c size bytes (max 4) taken at \c offset1 and \c offset2 bytes from the
          * beginning of the packet.
-         * This alter the total amount of traffic (\see steer_mac).
+         * This alter the total amount of traffic (\see double_steer_mac).
          */
 
-        auto steer_field_double = [] (int offset1, int offset2, int bytes) {
-                                return function("steer_field_double", offset1, offset2, bytes);
+        auto double_steer_field = [] (int offset1, int offset2, int bytes) {
+                                return function("double_steer_field", offset1, offset2, bytes);
                            };
 
         //! Dispatch the packet across the sockets

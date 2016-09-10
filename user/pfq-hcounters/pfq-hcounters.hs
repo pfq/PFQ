@@ -71,7 +71,7 @@ options = cmdArgsMode $
     Options
     {   caplen   = 64
     ,   slots    = 8192
-    ,   function = [] &= typ "FUNCTION"  &= help "Where FUNCTION = gid,computation (ie: 0,steer_ip)"
+    ,   function = [] &= typ "FUNCTION"  &= help "Where FUNCTION = gid,computation (ie: 0,double_steer_ip)"
     ,   thread   = [] &= typ "BINDING" &= help "Where BINDING = core.gid[.[eth0:queue,queue,queue...[.ethx:queue,queue...]]]"
     } &= summary "PFQ multi-threaded packet counter." &= program "pfq-counters"
 
