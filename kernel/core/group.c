@@ -164,17 +164,12 @@ core_group_access(pfq_gid_t gid, pfq_id_t id)
 
 
 static void
-__core_group_init(pfq_gid_t gid)
+__core_group_init(struct core_group *group)
 {
-        struct core_group * group;
         size_t i;
 
-	group = core_group_get(gid);
-        if (group == NULL)
-                return;
-
-	group->pid = pfq_get_tgid();
-        group->owner = Q_CORE_INVALID_ID;
+	group->pid    = 0;
+        group->owner  = Q_CORE_INVALID_ID;
         group->policy = Q_POLICY_GROUP_UNDEFINED;
 
         for(i = 0; i < Q_CLASS_MAX; i++)
@@ -202,16 +197,12 @@ __core_group_init(pfq_gid_t gid)
 
 
 static void
-__core_group_free(pfq_gid_t gid)
+__core_group_free(struct core_group *group, pfq_gid_t gid)
 {
-        struct core_group * group;
         struct sk_filter *filter;
         struct pfq_lang_computation_tree *old_comp;
         void *old_ctx;
-
-	group = core_group_get(gid);
-        if (group == NULL)
-                return;
+        size_t i;
 
         /* remove this gid from devmap matrix */
 
@@ -262,29 +253,35 @@ __core_group_join(pfq_gid_t gid, pfq_id_t id, unsigned long class_mask, int poli
 
 	/* if this group is unused, initializes it */
 
-        if (!group->pid)
-                __core_group_init(gid);
+        if (!group->enabled) {
+                __core_group_init(group);
+	}
+	else {
+		if (!core_group_policy_access(gid, id, policy)) {
+			pr_devel("[PFQ] join group gid=%d: permission denied with policy %d\n", gid, policy);
+			return -EACCES;
+		}
+	}
 
-        if (!core_group_policy_access(gid, id, policy)) {
-                pr_devel("[PFQ] join group gid=%d: permission denied with policy %d\n", gid, policy);
-                return -EACCES;
-        }
+	if (policy != Q_POLICY_GROUP_UNDEFINED)
+	{
+		core_bitwise_foreach(class_mask, bit,
+		{
+			 unsigned int class = core_ctz(bit);
+			 tmp = atomic_long_read(&group->sock_id[class]);
+			 tmp |= 1L << (__force int)id;
+			 atomic_long_set(&group->sock_id[class], tmp);
+		});
 
-        core_bitwise_foreach(class_mask, bit,
-        {
-                 unsigned int class = core_ctz(bit);
-                 tmp = atomic_long_read(&group->sock_id[class]);
-                 tmp |= 1L << (__force int)id;
-                 atomic_long_set(&group->sock_id[class], tmp);
-        })
+		core_invalidate_percpu_eligible_mask(id);
 
-	core_invalidate_percpu_eligible_mask(id);
-
-	if (group->owner == Q_CORE_INVALID_ID)
-		group->owner = id;
-
-	if (group->policy == Q_POLICY_GROUP_UNDEFINED)
-		group->policy = policy;
+		if (group->owner == Q_CORE_INVALID_ID)
+			group->owner = id;
+		if (group->pid == 0)
+			group->pid = pfq_get_tgid();
+		if (group->policy == Q_POLICY_GROUP_UNDEFINED)
+			group->policy = policy;
+	}
 
 	pr_devel("[PFQ|%d] group %d, sock_ids { %lu %lu %lu %lu %lu...\n", id, gid,
 		 atomic_long_read(&group->sock_id[0]),
