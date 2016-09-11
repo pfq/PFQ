@@ -58,6 +58,8 @@ core_groups_init(void)
 	{
 		struct core_group * group = &global->groups[n];
 
+		group->enabled = false;
+
 		group->pid = 0;
 		group->owner = Q_CORE_INVALID_ID;
 		group->policy = Q_POLICY_GROUP_UNDEFINED;
@@ -188,6 +190,14 @@ __core_group_init(pfq_gid_t gid)
 
 	core_group_stats_reset(group->stats);
 	core_group_counters_reset(group->counters);
+
+	group->vlan_filt = false;
+
+	for(i = 0; i < 4096; i++) {
+		group->vid_filters[i] = 0;
+	}
+
+	group->enabled = true;
 }
 
 
@@ -206,6 +216,8 @@ __core_group_free(pfq_gid_t gid)
         /* remove this gid from devmap matrix */
 
         core_devmap_update(Q_CORE_DEVMAP_RESET, Q_ANY_DEVICE, Q_ANY_QUEUE, gid);
+
+	group->enabled = false;
 
         group->pid    = 0;
         group->owner  = Q_CORE_INVALID_ID;
@@ -229,6 +241,9 @@ __core_group_free(pfq_gid_t gid)
 		pfq_free_sk_filter(filter);
 
         group->vlan_filt = false;
+	for(i = 0; i < 4096; i++) {
+		group->vid_filters[i] = 0;
+	}
 
         pr_devel("[PFQ] group gid=%d freed.\n", gid);
 }
@@ -302,8 +317,8 @@ __core_group_leave(pfq_gid_t gid, pfq_id_t id)
 
 	core_invalidate_percpu_eligible_mask(id);
 
-	if (group->pid && __core_group_is_empty(gid))
-		__core_group_free(gid);
+	if (group->enabled && __core_group_is_empty(gid))
+		__core_group_free(group, gid);
 
         return 0;
 }
@@ -411,7 +426,7 @@ core_group_join_free(pfq_id_t id, unsigned long class_mask, int policy)
         {
 		pfq_gid_t gid = (__force pfq_gid_t)n;
 
-                if(!core_group_get(gid)->pid) {
+                if(!core_group_get(gid)->enabled) {
                         __core_group_join(gid, id, class_mask, policy);
                         mutex_unlock(&global->groups_lock);
                         return n;

@@ -37,8 +37,9 @@ pr_devel_group(pfq_gid_t gid)
 	g = core_group_get(gid);
 	if (g != NULL) {
 
-		pr_devel("[PFQ] group %d { policy=%d, pid=%d, owner-id=%d ...}\n",
+		pr_devel("[PFQ] group %d { enabled=%d, policy=%d, pid=%d, owner-id=%d ...}\n",
 				gid,
+				g->enabled,
 				g->policy,
 				g->pid,
 				g->owner);

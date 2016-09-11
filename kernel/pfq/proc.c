@@ -121,7 +121,7 @@ static int pfq_proc_groups(struct seq_file *m, void *v)
 		pfq_gid_t gid = (__force pfq_gid_t)n;
 
 		struct core_group *this_group = core_group_get(gid);
-		if (!this_group->policy)
+		if (!this_group->enabled)
 			continue;
 
 		seq_printf(m, "%5zu: %-9lu %-9lu %-9lu %-9lu %-9lu %-9lu %-9lu %-9lu", n,

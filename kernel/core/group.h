@@ -49,14 +49,16 @@ struct core_group
 
         atomic_long_t bp_filter;			/* struct sk_filter pointer */
 
-        bool   vlan_filt;                               /* enable/disable vlan filtering */
-        char   vid_filters[4096];                       /* vlan filters */
-
         atomic_long_t comp;                             /* struct pfq_lang_computation_tree *  (new functional program) */
         atomic_long_t comp_ctx;                         /* void *: storage context (new functional program) */
 
 	core_group_stats_t __percpu *stats;
 	struct core_group_counters __percpu *counters;
+
+        bool   enabled;
+        bool   vlan_filt;                               /* enable/disable vlan filtering */
+        char   vid_filters[4096];                       /* vlan filters */
+
 };
 
 
@@ -100,11 +102,8 @@ static inline
 bool core_group_is_free(pfq_gid_t gid)
 {
 	struct core_group * g;
-
 	g = core_group_get(gid);
-	if (g == NULL)
-		return true;
-	if (g->owner != (__force pfq_id_t)-1 || g->pid != 0)
+	if (g && g->enabled)
 		return false;
 	return true;
 }
