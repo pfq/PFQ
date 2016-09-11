@@ -281,7 +281,7 @@ int core_getsockopt(struct socket *sock,
 
                 /* check whether the group is joinable.. */
 
-                if (!core_group_policy_access(gid, so->id, Q_POLICY_GROUP_UNDEFINED)) {
+                if (!core_group_access(gid, so->id)) {
                         printk(KERN_INFO "[PFQ|%d] group error: permission denied (gid=%d)!\n",
                                so->id, gid);
                         return -EACCES;
