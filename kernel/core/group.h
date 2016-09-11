@@ -40,7 +40,7 @@ struct core_group_counters;
 struct core_group
 {
         int policy;                                     /* group policy */
-        int pid;	                                /* process id */
+        int pid;	                                /* process id/tgid */
 
 	pfq_id_t owner;					/* owner's pfq id */
 

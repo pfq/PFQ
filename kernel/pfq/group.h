@@ -28,7 +28,7 @@
 
 
 static inline
-int pfq_getpid(void)
+int pfq_get_tgid(void)
 {
 	return current->tgid;
 }

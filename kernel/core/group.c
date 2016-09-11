@@ -122,7 +122,7 @@ core_group_policy_access(pfq_gid_t gid, pfq_id_t id, int policy)
                 return group->owner == id; // __core_has_joined_group(gid,id);
 
         case Q_POLICY_GROUP_RESTRICTED:
-                return (policy == Q_POLICY_GROUP_RESTRICTED) && group->pid == pfq_getpid();
+                return (policy == Q_POLICY_GROUP_RESTRICTED) && group->pid == pfq_get_tgid();
 
         case Q_POLICY_GROUP_SHARED:
                 return policy == Q_POLICY_GROUP_SHARED;
@@ -150,7 +150,7 @@ core_group_access(pfq_gid_t gid, pfq_id_t id)
 		return group->owner == id;
 
         case Q_POLICY_GROUP_RESTRICTED:
-                return group->pid == pfq_getpid();
+                return group->pid == pfq_get_tgid();
 
         case Q_POLICY_GROUP_SHARED:
         case Q_POLICY_GROUP_UNDEFINED:
@@ -171,7 +171,7 @@ __core_group_init(pfq_gid_t gid)
         if (group == NULL)
                 return;
 
-	group->pid = pfq_getpid();
+	group->pid = pfq_get_tgid();
         group->owner = Q_CORE_INVALID_ID;
         group->policy = Q_POLICY_GROUP_UNDEFINED;
 
@@ -251,7 +251,7 @@ __core_group_join(pfq_gid_t gid, pfq_id_t id, unsigned long class_mask, int poli
                 __core_group_init(gid);
 
         if (!core_group_policy_access(gid, id, policy)) {
-                pr_devel("[PFQ] group gid=%d is not join-able with policy %d\n", gid, policy);
+                pr_devel("[PFQ] join group gid=%d: permission denied with policy %d\n", gid, policy);
                 return -EACCES;
         }
 
