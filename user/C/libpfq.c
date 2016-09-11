@@ -1340,10 +1340,6 @@ pfq_group_fprog_reset(pfq_t *q, int gid)
 int
 pfq_join_group(pfq_t *q, int gid, unsigned long class_mask, int group_policy)
 {
-	if (group_policy == Q_POLICY_GROUP_UNDEFINED) {
-		return Q_ERROR(q, "PFQ: join with undefined policy!");
-	}
-
 	struct pfq_group_join group = { gid, group_policy, class_mask };
 
 	socklen_t size = sizeof(group);
