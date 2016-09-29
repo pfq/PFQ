@@ -47,6 +47,8 @@
 #include <pfq/memory.h>
 #include <pfq/qbuff.h>
 #include <pfq/netdev.h>
+#include <pfq/prefetch.h>
+
 
 int
 pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
@@ -379,6 +381,10 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
 
 	if (unlikely(!dev_queue->dev))
 		return (tx_res_t){.ok = 0, .fail = copies};
+
+	/* prefetch payload of packet to transmit */
+
+	prefetch_range(hdr+1, len);
 
 	/* wait until for the timestap to expire (if specified) */
 
@@ -852,6 +858,11 @@ size_t pfq_sk_queue_recv(struct core_sock_opt *opt,
 
 			return sent;
 		}
+
+		/* prefetch for non-temporal write */
+
+		__builtin_prefetch(hdr, 1, 0);
+		prefetchw_nt_range(pkt,bytes);
 
 		/* copy bytes of packet */
 
