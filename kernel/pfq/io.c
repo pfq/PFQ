@@ -464,7 +464,11 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
  */
 
 tx_res_t
-pfq_sk_queue_xmit(struct core_sock *so, int sock_queue, int cpu, int node, atomic_t const *stop)
+pfq_sk_queue_xmit(struct core_sock *so,
+		  int sock_queue,
+		  int cpu,
+		  int node,
+		  atomic_t const *stop)
 {
 	struct core_tx_info const * txinfo = core_sock_get_tx_queue_info(&so->opt, sock_queue);
 	struct net_dev_queue dev_queue = net_dev_queue_null;
@@ -529,7 +533,6 @@ pfq_sk_queue_xmit(struct core_sock *so, int sock_queue, int cpu, int node, atomi
 
 	local_bh_disable();
 	pfq_hard_tx_lock(&dev_queue);
-
 
 	/* traverse the socket queue */
 
@@ -806,7 +809,6 @@ void *pfq_skb_copy_from_linear_data(const struct sk_buff *skb, void *to, size_t 
 }
 
 
-
 size_t pfq_sk_queue_recv(struct core_sock_opt *opt,
 			 struct core_qbuff_refs *buffs,
 			 unsigned long long mask,
@@ -829,10 +831,8 @@ size_t pfq_sk_queue_recv(struct core_sock_opt *opt,
 		return 0;
 
 	data = __atomic_add_fetch(&rx_queue->shinfo, burst_len, __ATOMIC_RELAXED);
-
 	qlen = PFQ_SHARED_QUEUE_LEN(data) - burst_len;
 	qver = PFQ_SHARED_QUEUE_VER(data);
-
 	hdr  = (struct pfq_pkthdr *) core_mpsc_slot_ptr(opt, rx_queue, qver, qlen);
 
 	for_each_qbuff_with_mask(mask, buffs, buff, n)
@@ -845,8 +845,7 @@ size_t pfq_sk_queue_recv(struct core_sock_opt *opt,
 		slot_index = qlen + sent;
 		pkt = (char *)(hdr+1);
 
-		if (slot_index > opt->rx_queue_len) {
-
+		if (unlikely(slot_index > opt->rx_queue_len)) {
 			if (waitqueue_active(&opt->waitqueue)) {
 				wake_up_interruptible(&opt->waitqueue);
 			}
@@ -857,11 +856,10 @@ size_t pfq_sk_queue_recv(struct core_sock_opt *opt,
 		/* copy bytes of packet */
 
 #ifdef PFQ_USE_SKB_LINEARIZE
-		if (unlikely(skb_is_nonlinear(skb)))
+		if (unlikely(skb_is_nonlinear(skb))) {
 #else
-		if (skb_is_nonlinear(skb))
+		if (skb_is_nonlinear(skb)) {
 #endif
-		{
 			if (skb_copy_bits(skb, 0, pkt, bytes) != 0) {
 				printk(KERN_WARNING "[PFQ] BUG! skb_copy_bits failed (bytes=%zu, skb_len=%d mac_len=%d)!\n",
 				       bytes, skb->len, skb->mac_len);
@@ -881,8 +879,8 @@ size_t pfq_sk_queue_recv(struct core_sock_opt *opt,
 			hdr->tstamp.tv.nsec = (uint32_t)ts.tv_nsec;
 		}
 
-		hdr->caplen	   = (uint16_t)bytes;
-		hdr->len	   = (uint16_t)skb->len;
+		hdr->caplen = (uint16_t)bytes;
+		hdr->len = (uint16_t)skb->len;
 
 		/* copy state from pfq_cb annotation */
 
@@ -891,17 +889,18 @@ size_t pfq_sk_queue_recv(struct core_sock_opt *opt,
 
 		/* setup the header */
 
-		hdr->info.ifindex  = skb->dev->ifindex;
-		hdr->info.gid	   = (__force uint16_t)gid;
+		hdr->info.ifindex = skb->dev->ifindex;
+		hdr->info.gid = (__force uint16_t)gid;
 		hdr->info.vlan.tci = skb->vlan_tci & ~VLAN_TAG_PRESENT;
-		hdr->info.queue	   = skb_rx_queue_recorded(skb) ? (uint16_t)skb_get_rx_queue(skb) : 0;
+		hdr->info.queue	= skb_rx_queue_recorded(skb) ? (uint16_t)skb_get_rx_queue(skb) : 0;
 
 		/* commit the slot (release semantic) */
 
 		__atomic_store_n(&hdr->info.commit, qver, __ATOMIC_RELEASE);
 
+		/* check for pending waitqueue... */
 
-		if ((slot_index & 8191) == 0 &&
+		if ((slot_index & 4095) == 0 &&
 		    waitqueue_active(&opt->waitqueue)) {
 			wake_up_interruptible(&opt->waitqueue);
 		}
