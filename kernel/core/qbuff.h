@@ -102,8 +102,7 @@ PFQ_DEFINE_QUEUE_REF(core_ref_long_queue,  Q_CORE_BUFF_QUEUE_LEN);
 
 
 #define for_each_qbuff(q, buff, n) \
-        for((n) = 0; ((n) < (q)->len) && ((buff) = PFQ_QBUFF_QUEUE_AT((q),n)); \
-                __builtin_prefetch((__force void const *)&(q)->queue[n+1], 0, 1), (n)++)
+        for((n) = 0; ((n) < (q)->len) && ((buff) = PFQ_QBUFF_QUEUE_AT((q),n)); (n)++)
 
 
 #define for_each_qbuff_with_mask(mask, q, buff, n) \
@@ -112,13 +111,11 @@ PFQ_DEFINE_QUEUE_REF(core_ref_long_queue,  Q_CORE_BUFF_QUEUE_LEN);
 
 
 #define for_each_qbuff_from(x, q, buff, n) \
-        for((n) = (x); ((n) < (q)->len) && ((buff) = PFQ_QBUFF_QUEUE_AT((q), n)); \
-                __builtin_prefetch((__force void const *)&(q)->queue[n+1], 0, 1), (n)++)
+        for((n) = (x); ((n) < (q)->len) && ((buff) = PFQ_QBUFF_QUEUE_AT((q), n)); (n)++)
 
 
 #define for_each_qbuff_upto(max, q, buff, n) \
-        for((n) = 0; ((n) < (max)) && ((n) < (q)->len) && ((buff) = PFQ_QBUFF_QUEUE_AT((q),n)); \
-                __builtin_prefetch((__force void const *)&(q)->queue[n+1], 0, 1), (n)++)
+        for((n) = 0; ((n) < (max)) && ((n) < (q)->len) && ((buff) = PFQ_QBUFF_QUEUE_AT((q),n)); (n)++)
 
 
 
