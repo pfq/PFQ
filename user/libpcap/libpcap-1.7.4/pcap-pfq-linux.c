@@ -928,7 +928,7 @@ pfq_activate_socket_for_device(pcap_t *handle, const char *device)
 	if (group == -1)
 		group = handle->opt.pfq.def_group;
 
-	/* 
+	/*
 	 * Bind Rx to groups
 	 */
 
@@ -1201,8 +1201,8 @@ pfq_activate_linux(pcap_t *handle)
 
 	fprintf(stdout, "[PFQ] socket (%d) is using Rx group %d\n", pfq_id(handle->md.pfq.q), handle->opt.pfq.group);
 
-	/* 
-	 * Bind TX to device/queue 
+	/*
+	 * Bind TX to device/queue
 	 */
 
 	if (device && strcmp(device, "any"))
@@ -1243,8 +1243,8 @@ pfq_activate_linux(pcap_t *handle)
 		}
 	}
 
-	/* 
-	 * Set pfq-lang computation 
+	/*
+	 * Set pfq-lang computation
 	 */
 
 	/* Haskell bird style? */
@@ -1268,6 +1268,7 @@ pfq_activate_linux(pcap_t *handle)
 	else if (handle->opt.pfq.lang_lit) {
 
 		fprintf(stdout, "[PFQ] loading pfq-lang program '%s' for group %d\n",
+
 			handle->opt.pfq.lang_lit, handle->opt.pfq.group);
 
 		if (pfq_set_group_computation_from_string(handle->md.pfq.q,
@@ -1278,8 +1279,8 @@ pfq_activate_linux(pcap_t *handle)
 		}
 	}
 
-	/* 
-	 * Set vlan filters 
+	/*
+	 * Set vlan filters
 	 */
 
 	char *cur_vlan = handle->opt.pfq.vlan[handle->opt.pfq.group] ?
@@ -1309,8 +1310,8 @@ pfq_activate_linux(pcap_t *handle)
                         goto fail;
         }
 
-	/* 
-	 * Enable timestamping 
+	/*
+	 * Enable timestamping
 	 */
 
 	if (pfq_timestamping_enable(handle->md.pfq.q, 1) == -1) {
@@ -1318,8 +1319,8 @@ pfq_activate_linux(pcap_t *handle)
 		goto fail;
 	}
 
-	/* 
-	 * Enable PFQ socket 
+	/*
+	 * Enable PFQ socket
 	 */
 
 	if (pfq_enable(handle->md.pfq.q) == -1) {
@@ -1424,8 +1425,8 @@ pfq_cleanup_linux(pcap_t *handle)
 static int
 pfq_read_linux(pcap_t *handle, int max_packets, pcap_handler callback, u_char *user)
 {
-        int start		 = handle->md.packets_read;
-	pfq_iterator_t it	 = handle->md.pfq.current;
+        int start = handle->md.packets_read;
+	pfq_iterator_t n1, it = handle->md.pfq.current;
 	struct pfq_net_queue *nq = &handle->md.pfq.nq;
 	int n = max_packets;
 

@@ -566,8 +566,7 @@ pfq_sk_queue_xmit(struct core_sock *so,
 
 		/* swap queue/device lock if required */
 
-		if (qid != PFQ_DEVQ_DEFAULT &&
-		    qid != dev_queue.id) {
+		if (unlikely(qid != PFQ_DEVQ_DEFAULT && qid != dev_queue.id)) {
 
 			/* unlock the current locked queue */
 
@@ -582,7 +581,7 @@ pfq_sk_queue_xmit(struct core_sock *so,
 
 			/* try to get the new dev_queue */
 
-			if (pfq_dev_queue_get(ctx.net, qid, &dev_queue) < 0)
+			if (unlikely(pfq_dev_queue_get(ctx.net, qid, &dev_queue) < 0))
 			{
 				if (printk_ratelimit())
 					printk(KERN_INFO "[PFQ] sk_queue_xmit: could not lock " PFQ_DEVQ_FMT "!\n", PFQ_DEVQ_ARG(qid));
@@ -614,7 +613,6 @@ pfq_sk_queue_xmit(struct core_sock *so,
 			tmp = __pfq_mbuff_xmit(hdr, &dev_queue, &ctx, copies, xmit_more, stop, &intr);
 
 			/* update the return value */
-
 			ret.value += tmp.value;
 		}
 

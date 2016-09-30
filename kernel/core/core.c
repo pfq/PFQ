@@ -200,8 +200,7 @@ int core_process_batch(struct core_percpu_data *data,
 			/* check if bp filter is enabled */
 
 			if (bf_filt_enabled) {
-				if (!qbuff_run_bp_filter(buff, this_group))
-				{
+				if (!qbuff_run_bp_filter(buff, this_group)) {
 					__sparse_inc(this_group->stats, drop, cpu);
 					refs.ref[refs.len++] = NULL;
 					continue;

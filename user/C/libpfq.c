@@ -282,7 +282,8 @@ pfq_enable(pfq_t *q)
 
 		q->hd = open(filename, O_CREAT | O_RDWR, 0755);
 		if (q->hd == -1)
-			return Q_ERROR(q, "PFQ: couldn't open a HugePages descriptor");
+			return Q_ERROR(q, "PFQ: couldn't open a HugePages");
+
 
 		q->shm_addr = mmap(NULL, tot_mem, PROT_READ|PROT_WRITE, MAP_SHARED, q->hd, 0);
 		if (q->shm_addr == MAP_FAILED)
