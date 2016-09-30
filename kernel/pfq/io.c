@@ -382,10 +382,6 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
 	if (unlikely(!dev_queue->dev))
 		return (tx_res_t){.ok = 0, .fail = copies};
 
-	/* prefetch payload of packet to transmit */
-
-	prefetch_range(hdr+1, len);
-
 	/* wait until for the timestap to expire (if specified) */
 
 	if (hdr->tstamp.tv64) {
@@ -482,7 +478,7 @@ pfq_sk_queue_xmit(struct core_sock *so,
 	struct pfq_percpu_pool *pool;
 	int batch_cntr = 0, cons_idx;
 	struct pfq_tx_queue *txm;
-	struct pfq_pkthdr *hdr;
+	struct pfq_pkthdr *hdr, *n1, *n2;
 	ptrdiff_t prod_off;
         char *begin, *end;
         tx_res_t ret = {0};
@@ -547,6 +543,12 @@ pfq_sk_queue_xmit(struct core_sock *so,
                 bool intr = false, xmit_more = true;
 		dev_queue_t qid; int copies;
                 tx_res_t tmp = {0};
+
+		n1 = PFQ_SHARED_QUEUE_NEXT_PKTHDR(hdr, 0);
+		n2 = PFQ_SHARED_QUEUE_NEXT_PKTHDR(n1, 0);
+
+                __builtin_prefetch(n1, 0, 2);
+                __builtin_prefetch(n2, 0, 2);
 
 		/* because of dynamic slot size, ensure the caplen is not set to 0 */
 
@@ -858,11 +860,6 @@ size_t pfq_sk_queue_recv(struct core_sock_opt *opt,
 
 			return sent;
 		}
-
-		/* prefetch for non-temporal write */
-
-		__builtin_prefetch(hdr, 1, 0);
-		prefetchw_nt_range(pkt,bytes);
 
 		/* copy bytes of packet */
 

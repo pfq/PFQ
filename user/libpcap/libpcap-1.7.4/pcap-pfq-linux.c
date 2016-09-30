@@ -1441,12 +1441,19 @@ pfq_read_linux(pcap_t *handle, int max_packets, pcap_handler callback, u_char *u
 
 	for(; (max_packets <= 0 || n > 0) &&
 	       (it != pfq_net_queue_end(nq))
-	    ;	it = pfq_net_queue_next(nq, it))
+	    ;	it = n1)
 	{
 		struct pfq_pcap_pkthdr pcap_h;
 		struct pfq_pkthdr *h;
                 uint16_t vlan_tci;
 		const char *pkt;
+
+		n1 = pfq_net_queue_next(nq, it);
+
+		__builtin_prefetch(pfq_pkt_header(it), 0, 1);
+		__builtin_prefetch(pfq_pkt_data(it),   0, 1);
+		__builtin_prefetch(pfq_pkt_header(n1), 0, 1);
+		__builtin_prefetch(pfq_pkt_data(n1),   0, 1);
 
 		while (!pfq_pkt_ready(nq, it)) {
 			if (handle->break_loop) {
