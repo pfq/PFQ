@@ -97,7 +97,9 @@ namespace opt
     bool   interactive = false;
     double rate      = 0;
 
-    uint32_t rand_depth = 8;
+    uint32_t rand_depth = 32;
+    uint32_t rand_flow_depth = 8;
+
     std::vector<uint32_t> rand_seed;
 
     std::vector< std::vector<int> > kthread;
@@ -153,6 +155,8 @@ char *make_packets(size_t size, size_t numb)
 
     std::mt19937 gen;
 
+    auto rand_mask = ((1ULL << opt::rand_depth)-1);
+
     for(size_t i = 0; i < numb; ++i)
     {
         char * packet = area + i * size;
@@ -169,8 +173,8 @@ char *make_packets(size_t size, size_t numb)
         auto ip = reinterpret_cast<iphdr *>(packet + 14);
         if (opt::rand_ip)
         {
-            ip->saddr = static_cast<uint32_t>(gen());
-            ip->daddr = static_cast<uint32_t>(gen());
+            ip->saddr = static_cast<uint32_t>(gen()) & rand_mask;
+            ip->daddr = static_cast<uint32_t>(gen()) & rand_mask;
         }
     }
 
@@ -287,6 +291,8 @@ namespace thread
 
             auto rc = opt::rate != 0.0;
 
+            auto rand_mask = ((1ULL << opt::rand_depth)-1);
+
             for(size_t n = 0; n < opt::npackets;)
             {
                 if (rc)
@@ -318,8 +324,8 @@ namespace thread
 
                 if (opt::rand_ip)
                 {
-                    ip->saddr = static_cast<uint32_t>(m_gen());
-                    ip->daddr = static_cast<uint32_t>(m_gen());
+                    ip->saddr = static_cast<uint32_t>(m_gen()) & rand_mask;
+                    ip->daddr = static_cast<uint32_t>(m_gen()) & rand_mask;
                 }
 
                 n++;
@@ -419,6 +425,8 @@ namespace thread
 
             std::exponential_distribution<double> exp_dist(1.0 /(delta-pkt_time).count());
 
+            auto rand_mask = ((1ULL << opt::rand_depth)-1);
+
             for(size_t n = 0; n < opt::npackets;)
             {
                 if (opt::interactive)
@@ -441,8 +449,8 @@ namespace thread
 
                 if (opt::rand_ip)
                 {
-                    ip->saddr = static_cast<uint32_t>(m_gen());
-                    ip->daddr = static_cast<uint32_t>(m_gen());
+                    ip->saddr = static_cast<uint32_t>(m_gen()) & rand_mask;
+                    ip->daddr = static_cast<uint32_t>(m_gen()) & rand_mask;
                 }
 
                 n++;
@@ -460,7 +468,8 @@ namespace thread
             u_char *data;
 
             auto rc = opt::rate != 0.0;
-            auto rand_seed_mask = ((1ULL << opt::rand_depth)-1);
+            auto rand_mask = ((1ULL << opt::rand_depth)-1);
+            auto rand_flow_mask = ((1ULL << opt::rand_flow_depth)-1);
 
             for (size_t l = 0; l < opt::loop; l++)
             {
@@ -489,14 +498,14 @@ namespace thread
 
                     if (auto ip = opt::rand_ip ? reinterpret_cast<iphdr *>(data + 14) : nullptr)
                     {
-                        ip->saddr = static_cast<uint32_t>(m_gen());
-                        ip->daddr = static_cast<uint32_t>(m_gen());
+                        ip->saddr = static_cast<uint32_t>(m_gen()) & rand_mask;
+                        ip->daddr = static_cast<uint32_t>(m_gen()) & rand_mask;
                     }
 
                     if (auto ip = opt::rand_flow ? reinterpret_cast<iphdr *>(data + 14) : nullptr)
                     {
                         auto hash = ip->saddr ^ ip->daddr;
-                        auto seed = opt::rand_seed[(hash+l) & rand_seed_mask];
+                        auto seed = opt::rand_seed[(hash+l) & rand_flow_mask];
                         ip->saddr ^= seed;
                         ip->daddr ^= seed;
                     }
@@ -598,9 +607,10 @@ void usage(std::string name)
         "    --loop                     Loop through the trace file N times\n"
 #endif
         " -R --rand-ip                  Randomize IP addresses\n"
+        "    --rand-depth               Depth of randomization (0-32)\n"
 #ifdef HAVE_PCAP_H
         " -F --rand-flow                Randomize IP addresses per-flow\n"
-        "    --rand-depth               Depth of flow randomization (0-32: default 8)\n"
+        "    --rand-flow-depth          Depth of flow-randomization (def. 8)\n"
 #endif
         "    --dst-mac MAC              Specify dest MAC address\n"
         "    --src-mac MAC              Specify source MAC address\n"
@@ -636,7 +646,6 @@ try
 
     for(int i = 1; i < argc; ++i)
     {
-
 #ifdef HAVE_PCAP_H
         if ( any_strcmp(argv[i], "-r", "--read") )
         {
@@ -665,8 +674,8 @@ try
             opt::rand_flow = true;
             continue;
         }
-
-        if ( any_strcmp(argv[i], "--rand-depth") )
+        
+        if ( any_strcmp(argv[i], "--rand-flow-depth") )
         {
             if (++i == argc)
             {
@@ -675,8 +684,8 @@ try
 
             opt::rand_depth = static_cast<size_t>(std::atoi(argv[i]));
 
-            if (opt::rand_depth > 31)
-                throw std::runtime_error("rand-depth: too large value [0-32]!");
+            if (opt::rand_flow_depth > 31)
+                throw std::runtime_error("rand-flow-depth: too large value [0-32]!");
 
             continue;
         }
@@ -774,6 +783,21 @@ try
             continue;
         }
 
+        if ( any_strcmp(argv[i], "--rand-depth") )
+        {
+            if (++i == argc)
+            {
+                throw std::runtime_error("number missing");
+            }
+
+            opt::rand_depth = static_cast<size_t>(std::atoi(argv[i]));
+
+            if (opt::rand_depth > 31)
+                throw std::runtime_error("rand-depth: too large value [0-32]!");
+
+            continue;
+        }
+
         if ( any_strcmp(argv[i], "-R", "--rand-ip") )
         {
             opt::rand_ip = true;
@@ -856,7 +880,7 @@ try
 
     if (opt::rand_flow)
     {
-        auto max_seed = (1ULL <<opt::rand_depth);
+        auto max_seed = (1ULL <<opt::rand_flow_depth);
         std::mt19937 gen;
 
         std::cout << "rand_flow  : loading " << max_seed << " seeds..." << std::endl;
