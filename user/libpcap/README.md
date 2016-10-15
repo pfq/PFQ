@@ -130,10 +130,10 @@ Per-device groups
 -----------------
 
 Some special use cases require that a given PFQ group is associated to a certain device rather than a process.
-This let a process handle multiple devices at time, each under a different socket group. 
+This let a process handle multiple devices at time, each under a different group of sockets. 
 
 A typical scenario is that of OpenFlow Software Switch (http://cpqd.github.io/ofsoftswitch13/), where multiple 
-instances of the switch can work in parallel fashion, on a set of network devices, and each serving a portion of
+instances of the switch can work in parallel fashion, on a set of network devices, each processing a portion of
 the traffic (according to a configured steering algorithm).
 
 The `PFQ_GROUP_`*devname* environment variable (and the counterpart group\_*devname* keyword in the config file) 
@@ -169,12 +169,12 @@ Postfixing a keyword not-supporting the per-group configuration generates a warn
 Multiple groups and virtual devices
 -----------------------------------
 
-The keyword group\_*devname* allows to specify the group number for a certain device. However there are special 
-cases in which an application wants to open the same device multiple-time, using the sockets with different 
+The keyword group\_*devname* allows to specify the number of group for a certain device. However there are 
+cases in which an application wants to open the same device multiple-time, using sockets with different 
 parameters (e.g.  with a different criterion for packet steering).
 
 To this aim, PFQ offers the concept of virtual device, that is a device name postfixed with ':' and a 
-certain number. This is very similar to alias device names, but it does not require the user create
+certain number. This is very similar to the alias device name, but it does not require the user to create
 network aliases at system level.
 
 Example:
