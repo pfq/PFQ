@@ -240,7 +240,7 @@ pfq_receive_batch(struct pfq_percpu_data *data,
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,15,0))
 				if (bpf && !sk_run_filter(buff, bpf->insns))
 #else
-				if (bpf && !SK_RUN_FILTER(bpf, PFQ_SKB(buff)))
+				if (bpf && !BPF_PROG_RUN(bpf->prog, PFQ_SKB(buff)))
 #endif
 				{
 					__sparse_inc(this_group->stats, drop, cpu);
