@@ -143,7 +143,7 @@ can be used to override the default group for the process when opening a certain
 PFQ_DEF_GROUP=42 PFQ_GROUP_eth0=11 tcpdump -n -i pfq:eth0^eth1
 ```
 
-This session of tcpudmp handles eth0 with the group 11 and eth1 with the default group 42.
+This session of tcpdump handles eth0 with the group 11 and eth1 with the default group 42.
 
 
 Per-group keywords
