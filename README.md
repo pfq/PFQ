@@ -73,6 +73,8 @@ Loris Gazzarrini <loris.gazzarrini@iet.unipi.it>
 
 Gregorio Procissi <g.procissi@iet.unipi.it>
 
+Giacomo Volpi <volpi.gia@gmail.com>
+
 Luca Abeni <abeni@dit.unitn.it>
 
 Tolysz <tolysz@gmail.com>
