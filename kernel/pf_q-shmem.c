@@ -139,7 +139,7 @@ pfq_hugepage_unmap(struct pfq_shmem_descr *shmem)
 		if (!PageReserved(shmem->hugepages[i]))
 		    SetPageDirty(shmem->hugepages[i]);
 
-		page_cache_release(shmem->hugepages[i]);
+		put_page(shmem->hugepages[i]);
 	}
 
 	if (current->mm)
