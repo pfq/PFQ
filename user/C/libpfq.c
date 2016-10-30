@@ -1647,7 +1647,7 @@ pfq_send_raw(pfq_t *q, const void *buf, size_t len, int ifindex, int qindex, uin
 		hdr->caplen		= (uint16_t)len;
 		hdr->info.data.copies	= copies;
                 hdr->info.ifindex	= ifindex;
-                hdr->info.queue		= (uint16_t)qindex;
+                hdr->info.queue		= (uint8_t)qindex;
 		memcpy(hdr+1, buf, len);
 
                 __atomic_store_n(poff_addr, offset + (ptrdiff_t)this_slot_size, __ATOMIC_RELEASE);

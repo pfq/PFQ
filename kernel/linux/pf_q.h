@@ -250,9 +250,9 @@ struct pfq_pkthdr_info
                 uint16_t     tci;
         } vlan;
 
-        uint16_t     gid;			/* group id */
-        uint16_t     queue;			/* max 256 queues per device */
-        uint16_t     commit;                    /* commit round */
+        uint8_t      gid;			/* group id */
+        uint8_t      queue;			/* hardware queue */
+        uint32_t     commit;                    /* commit round */
 };
 
 

@@ -1179,7 +1179,7 @@ namespace pfq {
                 hdr->caplen           = static_cast<uint16_t>(len);
                 hdr->info.data.copies = copies;
                 hdr->info.ifindex     = ifindex;
-                hdr->info.queue       = static_cast<uint16_t>(qindex);
+                hdr->info.queue       = static_cast<uint8_t>(qindex);
                 memcpy(hdr+1, pkt.first, len);
 
                 __atomic_store_n(poff_addr, offset + static_cast<ptrdiff_t>(this_slot_size), __ATOMIC_RELEASE);
