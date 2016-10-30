@@ -1451,10 +1451,10 @@ pfq_read_linux(pcap_t *handle, int max_packets, pcap_handler callback, u_char *u
 
 		n1 = pfq_net_queue_next(nq, it);
 
-		__builtin_prefetch(pfq_pkt_header(it), 0, 1);
-		__builtin_prefetch(pfq_pkt_data(it),   0, 1);
-		__builtin_prefetch(pfq_pkt_header(n1), 0, 1);
-		__builtin_prefetch(pfq_pkt_data(n1),   0, 1);
+		__builtin_prefetch(pfq_pkt_header(it), 0, 3);
+		__builtin_prefetch(pfq_pkt_data(it),   0, 3);
+		__builtin_prefetch(pfq_pkt_header(n1), 0, 3);
+		__builtin_prefetch(pfq_pkt_data(n1),   0, 3);
 
 		while (!pfq_pkt_ready(nq, it)) {
 			if (handle->break_loop) {
