@@ -42,7 +42,6 @@
 ------------------------------------------------------------------------------
 
 {-# LANGUAGE ForeignFunctionInterface #-}
-{-# LANGUAGE ImpredicativeTypes #-}
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE CPP #-}
 
@@ -202,12 +201,12 @@ import qualified Data.StorableVector.Base as SV
 import Control.Monad
 import Control.Concurrent
 
+import Foreign.Storable
 import Foreign.Ptr
 import Foreign.C.String (CString, peekCString, withCString)
 import Foreign.C.Types
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Utils
-import Foreign.Storable
 import Foreign.Concurrent as C (newForeignPtr)
 import Foreign.ForeignPtr (ForeignPtr)
 

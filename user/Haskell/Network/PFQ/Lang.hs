@@ -209,14 +209,14 @@ instance
 #if __GLASGOW_HASKELL__ >= 710
  {-# OVERLAPPABLE #-}
 #endif
-  (Show a, Pretty a, Storable a, Typeable a, ToJSON a, FromJSON a, Serializable a) => ArgumentClass a where
+  (Show a, Pretty a, Storable a, Typeable a, ToJSON a, FromJSON a) => ArgumentClass a where
     argument = ArgData
 
 instance
 #if __GLASGOW_HASKELL__ >= 710
  {-# OVERLAPPABLE #-}
 #endif
-  (Show a, Pretty [a], Storable a, Typeable a, ToJSON a, FromJSON a, Serializable a) => ArgumentClass [a] where
+  (Show a, Pretty [a], Storable a, Typeable a, ToJSON a, FromJSON a) => ArgumentClass [a] where
     argument = ArgVector
 
 instance ArgumentClass FunPtr where
