@@ -548,7 +548,11 @@ pfq_sk_queue_xmit(struct core_sock *so,
 		n2 = PFQ_SHARED_QUEUE_NEXT_PKTHDR(n1, 0);
 
                 __builtin_prefetch(n1, 0, 3);
+                __builtin_prefetch(n1+64, 0, 3);
+                __builtin_prefetch(n1+128, 0, 3);
                 __builtin_prefetch(n2, 0, 3);
+                __builtin_prefetch(n2+64, 0, 3);
+                __builtin_prefetch(n2+128, 0, 3);
 
 		/* because of dynamic slot size, ensure the caplen is not set to 0 */
 
