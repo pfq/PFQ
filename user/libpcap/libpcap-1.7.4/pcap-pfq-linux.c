@@ -1426,7 +1426,7 @@ static int
 pfq_read_linux(pcap_t *handle, int max_packets, pcap_handler callback, u_char *user)
 {
         int start = handle->md.packets_read;
-	pfq_iterator_t n1, n2, it = handle->md.pfq.current;
+	pfq_iterator_t n1, it = handle->md.pfq.current;
 	struct pfq_net_queue *nq = &handle->md.pfq.nq;
 	int n = max_packets;
 
@@ -1440,25 +1440,24 @@ pfq_read_linux(pcap_t *handle, int max_packets, pcap_handler callback, u_char *u
 
         /* process the queue */
 
-	for(; (max_packets <= 0 || n > 0) &&
-	       (it != pfq_net_queue_end(nq))
-	    ;	it = n1)
+	__builtin_prefetch(pfq_pkt_header(it), 0, 3);
+	__builtin_prefetch((char *)(pfq_pkt_header(it))+64, 0, 3);
+
+	n1 = pfq_net_queue_next(nq, it);
+	__builtin_prefetch(pfq_pkt_header(n1), 0, 3);
+	__builtin_prefetch((char *)(pfq_pkt_header(n1))+64, 0, 3);
+
+	for(; (max_packets <= 0 || n > 0) && (it != pfq_net_queue_end(nq))
+	    ;	it = pfq_net_queue_next(nq, it))
 	{
 		struct pfq_pcap_pkthdr pcap_h;
 		struct pfq_pkthdr *h;
                 uint16_t vlan_tci;
 		const char *pkt;
 
-		n1 = pfq_net_queue_next(nq, it);
-		n2 = pfq_net_queue_next(nq, n1);
-
-		__builtin_prefetch(pfq_pkt_header(n1),	  0, 3);
-		__builtin_prefetch(pfq_pkt_header(n1)+64, 0, 3);
-		__builtin_prefetch(pfq_pkt_header(n1)+128,0, 3);
-
-		__builtin_prefetch(pfq_pkt_header(n2),    0, 3);
-		__builtin_prefetch(pfq_pkt_header(n2)+64, 0, 3);
-		__builtin_prefetch(pfq_pkt_header(n2)+128,0, 3);
+		n1 = pfq_net_queue_next(nq, n1);
+		__builtin_prefetch(pfq_pkt_header(n1), 0, 3);
+		__builtin_prefetch((char *)(pfq_pkt_header(n1))+64, 0, 3);
 
 		while (!pfq_pkt_ready(nq, it)) {
 			if (handle->break_loop) {

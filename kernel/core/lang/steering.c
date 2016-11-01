@@ -344,7 +344,7 @@ steering_flow(arguments_t args, struct qbuff * buff)
 
 	if (ip->protocol != IPPROTO_UDP &&
 	    ip->protocol != IPPROTO_TCP) {
-		return Steering(buff, (__force uint32_t)ip->saddr ^ ip->daddr);
+		return Steering(buff, (__force uint32_t)ip->saddr ^ (__force uint32_t)ip->daddr);
 	}
 
 	udp = qbuff_ip_header_pointer(buff, (ip->ihl<<2), sizeof(_udp), &_udp);

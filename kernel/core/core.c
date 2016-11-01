@@ -174,14 +174,16 @@ int core_process_batch(struct core_percpu_data *data,
 		{
 			struct pfq_lang_computation_tree *prg;
 			unsigned long sock_mask = 0;
-
 			struct qbuff *b1, *b2;
 
-			b1 = PFQ_QBUFF_QUEUE_AT(&GC_ptr->pool, n+1);
-			b2 = PFQ_QBUFF_QUEUE_AT(&GC_ptr->pool, n+2);
-
-			prefetch_r2(b1);
-			prefetch_r2(b2);
+			if (likely((n+1) < current_batch_len)) {
+				b1 = PFQ_QBUFF_QUEUE_AT(&GC_ptr->pool, n+1);
+				prefetch_r2(b1);
+				if (likely((n+2) < current_batch_len)) {
+					b2 = PFQ_QBUFF_QUEUE_AT(&GC_ptr->pool, n+2);
+					prefetch_r2(b2);
+				}
+			}
 
 			/* skip this packet for this group ? */
 
