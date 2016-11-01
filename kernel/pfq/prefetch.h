@@ -26,7 +26,17 @@
 
 #include <linux/prefetch.h>
 
-#define prefetchw_nt(x) __builtin_prefetch(x,1,0)
+#ifdef PFQ_USE_PREFETCH
+
+#define prefetch_w3(a)	__builtin_prefetch(a, 1, 3)
+#define prefetch_w2(a)	__builtin_prefetch(a, 1, 2)
+#define prefetch_w1(a)	__builtin_prefetch(a, 1, 1)
+#define prefetch_w0(a)	__builtin_prefetch(a, 1, 0)
+
+#define prefetch_r3(a)	__builtin_prefetch(a, 0, 3)
+#define prefetch_r2(a)	__builtin_prefetch(a, 0, 2)
+#define prefetch_r1(a)	__builtin_prefetch(a, 0, 1)
+#define prefetch_r0(a)	__builtin_prefetch(a, 0, 0)
 
 static inline void prefetchw_nt_range(void *addr, size_t len)
 {
@@ -37,5 +47,23 @@ static inline void prefetchw_nt_range(void *addr, size_t len)
 		prefetchw_nt(cp);
 #endif
 }
+
+#else
+
+#define prefetch_w3(a)
+#define prefetch_w2(a)
+#define prefetch_w1(a)
+#define prefetch_w0(a)
+
+#define prefetch_r3(a)
+#define prefetch_r2(a)
+#define prefetch_r1(a)
+#define prefetch_r0(a)
+
+static inline void prefetchw_nt_range(void *addr, size_t len)
+{
+}
+
+#endif
 
 #endif /* PFQ_SOCK_H */
