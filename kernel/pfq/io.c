@@ -478,7 +478,7 @@ pfq_sk_queue_xmit(struct core_sock *so,
 	struct pfq_percpu_pool *pool;
 	int batch_cntr = 0, cons_idx;
 	struct pfq_tx_queue *txm;
-	struct pfq_pkthdr *hdr, *n1, *n2;
+	struct pfq_pkthdr *hdr, *hdr1, *hdr2;
 	ptrdiff_t prod_off;
         char *begin, *end;
         tx_res_t ret = {0};
@@ -519,8 +519,10 @@ pfq_sk_queue_xmit(struct core_sock *so,
 
 	hdr = (struct pfq_pkthdr *)begin;
 
-	/* lock the dev_queue and disable bh */
+        prefetch_r2(hdr);
+        prefetch_r2((char *)hdr+64);
 
+	/* lock the dev_queue and disable bh */
 
 	if (pfq_dev_queue_get(ctx.net, PFQ_DEVQ_ID(txinfo->def_ifindex, txinfo->def_queue), &dev_queue) < 0)
 	{
@@ -544,15 +546,13 @@ pfq_sk_queue_xmit(struct core_sock *so,
 		dev_queue_t qid; int copies;
                 tx_res_t tmp = {0};
 
-		n1 = PFQ_SHARED_QUEUE_NEXT_PKTHDR(hdr, 0);
-		n2 = PFQ_SHARED_QUEUE_NEXT_PKTHDR(n1, 0);
+		hdr1 = PFQ_SHARED_QUEUE_NEXT_PKTHDR(hdr, 0);
+		hdr2 = PFQ_SHARED_QUEUE_NEXT_PKTHDR(hdr1, 0);
 
-                __builtin_prefetch(n1, 0, 3);
-                __builtin_prefetch(n1+64, 0, 3);
-                __builtin_prefetch(n1+128, 0, 3);
-                __builtin_prefetch(n2, 0, 3);
-                __builtin_prefetch(n2+64, 0, 3);
-                __builtin_prefetch(n2+128, 0, 3);
+                prefetch_r2(hdr1);
+                prefetch_r2((char *)hdr1+64);
+                prefetch_r2(hdr2);
+                prefetch_r2((char *)hdr2+64);
 
 		/* because of dynamic slot size, ensure the caplen is not set to 0 */
 
@@ -826,7 +826,7 @@ size_t pfq_sk_queue_recv(struct core_sock_opt *opt,
 			 pfq_gid_t gid)
 {
 	struct pfq_rx_queue *rx_queue = core_sock_get_rx_queue(opt);
-	struct pfq_pkthdr *hdr;
+	struct pfq_pkthdr *hdr, *hdr1, *hdr2;
 	struct qbuff *buff;
 	unsigned long data;
 	size_t n, sent = 0;
@@ -843,13 +843,33 @@ size_t pfq_sk_queue_recv(struct core_sock_opt *opt,
 	data = __atomic_add_fetch(&rx_queue->shinfo, burst_len, __ATOMIC_RELAXED);
 	qlen = PFQ_SHARED_QUEUE_LEN(data) - burst_len;
 	qver = PFQ_SHARED_QUEUE_VER(data);
+
 	hdr  = (struct pfq_pkthdr *) core_mpsc_slot_ptr(opt, rx_queue, qver, qlen);
+
+	prefetch_w3(hdr);
+	prefetch_w3((char *)hdr+64);
 
 	for_each_qbuff_with_mask(mask, buffs, buff, n)
 	{
 		size_t bytes, slot_index;
 		struct sk_buff *skb = QBUFF_SKB(buff);
 		char *pkt;
+
+		/* prefetch skb data that is to be copied soon */
+
+		prefetch_r1(skb->data);
+
+		/* prefetching the next slot */
+
+		hdr1 = PFQ_SHARED_QUEUE_NEXT_PKTHDR(hdr, opt->rx_slot_size);
+		hdr2 = PFQ_SHARED_QUEUE_NEXT_PKTHDR(hdr1, opt->rx_slot_size);
+
+		prefetch_w3(hdr1);
+		prefetch_w3((char *)hdr1 + 64);
+		prefetch_w3(hdr2);
+		prefetch_w3((char *)hdr2 + 64);
+
+		/* compute the basic values */
 
 		bytes = min_t(size_t, skb->len, opt->caplen);
 		slot_index = qlen + sent;
@@ -859,7 +879,6 @@ size_t pfq_sk_queue_recv(struct core_sock_opt *opt,
 			if (waitqueue_active(&opt->waitqueue)) {
 				wake_up_interruptible(&opt->waitqueue);
 			}
-
 			return sent;
 		}
 
@@ -917,7 +936,7 @@ size_t pfq_sk_queue_recv(struct core_sock_opt *opt,
 
 		sent++;
 
-		hdr = PFQ_SHARED_QUEUE_NEXT_PKTHDR(hdr, opt->rx_slot_size);
+		hdr = hdr1;
 	}
 
 	return sent;

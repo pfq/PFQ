@@ -23,6 +23,7 @@
  *
  ****************************************************************/
 
+#include <pfq/prefetch.h>
 #include <pfq/kcompat.h>
 #include <pfq/memory.h>
 #include <pfq/qbuff.h>
@@ -179,21 +180,8 @@ int core_process_batch(struct core_percpu_data *data,
 			b1 = PFQ_QBUFF_QUEUE_AT(&GC_ptr->pool, n+1);
 			b2 = PFQ_QBUFF_QUEUE_AT(&GC_ptr->pool, n+2);
 
-			__builtin_prefetch(b1, 0, 2);
-
-			if (likely(b1)) {
-				__builtin_prefetch(b1->addr, 0, 3);
-				__builtin_prefetch(b1->addr+64, 0, 3);
-				__builtin_prefetch(b1->addr+128, 0, 3);
-			}
-
-			__builtin_prefetch(b2, 0, 2);
-			if (likely(b2)) {
-				__builtin_prefetch(b2->addr, 0, 3);
-				__builtin_prefetch(b2->addr+64, 0, 3);
-				__builtin_prefetch(b2->addr+128, 0, 3);
-			}
-
+			prefetch_r2(b1);
+			prefetch_r2(b2);
 
 			/* skip this packet for this group ? */
 

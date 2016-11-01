@@ -41,8 +41,6 @@
 
 #define Q_CORE_GRACE_PERIOD		50 /* msec */
 
-#define Q_CORE_SLOT_ALIGN(s, n)		((s+(n-1)) & ~(n-1))
-
 #define Q_CORE_FUN_SYMB_LEN		256
 #define Q_CORE_FUN_SIGN_LEN		1024
 #define Q_CORE_FUN_MAX_ENTRIES		1024
