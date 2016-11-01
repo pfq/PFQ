@@ -69,17 +69,17 @@ typedef uint32_t pfq_ver_t;
 typedef uint8_t  pfq_ver_t;
 #endif
 
-#define PFQ_SHARED_QUEUE_VER_SIZE				(sizeof(pfq_ver_t))
-#define PFQ_SHARED_QUEUE_LEN_SIZE				(sizeof(unsigned long) - PFQ_SHARED_QUEUE_VER_SIZE)
+#define PFQ_SHARED_QUEUE_VER_SIZE		(sizeof(pfq_ver_t))
+#define PFQ_SHARED_QUEUE_LEN_SIZE		(sizeof(unsigned long) - PFQ_SHARED_QUEUE_VER_SIZE)
 
-#define PFQ_SHARED_QUEUE_VER_MASK				((1UL << (PFQ_SHARED_QUEUE_VER_SIZE<<3))-1)
-#define PFQ_SHARED_QUEUE_LEN_MASK				((1UL << (PFQ_SHARED_QUEUE_LEN_SIZE<<3))-1)
+#define PFQ_SHARED_QUEUE_VER_MASK		((1UL << (PFQ_SHARED_QUEUE_VER_SIZE<<3))-1)
+#define PFQ_SHARED_QUEUE_LEN_MASK		((1UL << (PFQ_SHARED_QUEUE_LEN_SIZE<<3))-1)
 
-#define PFQ_SHARED_QUEUE_VER(shinfo)			((shinfo) >> (PFQ_SHARED_QUEUE_LEN_SIZE<<3))
-#define PFQ_SHARED_QUEUE_LEN(shinfo)			((shinfo) &   PFQ_SHARED_QUEUE_LEN_MASK)
+#define PFQ_SHARED_QUEUE_VER(shinfo)		((shinfo) >> (PFQ_SHARED_QUEUE_LEN_SIZE<<3))
+#define PFQ_SHARED_QUEUE_LEN(shinfo)		((shinfo) & PFQ_SHARED_QUEUE_LEN_MASK)
 
-#define PFQ_SHARED_QUEUE_SLOT_SIZE(x)			ALIGN(sizeof(struct pfq_pkthdr) + x, 8)
-#define PFQ_SHARED_QUEUE_NEXT_PKTHDR(hdr, fix)	((struct pfq_pkthdr *)(fix ? ((char *)hdr + fix) : (char *)(hdr+1) + ALIGN(hdr->caplen, 8)))
+#define PFQ_SHARED_QUEUE_SLOT_SIZE(x)		ALIGN(sizeof(struct pfq_pkthdr) + x, 64)
+#define PFQ_SHARED_QUEUE_NEXT_PKTHDR(hdr, fix)	((struct pfq_pkthdr *)(fix ? ((char *)hdr + fix) : (char *)(hdr+1) + ALIGN(hdr->caplen, 64)))
 
 
 /* PFQ socket options */
