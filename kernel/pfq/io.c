@@ -399,9 +399,6 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
 		return (tx_res_t){.ok = 0, .fail = copies};
 	}
 
-        prefetch_w0(skb->data);
-        prefetch_w0((char *)skb->data+64);
-
 	/* fill the socket buffer */
 
 	skb_reserve(skb, LL_RESERVED_SPACE(dev_queue->dev));
@@ -534,14 +531,15 @@ pfq_sk_queue_xmit(struct core_sock *so,
 		}
 	}
 
+	/* prefetch packets... */
 
 	hdr  = (struct pfq_pkthdr *)begin;
-        prefetch_r2(hdr);
-        prefetch_r2((char *)hdr+64);
+        prefetch_r3(hdr);
+        prefetch_r3((char *)hdr+64);
 
 	hdr1 = PFQ_SHARED_QUEUE_NEXT_PKTHDR(hdr, 0);
-        prefetch_r2(hdr1);
-        prefetch_r2((char *)hdr1+64);
+        prefetch_r3(hdr1);
+        prefetch_r3((char *)hdr1+64);
 
 	/* traverse the socket queue */
 
@@ -555,8 +553,8 @@ pfq_sk_queue_xmit(struct core_sock *so,
                 tx_res_t tmp = {0};
 
 		hdr1 = PFQ_SHARED_QUEUE_NEXT_PKTHDR(hdr1, 0);
-                prefetch_r2(hdr1);
-                prefetch_r2((char *)hdr1+64);
+                prefetch_r3(hdr1);
+                prefetch_r3((char *)hdr1+64);
 
 		/* because of dynamic slot size, ensure the caplen is not set to 0 */
 
@@ -830,7 +828,7 @@ size_t pfq_sk_queue_recv(struct core_sock_opt *opt,
 			 pfq_gid_t gid)
 {
 	struct pfq_rx_queue *rx_queue = core_sock_get_rx_queue(opt);
-	struct pfq_pkthdr *hdr, *hdr1;
+	struct pfq_pkthdr *hdr;
 	struct qbuff *buff;
 	unsigned long data;
 	size_t n, sent = 0;
@@ -849,12 +847,6 @@ size_t pfq_sk_queue_recv(struct core_sock_opt *opt,
 	qver = PFQ_SHARED_QUEUE_VER(data);
 
 	hdr  = (struct pfq_pkthdr *) core_mpsc_slot_ptr(opt, rx_queue, qver, qlen);
-	prefetch_w3(hdr);
-	prefetch_w3((char *)hdr+64);
-
-	hdr1 = PFQ_SHARED_QUEUE_NEXT_PKTHDR(hdr, opt->rx_slot_size);
-	prefetch_w3(hdr1);
-	prefetch_w3((char *)hdr1+64);
 
 	for_each_qbuff_with_mask(mask, buffs, buff, n)
 	{
@@ -865,12 +857,6 @@ size_t pfq_sk_queue_recv(struct core_sock_opt *opt,
 		/* prefetch skb data that is to be copied soon */
 
 		if (likely(skb)) prefetch_r1(skb->data);
-
-		/* prefetching the next slot */
-
-		hdr1 = PFQ_SHARED_QUEUE_NEXT_PKTHDR(hdr1, opt->rx_slot_size);
-		prefetch_w3(hdr1);
-		prefetch_w3((char *)hdr1 + 64);
 
 		/* compute the basic values */
 
