@@ -258,8 +258,9 @@ int
 pfq_enable(pfq_t *q)
 {
 	size_t tot_mem; socklen_t size = sizeof(tot_mem);
-	char filename[256];
-        char *hugepages, *env;
+	char filename[256], *hugepages_mpoint;
+	unsigned long long huge_mem = 0;
+        char *pfq_hugepages;
 
 	if (q->shm_addr != MAP_FAILED &&
 	    q->shm_addr != NULL) {
@@ -270,34 +271,41 @@ pfq_enable(pfq_t *q)
 		return Q_ERROR(q, "PFQ: queue memory error");
 	}
 
-	env = getenv("PFQ_HUGEPAGES");
-	hugepages = pfq_hugepages_mountpoint();
+	pfq_hugepages = getenv("PFQ_HUGEPAGES");
+	if (pfq_hugepages)
+		huge_mem = strtoull(pfq_hugepages, NULL, 10);
 
-	if (hugepages && env && (atoi(env) != 0))
+	hugepages_mpoint = pfq_hugepages_mountpoint();
+
+	if (hugepages_mpoint && pfq_hugepages && huge_mem)
 	{
 		/* HugePages */
 
-		fprintf(stdout, "[PFQ] using HugePages...\n");
+		fprintf(stdout, "[PFQ] using HugePages (%llu bytes)...\n", huge_mem);
 
-		snprintf(filename, 256, "%s/pfq.%d", hugepages, q->id);
-		free (hugepages);
+		snprintf(filename, 256, "%s/pfq.%d", hugepages_mpoint, getpid());
+		free (hugepages_mpoint);
 
 		q->hd = open(filename, O_CREAT | O_RDWR, 0755);
 		if (q->hd == -1)
 			return Q_ERROR(q, "PFQ: couldn't open a HugePages");
 
-
-		q->shm_addr = mmap(NULL, tot_mem, PROT_READ|PROT_WRITE, MAP_SHARED, q->hd, 0);
-		if (q->shm_addr == MAP_FAILED)
+		q->shm_hugepages = mmap(NULL, huge_mem, PROT_READ|PROT_WRITE, MAP_SHARED, q->hd, 0);
+		if (q->shm_hugepages == MAP_FAILED)
 			return Q_ERROR(q, "PFQ: couldn't mmap HugePages");
+
+		/* align shm_addr */
+
+		q->shm_addr = q->shm_hugepages + tot_mem * (size_t)q->id;
 
 		if(setsockopt(q->fd, PF_Q, Q_SO_ENABLE, &q->shm_addr, sizeof(q->shm_addr)) == -1)
 			return Q_ERROR(q, "PFQ: socket enable (HugePages)");
 	}
 	else {
 		/* Standard pages (4K) */
-
 		void * null = NULL;
+
+		free (hugepages_mpoint);
 
 		fprintf(stdout, "[PFQ] using 4k-Pages...\n");
 

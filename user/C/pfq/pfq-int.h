@@ -51,7 +51,9 @@ struct pfq_net_queue
 
 struct pfq_data_int
 {
+	void * shm_hugepages;
 	void * shm_addr;
+
 	size_t shm_size;
 
 	void * tx_queue_addr;
