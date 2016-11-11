@@ -94,18 +94,21 @@ pfq_mmap(struct file *file, struct socket *sock, struct vm_area_struct *vma)
 int
 pfq_hugepage_map(struct pfq_shmem_descr *shmem, unsigned long addr, size_t size)
 {
-	int nid;
-
-	printk(KERN_INFO "[PFQ] mapping user memory (HugePages): %zu bytes...\n", size);
+	int nid, pinned;
 
 	shmem->npages = PAGE_ALIGN(size) / PAGE_SIZE;
 	shmem->hugepages = vmalloc(shmem->npages * sizeof(struct page *));
 
-	if ((size_t)get_user_pages_fast(addr, shmem->npages, 1, shmem->hugepages) != shmem->npages) {
+	printk(KERN_INFO "[PFQ] mapping user memory (HugePages): %zu bytes, pages required = %zu...\n", size,
+	       shmem->npages);
+
+	pinned = get_user_pages_fast(addr, shmem->npages, 1, shmem->hugepages);
+	if (pinned != shmem->npages) {
 		vfree(shmem->hugepages);
+		printk(KERN_WARNING "[PFQ] error: could not get user pages (pinned = %d, required = %zu, size = %zu)!\n", pinned,
+		       shmem->npages, size);
 		shmem->npages = 0;
 		shmem->hugepages = NULL;
-		printk(KERN_WARNING "[PFQ] error: could not get user pages!\n");
 		return -EPERM;
 	}
 
