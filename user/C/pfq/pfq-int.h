@@ -68,6 +68,7 @@ struct pfq_data_int
 
 	size_t tx_attempt;
 	size_t tx_num_async;
+        size_t tx_forward;
 
 	const char * error;
 

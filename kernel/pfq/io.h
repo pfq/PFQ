@@ -60,6 +60,10 @@ struct pfq_mbuff_xmit_context
 	ktime_t			        now;
 	unsigned long			jiffies;
 	int				node;
+	int				copies;
+	atomic_t const			*stop;
+	bool				*intr;
+	bool				xmit_more;
 };
 
 

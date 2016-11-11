@@ -851,6 +851,14 @@ namespace pfq {
             data = __atomic_load_n(&q->rx.shinfo, __ATOMIC_RELAXED);
             qver = PFQ_SHARED_QUEUE_VER(data);
 
+            // forward packets first... 
+
+            if (data_->tx_forward)
+            {
+                data_->tx_forward = 0;
+                this->transmit_queue(0);
+            }
+
             // at wrap-around reset Rx slots...
             //
 
@@ -1121,8 +1129,8 @@ namespace pfq {
                 throw system_error("PFQ: send: socket not enabled");
 
             ptrdiff_t *poff_addr;
-
-            int tss;
+            uint32_t rx_off = 0; int tss;
+            uint16_t caplen;
 
             auto tx = [&] {
 
@@ -1163,11 +1171,23 @@ namespace pfq {
 
             // cut the packet to maxlen:
             //
-            auto len = std::min(pkt.second, data_->tx_slot_size - sizeof(struct pfq_pkthdr));
 
+            // calc the real caplen:
+            
+            if (pkt.first >= data_->rx_queue_addr && pkt.first < (static_cast<char *>(data_->rx_queue_addr) + 2 * data_->rx_queue_size))
+            {
+                caplen = 0;
+                rx_off = static_cast<uint32_t>(pkt.first - static_cast<char *>(data_->rx_queue_addr));
+            }
+            else
+            {
+                caplen = static_cast<uint16_t>(
+                    std::min(pkt.second, data_->tx_slot_size - sizeof(struct pfq_pkthdr)));
+            }
+            
             // compute the current dynamic slot_size:
             //
-            auto this_slot_size = align<64>(sizeof(struct pfq_pkthdr) + len);
+            auto this_slot_size = align<64>(sizeof(struct pfq_pkthdr) + caplen);
 
             // ensure there's enough space for the current this_slot_size + the next header:
             //
@@ -1176,11 +1196,17 @@ namespace pfq {
                 auto hdr = (struct pfq_pkthdr *)(base_addr + offset);
 
                 hdr->tstamp.tv64      = nsec;
-                hdr->caplen           = static_cast<uint16_t>(len);
+                hdr->len              = static_cast<uint16_t>(pkt.second);
+                hdr->caplen           = static_cast<uint16_t>(caplen);
                 hdr->info.data.copies = copies;
                 hdr->info.ifindex     = ifindex;
                 hdr->info.queue       = static_cast<uint8_t>(qindex);
-                memcpy(hdr+1, pkt.first, len);
+		        hdr->info.data.fwd_off  = rx_off;
+
+		        if (caplen)
+			        memcpy(hdr+1, pkt.first, caplen);
+                else
+                	data_->tx_forward++;
 
                 __atomic_store_n(poff_addr, offset + static_cast<ptrdiff_t>(this_slot_size), __ATOMIC_RELEASE);
                 return true;

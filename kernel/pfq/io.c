@@ -372,26 +372,24 @@ pfq_xmit(struct qbuff *buff, struct net_device *dev, int queue, int more)
  */
 
 static tx_res_t
-__pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
-		 struct pfq_mbuff_xmit_context *ctx,
-		 int copies,
-		 bool xmit_more,
-		 atomic_t const *stop,
-		 bool *intr)
+__pfq_mbuff_xmit(struct pfq_pkthdr *hdr,
+		 const void *buf,
+		 size_t len,
+		 struct net_dev_queue *dev_queue,
+		 struct pfq_mbuff_xmit_context *ctx)
 {
 	struct sk_buff *skb;
         tx_res_t ret = { 0 };
-	size_t len;
 
 	if (unlikely(!dev_queue->dev))
-		return (tx_res_t){.ok = 0, .fail = copies};
+		return (tx_res_t){.ok = 0, .fail = ctx->copies};
 
 	/* wait until for the timestap to expire (if specified) */
 
 	if (hdr->tstamp.tv64) {
-		ctx->now = wait_until(hdr->tstamp.tv64, ctx->now, dev_queue, stop, intr);
-		if (*intr)
-			return (tx_res_t){.ok = 0, .fail = copies};
+		ctx->now = wait_until(hdr->tstamp.tv64, ctx->now, dev_queue, ctx->stop, ctx->intr);
+		if (*ctx->intr)
+			return (tx_res_t){.ok = 0, .fail = ctx->copies};
 	}
 
 	/* allocate a new socket buffer */
@@ -400,14 +398,12 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
 	if (unlikely(skb == NULL)) {
 		if (printk_ratelimit())
 			printk(KERN_INFO "[PFQ] Tx could not allocate an skb!\n");
-		return (tx_res_t){.ok = 0, .fail = copies};
+		return (tx_res_t){.ok = 0, .fail = ctx->copies};
 	}
 
 	/* fill the socket buffer */
 
 	skb_reserve(skb, LL_RESERVED_SPACE(dev_queue->dev));
-
-	len = min_t(size_t, hdr->caplen, global->xmit_slot_size);
 
 	skb_reset_tail_pointer(skb);
 	skb->dev = dev_queue->dev;
@@ -415,25 +411,27 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
 
 	__skb_put(skb, len);
 
-	/* set the tx queue */
+	/* set the Tx queue */
 
 	skb_set_queue_mapping(skb, dev_queue->queue_mapping);
 
-	skb_copy_to_linear_data(skb, hdr+1, len < 64 ? 64 : len);
+	/* prepare the payload... */
+
+	skb_copy_to_linear_data(skb, buf, len);
 
 	/* transmit the packet + copies */
 
-	atomic_set(&skb->users, copies + 1);
+	atomic_set(&skb->users, ctx->copies + 1);
 
 	do {
-		const bool xmit_more_ = xmit_more || copies != 1;
+		const bool xmit_more_ = ctx->xmit_more || ctx->copies != 1;
 
 		/* if copies > 1, when the device support TX_SKB_SHARING */
 
 		if (likely(!netif_xmit_frozen_or_drv_stopped(dev_queue->queue)) &&
 			__pfq_xmit_retry(skb, dev_queue->dev, xmit_more_, true) == NETDEV_TX_OK) {
 			ret.ok++;
-			copies--;
+			ctx->copies--;
 		}
 		else {
 			ret.fail++;
@@ -447,14 +445,14 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
 			local_bh_disable();
 			pfq_hard_tx_lock(dev_queue);
 
-			if (giveup_tx_process(stop)) {
+			if (giveup_tx_process(ctx->stop)) {
 				atomic_set(&skb->users, 1);
-				*intr = true;
+				*ctx->intr = true;
 				break;
 			}
 		}
 	}
-	while (copies > 0);
+	while (ctx->copies > 0);
 
 	/* release the packet */
 
@@ -478,6 +476,7 @@ pfq_sk_queue_xmit(struct core_sock *so,
 		  atomic_t const *stop)
 {
 	struct core_tx_info const * txinfo = core_sock_get_tx_queue_info(&so->opt, sock_queue);
+	const void * rx_shmem_addr = core_sock_get_rx_queue_info(&so->opt)->shmem_addr;
 	struct net_dev_queue dev_queue = net_dev_queue_null;
 	struct pfq_mbuff_xmit_context ctx;
 	struct pfq_percpu_pool *pool;
@@ -521,6 +520,8 @@ pfq_sk_queue_xmit(struct core_sock *so,
 	ctx.now = ktime_get_real();
 	ctx.jiffies = jiffies;
         ctx.node = node;
+        ctx.intr = false;
+        ctx.stop = stop;
 
 	/* lock the dev_queue and disable bh */
 
@@ -552,8 +553,7 @@ pfq_sk_queue_xmit(struct core_sock *so,
 
 	for_each_sk_mbuff(hdr, end, 0 /* dynamic slot size */)
 	{
-                bool intr = false, xmit_more = true;
-		dev_queue_t qid; int copies;
+		dev_queue_t qid;
                 tx_res_t tmp = {0};
 
 		hdr1 = PFQ_SHARED_QUEUE_NEXT_PKTHDR(hdr1, 0);
@@ -562,7 +562,7 @@ pfq_sk_queue_xmit(struct core_sock *so,
 
 		/* because of dynamic slot size, ensure the caplen is not set to 0 */
 
-		if (unlikely(!hdr->caplen)) {
+		if (unlikely(!hdr->len)) {
 			if (printk_ratelimit())
 				printk(KERN_INFO "[PFQ] sk_queue_xmit: zero caplen (BUG!)\n");
 			break;
@@ -606,12 +606,12 @@ pfq_sk_queue_xmit(struct core_sock *so,
 
 		/* get the number of copies to transmit */
 
-                copies = dev_tx_max_skb_copies(dev_queue.dev, hdr->info.data.copies);
-		batch_cntr += copies;
+                ctx.copies = dev_tx_max_skb_copies(dev_queue.dev, hdr->info.data.copies);
+		batch_cntr += ctx.copies;
 
                 /* set the xmit_more bit */
 
-		xmit_more = (batch_cntr >= global->xmit_batch_len) ?
+		ctx.xmit_more = (batch_cntr >= global->xmit_batch_len) ?
 				batch_cntr=0, false :
 				PFQ_SHARED_QUEUE_NEXT_PKTHDR(hdr, 0) < (struct pfq_pkthdr *)end;
 
@@ -620,13 +620,16 @@ pfq_sk_queue_xmit(struct core_sock *so,
 		if (likely(netif_running(dev_queue.dev) &&
 			netif_carrier_ok(dev_queue.dev))) {
 
-			tmp = __pfq_mbuff_xmit(hdr, &dev_queue, &ctx, copies, xmit_more, stop, &intr);
+			size_t len = min_t(size_t, hdr->len, global->xmit_slot_size);
+                        void const *buf = hdr->caplen == 0 ? (rx_shmem_addr + hdr->info.data.fwd_off) : (hdr+1);
+
+			tmp = __pfq_mbuff_xmit(hdr, buf, len, &dev_queue, &ctx);
 
 			/* update the return value */
 			ret.value += tmp.value;
 		}
 
-		if (unlikely(intr))
+		if (unlikely(ctx.intr))
 			break;
 	}
 

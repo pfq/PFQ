@@ -165,6 +165,8 @@ pfq_open_group(unsigned long class_mask, int group_policy, size_t caplen, size_t
 		return __error = "PFQ: out of memory", NULL;
 	}
 
+	/* initialize everything to 0 */
+
 	memset(q, 0, sizeof(pfq_t));
 
 	q->fd = fd;
@@ -1474,10 +1476,17 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 		return Q_ERROR(q, "PFQ: read: socket not enabled");
 	}
 
-	qd   = (struct pfq_shared_queue *)(q->shm_addr);
-
+	qd = (struct pfq_shared_queue *)(q->shm_addr);
 	data = __atomic_load_n(&qd->rx.shinfo, __ATOMIC_RELAXED);
 	qver = PFQ_SHARED_QUEUE_VER(data);
+
+	/* forward packets first... */
+
+	if (q->tx_forward)
+	{
+		q->tx_forward = 0;
+		pfq_transmit_queue(q, 0);
+	}
 
         /* at wrap-around reset Rx slots... */
 
@@ -1590,7 +1599,8 @@ pfq_unbind_tx(pfq_t *q)
 
 
 int
-pfq_send_raw(pfq_t *q, const void *buf, size_t len, int ifindex, int qindex, uint64_t nsec,
+pfq_send_raw(pfq_t *q, const void *buf, const size_t len,
+	     int ifindex, int qindex, uint64_t nsec,
 	     unsigned int copies, int async, int queue)
 {
         struct pfq_shared_queue *sh_queue = (struct pfq_shared_queue *)(q->shm_addr);
@@ -1598,8 +1608,9 @@ pfq_send_raw(pfq_t *q, const void *buf, size_t len, int ifindex, int qindex, uin
         unsigned int index;
         size_t this_slot_size;
         ptrdiff_t offset, *poff_addr;
+        uint32_t rx_off = 0; int tss;
+        uint16_t caplen;
         char *base_addr;
-        int tss;
 
 	if (unlikely(q->shm_addr == NULL))
 		return Q_ERROR(q, "PFQ: send: socket not enabled");
@@ -1610,7 +1621,6 @@ pfq_send_raw(pfq_t *q, const void *buf, size_t len, int ifindex, int qindex, uin
 
 		tss = (int)pfq_fold((queue == Q_ANY_QUEUE ? pfq_symmetric_hash(buf) : (unsigned int)queue),
 										      (unsigned int)q->tx_num_async);
-
 		tx = (struct pfq_tx_queue *)&sh_queue->tx_async[tss];
 	}
 	else {
@@ -1636,19 +1646,35 @@ pfq_send_raw(pfq_t *q, const void *buf, size_t len, int ifindex, int qindex, uin
 
         offset = __atomic_load_n(poff_addr, __ATOMIC_RELAXED);
 
-	len = min(len, q->tx_slot_size - sizeof(struct pfq_pkthdr));
+	/* calc the real caplen */
 
-	this_slot_size = ALIGN(sizeof(struct pfq_pkthdr) + len, 64);
+	if (buf >= q->rx_queue_addr && buf < (q->rx_queue_addr + 2 * q->rx_queue_size))
+	{
+		caplen = 0;
+		rx_off = (uint32_t)(buf - q->rx_queue_addr);
+	}
+	else
+	{
+		caplen = (uint16_t)min(len, q->tx_slot_size - sizeof(struct pfq_pkthdr));
+	}
+
+	this_slot_size = ALIGN(sizeof(struct pfq_pkthdr) + caplen, 64);
 
 	if (((size_t)(offset) + this_slot_size) < q->tx_queue_size)
 	{
 		struct pfq_pkthdr *hdr = (struct pfq_pkthdr *)(base_addr + offset);
 		hdr->tstamp.tv64	= nsec;
-		hdr->caplen		= (uint16_t)len;
+		hdr->len		= (uint16_t)len;
+		hdr->caplen		= (uint16_t)caplen;
 		hdr->info.data.copies	= copies;
                 hdr->info.ifindex	= ifindex;
                 hdr->info.queue		= (uint8_t)qindex;
-		memcpy(hdr+1, buf, len);
+		hdr->info.data.fwd_off  = rx_off;
+
+		if (caplen)
+			memcpy(hdr+1, buf, caplen);
+                else
+                	q->tx_forward++;
 
                 __atomic_store_n(poff_addr, offset + (ptrdiff_t)this_slot_size, __ATOMIC_RELEASE);
 		return Q_VALUE(q, (int)len);

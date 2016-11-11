@@ -233,8 +233,8 @@ struct pfq_pkthdr_info
 
 		struct
 		{
-			unsigned int copies;	/* for packet Tx */
-			int inject;		/* pkt to kernel */
+			unsigned int copies;	 /* for packet Tx */
+			uint32_t fwd_off;	/* forward offset */
 		};
 	} data;
 
