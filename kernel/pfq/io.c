@@ -373,7 +373,11 @@ pfq_xmit(struct qbuff *buff, struct net_device *dev, int queue, int more)
 
 static tx_res_t
 __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
-		 struct pfq_mbuff_xmit_context *ctx, int copies, bool xmit_more, atomic_t const *stop, bool *intr)
+		 struct pfq_mbuff_xmit_context *ctx,
+		 int copies,
+		 bool xmit_more,
+		 atomic_t const *stop,
+		 bool *intr)
 {
 	struct sk_buff *skb;
         tx_res_t ret = { 0 };
@@ -508,8 +512,8 @@ pfq_sk_queue_xmit(struct core_sock *so,
 	/* initialize the boundaries of this queue */
 
 	prod_off = maybe_swap_sk_tx_queue(txm, &cons_idx);
-	begin    = txinfo->base_addr + (cons_idx & 1) * txm->size + txm->cons.off;
-	end      = txinfo->base_addr + (cons_idx & 1) * txm->size + prod_off;
+	begin    = txinfo->shmem_addr + (cons_idx & 1) * txm->size + txm->cons.off;
+	end      = txinfo->shmem_addr + (cons_idx & 1) * txm->size + prod_off;
 
         /* setup the context */
 

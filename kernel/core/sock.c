@@ -98,7 +98,7 @@ void core_sock_opt_init(struct core_sock_opt *that, size_t caplen, size_t maxlen
 
 	/* Rx queue setup */
 
-	core_rx_info_init(&that->rxq);
+	core_rx_info_init(&that->rx_info);
 
         that->caplen = caplen;
         that->rx_queue_len = 0;
@@ -106,7 +106,7 @@ void core_sock_opt_init(struct core_sock_opt *that, size_t caplen, size_t maxlen
 
 	/* Tx queues setup */
 
-	core_tx_info_init(&that->txq);
+	core_tx_info_init(&that->tx_info);
 
         that->tx_queue_len  = 0;
         that->tx_slot_size  = PFQ_SHARED_QUEUE_SLOT_SIZE(maxlen);
@@ -116,7 +116,7 @@ void core_sock_opt_init(struct core_sock_opt *that, size_t caplen, size_t maxlen
 
 	for(n = 0; n < Q_MAX_TX_QUEUES; ++n)
 	{
-		core_tx_info_init(&that->txq_async[n]);
+		core_tx_info_init(&that->tx_info_async[n]);
 	}
 }
 
@@ -180,16 +180,16 @@ core_sock_tx_bind(struct core_sock *so, int tid, int ifindex, int qindex)
 		return -EPERM;
 	}
 
-	so->opt.txq_async[queue].def_ifindex = ifindex;
-	so->opt.txq_async[queue].def_queue = qindex;
+	so->opt.tx_info_async[queue].def_ifindex = ifindex;
+	so->opt.tx_info_async[queue].def_queue = qindex;
 	so->opt.tx_num_async_queues++;
 
 	smp_wmb();
 
 	if ((err = pfq_bind_tx_thread(tid, so, queue)) < 0)
 	{
-		so->opt.txq_async[queue].def_ifindex = -1;
-		so->opt.txq_async[queue].def_queue = -1;
+		so->opt.tx_info_async[queue].def_ifindex = -1;
+		so->opt.tx_info_async[queue].def_queue = -1;
 		so->opt.tx_num_async_queues--;
 		return err;
 	}
@@ -203,8 +203,8 @@ core_sock_tx_unbind(struct core_sock *so)
 {
 	size_t n;
 
-	so->opt.txq.def_ifindex = -1;
-	so->opt.txq.def_queue = -1;
+	so->opt.tx_info.def_ifindex = -1;
+	so->opt.tx_info.def_queue = -1;
 
 	/* unbind async Tx queue */
 
@@ -213,8 +213,8 @@ core_sock_tx_unbind(struct core_sock *so)
 
 	for(n = 0; n < Q_MAX_TX_QUEUES; ++n)
 	{
-		so->opt.txq_async[n].def_ifindex = -1;
-		so->opt.txq_async[n].def_queue = -1;
+		so->opt.tx_info_async[n].def_ifindex = -1;
+		so->opt.tx_info_async[n].def_queue = -1;
 	}
 
 	return 0;

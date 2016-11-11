@@ -48,7 +48,7 @@
 struct core_tx_info
 {
 	atomic_long_t		addr;			/* (pfq_tx_queue *) */
-	void			*base_addr;
+	void			*shmem_addr;
 	int			def_ifindex;		/* default ifindex */
 	int			def_queue;		/* default queue */
 };
@@ -58,7 +58,7 @@ static inline
 void core_tx_info_init(struct core_tx_info *info)
 {
 	atomic_long_set(&info->addr, 0);
-	info->base_addr = NULL;
+	info->shmem_addr = NULL;
 	info->def_ifindex = -1;
 	info->def_queue = -1;
 }
@@ -67,7 +67,7 @@ void core_tx_info_init(struct core_tx_info *info)
 struct core_rx_info
 {
 	atomic_long_t		addr;		/* (pfq_rx_queue *) */
-	void			*base_addr;
+	void			*shmem_addr;
 };
 
 
@@ -75,7 +75,7 @@ static inline
 void core_rx_info_init(struct core_rx_info *info)
 {
         atomic_long_set(&info->addr, 0);
-        info->base_addr = NULL;
+        info->shmem_addr = NULL;
 }
 
 
@@ -94,9 +94,9 @@ struct core_sock_opt
 
         size_t			tx_num_async_queues;
 
-	struct core_tx_info	txq_async[Q_MAX_TX_QUEUES];
-	struct core_tx_info	txq;
-	struct core_rx_info	rxq;
+	struct core_tx_info	tx_info_async[Q_MAX_TX_QUEUES];
+	struct core_tx_info	tx_info;
+	struct core_rx_info	rx_info;
 
 } ____cacheline_aligned_in_smp;
 
@@ -126,7 +126,7 @@ static inline
 struct core_rx_info *
 core_sock_get_rx_queue_info(struct core_sock_opt *that)
 {
-	return &that->rxq;
+	return &that->rx_info;
 }
 
 static inline
@@ -134,8 +134,8 @@ struct core_tx_info *
 core_sock_get_tx_queue_info(struct core_sock_opt *that, int index)
 {
 	if (index == -1)
-	    return &that->txq;
-	return &that->txq_async[index];
+	    return &that->tx_info;
+	return &that->tx_info_async[index];
 }
 
 /* queues */
@@ -144,7 +144,7 @@ static inline
 struct pfq_rx_queue *
 core_sock_get_rx_queue(struct core_sock_opt *that)
 {
-	return (struct pfq_rx_queue *)atomic_long_read(&that->rxq.addr);
+	return (struct pfq_rx_queue *)atomic_long_read(&that->rx_info.addr);
 }
 
 static inline
@@ -152,8 +152,8 @@ struct pfq_tx_queue *
 core_sock_get_tx_queue(struct core_sock_opt *that, int index)
 {
 	if (index == -1)
-		return (struct pfq_tx_queue *)atomic_long_read(&that->txq.addr);
-	return (struct pfq_tx_queue *)atomic_long_read(&that->txq_async[index].addr);
+		return (struct pfq_tx_queue *)atomic_long_read(&that->tx_info.addr);
+	return (struct pfq_tx_queue *)atomic_long_read(&that->tx_info_async[index].addr);
 }
 
 /* memory mapped queues */
