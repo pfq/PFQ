@@ -55,6 +55,7 @@ struct pfq_data_int
 	void * shm_addr;
 
 	size_t shm_size;
+	size_t shm_hugesize;
 
 	void * tx_queue_addr;
 	size_t tx_queue_size;

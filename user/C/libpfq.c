@@ -296,10 +296,15 @@ pfq_enable(pfq_t *q)
 
 		/* align shm_addr */
 
+		if (tot_mem * (size_t)(q->id+1) > huge_mem)
+			return Q_ERROR(q, "PFQ: HugePages: memory exhausted!");
+
 		q->shm_addr = q->shm_hugepages + tot_mem * (size_t)q->id;
 
 		if(setsockopt(q->fd, PF_Q, Q_SO_ENABLE, &q->shm_addr, sizeof(q->shm_addr)) == -1)
 			return Q_ERROR(q, "PFQ: socket enable (HugePages)");
+
+		q->shm_hugesize = huge_mem;
 	}
 	else {
 		/* Standard pages (4K) */
