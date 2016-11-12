@@ -335,17 +335,20 @@ struct pfq_lang_computation_descr
 };
 
 
-/*  sock options helper structures */
+/*  
+ *  PFQ sock options helper structures 
+ */
 
 
-struct pfq_vlan_toggle
+
+struct pfq_so_vlan_toggle
 {
         int gid;
         int vid;
         int toggle;
 };
 
-struct pfq_binding
+struct pfq_so_binding
 {
         union
         {
@@ -357,21 +360,21 @@ struct pfq_binding
         int qindex;
 };
 
-struct pfq_group_join
+struct pfq_so_group_join
 {
         int gid;
         int policy;
         unsigned long class_mask;
 };
 
-struct pfq_group_computation
+struct pfq_so_group_computation
 {
         int gid;
         struct pfq_lang_computation_descr const __user *prog;
 };
 
 
-struct pfq_group_context
+struct pfq_so_group_context
 {
         void __user *context;
         size_t       size;      /* sizeof(context) */
@@ -382,7 +385,7 @@ struct pfq_group_context
 
 /* pfq_fprog: per-group sock_fprog */
 
-struct pfq_fprog
+struct pfq_so_fprog
 {
         int gid;
         struct sock_fprog fcode;

@@ -35,7 +35,7 @@ struct core_global_data default_global =
 	.xmit_batch_len		= 1,
 	.capt_batch_len		= 1,
 
-	.vl_untag		= 0,
+	.vlan_untag		= 0,
 
 	.skb_pool_size		= 1024,
 	.tx_affinity		= {0},

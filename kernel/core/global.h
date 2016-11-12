@@ -52,7 +52,7 @@ struct core_global_data
 	int capt_batch_len;
 	int skb_pool_size;
 
-	int vl_untag;
+	int vlan_untag;
 
 	int tx_affinity[Q_CORE_MAX_CPU];
 	int tx_thread_nr;

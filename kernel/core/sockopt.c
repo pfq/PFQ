@@ -65,7 +65,7 @@ int core_getsockopt(struct socket *sock,
 
         case Q_SO_GROUP_JOIN:
         {
-                struct pfq_group_join group;
+                struct pfq_so_group_join group;
 
                 if (len != sizeof(group))
                         return -EINVAL;
@@ -150,7 +150,7 @@ int core_getsockopt(struct socket *sock,
         {
                 struct pfq_stats stat;
 
-                if (len != sizeof(struct pfq_stats))
+                if (len != sizeof(stat))
                         return -EINVAL;
 
 		core_kernel_stats_read(so->stats, &stat);
@@ -213,7 +213,7 @@ int core_getsockopt(struct socket *sock,
         case Q_SO_GET_GROUPS:
         {
                 unsigned long grps;
-                if(len != sizeof(unsigned long))
+                if(len != sizeof(grps))
                         return -EINVAL;
                 grps = core_group_get_groups(so->id);
                 if (copy_to_user(optval, &grps, sizeof(grps)))
@@ -367,10 +367,10 @@ int core_setsockopt(struct socket *sock,
 
         case Q_SO_GROUP_BIND:
         {
-                struct pfq_binding bind;
+                struct pfq_so_binding bind;
 		pfq_gid_t gid;
 
-                if (optlen != sizeof(struct pfq_binding))
+                if (optlen != sizeof(bind))
                         return -EINVAL;
 
                 if (copy_from_user(&bind, optval, optlen))
@@ -404,10 +404,10 @@ int core_setsockopt(struct socket *sock,
 
         case Q_SO_GROUP_UNBIND:
         {
-                struct pfq_binding bind;
+                struct pfq_so_binding bind;
 		pfq_gid_t gid;
 
-                if (optlen != sizeof(struct pfq_binding))
+                if (optlen != sizeof(bind))
                         return -EINVAL;
 
                 if (copy_from_user(&bind, optval, optlen))
@@ -436,7 +436,7 @@ int core_setsockopt(struct socket *sock,
 
         case Q_SO_EGRESS_BIND:
         {
-                struct pfq_binding bind;
+                struct pfq_so_binding bind;
 
                 if (optlen != sizeof(bind))
                         return -EINVAL;
@@ -594,7 +594,7 @@ int core_setsockopt(struct socket *sock,
 
         case Q_SO_GROUP_FPROG:
         {
-                struct pfq_fprog fprog;
+                struct pfq_so_fprog fprog;
 		pfq_gid_t gid;
 
                 if (optlen != sizeof(fprog))
@@ -650,7 +650,7 @@ int core_setsockopt(struct socket *sock,
 
         case Q_SO_GROUP_VLAN_FILT_TOGGLE:
         {
-                struct pfq_vlan_toggle vlan;
+                struct pfq_so_vlan_toggle vlan;
                 pfq_gid_t gid;
 
                 if (optlen != sizeof(vlan))
@@ -674,7 +674,7 @@ int core_setsockopt(struct socket *sock,
 
         case Q_SO_GROUP_VLAN_FILT:
         {
-                struct pfq_vlan_toggle filt;
+                struct pfq_so_vlan_toggle filt;
                 pfq_gid_t gid;
 
                 if (optlen != sizeof(filt))
@@ -718,7 +718,7 @@ int core_setsockopt(struct socket *sock,
 
         case Q_SO_TX_BIND:
         {
-                struct pfq_binding bind;
+                struct pfq_so_binding bind;
 
                 if (optlen != sizeof(bind))
                         return -EINVAL;
@@ -812,7 +812,7 @@ int core_setsockopt(struct socket *sock,
         {
                 struct pfq_lang_computation_descr *descr = NULL;
                 struct pfq_lang_computation_tree *comp = NULL;
-                struct pfq_group_computation tmp;
+                struct pfq_so_group_computation tmp;
                 size_t psize, ucsize;
                 void *context = NULL;
                 pfq_gid_t gid;
