@@ -257,31 +257,36 @@ int pfq_close(pfq_t *q)
 int
 pfq_enable(pfq_t *q)
 {
-	size_t tot_mem; socklen_t size = sizeof(tot_mem);
+	size_t sock_mem; socklen_t size = sizeof(sock_mem);
 	char filename[256], *hugepages_mpoint;
-	unsigned long long huge_mem = 0;
         char *pfq_hugepages;
+
+	struct pfq_so_enable mem = { .user_addr = 0
+				   , .huge_size = 0};
 
 	if (q->shm_addr != MAP_FAILED &&
 	    q->shm_addr != NULL) {
 		return Q_ERROR(q, "PFQ: queue already enabled");
 	}
 
-	if (getsockopt(q->fd, PF_Q, Q_SO_GET_SHMEM_SIZE, &tot_mem, &size) == -1) {
+	if (getsockopt(q->fd, PF_Q, Q_SO_GET_SHMEM_SIZE, &sock_mem, &size) == -1) {
 		return Q_ERROR(q, "PFQ: queue memory error");
 	}
 
-	pfq_hugepages = getenv("PFQ_HUGEPAGES");
-	if (pfq_hugepages)
-		huge_mem = strtoull(pfq_hugepages, NULL, 10);
 
+	pfq_hugepages = getenv("PFQ_HUGEPAGES");
 	hugepages_mpoint = pfq_hugepages_mountpoint();
 
-	if (hugepages_mpoint && pfq_hugepages && huge_mem)
+	if (hugepages_mpoint && pfq_hugepages)
 	{
 		/* HugePages */
 
-		fprintf(stdout, "[PFQ] using HugePages (%llu bytes)...\n", huge_mem);
+		mem.huge_size = strtoull(pfq_hugepages, NULL, 10) * 1024 * 1024;
+                if (mem.huge_size < 4096) {
+			return Q_ERROR(q, "PFQ: HugePages (invalid size)!");
+		}
+
+		fprintf(stdout, "[PFQ] using HugePages (%zu bytes)...\n", mem.huge_size);
 
 		snprintf(filename, 256, "%s/pfq.%d", hugepages_mpoint, getpid());
 		free (hugepages_mpoint);
@@ -290,39 +295,41 @@ pfq_enable(pfq_t *q)
 		if (q->hd == -1)
 			return Q_ERROR(q, "PFQ: couldn't open a HugePages");
 
-		q->shm_hugepages = mmap(NULL, huge_mem, PROT_READ|PROT_WRITE, MAP_SHARED, q->hd, 0);
-		if (q->shm_hugepages == MAP_FAILED)
-			return Q_ERROR(q, "PFQ: couldn't mmap HugePages");
+		q->shm_hugepages = mmap(NULL, mem.huge_size, PROT_READ|PROT_WRITE, MAP_SHARED, q->hd, 0);
+		if (q->shm_hugepages == MAP_FAILED) {
+			return Q_ERROR(q, "PFQ: HugePages");
+		}
 
-		/* align shm_addr */
+		mem.user_addr = (unsigned long)q->shm_hugepages;
 
-		if (tot_mem * (size_t)(q->id+1) > huge_mem)
-			return Q_ERROR(q, "PFQ: HugePages: memory exhausted!");
+		/* enable socket memory */
 
-		q->shm_addr = q->shm_hugepages + tot_mem * (size_t)q->id;
-
-		if(setsockopt(q->fd, PF_Q, Q_SO_ENABLE, &q->shm_addr, sizeof(q->shm_addr)) == -1)
+		if(setsockopt(q->fd, PF_Q, Q_SO_ENABLE, &mem, sizeof(mem)) == -1)
 			return Q_ERROR(q, "PFQ: socket enable (HugePages)");
 
-		q->shm_hugesize = huge_mem;
+		q->shm_hugesize = mem.huge_size;
+		q->shm_size = sock_mem;
+		q->shm_addr = (char *)q->shm_hugepages + mem.user_addr; /* get the socket memory */
 	}
 	else {
 		/* Standard pages (4K) */
-		void * null = NULL;
+
+		mem.huge_size = 0;
+		mem.user_addr = 0;
 
 		free (hugepages_mpoint);
 
 		fprintf(stdout, "[PFQ] using 4k-Pages...\n");
 
-		if(setsockopt(q->fd, PF_Q, Q_SO_ENABLE, &null, sizeof(null)) == -1)
+		if(setsockopt(q->fd, PF_Q, Q_SO_ENABLE, &mem, sizeof(mem)) == -1)
 			return Q_ERROR(q, "PFQ: socket enable");
 
-		q->shm_addr = mmap(NULL, tot_mem, PROT_READ|PROT_WRITE, MAP_SHARED, q->fd, 0);
+		q->shm_hugesize = 0;
+		q->shm_size = sock_mem;
+		q->shm_addr = mmap(NULL, sock_mem, PROT_READ|PROT_WRITE, MAP_SHARED, q->fd, 0);
 		if (q->shm_addr == MAP_FAILED)
 			return Q_ERROR(q, "PFQ: socket enable (memory map)");
 	}
-
-	q->shm_size = tot_mem;
 
 	q->rx_queue_addr = (char *)(q->shm_addr) + sizeof(struct pfq_shared_queue);
 	q->rx_queue_size = q->rx_slots * q->rx_slot_size;
@@ -341,19 +348,8 @@ pfq_disable(pfq_t *q)
 		return Q_ERROR(q, "PFQ: socket not open");
 
 	if (q->shm_addr != MAP_FAILED) {
-
 		if (munmap(q->shm_addr,q->shm_size) == -1)
 			return Q_ERROR(q, "PFQ: munmap error");
-
-		if (q->hd != -1) {
-			char filename[256];
-			char *hugepages = pfq_hugepages_mountpoint();
-			if (hugepages) {
-				snprintf(filename, 256, "%s/pfq.%d", hugepages, q->fd);
-				unlink(filename);
-				free(hugepages);
-			}
-		}
 	}
 
 	q->shm_addr = NULL;
@@ -362,6 +358,19 @@ pfq_disable(pfq_t *q)
 	if(setsockopt(q->fd, PF_Q, Q_SO_DISABLE, NULL, 0) == -1) {
 		return Q_ERROR(q, "PFQ: socket disable");
 	}
+
+	if (q->hd != -1) {
+		char filename[256];
+		char *hugepages = pfq_hugepages_mountpoint();
+		if (hugepages) {
+			snprintf(filename, 256, "%s/pfq.%d", hugepages, getpid());
+			if (unlink(filename)) {
+				fprintf(stdout, "[PFQ] coundn't unlink HugePages (%s)...\n", hugepages);
+			}
+			free(hugepages);
+		}
+	}
+
 	return Q_OK(q);
 }
 
@@ -559,7 +568,7 @@ pfq_get_rx_slot_size(pfq_t const *q)
 int
 pfq_bind_group(pfq_t *q, int gid, const char *dev, int queue)
 {
-	struct pfq_binding b;
+	struct pfq_so_binding b;
 	int index;
 
 	if (strcmp(dev, "any")==0) {
@@ -597,7 +606,7 @@ pfq_bind(pfq_t *q, const char *dev, int queue)
 int
 pfq_egress_bind(pfq_t *q, const char *dev, int queue)
 {
-	struct pfq_binding b;
+	struct pfq_so_binding b;
 
 	int index;
 	if (strcmp(dev, "any")==0) {
@@ -633,7 +642,7 @@ pfq_egress_unbind(pfq_t *q)
 int
 pfq_unbind_group(pfq_t *q, int gid, const char *dev, int queue) /* Q_ANY_QUEUE */
 {
-	struct pfq_binding b;
+	struct pfq_so_binding b;
 
 	int index;
 	if (strcmp(dev, "any")==0) {
@@ -723,7 +732,7 @@ popen2(const char *command, struct popen2 *childinfo)
 int
 pfq_set_group_computation(pfq_t *q, int gid, struct pfq_lang_computation_descr const *comp)
 {
-        struct pfq_group_computation p = { gid, comp };
+        struct pfq_so_group_computation p = { gid, comp };
 
         if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_FUNCTION, &p, sizeof(p)) == -1) {
 		return Q_ERROR(q, "PFQ: group computation error");
@@ -1321,7 +1330,7 @@ pfq_set_group_computation_from_file(pfq_t *q, int gid, const char *filepath)
 int
 pfq_group_fprog(pfq_t *q, int gid, struct sock_fprog const *f)
 {
-	struct pfq_fprog fprog;
+	struct pfq_so_fprog fprog;
 
 	fprog.gid = gid;
 	if (f != NULL)
@@ -1356,7 +1365,7 @@ pfq_group_fprog_reset(pfq_t *q, int gid)
 int
 pfq_join_group(pfq_t *q, int gid, unsigned long class_mask, int group_policy)
 {
-	struct pfq_group_join group = { gid, group_policy, class_mask };
+	struct pfq_so_group_join group = { gid, group_policy, class_mask };
 
 	socklen_t size = sizeof(group);
 	if (getsockopt(q->fd, PF_Q, Q_SO_GROUP_JOIN, &group, &size) == -1) {
@@ -1446,7 +1455,7 @@ pfq_get_group_counters(pfq_t const *q, int gid, struct pfq_counters *cs)
 int
 pfq_vlan_filters_enable(pfq_t *q, int gid, int toggle)
 {
-        struct pfq_vlan_toggle value = { gid, 0, toggle };
+        struct pfq_so_vlan_toggle value = { gid, 0, toggle };
 
         if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_VLAN_FILT_TOGGLE, &value, sizeof(value)) == -1) {
 	        return Q_ERROR(q, "PFQ: vlan filters");
@@ -1458,7 +1467,7 @@ pfq_vlan_filters_enable(pfq_t *q, int gid, int toggle)
 int
 pfq_vlan_set_filter(pfq_t *q, int gid, int vid)
 {
-        struct pfq_vlan_toggle value = { gid, vid, 1 };
+        struct pfq_so_vlan_toggle value = { gid, vid, 1 };
 
         if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_VLAN_FILT, &value, sizeof(value)) == -1) {
 	        return Q_ERROR(q, "PFQ: vlan set filter");
@@ -1469,7 +1478,7 @@ pfq_vlan_set_filter(pfq_t *q, int gid, int vid)
 
 int pfq_vlan_reset_filter(pfq_t *q, int gid, int vid)
 {
-        struct pfq_vlan_toggle value = { gid, vid, 0 };
+        struct pfq_so_vlan_toggle value = { gid, vid, 0 };
 
         if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_VLAN_FILT, &value, sizeof(value)) == -1) {
 	        return Q_ERROR(q, "PFQ: vlan reset filter");
@@ -1581,14 +1590,14 @@ pfq_dispatch(pfq_t *q, pfq_handler_t cb, long int microseconds, char *user)
 int
 pfq_bind_tx(pfq_t *q, const char *dev, int queue, int tid)
 {
-	struct pfq_binding b;
+	struct pfq_so_binding b;
         int ifindex;
 
         ifindex = pfq_ifindex(q, dev);
         if (ifindex == -1)
 		return Q_ERROR(q, "PFQ: device not found");
 
-	b = (struct pfq_binding){ {tid}, ifindex, queue };
+	b = (struct pfq_so_binding){ {tid}, ifindex, queue };
 
         if (setsockopt(q->fd, PF_Q, Q_SO_TX_BIND, &b, sizeof(b)) == -1)
 		return Q_ERROR(q, "PFQ: Tx bind error");
