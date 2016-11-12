@@ -222,8 +222,6 @@ namespace thread
                 q.bind_tx (m_bind.dev.front().name.c_str(), m_bind.dev.front().queue[n], kthread.at(n));
             }
 
-            q.enable();
-
             m_pfq = std::move(q);
         }
 
@@ -235,6 +233,8 @@ namespace thread
 
         void operator()()
         {
+            m_pfq.enable();
+
             if (!m_packet)
                 throw std::runtime_error("pool of packets empty!");
 
@@ -257,6 +257,8 @@ namespace thread
             else generator();
 
             opt::nthreads--;
+
+            m_pfq.disable();
         }
 
         std::tuple<pfq_stats, uint64_t, uint64_t, uint64_t, uint64_t>

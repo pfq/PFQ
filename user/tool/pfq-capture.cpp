@@ -11,6 +11,7 @@
 
 #include <cstdio>
 #include <thread>
+#include <chrono>
 #include <string>
 #include <cstring>
 #include <vector>
@@ -19,6 +20,7 @@
 #include <atomic>
 #include <set>
 #include <cmath>
+#include <csignal>
 #include <tuple>
 #include <limits>
 #include <unordered_set>
@@ -64,6 +66,8 @@ namespace opt
     bool dump      = false;
 
     std::string dumpfile;
+    
+    std::atomic_bool stop;
 }
 
 
@@ -158,7 +162,6 @@ namespace thread
             }
 
             m_pfq.timestamping_enable(false);
-            m_pfq.enable();
         }
 
         context(const context &) = delete;
@@ -169,6 +172,8 @@ namespace thread
 
         void operator()()
         {
+            m_pfq.enable();
+
             if (!m_filename.empty() || opt::dump)
             {
                 m_pfq.timestamping_enable(true);
@@ -240,10 +245,15 @@ namespace thread
                         }
                     }
                 }
+                
+                if (opt::stop.load(std::memory_order_relaxed))
+                    break;
             }
 
             if (m_file)
                 pcap_close_();
+
+            m_pfq.disable();
         }
 
         pfq_stats
@@ -366,6 +376,10 @@ void usage(std::string name)
 
 std::vector<thread::context *> thread_ctx;
 
+void sighandler(int)
+{
+    opt::stop.store(true, std::memory_order_relaxed);
+}
 
 int
 main(int argc, char *argv[])
@@ -536,6 +550,8 @@ try
     unsigned long long sum, flow, old = 0;
     pfq_stats sum_stats, old_stats = {0,0,0,0,0,0,0,0};
 
+    signal(SIGINT, sighandler);
+
     std::cout << "----------- capture started ------------\n";
 
     auto begin = std::chrono::system_clock::now();
@@ -596,7 +612,13 @@ try
 
         old = sum, begin = end;
         old_stats = sum_stats;
+
+        if (opt::stop.load(std::memory_order_relaxed))
+            break;
     }
+
+    std::cout << "closing...";
+    std::this_thread::sleep_for(std::chrono::seconds(1));
 }
 catch(std::exception &e)
 {
