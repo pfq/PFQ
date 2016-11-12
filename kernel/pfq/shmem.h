@@ -31,10 +31,26 @@
 
 struct core_sock;
 
+
 enum pfq_shmem_kind
 {
 	pfq_shmem_virt,
 	pfq_shmem_user
+};
+
+
+struct pfq_hugepages_descr
+{
+	int			id;
+	int			refcnt;
+	int			pid;
+
+	struct page**		hugepages;
+	size_t			npages;
+
+	void *			base_addr;
+	size_t			huge_size;
+	size_t			offset;
 };
 
 
@@ -43,9 +59,7 @@ struct pfq_shmem_descr
 	void *			addr;
 	size_t			size;
 	enum pfq_shmem_kind     kind;
-
-	struct page**		hugepages;
-	size_t			npages;
+	struct pfq_hugepages_descr *hugepages;
 };
 
 
@@ -54,7 +68,7 @@ extern size_t pfq_total_queue_mem_aligned(struct core_sock *so);
 
 extern int    pfq_mmap(struct file *file, struct socket *sock, struct vm_area_struct *vma);
 extern int    pfq_vmalloc_user(struct pfq_shmem_descr *shmem, size_t size);
-extern int    pfq_shared_memory_alloc(struct pfq_shmem_descr *shmem, size_t size, unsigned long user_addr);
+extern int    pfq_shared_memory_alloc(struct pfq_shmem_descr *shmem, size_t huge_size, size_t size, unsigned long user_addr);
 extern void   pfq_shared_memory_free(struct pfq_shmem_descr *shmem);
 extern int    pfq_hugepage_map(struct pfq_shmem_descr *shmem, unsigned long addr, size_t size);
 extern int    pfq_hugepage_unmap(struct pfq_shmem_descr *shmem);
