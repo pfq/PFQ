@@ -1174,10 +1174,10 @@ namespace pfq {
 
             // calc the real caplen:
             
-            if (pkt.first >= data_->rx_queue_addr && pkt.first < (static_cast<char *>(data_->rx_queue_addr) + 2 * data_->rx_queue_size))
+            if (pkt.first >= data_->shm_hugepages && pkt.first < (static_cast<char *>(data_->shm_hugepages) + data_->shm_hugesize))
             {
                 caplen = 0;
-                rx_off = static_cast<uint32_t>(pkt.first - static_cast<char *>(data_->rx_queue_addr));
+                rx_off = static_cast<uint32_t>(pkt.first - static_cast<char *>(data_->shm_hugepages));
             }
             else
             {

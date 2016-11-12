@@ -476,7 +476,7 @@ pfq_sk_queue_xmit(struct core_sock *so,
 		  atomic_t const *stop)
 {
 	struct core_tx_info const * txinfo = core_sock_get_tx_queue_info(&so->opt, sock_queue);
-	const void * rx_shmem_addr = core_sock_get_rx_queue_info(&so->opt)->shmem_addr;
+	const void * huge_base = so->shmem.hugepages ? so->shmem.hugepages->base_addr : NULL;
 	struct net_dev_queue dev_queue = net_dev_queue_null;
 	struct pfq_mbuff_xmit_context ctx;
 	struct pfq_percpu_pool *pool;
@@ -486,6 +486,8 @@ pfq_sk_queue_xmit(struct core_sock *so,
 	ptrdiff_t prod_off;
         char *begin, *end;
         tx_res_t ret = {0};
+
+
 
 	/* get the Tx queue descriptor */
 
@@ -621,7 +623,9 @@ pfq_sk_queue_xmit(struct core_sock *so,
 			netif_carrier_ok(dev_queue.dev))) {
 
 			size_t len = min_t(size_t, hdr->len, global->xmit_slot_size);
-                        void const *buf = hdr->caplen == 0 ? (rx_shmem_addr + hdr->info.data.fwd_off) : (hdr+1);
+                        void const *buf = (huge_base && hdr->caplen == 0) ?
+					  (void *)((char *)huge_base + hdr->info.data.fwd_off) :
+					  (void *)(hdr+1);
 
 			tmp = __pfq_mbuff_xmit(hdr, buf, len, &dev_queue, &ctx);
 

@@ -1670,10 +1670,10 @@ pfq_send_raw(pfq_t *q, const void *buf, const size_t len,
 
 	/* calc the real caplen */
 
-	if (buf >= q->rx_queue_addr && buf < (q->rx_queue_addr + 2 * q->rx_queue_size))
+	if (buf >= q->shm_hugepages && buf < (q->shm_hugepages + q->shm_hugesize))
 	{
 		caplen = 0;
-		rx_off = (uint32_t)(buf - q->rx_queue_addr);
+		rx_off = (uint32_t)(buf - q->shm_hugepages);
 	}
 	else
 	{
