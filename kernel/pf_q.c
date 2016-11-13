@@ -556,7 +556,11 @@ void pfq_timer(unsigned long cpu)
 	pfq_receive(NULL, NULL, 0);
 
 	data = per_cpu_ptr(percpu_data, cpu);
-	mod_timer_pinned(&data->timer, jiffies + msecs_to_jiffies(100));
+	#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 8, 0)
+	    mod_timer(&data->timer, jiffies + msecs_to_jiffies(100));
+	#else
+	    mod_timer_pinned(&data->timer, jiffies + msecs_to_jiffies(100));
+	#endif
 }
 
 
