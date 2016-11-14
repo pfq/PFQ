@@ -46,10 +46,10 @@ static const char *__size_HugePage(size_t size)
 	static char buff[256];
 	switch(size)
 	{
-	case 2048:		return "2M";
-	case 4096:		return "4M";
-	case 16*1024:		return "16M";
-	case 1024*1024:		return "1G";
+	case 2048*1024:		return "2M";
+	case 4096*1024:		return "4M";
+	case 16*1024*1024:	return "16M";
+	case 1024*1024*1024:	return "1G";
 	}
 	sprintf(buff, "%zu-Byte", size);
 	return buff;
@@ -117,7 +117,7 @@ get_HugePages(unsigned long user_addr, size_t user_size, size_t hugepage_size, s
 			goto done;
 		}
 
-		if (hugepage_size == 1024*1024) {
+		if (hugepage_size == 1024*1024*1024) {
 			/* for a 1G page workaround */
 			printk(KERN_WARNING "[PFQ] %s HugePages: using 1 page!\n", __size_HugePage(hugepage_size));
 			npages = 1;
@@ -129,7 +129,7 @@ get_HugePages(unsigned long user_addr, size_t user_size, size_t hugepage_size, s
 
 
 		hugepages = vmalloc(npages * sizeof(struct page *));
-        	if (hugepages == NULL) {
+		if (hugepages == NULL) {
 			printk(KERN_WARNING "[PFQ] error: could not allocate the pages for %s HugePages (%d pages)!\n", __size_HugePage(hugepage_size), npages);
 			goto done;
 		}
@@ -143,7 +143,7 @@ get_HugePages(unsigned long user_addr, size_t user_size, size_t hugepage_size, s
 			goto done;
 		}
 
-		if (hugepage_size == 1024*1024) {
+		if (hugepage_size == 1024*1024*1024) {
 			base_addr = page_address(hugepages[0]);
 		}
 		else {

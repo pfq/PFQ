@@ -277,13 +277,13 @@ size_t get_hugepage_size()
 {
 	struct stat x;
 	if (stat("/sys/kernel/mm/hugepages/hugepages-1048576kB/nr_hugepages", &x) == 0)
-		return 1048576;
+		return 1048576*1024;
 	if (stat("/sys/kernel/mm/hugepages/hugepages-16384kB/nr_hugepages", &x) == 0)
-		return 16384;
+		return 16384*1024;
 	if (stat("/sys/kernel/mm/hugepages/hugepages-4096kB/nr_hugepages", &x) == 0)
-		return 4096;
+		return 4096*1024;
 	if (stat("/sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages", &x) == 0)
-		return 2048;
+		return 2048*1024;
 	return 0;
 }
 
@@ -311,7 +311,7 @@ pfq_enable(pfq_t *q)
 
 	struct pfq_so_enable mem = { .user_addr = 0
 				   , .user_size  = 0
-				   , .hugepage_size = 0 
+				   , .hugepage_size = 0
 				   };
 
 	if (q->shm_addr != MAP_FAILED &&
@@ -405,8 +405,15 @@ pfq_disable(pfq_t *q)
 		return Q_ERROR(q, "PFQ: socket not open");
 
 	if (q->shm_addr != MAP_FAILED) {
-		if (munmap(q->shm_addr,q->shm_size) == -1)
-			return Q_ERROR(q, "PFQ: munmap error");
+
+		if (q->shm_hugesize) {
+			if (munmap(q->shm_hugepages, q->shm_hugesize) == -1)
+				return Q_ERROR(q, "PFQ: munmap error");
+		}
+		else {
+			if (munmap(q->shm_addr, q->shm_size) == -1)
+				return Q_ERROR(q, "PFQ: munmap error");
+		}
 	}
 
 	q->shm_addr = NULL;
