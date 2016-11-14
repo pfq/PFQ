@@ -94,8 +94,7 @@ namespace pfq {
             bool
             ready() const
             {
-                auto b = __atomic_load_n(&hdr_->info.commit, __ATOMIC_ACQUIRE) == index_;
-                return b;
+                return likely(__atomic_load_n(&hdr_->info.commit, __ATOMIC_ACQUIRE) == index_);
             }
 
             bool

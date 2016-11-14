@@ -114,11 +114,7 @@ static inline
 int
 pfq_pkt_ready(struct pfq_net_queue const *nq, pfq_iterator_t iter)
 {
-        if (__atomic_load_n(&pfq_pkt_header(iter)->info.commit,
-			    __ATOMIC_ACQUIRE) != nq->index) {
-                return 0;
-        }
-        return 1;
+        return (int)likely(__atomic_load_n(&pfq_pkt_header(iter)->info.commit, __ATOMIC_ACQUIRE) == nq->index);
 }
 
 /*! Cause the calling thread to relinquish the CPU. */

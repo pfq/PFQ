@@ -42,8 +42,7 @@ struct pfq_net_queue
 	pfq_iterator_t queue;		/* net queue */
 	size_t         len;		/* number of packets in the queue */
 	size_t         slot_size;
-	unsigned int   index;		/* current queue index */
-
+	uint32_t       index;		/* current queue index */
 };
 
 
