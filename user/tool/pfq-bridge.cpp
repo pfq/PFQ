@@ -17,6 +17,8 @@
 #include <atomic>
 #include <cmath>
 #include <tuple>
+#include <atomic>
+#include <csignal>
 
 #include <pfq/pfq.hpp>
 #include <pfq/lang/lang.hpp>
@@ -26,10 +28,42 @@
 #include <more/affinity.hpp>
 #include <more/binding.hpp>
 #include <more/vt100.hpp>
+#include <more/pretty.hpp>
 
+using namespace more;
 using namespace pfq;
 using namespace pfq::lang;
 using namespace pfq::lang::experimental;
+
+
+struct Bridge
+{
+    Bridge(bool k, size_t c, size_t q, std::string f, std::string t)
+    : kernel(k)
+    , core(c)
+    , queue(q)
+    , from(std::move(f))
+    , to(std::move(t))
+    { }
+
+    bool        kernel;
+    size_t      core;
+    size_t      queue;
+    std::string from;
+    std::string to;
+};
+
+
+namespace opt
+{
+    bool fast_forward = false;
+    size_t caplen  = 64;
+    size_t slots   = 131072;
+    std::atomic_bool stop;
+    
+    long timeout_ms = 1000000;
+}
+
 
 
 void usage(std::string name)
@@ -37,51 +71,147 @@ void usage(std::string name)
     throw std::runtime_error
     (
         "usage: " + std::move(name) + " [OPTIONS]\n\n"
-        " -h --help                     Display this help\n"
-        " -b --bridge DEV1 DEV2         Unidirectional bridge: DEV1 -> DEV2\n"
+        " -f --forward core queue Dev1 Dev2     User-space bridge: Dev1.q -> Dev2.q\n"
+        "    --fast                             Enable fast-forward...\n"
+        " -k --bridge DEV1 DEV2                 Kernel bridge: Dev1 -> Dev2\n"
+        " -h --help                             Display this help\n"
     );
 }
 
 
-void make_bridge(pfq::socket &q, int gid, std::pair<std::string, std::string> const &b)
+void make_user_bridge(int gid, Bridge const &b)
 {
-        std::cout << "group " << gid << " :: bridge [" << b.first << " -> " << b.second << "]" << std::endl;
+    std::cout << "User-space bridge: group " << gid << " :: => bridge [" << b.from << " -> " << b.to << "]" << std::endl;
 
-        auto comp = bridge(b.second);
+    std::thread t([&] {
 
-        q.join_group(gid, group_policy::shared, class_mask::control);
-        q.bind_group(gid, b.first.c_str(), any_queue);
-        q.set_group_computation(gid, comp);
+        pfq::socket in (group_policy::undefined, opt::caplen, opt::slots, opt::slots);
+        pfq::socket out(group_policy::undefined, opt::caplen, opt::slots, opt::slots);
+
+        in.join_group(gid); 
+        in.bind_group(gid, b.from.c_str(), b.queue);
+
+        out.bind_tx(b.to.c_str(), b.queue);
+
+        in.enable();
+        out.enable();
+
+        for(;;)
+        {
+            auto many = in.read(opt::timeout_ms);
+
+            if (many.size())
+            {
+                auto it = many.begin();
+                for(; it != many.end(); ++it)
+                {
+                    while (!it.ready())
+                        std::this_thread::yield();
+
+                    auto h = *it;
+                    const unsigned char *buff = static_cast<unsigned char *>(it.data());
+
+                    out.send(pfq::const_buffer(reinterpret_cast<const char *>(buff), h.len), 0);
+                }
+
+                out.transmit_queue(0);
+            }
+                
+            if (opt::stop.load(std::memory_order_relaxed))
+                    break;
+        }
+
+    });
+    
+    more::set_affinity(t, b.core);
+
+    t.detach();
 }
 
+
+void make_lang_bridge(pfq::socket &q, int gid, Bridge const &b)
+{
+    std::cout << "In-kernel bridge: group " << gid << " :: => bridge [" << b.from << " -> " << b.to << "]" << std::endl;
+
+    //
+    // pfq-lang
+    // 
+    auto comp = bridge(b.to);
+
+    q.join_group(gid, group_policy::shared, class_mask::control);
+    q.bind_group(gid, b.from.c_str(), any_queue);
+    q.set_group_computation(gid, comp);
+}
+
+
+
+void sighandler(int)
+{
+    opt::stop.store(true, std::memory_order_relaxed);
+}
 
 int
 main(int argc, char *argv[])
 try
 {
-    std::vector<std::pair<std::string, std::string>> bridges;
+    std::vector<Bridge> bridges;
 
     if (argc < 2)
         usage(argv[0]);
 
+    signal(SIGINT, sighandler);
+    signal(SIGSTOP, sighandler);
+
     for(int i = 1; i < argc; ++i)
     {
-        if ( strcmp(argv[i], "-b") == 0 ||
-             strcmp(argv[i], "--bridge") == 0) {
+        if (any_strcmp(argv[i], "-b", "--bridge")) {
+
             i+=2;
             if (i >= argc)
             {
-                throw std::runtime_error("descriptor missing");
+                throw std::runtime_error("bridge: argument(s) missing");
             }
 
-            bridges.push_back( std::make_pair(argv[i-1], argv[i]) );
+            bridges.emplace_back(true, 0, 0, argv[i-1], argv[i]);
+            continue;
+        }
+        
+        if (any_strcmp(argv[i], "-f", "--forward")) {
+            i+=4;
+            if (i >= argc)
+            {
+                throw std::runtime_error("forward: argument(s) missing");
+            }
+
+            bridges.emplace_back(false, atoi(argv[i-3]), atoi(argv[i-2]), argv[i-1], argv[i]);
             continue;
         }
 
-        if ( strcmp(argv[i], "-h") == 0 ||
-             strcmp(argv[i], "-?") == 0 ||
-             strcmp(argv[i], "--help") == 0
-             )
+        if (any_strcmp(argv[i], "--fast"))
+        {
+            opt::fast_forward = true;
+            continue;
+        }
+
+        if (any_strcmp(argv[i], "-c", "--caplen"))
+        {
+            if (++i == argc)
+                throw std::runtime_error("caplen missing");
+
+            opt::caplen = static_cast<size_t>(std::atoi(argv[i]));
+            continue;
+        }
+
+        if (any_strcmp(argv[i], "-s", "--slots"))
+        {
+            if (++i == argc)
+                throw std::runtime_error("slots missing");
+
+            opt::slots = static_cast<size_t>(std::atoi(argv[i]));
+            continue;
+        }
+
+        if (any_strcmp(argv[i], "-h", "-?", "--help"))
             usage(argv[0]);
 
         throw std::runtime_error(std::string(argv[i]) + " unknown option!");
@@ -91,14 +221,30 @@ try
 
     pfq::socket q(group_policy::undefined, 64, 1024);
 
+    // load in-kernel pfq-lang bridges...
+    //
+    
     int gid = 0;
     for(auto & b : bridges)
     {
-        make_bridge(q, gid++, b);
+        if (b.kernel)
+            make_lang_bridge(q, gid++, b);
+        else
+            make_user_bridge(gid++, b);
+    }
+    
+    // wait...
+    //
+
+    for(;;) {
+        std::this_thread::sleep_for(std::chrono::seconds(1)); 
+        if (opt::stop.load(std::memory_order_relaxed))
+            break;
     }
 
-    for(;;)
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+    std::cout << "closing..." << std::endl;
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+        
 }
 catch(std::exception &e)
 {
