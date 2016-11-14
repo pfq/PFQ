@@ -290,7 +290,7 @@ pfq_hugepages_map(struct pfq_shmem_descr *shmem, unsigned long user_addr, size_t
 	shmem->addr = (char *)hpages->addr + hpages->offset - size;
         shmem->size = size;
 	shmem->kind = pfq_shmem_user;
-        shmem->hugepages = hpages;
+        shmem->hugepages_descr = hpages;
 
 	pr_devel("[PFQ] total mapped memory: %zu bytes.\n", size);
 	return 0;
@@ -303,10 +303,10 @@ pfq_hugepages_unmap(struct pfq_shmem_descr *shmem)
 	int rc;
 	rc = put_HugePages();
         if (rc < 0)
-        	return rc;
+		return rc;
 
 	shmem->addr = NULL;
-	shmem->hugepages = NULL;
+	shmem->hugepages_descr = NULL;
 	shmem->size = 0;
 	return 0;
 }
@@ -322,7 +322,7 @@ pfq_vmalloc_user(struct pfq_shmem_descr *shmem, size_t mem_size)
         shmem->addr = vmalloc_user(tot_mem);
         shmem->size = tot_mem;
 	shmem->kind = pfq_shmem_virt;
-        shmem->hugepages = NULL;
+        shmem->hugepages_descr = NULL;
 
 	if (shmem->addr == NULL) {
 		printk(KERN_WARNING "[PFQ] shmem: out of memory (vmalloc %zu bytes)!", tot_mem);
@@ -362,7 +362,7 @@ pfq_shared_memory_free(struct pfq_shmem_descr *shmem)
 		}
 
 		shmem->addr = NULL;
-		shmem->hugepages = NULL;
+		shmem->hugepages_descr = NULL;
 		shmem->size = 0;
 
 		pr_devel("[PFQ] shared memory freed.\n");

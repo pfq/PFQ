@@ -59,7 +59,7 @@ struct pfq_shmem_descr
 	void *			addr;
 	size_t			size;
 	enum pfq_shmem_kind     kind;
-	struct pfq_hugepages_descr *hugepages;
+	struct pfq_hugepages_descr *hugepages_descr;
 };
 
 

@@ -162,7 +162,7 @@ int core_sock_init(struct core_sock *so, pfq_id_t id)
         so->shmem.addr = NULL;
         so->shmem.size = 0;
         so->shmem.kind = 0;
-        so->shmem.hugepages = NULL;
+        so->shmem.hugepages_descr = NULL;
 
         return 0;
 }

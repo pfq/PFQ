@@ -1068,6 +1068,7 @@ namespace pfq {
             return ret;
         }
 
+
         //! Store the packet and transmit the packets in the queue.
         /*!
          * The queue is flushed every fhint packets.
