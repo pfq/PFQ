@@ -62,7 +62,7 @@ pfq_tx_thread_dump(struct pfq_thread_tx_data const *data)
 	char msg[256];
 	int n, off = 0;
 	off += sprintf(msg + off, "Tx[%d] cpu=%d node=%d ", data->id, data->cpu, data->node);
-	for(n = 0; n < Q_CORE_MAX_TX_QUEUES; ++n)
+	for(n = 0; n < Q_MAX_TX_QUEUES; ++n)
 	{
 		int sock_queue = atomic_read(&data->sock_queue[n]);
 		if (sock_queue != -1)

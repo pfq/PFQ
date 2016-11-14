@@ -733,7 +733,7 @@ namespace pfq {
                 {
                     prg->fun[n].arg[i].addr  = descr.arg[i].ptr ? descr.arg[i].ptr->forall_addr() : nullptr;
                     prg->fun[n].arg[i].size  = descr.arg[i].size;
-                    prg->fun[n].arg[i].nelem = descr.arg[i].nelem;
+                    prg->fun[n].arg[i].nelem = static_cast<ptrdiff_t>(descr.arg[i].nelem);
                 }
 
                 prg->fun[n].next  = descr.link;
@@ -850,14 +850,6 @@ namespace pfq {
 
             data = __atomic_load_n(&q->rx.shinfo, __ATOMIC_RELAXED);
             qver = PFQ_SHARED_QUEUE_VER(data);
-
-            // forward packets first... 
-
-            if (data_->tx_forward)
-            {
-                data_->tx_forward = 0;
-                this->transmit_queue(0);
-            }
 
             // at wrap-around reset Rx slots...
             //
@@ -1059,7 +1051,7 @@ namespace pfq {
         bool
         send(const_buffer pkt, size_t fhint = 1, unsigned int copies = 1)
         {
-            auto ret = send_raw(pkt, 0, 0, 0, copies, false);
+            auto ret = send_raw(pkt.first, pkt.second, 0, 0, 0, copies, false);
             if (++data_->tx_attempt == fhint)
             {
                 data_->tx_attempt = 0;
@@ -1077,7 +1069,7 @@ namespace pfq {
         bool
         send_to(const_buffer pkt, int ifindex, int qindex, size_t fhint = 1, unsigned int copies = 1)
         {
-            auto ret = send_raw(pkt, ifindex, qindex, 0, copies, false);
+            auto ret = send_raw(pkt.first, pkt.second, ifindex, qindex, 0, copies, false);
             if (++data_->tx_attempt == fhint)
             {
                 data_->tx_attempt = 0;
@@ -1096,8 +1088,9 @@ namespace pfq {
         bool
         send_async(const_buffer pkt, unsigned int copies = 1)
         {
-            return send_raw(pkt, 0, 0, 0, copies, true, any_queue);
+            return send_raw(pkt.first, pkt.second, 0, 0, 0, copies, true, any_queue);
         }
+
 
         /*! Transmit the packet asynchronously. */
         /*!
@@ -1112,7 +1105,7 @@ namespace pfq {
         send_at(const_buffer pkt, std::chrono::time_point<Clock, Duration> const &tp, unsigned int copies = 1)
         {
             auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(tp.time_since_epoch()).count();
-            return send_raw(pkt, 0, 0, static_cast<uint64_t>(ns), copies, true, any_queue);
+            return send_raw(pkt.first, pkt.second, 0, 0, static_cast<uint64_t>(ns), copies, true, any_queue);
         }
 
         //! Schedule a packet transmission.
@@ -1124,21 +1117,27 @@ namespace pfq {
          */
 
         bool
-        send_raw(const_buffer pkt, int ifindex, int qindex, uint64_t nsec, unsigned int copies, bool async = false, int queue = any_queue)
+        send_raw( const char *buf
+                , size_t len
+                , int ifindex
+                , int qindex
+                , uint64_t nsec
+                , unsigned int copies
+                , bool async
+                , int queue = any_queue)
         {
             if (unlikely(!data_->shm_addr))
                 throw system_error("PFQ: send: socket not enabled");
 
             ptrdiff_t *poff_addr;
-            uint32_t rx_off = 0; int tss;
             uint16_t caplen;
+            int tss;
 
             auto tx = [&] {
-
                 if (async) {
                     if (unlikely(data_->tx_num_async == 0))
                         throw system_error("PFQ: send: socket not bound to async threads");
-                    tss = static_cast<int>(fold(queue == any_queue ? symmetric_hash(pkt.first) : static_cast<uint32_t>(queue), static_cast<uint32_t>(data_->tx_num_async)));
+                    tss = static_cast<int>(fold(queue == any_queue ? symmetric_hash(buf) : static_cast<uint32_t>(queue), static_cast<uint32_t>(data_->tx_num_async)));
                     return &static_cast<struct pfq_shared_queue *>(data_->shm_addr)->tx_async[tss];
                 }
 
@@ -1173,19 +1172,9 @@ namespace pfq {
             // cut the packet to maxlen:
             //
 
-            // calc the real caplen:
-            
-            if (pkt.first >= data_->shm_hugepages && pkt.first < (static_cast<char *>(data_->shm_hugepages) + data_->shm_hugesize))
-            {
-                caplen = 0;
-                rx_off = static_cast<uint32_t>(pkt.first - static_cast<char *>(data_->shm_hugepages));
-            }
-            else
-            {
-                caplen = static_cast<uint16_t>(
-                    std::min(pkt.second, data_->tx_slot_size - sizeof(struct pfq_pkthdr)));
-            }
-            
+            caplen = static_cast<uint16_t>(
+                    std::min(len, data_->tx_slot_size - sizeof(struct pfq_pkthdr)));
+
             // compute the current dynamic slot_size:
             //
             auto this_slot_size = align<64>(sizeof(struct pfq_pkthdr) + caplen);
@@ -1197,17 +1186,13 @@ namespace pfq {
                 auto hdr = (struct pfq_pkthdr *)(base_addr + offset);
 
                 hdr->tstamp.tv64      = nsec;
-                hdr->len              = static_cast<uint16_t>(pkt.second);
+                hdr->len              = static_cast<uint16_t>(len);
                 hdr->caplen           = static_cast<uint16_t>(caplen);
                 hdr->info.data.copies = copies;
                 hdr->info.ifindex     = ifindex;
                 hdr->info.queue       = static_cast<uint8_t>(qindex);
-		        hdr->info.data.fwd_off  = rx_off;
 
-		        if (caplen)
-			        memcpy(hdr+1, pkt.first, caplen);
-                else
-                	data_->tx_forward++;
+			    memcpy(hdr+1, buf, caplen);
 
                 __atomic_store_n(poff_addr, offset + static_cast<ptrdiff_t>(this_slot_size), __ATOMIC_RELEASE);
                 return true;

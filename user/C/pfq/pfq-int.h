@@ -50,11 +50,11 @@ struct pfq_net_queue
 
 struct pfq_data_int
 {
-	void * shm_hugepages;
 	void * shm_addr;
-
 	size_t shm_size;
-	size_t shm_hugesize;
+
+	void * shm_hugepages;
+	size_t shm_hugepages_size;
 
 	void * tx_queue_addr;
 	size_t tx_queue_size;
@@ -70,7 +70,6 @@ struct pfq_data_int
 
 	size_t tx_attempt;
 	size_t tx_num_async;
-        size_t tx_forward;
 
 	const char * error;
 

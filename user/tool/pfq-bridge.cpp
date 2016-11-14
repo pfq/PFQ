@@ -48,7 +48,7 @@ struct Bridge
 
     bool        kernel;
     size_t      core;
-    size_t      queue;
+    int         queue;
     std::string from;
     std::string to;
 };
@@ -58,9 +58,9 @@ namespace opt
 {
     bool fast_forward = false;
     size_t caplen  = 64;
-    size_t slots   = 131072;
+    size_t slots   = 4096;
     std::atomic_bool stop;
-    
+
     long timeout_ms = 1000000;
 }
 

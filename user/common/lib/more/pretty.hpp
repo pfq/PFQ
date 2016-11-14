@@ -32,8 +32,7 @@ namespace more {
     template <typename U, typename T, typename Duration>
     U persecond(T value, Duration dur)
     {
-        return static_cast<U>(value) * 1000000 /
-            std::chrono::duration_cast<std::chrono::microseconds>(dur).count();
+        return static_cast<U>(value) * 1000000 / static_cast<U>(std::chrono::duration_cast<std::chrono::microseconds>(dur).count());
     }
 
     template <typename ...Ts>

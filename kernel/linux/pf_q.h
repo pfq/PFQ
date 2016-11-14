@@ -335,8 +335,8 @@ struct pfq_lang_computation_descr
 };
 
 
-/*  
- *  PFQ sock options helper structures 
+/*
+ *  PFQ sock options helper structures
  */
 
 

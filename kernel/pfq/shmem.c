@@ -278,21 +278,21 @@ pfq_mmap(struct file *file, struct socket *sock, struct vm_area_struct *vma)
 
 
 int
-pfq_hugepages_map(struct pfq_shmem_descr *shmem, unsigned long user_addr, size_t user_size, size_t hugepage_size, size_t size)
+pfq_hugepages_map(struct pfq_shmem_descr *shmem, unsigned long user_addr, size_t user_size, size_t hugepage_size, size_t req_size)
 {
 
-        struct pfq_hugepages_descr * hpages = get_HugePages(user_addr, user_size, hugepage_size, size);
+        struct pfq_hugepages_descr * hpages = get_HugePages(user_addr, user_size, hugepage_size, req_size);
 	if (!hpages) {
 		printk(KERN_INFO "[PFQ] mapping memory failure.\n");
 		return -EPERM;
 	}
 
-	shmem->addr = (char *)hpages->addr + hpages->offset - size;
-        shmem->size = size;
+	shmem->addr = (char *)hpages->addr + hpages->offset - req_size;
+        shmem->size = req_size;
 	shmem->kind = pfq_shmem_user;
         shmem->hugepages_descr = hpages;
 
-	pr_devel("[PFQ] total mapped memory: %zu bytes.\n", size);
+	pr_devel("[PFQ] mapped memory: %zu bytes.\n", req_size);
 	return 0;
 }
 

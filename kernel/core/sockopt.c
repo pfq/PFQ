@@ -339,6 +339,9 @@ int core_setsockopt(struct socket *sock,
                 if (copy_from_user(&mem, optval, optlen))
                         return -EFAULT;
 
+                printk(KERN_INFO "[PFQ|%d] enable: user_addr=%lu user_size=%zu hugepage_size=%zu...\n", so->id,
+                       mem.user_addr, mem.user_size, mem.hugepage_size);
+
                 err = core_shared_queue_enable(so, mem.user_addr, mem.user_size, mem.hugepage_size);
                 if (err < 0) {
                         printk(KERN_INFO "[PFQ|%d] enable error!\n", so->id);
@@ -346,12 +349,14 @@ int core_setsockopt(struct socket *sock,
                 }
 
 		if (mem.hugepage_size) {
-			if (!so->shmem.hugepages) {
-				printk(KERN_INFO "[PFQ|%d] enable error (HugePages)!\n", so->id);
+			if (!so->shmem.hugepages_descr) {
+				printk(KERN_INFO "[PFQ|%d] enable error (null HugePages descriptor)!\n", so->id);
 				return -EFAULT;
 			}
-			mem.user_addr = (unsigned long)(so->shmem.addr - so->shmem.hugepages->addr);
-			if (copy_to_user(optval, &mem,sizeof(mem)))
+
+			mem.user_addr = (unsigned long)(mem.user_addr + so->shmem.hugepages_descr->offset - so->shmem.size);
+
+			if (copy_to_user(optval, &mem, optlen))
 			    return -EFAULT;
 		}
 

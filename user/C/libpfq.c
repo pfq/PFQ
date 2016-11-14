@@ -325,20 +325,20 @@ pfq_enable(pfq_t *q)
 
 
 	pfq_hugepages = getenv("PFQ_HUGEPAGES");
+
 	hugepages_mpoint = pfq_hugepages_mountpoint();
 
-	if (hugepages_mpoint && pfq_hugepages)
+	if (hugepages_mpoint && pfq_hugepages) {
+		mem.user_size = parse_size(pfq_hugepages);
+	}
+
+	if (mem.user_size > 0)
 	{
 		/* HugePages */
 
 		mem.hugepage_size = get_hugepage_size();
 		if (!mem.hugepage_size) {
 			return Q_ERROR(q, "PFQ: HugePages not enabled!");
-		}
-
-		mem.user_size = parse_size(pfq_hugepages);
-                if (mem.user_size < 4096) {
-			return Q_ERROR(q, "PFQ: HugePages invalid size!");
 		}
 
 		fprintf(stdout, "[PFQ] using %s HugePages (%zu bytes)...\n",
@@ -348,14 +348,20 @@ pfq_enable(pfq_t *q)
 		snprintf(filename, 256, "%s/pfq.%d", hugepages_mpoint, getpid());
 		free (hugepages_mpoint);
 
+		/* open hugepage file */
+
 		q->hd = open(filename, O_CREAT | O_RDWR, 0755);
 		if (q->hd == -1)
 			return Q_ERROR(q, "PFQ: couldn't open a HugePages");
+
+		/* mmap HugePages */
 
 		q->shm_hugepages = mmap(NULL, mem.user_size, PROT_READ|PROT_WRITE, MAP_SHARED, q->hd, 0);
 		if (q->shm_hugepages == MAP_FAILED) {
 			return Q_ERROR(q, "PFQ: HugePages");
 		}
+
+		q->shm_hugepages_size = mem.user_size;
 
 		mem.user_addr = (unsigned long)q->shm_hugepages;
 
@@ -364,28 +370,38 @@ pfq_enable(pfq_t *q)
 		if(setsockopt(q->fd, PF_Q, Q_SO_ENABLE, &mem, sizeof(mem)) == -1)
 			return Q_ERROR(q, "PFQ: socket enable (HugePages)");
 
-		q->shm_hugesize = mem.user_size;
-		q->shm_size = sock_mem;
-		q->shm_addr = (char *)q->shm_hugepages + mem.user_addr; /* get the socket memory */
+		/* queue memory... */
+
+		q->shm_addr = (void *)mem.user_addr;
+		q->shm_size = mem.user_size;
+
+		printf("hugepages = %p shm_addr = %p\n", q->shm_hugepages, q->shm_addr);
 	}
 	else {
 		/* Standard pages (4K) */
 
-		mem.user_addr = 0;
-		mem.user_size = 0;
-                mem.hugepage_size = 0;
+		fprintf(stdout, "[PFQ] using 4k-Pages...\n");
 
 		free (hugepages_mpoint);
 
-		fprintf(stdout, "[PFQ] using 4k-Pages...\n");
+		mem.user_addr = 0;
+		mem.user_size = 0;
+		mem.hugepage_size = 0;
+
 		if(setsockopt(q->fd, PF_Q, Q_SO_ENABLE, &mem, sizeof(mem)) == -1)
 			return Q_ERROR(q, "PFQ: socket enable");
 
-		q->shm_hugesize = 0;
-		q->shm_size = sock_mem;
+		/* queue memory... */
+
 		q->shm_addr = mmap(NULL, sock_mem, PROT_READ|PROT_WRITE, MAP_SHARED, q->fd, 0);
 		if (q->shm_addr == MAP_FAILED)
 			return Q_ERROR(q, "PFQ: socket enable (memory map)");
+
+		q->shm_size = sock_mem;
+
+		/* hugepages... */
+		q->shm_hugepages = NULL;
+		q->shm_hugepages_size = 0;
 	}
 
 	q->rx_queue_addr = (char *)(q->shm_addr) + sizeof(struct pfq_shared_queue);
@@ -406,8 +422,8 @@ pfq_disable(pfq_t *q)
 
 	if (q->shm_addr != MAP_FAILED) {
 
-		if (q->shm_hugesize) {
-			if (munmap(q->shm_hugepages, q->shm_hugesize) == -1)
+		if (q->shm_hugepages_size) {
+			if (munmap(q->shm_hugepages, q->shm_hugepages_size) == -1)
 				return Q_ERROR(q, "PFQ: munmap error");
 		}
 		else {
@@ -1566,14 +1582,6 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 	data = __atomic_load_n(&qd->rx.shinfo, __ATOMIC_RELAXED);
 	qver = PFQ_SHARED_QUEUE_VER(data);
 
-	/* forward packets first... */
-
-	if (q->tx_forward)
-	{
-		q->tx_forward = 0;
-		pfq_transmit_queue(q, 0);
-	}
-
         /* at wrap-around reset Rx slots... */
 
         if (((qver+1) & (PFQ_SHARED_QUEUE_VER_MASK^1))== 0)
@@ -1685,18 +1693,24 @@ pfq_unbind_tx(pfq_t *q)
 
 
 int
-pfq_send_raw(pfq_t *q, const void *buf, const size_t len,
-	     int ifindex, int qindex, uint64_t nsec,
-	     unsigned int copies, int async, int queue)
+pfq_send_raw(pfq_t *q
+	    , const void *buf
+	    , const size_t len
+	    , int ifindex
+	    , int qindex
+	    , uint64_t nsec
+	    , unsigned int copies
+	    , int async
+	    , int queue)
 {
         struct pfq_shared_queue *sh_queue = (struct pfq_shared_queue *)(q->shm_addr);
         struct pfq_tx_queue *tx;
         unsigned int index;
         size_t this_slot_size;
         ptrdiff_t offset, *poff_addr;
-        uint32_t rx_off = 0; int tss;
         uint16_t caplen;
         char *base_addr;
+        int tss;
 
 	if (unlikely(q->shm_addr == NULL))
 		return Q_ERROR(q, "PFQ: send: socket not enabled");
@@ -1734,15 +1748,7 @@ pfq_send_raw(pfq_t *q, const void *buf, const size_t len,
 
 	/* calc the real caplen */
 
-	if (buf >= q->shm_hugepages && buf < (q->shm_hugepages + q->shm_hugesize))
-	{
-		caplen = 0;
-		rx_off = (uint32_t)(buf - q->shm_hugepages);
-	}
-	else
-	{
-		caplen = (uint16_t)min(len, q->tx_slot_size - sizeof(struct pfq_pkthdr));
-	}
+	caplen = (uint16_t)min(len, q->tx_slot_size - sizeof(struct pfq_pkthdr));
 
 	this_slot_size = ALIGN(sizeof(struct pfq_pkthdr) + caplen, 64);
 
@@ -1755,12 +1761,8 @@ pfq_send_raw(pfq_t *q, const void *buf, const size_t len,
 		hdr->info.data.copies	= copies;
                 hdr->info.ifindex	= ifindex;
                 hdr->info.queue		= (uint8_t)qindex;
-		hdr->info.data.fwd_off  = rx_off;
 
-		if (caplen)
-			memcpy(hdr+1, buf, caplen);
-                else
-                	q->tx_forward++;
+		memcpy(hdr+1, buf, caplen);
 
                 __atomic_store_n(poff_addr, offset + (ptrdiff_t)this_slot_size, __ATOMIC_RELEASE);
 		return Q_VALUE(q, (int)len);
@@ -1779,6 +1781,7 @@ pfq_send(pfq_t *q, const void *ptr, size_t len, size_t fhint, unsigned int copie
 	}
 	return ret;
 }
+
 
 int
 pfq_send_to(pfq_t *q, const void *ptr, size_t len, int ifindex, int qindex, size_t fhint, unsigned int copies)
