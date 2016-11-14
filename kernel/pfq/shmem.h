@@ -48,8 +48,8 @@ struct pfq_hugepages_descr
 	struct page**		hugepages;
 	size_t			npages;
 
-	void *			base_addr;
-	size_t			huge_size;
+	void *			addr;
+	size_t			size;
 	size_t			offset;
 };
 
@@ -68,7 +68,7 @@ extern size_t pfq_total_queue_mem_aligned(struct core_sock *so);
 
 extern int    pfq_mmap(struct file *file, struct socket *sock, struct vm_area_struct *vma);
 extern int    pfq_vmalloc_user(struct pfq_shmem_descr *shmem, size_t size);
-extern int    pfq_shared_memory_alloc(struct pfq_shmem_descr *shmem, size_t huge_size, size_t size, unsigned long user_addr);
+extern int    pfq_shared_memory_alloc(struct pfq_shmem_descr *shmem, unsigned long user_addr, size_t user_size, size_t huge_size, size_t req_size);
 extern void   pfq_shared_memory_free(struct pfq_shmem_descr *shmem);
 extern int    pfq_hugepage_map(struct pfq_shmem_descr *shmem, unsigned long addr, size_t size);
 extern int    pfq_hugepage_unmap(struct pfq_shmem_descr *shmem);

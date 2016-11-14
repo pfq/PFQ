@@ -343,7 +343,8 @@ struct pfq_lang_computation_descr
 struct pfq_so_enable
 {
 	unsigned long	user_addr;
-	size_t		huge_size;
+	size_t		user_size;
+	size_t		hugepage_size;
 };
 
 

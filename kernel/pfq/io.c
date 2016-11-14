@@ -476,7 +476,7 @@ pfq_sk_queue_xmit(struct core_sock *so,
 		  atomic_t const *stop)
 {
 	struct core_tx_info const * txinfo = core_sock_get_tx_queue_info(&so->opt, sock_queue);
-	const void * huge_base = so->shmem.hugepages ? so->shmem.hugepages->base_addr : NULL;
+	const void * huge_base = so->shmem.hugepages ? so->shmem.hugepages->addr : NULL;
 	struct net_dev_queue dev_queue = net_dev_queue_null;
 	struct pfq_mbuff_xmit_context ctx;
 	struct pfq_percpu_pool *pool;

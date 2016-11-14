@@ -33,7 +33,7 @@
 
 
 int
-core_shared_queue_enable(struct core_sock *so, size_t huge_size, unsigned long user_addr)
+core_shared_queue_enable(struct core_sock *so, unsigned long user_addr, size_t user_size, size_t hugepage_size)
 {
 	if (!so->shmem.addr) {
 
@@ -43,7 +43,7 @@ core_shared_queue_enable(struct core_sock *so, size_t huge_size, unsigned long u
 
 		/* alloc queue memory */
 
-		if (pfq_shared_memory_alloc(&so->shmem, huge_size, pfq_total_queue_mem_aligned(so), user_addr) < 0)
+		if (pfq_shared_memory_alloc(&so->shmem, user_addr, user_size, hugepage_size, pfq_total_queue_mem_aligned(so)) < 0)
 		{
 			return -ENOMEM;
 		}

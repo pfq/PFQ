@@ -339,18 +339,18 @@ int core_setsockopt(struct socket *sock,
                 if (copy_from_user(&mem, optval, optlen))
                         return -EFAULT;
 
-                err = core_shared_queue_enable(so, mem.huge_size, mem.user_addr);
+                err = core_shared_queue_enable(so, mem.user_addr, mem.user_size, mem.hugepage_size);
                 if (err < 0) {
                         printk(KERN_INFO "[PFQ|%d] enable error!\n", so->id);
                         return err;
                 }
 
-		if (mem.huge_size) {
+		if (mem.hugepage_size) {
 			if (!so->shmem.hugepages) {
 				printk(KERN_INFO "[PFQ|%d] enable error (HugePages)!\n", so->id);
 				return -EFAULT;
 			}
-			mem.user_addr = (unsigned long)(so->shmem.addr - so->shmem.hugepages->base_addr);
+			mem.user_addr = (unsigned long)(so->shmem.addr - so->shmem.hugepages->addr);
 			if (copy_to_user(optval, &mem,sizeof(mem)))
 			    return -EFAULT;
 		}

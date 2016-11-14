@@ -34,7 +34,7 @@
 
 
 
-extern int core_shared_queue_enable(struct core_sock *so, size_t huge_size, unsigned long addr);
+extern int core_shared_queue_enable(struct core_sock *so, unsigned long user_addr, size_t user_size, size_t hugepage_size);
 extern int core_shared_queue_disable(struct core_sock *so);
 
 

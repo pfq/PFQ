@@ -254,6 +254,54 @@ int pfq_close(pfq_t *q)
 }
 
 
+
+static unsigned long long
+parse_size(const char *str)
+{
+    char *endptr;
+    unsigned long long v = strtoull(str, &endptr, 10);
+    switch(*endptr)
+    {
+    case '\0': return v;
+    case 'k': case 'K':  return v * 1024;
+    case 'm': case 'M':  return v * 1024 * 1024;
+    case 'g': case 'G':  return v * 1024 * 1024 * 1024;
+    }
+
+    return 0;
+}
+
+
+static
+size_t get_hugepage_size()
+{
+	struct stat x;
+	if (stat("/sys/kernel/mm/hugepages/hugepages-1048576kB/nr_hugepages", &x) == 0)
+		return 1048576;
+	if (stat("/sys/kernel/mm/hugepages/hugepages-16384kB/nr_hugepages", &x) == 0)
+		return 16384;
+	if (stat("/sys/kernel/mm/hugepages/hugepages-4096kB/nr_hugepages", &x) == 0)
+		return 4096;
+	if (stat("/sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages", &x) == 0)
+		return 2048;
+	return 0;
+}
+
+
+static inline
+const char *size_to_string(size_t size)
+{
+	switch(size)
+	{
+	case 2048*1024:		return "2M";
+	case 4096*1024:		return "4M";
+	case 16*1024*1024:	return "16M";
+	case 1024*1024*1024:	return "1G";
+	}
+	return "UnknownSize";
+}
+
+
 int
 pfq_enable(pfq_t *q)
 {
@@ -262,7 +310,9 @@ pfq_enable(pfq_t *q)
         char *pfq_hugepages;
 
 	struct pfq_so_enable mem = { .user_addr = 0
-				   , .huge_size = 0};
+				   , .user_size  = 0
+				   , .hugepage_size = 0 
+				   };
 
 	if (q->shm_addr != MAP_FAILED &&
 	    q->shm_addr != NULL) {
@@ -281,12 +331,19 @@ pfq_enable(pfq_t *q)
 	{
 		/* HugePages */
 
-		mem.huge_size = strtoull(pfq_hugepages, NULL, 10) * 1024 * 1024;
-                if (mem.huge_size < 4096) {
-			return Q_ERROR(q, "PFQ: HugePages (invalid size)!");
+		mem.hugepage_size = get_hugepage_size();
+		if (!mem.hugepage_size) {
+			return Q_ERROR(q, "PFQ: HugePages not enabled!");
 		}
 
-		fprintf(stdout, "[PFQ] using HugePages (%zu bytes)...\n", mem.huge_size);
+		mem.user_size = parse_size(pfq_hugepages);
+                if (mem.user_size < 4096) {
+			return Q_ERROR(q, "PFQ: HugePages invalid size!");
+		}
+
+		fprintf(stdout, "[PFQ] using %s HugePages (%zu bytes)...\n",
+			size_to_string(mem.hugepage_size),
+			mem.user_size);
 
 		snprintf(filename, 256, "%s/pfq.%d", hugepages_mpoint, getpid());
 		free (hugepages_mpoint);
@@ -295,7 +352,7 @@ pfq_enable(pfq_t *q)
 		if (q->hd == -1)
 			return Q_ERROR(q, "PFQ: couldn't open a HugePages");
 
-		q->shm_hugepages = mmap(NULL, mem.huge_size, PROT_READ|PROT_WRITE, MAP_SHARED, q->hd, 0);
+		q->shm_hugepages = mmap(NULL, mem.user_size, PROT_READ|PROT_WRITE, MAP_SHARED, q->hd, 0);
 		if (q->shm_hugepages == MAP_FAILED) {
 			return Q_ERROR(q, "PFQ: HugePages");
 		}
@@ -307,20 +364,20 @@ pfq_enable(pfq_t *q)
 		if(setsockopt(q->fd, PF_Q, Q_SO_ENABLE, &mem, sizeof(mem)) == -1)
 			return Q_ERROR(q, "PFQ: socket enable (HugePages)");
 
-		q->shm_hugesize = mem.huge_size;
+		q->shm_hugesize = mem.user_size;
 		q->shm_size = sock_mem;
 		q->shm_addr = (char *)q->shm_hugepages + mem.user_addr; /* get the socket memory */
 	}
 	else {
 		/* Standard pages (4K) */
 
-		mem.huge_size = 0;
 		mem.user_addr = 0;
+		mem.user_size = 0;
+                mem.hugepage_size = 0;
 
 		free (hugepages_mpoint);
 
 		fprintf(stdout, "[PFQ] using 4k-Pages...\n");
-
 		if(setsockopt(q->fd, PF_Q, Q_SO_ENABLE, &mem, sizeof(mem)) == -1)
 			return Q_ERROR(q, "PFQ: socket enable");
 
