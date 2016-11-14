@@ -71,9 +71,11 @@ void usage(std::string name)
     throw std::runtime_error
     (
         "usage: " + std::move(name) + " [OPTIONS]\n\n"
-        " -f --forward core queue Dev1 Dev2     User-space bridge: Dev1.q -> Dev2.q\n"
+        " -c --caplen INT                       Set caplen\n"
+        " -s --slot INT                         Set slots\n"
+        " -f --forward core queue Dev1 Dev2     User-space bridge: Dev1 -> Dev2\n"
         "    --fast                             Enable fast-forward...\n"
-        " -k --bridge DEV1 DEV2                 Kernel bridge: Dev1 -> Dev2\n"
+        " -b --bridge DEV1 DEV2                 Kernel bridge: Dev1 -> Dev2\n"
         " -h --help                             Display this help\n"
     );
 }
@@ -83,12 +85,12 @@ void make_user_bridge(int gid, Bridge const &b)
 {
     std::cout << "User-space bridge: group " << gid << " :: => bridge [" << b.from << " -> " << b.to << "]" << std::endl;
 
-    std::thread t([&] {
+    std::thread t([=] {
 
         pfq::socket in (group_policy::undefined, opt::caplen, opt::slots, opt::slots);
         pfq::socket out(group_policy::undefined, opt::caplen, opt::slots, opt::slots);
 
-        in.join_group(gid); 
+        in.join_group(gid);
         in.bind_group(gid, b.from.c_str(), b.queue);
 
         out.bind_tx(b.to.c_str(), b.queue);
@@ -102,27 +104,27 @@ void make_user_bridge(int gid, Bridge const &b)
 
             if (many.size())
             {
-                auto it = many.begin();
-                for(; it != many.end(); ++it)
+                auto pkt = many.begin();
+                for(; pkt != many.end(); ++pkt)
                 {
-                    while (!it.ready())
+                    while (!pkt.ready())
                         std::this_thread::yield();
 
-                    auto h = *it;
-                    const unsigned char *buff = static_cast<unsigned char *>(it.data());
+                    auto h = *pkt;
+                    const unsigned char *buff = static_cast<unsigned char *>(pkt.data());
 
-                    out.send(pfq::const_buffer(reinterpret_cast<const char *>(buff), h.len), 0);
+                    out.send(pfq::const_buffer(reinterpret_cast<const char *>(buff), h.len), b.queue);
                 }
 
                 out.transmit_queue(0);
             }
-                
+
             if (opt::stop.load(std::memory_order_relaxed))
                     break;
         }
 
     });
-    
+
     more::set_affinity(t, b.core);
 
     t.detach();
@@ -135,7 +137,7 @@ void make_lang_bridge(pfq::socket &q, int gid, Bridge const &b)
 
     //
     // pfq-lang
-    // 
+    //
     auto comp = bridge(b.to);
 
     q.join_group(gid, group_policy::shared, class_mask::control);
@@ -175,7 +177,7 @@ try
             bridges.emplace_back(true, 0, 0, argv[i-1], argv[i]);
             continue;
         }
-        
+
         if (any_strcmp(argv[i], "-f", "--forward")) {
             i+=4;
             if (i >= argc)
@@ -223,7 +225,7 @@ try
 
     // load in-kernel pfq-lang bridges...
     //
-    
+
     int gid = 0;
     for(auto & b : bridges)
     {
@@ -232,19 +234,19 @@ try
         else
             make_user_bridge(gid++, b);
     }
-    
+
     // wait...
     //
 
     for(;;) {
-        std::this_thread::sleep_for(std::chrono::seconds(1)); 
+        std::this_thread::sleep_for(std::chrono::seconds(1));
         if (opt::stop.load(std::memory_order_relaxed))
             break;
     }
 
     std::cout << "closing..." << std::endl;
     std::this_thread::sleep_for(std::chrono::seconds(1));
-        
+
 }
 catch(std::exception &e)
 {

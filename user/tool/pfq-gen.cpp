@@ -276,7 +276,7 @@ namespace thread
 
     private:
 
-        void wait_keyboard() 
+        void wait_keyboard()
         {
             std::cout << "# " << m_sent->load(std::memory_order_relaxed) << ": to transmit the next packet press ENTER..." << std::flush;
             getchar();
@@ -356,7 +356,7 @@ namespace thread
 
                 if (rc)
                     rate_control(now, delta, n);
-                
+
                 if (opt::interactive)
                     wait_keyboard();
 
@@ -425,7 +425,7 @@ namespace thread
             // otherwise we run into problems when the inter-departure time is less
             // than the packet length
 
-            std::exponential_distribution<double> exp_dist(1.0 /(delta-pkt_time).count());
+            std::exponential_distribution<double> exp_dist(1.0 / static_cast<double>((delta-pkt_time).count()));
 
             auto rand_mask = ((1ULL << opt::rand_depth)-1);
 
@@ -494,7 +494,7 @@ namespace thread
 
                     if (rc)
                         rate_control(now, delta, i);
-                
+
                     if (opt::interactive)
                         wait_keyboard();
 
@@ -665,7 +665,7 @@ try
             opt::rand_flow = true;
             continue;
         }
-        
+
         if ( any_strcmp(argv[i], "--rand-flow-depth") )
         {
             if (++i == argc)
@@ -673,7 +673,7 @@ try
                 throw std::runtime_error("number missing");
             }
 
-            opt::rand_depth = static_cast<size_t>(std::atoi(argv[i]));
+            opt::rand_depth = static_cast<uint32_t>(std::atoi(argv[i]));
 
             if (opt::rand_flow_depth > 31)
                 throw std::runtime_error("rand-flow-depth: too large value [0-32]!");
@@ -781,7 +781,7 @@ try
                 throw std::runtime_error("number missing");
             }
 
-            opt::rand_depth = static_cast<size_t>(std::atoi(argv[i]));
+            opt::rand_depth = static_cast<uint32_t>(std::atoi(argv[i]));
 
             if (opt::rand_depth > 31)
                 throw std::runtime_error("rand-depth: too large value [0-32]!");
