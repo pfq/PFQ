@@ -9,6 +9,7 @@
 #include <chrono>
 #include <string>
 #include <sstream>
+#include <cstring>
 
 namespace more {
 
@@ -57,6 +58,16 @@ namespace more {
         else return to_string(value/1000000, "_M");
         }
         else return to_string(value/1000000000, "_G");
+    }
+
+    bool any_strcmp(const char *arg, const char *opt)
+    {
+        return strcmp(arg,opt) == 0;
+    }
+    template <typename ...Ts>
+    bool any_strcmp(const char *arg, const char *opt, Ts&&...args)
+    {
+        return (strcmp(arg,opt) == 0 ? true : any_strcmp(arg, std::forward<Ts>(args)...));
     }
 
 } // namespace more

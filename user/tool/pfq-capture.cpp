@@ -341,17 +341,6 @@ namespace thread
 }
 
 
-bool any_strcmp(const char *arg, const char *opt)
-{
-    return strcmp(arg,opt) == 0;
-}
-template <typename ...Ts>
-bool any_strcmp(const char *arg, const char *opt, Ts&&...args)
-{
-    return (strcmp(arg,opt) == 0 ? true : any_strcmp(arg, std::forward<Ts>(args)...));
-}
-
-
 void usage(std::string name)
 {
     throw std::runtime_error
