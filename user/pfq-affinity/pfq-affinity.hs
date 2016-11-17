@@ -176,10 +176,12 @@ showIRQ core = do
     lift $ do
         putStrLn $ "Core " ++ core ++ ":"
         mat <- forM irq $ \n -> 
-            getIrqAffinity n >>= \l -> if read core `elem` l 
-                                                then return $ Just (n, l)
-                                                else return Nothing
-        putStrLn $ "  irq -> " ++ unwords ((map (show . fst) . catMaybes) mat)
+            getIrqAffinity (read $ fst n) >>= \l -> if read core `elem` l 
+                                                    then return $ Just (n, l)
+                                                    else return Nothing
+        let out = map fst $ catMaybes mat
+        forM_ out $ \(n,descr) ->
+            putStrLn $ "  irq -> " ++ n ++ "\t(" ++ descr ++ ")" 
 
 
 -- set irq affinity for the given (irq,core) pair
@@ -251,9 +253,9 @@ getInterruptsByDevice dev msi = unsafePerformIO $ readFile proc_interrupt >>= \f
 
 
 {-# NOINLINE getInterrupts #-}
-getInterrupts :: [Int]
+getInterrupts :: [(String, String)]
 getInterrupts = unsafePerformIO $ readFile proc_interrupt >>= \file ->
-    return $ map fst $ concatMap (reads . takeWhile (/= ':')) $ lines file 
+    return $ map (\(f,s) -> (show f, last . words $ s)) (concatMap (reads) $ lines file  :: [(Int, String)])
 
 
 {-# NOINLINE getNumberOfPhyCores #-}
