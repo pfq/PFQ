@@ -59,9 +59,10 @@ instance Show MSI where
 data Options = Options
     {   firstcore :: Int
     ,   exclude   :: [Int]
-    ,   algorithm :: String
+    ,   algorithm :: Maybe String
     ,   msitype   :: Maybe MSI
-    ,   devices   :: [Device]
+    ,   core      :: Bool
+    ,   arguments :: [Device]
     } deriving (Data, Typeable, Show)
 
 
@@ -74,11 +75,12 @@ type CpuMask = Integer
 
 options :: Mode (CmdArgs Options)
 options = cmdArgsMode $ Options
-    {   firstcore = 0       &= typ "CORE" &= help "first core involved"
-    ,   exclude   = []      &= typ "CORE" &= help "exclude core from binding"
-    ,   algorithm = ""      &= help "binding algorithm: round-robin, naive, multiple/n, even, odd, all-in:id, step:id, custom:step/multi"
-    ,   msitype   = Nothing &= typ "MSI" &= help "MSI type: TxRx, Rx, Tx or None"
-    ,   devices   = []      &= args
+    {   firstcore = 0       &= typ "CORE" &= help "First core involved"
+    ,   exclude   = []      &= typ "CORE" &= help "Exclude core from binding"
+    ,   algorithm = Nothing               &= help "Binding algorithm: round-robin, naive, multiple/n, even, odd, all-in:id, step:id, custom:step/multi"
+    ,   msitype   = Nothing &= typ "MSI"  &= help "MSI type: TxRx, Rx, Tx or None"
+    ,   core      = False                 &= help "Inspect cores irq"
+    ,   arguments = []                    &= args
     } &= summary "pfq-affinity: Linux advanced interrupt-affinity binding." &= program "pfq-affinity"
 
 
@@ -102,7 +104,7 @@ makeIrqBinding ["all-in", n]      _      = IrqBinding (read n)  0       1       
 makeIrqBinding ["step",   s]      first  = IrqBinding first   (read s)  1       none
 makeIrqBinding ["custom", s, m]   first  = IrqBinding first   (read s) (read m) none
 
-makeIrqBinding _ _                      = error "PFQ: unknown IRQ binding algorithm"
+makeIrqBinding _ _ = error "PFQ: unknown IRQ binding algorithm"
 
 
 none :: a -> Bool
@@ -110,20 +112,25 @@ none _ = True
 
 
 -- main:
+--
 
 main :: IO ()
-main = cmdArgsRun options >>= \ops -> do
-    let apply = forM_ (devices ops) $ \dev -> dispatch (algorithm ops) dev
-    evalStateT apply (ops, firstcore ops)
-
+main = do
+    ops <- cmdArgsRun options
+    let runcmd = forM_ (arguments ops) $ \dev -> dispatch dev
+    evalStateT runcmd (ops, firstcore ops)
 
 -- dispatch command:
 --
 
-dispatch :: String -> String -> BindStateT IO ()
-dispatch "" = showBinding
-dispatch _  = makeBinding
-
+dispatch :: String -> BindStateT IO ()
+dispatch arg = do
+    (op, start) <- get
+    case () of 
+        _ | Just _  <- algorithm op -> makeBinding arg
+          | Nothing <- algorithm op -> if core op 
+                                            then showIRQ arg
+                                            else showBinding arg
 
 -- makeBinding algorithm:
 --
@@ -132,8 +139,8 @@ makeBinding :: String -> BindStateT IO ()
 makeBinding dev = do
     (op,start) <- get
     let msi  = msitype op
-        alg  = makeIrqBinding (splitOneOf ":/" $ algorithm op) (firstcore op)
-        irq  = getInterrupts dev msi
+        alg  = makeIrqBinding (splitOneOf ":/" $ fromJust (algorithm op)) (firstcore op)
+        irq  = getInterruptsByDevice dev msi
         core = mkBinding dev (exclude op) start alg msi
     lift $ do
         putStrLn $ "Setting binding for device " ++ dev ++
@@ -143,21 +150,36 @@ makeBinding dev = do
         mapM_ setIrqAffinity $ zip irq core
     put (op, last core + 1)
 
-
--- show current binding:
+-- show current binding of a given device:
 --
 
 showBinding :: String -> BindStateT IO ()
 showBinding dev = do
     (op,_) <- get
     let msi = msitype op
-        irq = getInterrupts dev msi
+        irq = getInterruptsByDevice dev msi
     lift $ do
         putStrLn $ "Binding for device " ++ dev ++
             case msi of { Nothing -> ":"; Just None -> "(none):";  _ -> " (" ++ show (fromJust msi) ++ "):" }
         when (null irq) $ error $ "PFQ: irq vector not found for dev " ++ dev ++ "!"
         forM_ irq $ \n ->
             getIrqAffinity n >>= \cs -> putStrLn $ "   irq " ++ show n ++ " -> core " ++ show cs
+
+
+-- show IRQ per core:
+--
+
+showIRQ :: String -> BindStateT IO ()
+showIRQ core = do   
+    (op,_) <- get
+    let irq = getInterrupts
+    lift $ do
+        putStrLn $ "Core " ++ core ++ ":"
+        mat <- forM irq $ \n -> 
+            getIrqAffinity n >>= \l -> if read core `elem` l 
+                                                then return $ Just (n, l)
+                                                else return Nothing
+        putStrLn $ "  irq -> " ++ unwords ((map (show . fst) . catMaybes) mat)
 
 
 -- set irq affinity for the given (irq,core) pair
@@ -172,7 +194,7 @@ setIrqAffinity (irq, core) = do
 
 getIrqAffinity :: Int -> IO [Int]
 getIrqAffinity irq =
-    liftM (getCpusListFromMask . readMask) $ readFile ("/proc/irq/" ++ show irq ++ "/smp_affinity")
+    (getCpusListFromMask . readMask) <$> readFile ("/proc/irq/" ++ show irq ++ "/smp_affinity")
 
 
 intersperseEvery n x xs = zip xs [1 .. l] >>= ins
@@ -223,9 +245,15 @@ getNumberOfQueues dev msi = unsafePerformIO $ readFile proc_interrupt >>= \file 
     return $ length $ filter (isInfixOf $ getDeviceName dev msi) $ lines file
 
 
-getInterrupts :: Device -> Maybe MSI -> [Int]
-getInterrupts dev msi = unsafePerformIO $ readFile proc_interrupt >>= \file ->
+getInterruptsByDevice :: Device -> Maybe MSI -> [Int]
+getInterruptsByDevice dev msi = unsafePerformIO $ readFile proc_interrupt >>= \file ->
     return $ map (read . takeWhile (/= ':')) $ filter (isInfixOf $ getDeviceName dev msi) $ lines file
+
+
+{-# NOINLINE getInterrupts #-}
+getInterrupts :: [Int]
+getInterrupts = unsafePerformIO $ readFile proc_interrupt >>= \file ->
+    return $ map fst $ concatMap (reads . takeWhile (/= ':')) $ lines file 
 
 
 {-# NOINLINE getNumberOfPhyCores #-}
