@@ -1210,7 +1210,12 @@ namespace pfq {
         void
         transmit_queue(int queue = 0)
         {
-            if (::setsockopt(data()->fd, PF_Q, Q_SO_TX_QUEUE_XMIT, &queue, sizeof(queue)) == -1)
+            /*
+             * if (::setsockopt(data()->fd, PF_Q, Q_SO_TX_QUEUE_XMIT, &queue, sizeof(queue)) == -1)
+             *     throw system_error(errno, "PFQ: Tx queue");
+             */
+
+            if (ioctl(data()->fd, QIOCTX, queue) == -1)
                 throw system_error(errno, "PFQ: Tx queue");
         }
     };

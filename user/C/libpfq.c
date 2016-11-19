@@ -1794,14 +1794,15 @@ pfq_send_to(pfq_t *q, const void *ptr, size_t len, int ifindex, int qindex, size
 	return ret;
 }
 
+
 int
 pfq_transmit_queue(pfq_t *q, int queue)
 {
-        if (setsockopt(q->fd, PF_Q, Q_SO_TX_QUEUE_XMIT, &queue, sizeof(queue)) == -1)
+        /* if (setsockopt(q->fd, PF_Q, Q_SO_TX_QUEUE_XMIT, &queue, sizeof(queue)) == -1) */
+        if (ioctl(q->fd, QIOCTX, queue) == -1)
 		return Q_ERROR(q, "PFQ: Tx queue");
         return Q_OK(q);
 }
-
 
 size_t
 pfq_mem_size(pfq_t const *q)
