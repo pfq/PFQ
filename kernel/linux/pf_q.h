@@ -41,10 +41,12 @@
 
 #include <linux/filter.h>
 #include <linux/types.h>
+#include <linux/ioctl.h>
 #include <sys/time.h>
 #include <unistd.h>
 #include <stdint.h>
 #include <stddef.h>
+
 
 #define likely(x)	__builtin_expect((x),1)
 #define unlikely(x)     __builtin_expect((x),0)
@@ -54,6 +56,10 @@
 /* PFQ version as in Linux kernel */
 
 #define PF_Q					27   /* pfq socket family */
+
+
+#define	QIOCTX					_IOR('Q', 0, int) /* flush Tx */
+
 
 #define PFQ_VERSION(a,b,c)			(((a) << 16) + ((b) << 8) + (c))
 #define PFQ_MAJOR(a)				((a >> 16) & 0xff)

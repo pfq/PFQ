@@ -32,6 +32,7 @@
 #include <linux/mutex.h>
 #include <linux/rwsem.h>
 #include <linux/socket.h>
+#include <linux/sockios.h>
 #include <linux/types.h>
 #include <linux/skbuff.h>
 #include <linux/highmem.h>
@@ -214,10 +215,31 @@ pfq_poll(struct file *file, struct socket *sock, poll_table * wait)
         return mask;
 }
 
-static
-int pfq_ioctl(struct socket *sock, unsigned int cmd, unsigned long arg)
+static int pfq_ioctl(struct socket *sock, unsigned int cmd, unsigned long arg)
 {
+        struct core_sock *so = pfq_sk(sock->sk);
         switch (cmd) {
+	case QIOCTX:
+	{
+		if (core_sock_get_tx_queue(&so->opt, -1) == NULL) {
+			printk(KERN_INFO "[PFQ|%d] Tx queue: socket not enabled!\n", so->id);
+			return -EPERM;
+		}
+
+		if (likely(arg == 0)) { /* transmit Tx queue */
+			atomic_t stop = {0};
+			tx_res_t tx = pfq_sk_queue_xmit(so, -1, Q_NO_KTHREAD, NUMA_NO_NODE, &stop);
+
+			sparse_add(so->stats, sent, tx.ok);
+			sparse_add(so->stats, fail, tx.fail);
+			sparse_add(global->percpu_stats, sent, tx.ok);
+			sparse_add(global->percpu_stats, fail, tx.fail);
+			return 0;
+		}
+
+		printk(KERN_INFO "[PFQ|%d] QIOCTX queue: bad argument %lu!\n", so->id, arg);
+		return 0;
+	}
 #ifdef CONFIG_INET
         case SIOCGIFFLAGS:
         case SIOCSIFFLAGS:
@@ -341,7 +363,7 @@ static struct proto_ops pfq_ops =
         .poll       = pfq_poll,
         .setsockopt = core_setsockopt,
         .getsockopt = core_getsockopt,
-        .ioctl      = pfq_ioctl,
+        .ioctl	    = pfq_ioctl,
         .recvmsg    = sock_no_recvmsg,
         .sendmsg    = sock_no_sendmsg
 };
