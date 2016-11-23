@@ -64,8 +64,10 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 	pool = per_cpu_ptr(global->percpu_pool, cpu);
 
 	if (unlikely(core_sock_get_socket_count() == 0)) {
-		sparse_inc(global->percpu_mem_stats, os_free);
-		pfq_kfree_skb_pool(skb, pool->rx_pool);
+		if (skb) {
+			sparse_inc(global->percpu_mem_stats, os_free);
+			pfq_kfree_skb_pool(skb, pool->rx_pool);
+		}
 		return 0;
 	}
 
@@ -119,9 +121,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 	}
 	else {
                 if (GC_size(data->GC) == 0)
-		{
 			return 0;
-		}
 	}
 
 	return core_process_batch( data
