@@ -24,6 +24,7 @@
 #ifndef Q_CORE_PERCPU_H
 #define Q_CORE_PERCPU_H
 
+#include <core/spsc_fifo.h>
 #include <core/global.h>
 #include <core/define.h>
 #include <core/GC.h>
@@ -38,6 +39,14 @@ int  core_percpu_alloc(void);
 void core_percpu_free(void);
 
 
+struct core_percpu_queue
+{
+	struct core_spsc_fifo rx_fifo;
+
+} ____cacheline_aligned;
+
+
+
 struct core_percpu_sock
 {
         unsigned long           eligible_mask;
@@ -45,6 +54,7 @@ struct core_percpu_sock
         int                     cnt;
 
 } ____cacheline_aligned;
+
 
 
 struct core_percpu_data

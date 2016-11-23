@@ -54,18 +54,20 @@ int
 pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 {
 	struct core_percpu_data * data;
+	struct pfq_percpu_pool * pool;
 	int cpu;
 
 	/* if no socket is open drop the packet */
 
-	if (unlikely(core_sock_get_socket_count() == 0)) {
-		sparse_inc(global->percpu_mem_stats, os_free);
-		kfree_skb(skb);
-		return 0;
-	}
-
         cpu = smp_processor_id();
 	data = per_cpu_ptr(global->percpu_data, cpu);
+	pool = per_cpu_ptr(global->percpu_pool, cpu);
+
+	if (unlikely(core_sock_get_socket_count() == 0)) {
+		sparse_inc(global->percpu_mem_stats, os_free);
+		pfq_kfree_skb_pool(skb, pool->rx_pool);
+		return 0;
+	}
 
 	if (likely(skb))
 	{
@@ -101,7 +103,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 				printk(KERN_INFO "[PFQ] GC: memory exhausted!\n");
 			__sparse_inc(global->percpu_stats, lost, cpu);
 			__sparse_inc(global->percpu_mem_stats, os_free, cpu);
-			kfree_skb(skb);
+			pfq_kfree_skb_pool(skb, pool->rx_pool);
 			return 0;
 		}
 
@@ -122,10 +124,11 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 		}
 	}
 
-	return core_process_batch(data,
-				 per_cpu_ptr(global->percpu_sock, cpu),
-				 per_cpu_ptr(global->percpu_pool, cpu),
-				 data->GC, cpu);
+	return core_process_batch( data
+				 , per_cpu_ptr(global->percpu_sock, cpu)
+				 , pool
+				 , data->GC
+				 , cpu);
 }
 
 
@@ -498,7 +501,7 @@ pfq_sk_queue_xmit(struct core_sock *so,
 	/* enable skb_pool for Tx threads */
 
 	pool = this_cpu_ptr(global->percpu_pool);
-	ctx.skb_pool = likely(atomic_read(&pool->enable)) ? &pool->tx_pool : NULL;
+	ctx.skb_pool = likely(atomic_read(&pool->enable)) ? pool->tx_pool : NULL;
 
 	/* lock the Tx pool */
 

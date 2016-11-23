@@ -344,7 +344,7 @@ int core_process_batch(struct core_percpu_data *data,
 			__sparse_inc(global->percpu_stats, kern, cpu);
 		}
 		else {
-			qbuff_free(buff, &pool->rx_pool);
+			qbuff_free(buff, pool->rx_pool);
 		}
 	}
 

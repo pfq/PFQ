@@ -28,72 +28,46 @@
 #include <linux/skbuff.h>
 #include <pragma/diagnostic_pop>
 
+#include <core/spsc_fifo.h>
 #include <core/global.h>
 #include <core/stats.h>
 
 
-struct pfq_skb_pool
-{
-	struct sk_buff ** skbs;
-	size_t size;
-	size_t p_idx;
-	size_t c_idx;
-};
+typedef struct core_spsc_fifo pfq_skb_pool_t;
 
 
-extern void	pfq_skb_pool_enable(bool value);
 extern int	pfq_skb_pool_init_all(void);
 extern int	pfq_skb_pool_free_all(void);
-extern int	pfq_skb_pool_flush_all(void);
-extern int	pfq_skb_pool_init (struct pfq_skb_pool *pool, size_t size);
-extern size_t	pfq_skb_pool_free (struct pfq_skb_pool *pool);
-extern size_t	pfq_skb_pool_flush(struct pfq_skb_pool *pool);
+
+extern void	pfq_skb_pool_toggle(bool);
 
 extern struct	core_pool_stat pfq_get_skb_pool_stats(void);
 
 
+
 static inline
-struct sk_buff *pfq_skb_pool_pop(struct pfq_skb_pool *pool)
+void pfq_skb_pool_enable(void)
 {
-	if (likely(pool->skbs)) {
+	pfq_skb_pool_toggle(true);
+}
 
-		struct sk_buff *skb = __atomic_load_n(&pool->skbs[pool->c_idx], __ATOMIC_RELAXED);
-		if (likely(skb)) {
-			__atomic_store_n(&pool->skbs[pool->c_idx], NULL, __ATOMIC_RELAXED);
-		}
-
-		if (++pool->c_idx >= pool->size)
-			pool->c_idx = 0;
-
-		return skb;
-	}
-	return NULL;
+static inline
+void pfq_skb_pool_disable(void)
+{
+	pfq_skb_pool_toggle(false);
 }
 
 
 static inline
-bool pfq_skb_pool_push(struct pfq_skb_pool *pool, struct sk_buff *nskb)
+struct sk_buff *pfq_skb_pool_pop(pfq_skb_pool_t *pool)
 {
-	bool ret = false;
-	if (likely(pool->skbs)) {
+	return core_spsc_pop(pool);
+}
 
-		struct sk_buff *skb = __atomic_load_n(&pool->skbs[pool->p_idx], __ATOMIC_RELAXED);
-		if (likely(!skb)) {
-			__atomic_store_n(&pool->skbs[pool->p_idx], nskb, __ATOMIC_RELAXED);
-			ret = true;
-		}
-		else {
-			kfree_skb(nskb);
-		}
-
-		if (++pool->p_idx >= pool->size)
-			pool->p_idx = 0;
-
-	} else {
-		kfree_skb(nskb);
-	}
-
-	return ret;
+static inline
+bool pfq_skb_pool_push(pfq_skb_pool_t *pool, struct sk_buff *skb)
+{
+	return core_spsc_push(pool, skb);
 }
 
 #endif /* PFQ_SKBUFF_POOL_H */

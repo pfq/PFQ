@@ -55,7 +55,7 @@ extern size_t pfq_sk_queue_recv(struct core_sock_opt *opt,
 
 struct pfq_mbuff_xmit_context
 {
-	struct pfq_skb_pool	       *skb_pool;
+	pfq_skb_pool_t		       *skb_pool;
 	struct net		       *net;
 	ktime_t			        now;
 	unsigned long			jiffies;

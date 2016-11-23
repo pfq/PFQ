@@ -69,11 +69,12 @@ struct core_global_data
 	struct core_group groups[Q_CORE_MAX_GID];
 	struct mutex	  groups_lock;
 
-	struct core_kernel_stats __percpu   * percpu_stats;
-	struct core_memory_stats __percpu   * percpu_mem_stats;
-	struct core_percpu_data __percpu    * percpu_data;
-	struct core_percpu_sock __percpu    * percpu_sock;
-	struct pfq_percpu_pool __percpu     * percpu_pool;
+	struct core_kernel_stats	__percpu   * percpu_stats;
+	struct core_memory_stats	__percpu   * percpu_mem_stats;
+	struct core_percpu_data		__percpu   * percpu_data;
+	struct core_percpu_sock		__percpu   * percpu_sock;
+	struct core_percpu_queue	__percpu   * percpu_queue;
+	struct pfq_percpu_pool		__percpu   * percpu_pool;
 
 	struct symtable	 functions;
 	struct rw_semaphore symtable_sem;

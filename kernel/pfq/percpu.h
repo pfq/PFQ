@@ -36,8 +36,8 @@ struct pfq_percpu_pool
 {
         atomic_t                enable;
         struct spinlock		tx_pool_lock;
-	struct pfq_skb_pool	tx_pool;
-        struct pfq_skb_pool	rx_pool;
+	pfq_skb_pool_t		*tx_pool;
+        pfq_skb_pool_t		*rx_pool;
 
 } ____cacheline_aligned;
 

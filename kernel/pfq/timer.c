@@ -33,6 +33,7 @@ static void pfq_timer(unsigned long cpu)
 
 	pfq_receive(NULL, NULL, 0);
 	data = per_cpu_ptr(global->percpu_data, cpu);
+
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 31) || LINUX_VERSION_CODE >= KERNEL_VERSION(4, 8, 0) 
 	mod_timer(&data->timer, jiffies + msecs_to_jiffies(100));
 #else

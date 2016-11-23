@@ -108,6 +108,8 @@ pfq_packet_rcv
 #endif
     )
 {
+	struct pfq_percpu_pool * pool;
+
 	if (skb->pkt_type == PACKET_LOOPBACK)
 		goto out;
 
@@ -136,8 +138,8 @@ pfq_packet_rcv
 
         return pfq_receive(NULL, skb, 0);
 out:
-	sparse_inc(global->percpu_mem_stats, os_free);
-	kfree_skb(skb);
+	pool = per_cpu_ptr(global->percpu_pool, smp_processor_id());
+	pfq_kfree_skb_pool(skb, pool->rx_pool);
 	return 0;
 }
 
@@ -639,7 +641,7 @@ static void __exit pfq_exit_module(void)
 	pfq_stop_all_tx_threads();
 
 #ifdef PFQ_USE_SKB_POOL
-        pfq_skb_pool_enable(false);
+        pfq_skb_pool_enable();
 #endif
 	/* unregister netdevice notifier */
         unregister_netdevice_notifier(&pfq_netdev_notifier_block);
@@ -663,11 +665,11 @@ static void __exit pfq_exit_module(void)
         total += pfq_percpu_destruct();
 
 #ifdef PFQ_USE_SKB_POOL
-        total += pfq_skb_pool_free_all();
+        pfq_skb_pool_free_all();
 	sparse_add(global->percpu_mem_stats, pool_pop, total);
 #endif
         if (total)
-                printk(KERN_INFO "[PFQ] %d skbuff freed.\n", total);
+                printk(KERN_INFO "[PFQ] %d additional sk_buff freed (GC)!\n", total);
 
         /* free per-cpu data */
         core_percpu_free();

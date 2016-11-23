@@ -29,133 +29,63 @@
 #include <pfq/printk.h>
 
 
-void pfq_skb_pool_enable(bool value)
-{
-	int cpu;
+/* private */
 
-	smp_wmb();
-	for_each_possible_cpu(cpu)
-	{
-		struct pfq_percpu_pool *pool = per_cpu_ptr(global->percpu_pool, cpu);
-		if (pool)
-			atomic_set(&pool->enable, value);
-	}
-	smp_wmb();
-}
-
-
-int pfq_skb_pool_init_all(void)
-{
-	int cpu;
-	for_each_possible_cpu(cpu)
-	{
-		struct pfq_percpu_pool *pool = per_cpu_ptr(global->percpu_pool, cpu);
-		if (pool) {
-			spin_lock_init(&pool->tx_pool_lock);
-			if (pfq_skb_pool_init(&pool->tx_pool, global->skb_pool_size) != 0)
-				return -ENOMEM;
-			if (pfq_skb_pool_init(&pool->rx_pool, global->skb_pool_size) != 0)
-				return -ENOMEM;
-		}
-	}
-
-	return 0;
-}
-
-
-int pfq_skb_pool_free_all(void)
-{
-	int cpu, total = 0;
-
-	printk(KERN_INFO "[PFQ] flushing skbuff memory pool...\n");
-	for_each_possible_cpu(cpu)
-	{
-		struct pfq_percpu_pool *pool = per_cpu_ptr(global->percpu_pool, cpu);
-		if (pool) {
-			total += pfq_skb_pool_free(&pool->rx_pool);
-			spin_lock(&pool->tx_pool_lock);
-			total += pfq_skb_pool_free(&pool->tx_pool);
-			spin_unlock(&pool->tx_pool_lock);
-		}
-	}
-
-	return total;
-}
-
-
-int pfq_skb_pool_flush_all(void)
-{
-	int cpu, total = 0;
-
-	printk(KERN_INFO "[PFQ] flushing skbuff memory pool...\n");
-	for_each_possible_cpu(cpu)
-	{
-		struct pfq_percpu_pool *pool = per_cpu_ptr(global->percpu_pool, cpu);
-		if (pool) {
-			total += pfq_skb_pool_flush(&pool->rx_pool);
-
-			spin_lock(&pool->tx_pool_lock);
-			total += pfq_skb_pool_flush(&pool->tx_pool);
-			spin_unlock(&pool->tx_pool_lock);
-		}
-	}
-
-	return total;
-}
-
-
-int pfq_skb_pool_init (struct pfq_skb_pool *pool, size_t size)
-{
-	if (pool) {
-		if (size > 0) {
-			pool->skbs = kzalloc(sizeof(struct skb *) * size, GFP_KERNEL);
-			if (pool->skbs == NULL) {
-				printk(KERN_ERR "[PFQ] pfq_skb_pool_init: out of memory!\n");
-				return -ENOMEM;
-			}
-		}
-		else {
-			pool->skbs = NULL;
-		}
-
-		pool->size  = size;
-		pool->p_idx = 0;
-		pool->c_idx = 0;
-	}
-	return 0;
-}
-
-
+static
 size_t
-pfq_skb_pool_flush(struct pfq_skb_pool *pool)
-{
-	size_t n, total = 0;
-	if (pool) {
-		for(n = 0; n < pool->size; n++)
-		{
-			if (pool->skbs[n]) {
-				total++;
-				sparse_inc(global->percpu_mem_stats, os_free);
-				kfree_skb(pool->skbs[n]);
-				pool->skbs[n] = NULL;
-			}
-		}
-
-		pool->p_idx = 0;
-		pool->c_idx = 0;
-	}
-	return total;
-}
-
-
-size_t pfq_skb_pool_free(struct pfq_skb_pool *pool)
+pfq_skb_pool_flush(pfq_skb_pool_t *pool)
 {
 	size_t total = 0;
-	if (pool) {
-		total = pfq_skb_pool_flush(pool);
-		kfree(pool->skbs);
-		pool->skbs = NULL;
-		pool->size = 0;
+	struct sk_buff *skb;
+	while ((skb = pfq_skb_pool_pop(pool)))
+	{
+		sparse_inc(global->percpu_mem_stats, os_free);
+		kfree_skb(skb);
+		total++;
+	}
+	return total;
+}
+
+
+static
+int pfq_skb_pool_init (pfq_skb_pool_t **pool, size_t size, int cpu)
+{
+	int total = 0;
+	if (!*pool) {
+
+		struct sk_buff *skb;
+
+		*pool = core_spsc_init(size);
+		if (!*pool) {
+			printk(KERN_ERR "[PFQ] pfq_skb_pool_init: out of memory!\n");
+			return -ENOMEM;
+		}
+
+		for(; total < size; total++)
+		{
+			skb = __alloc_skb(2048, GFP_KERNEL, 1, cpu_to_node(cpu));
+			if (!skb) {
+				return total;
+			}
+
+			skb->pkt_type = PACKET_USER;
+			pfq_skb_pool_push(*pool, skb);
+			sparse_inc(global->percpu_mem_stats, os_alloc);
+		}
+	}
+
+	return size;
+}
+
+
+
+size_t pfq_skb_pool_free(pfq_skb_pool_t **pool)
+{
+	size_t total = 0;
+	if (*pool) {
+		total = pfq_skb_pool_flush(*pool);
+		kfree(*pool);
+		*pool = NULL;
 	}
 	return total;
 }
@@ -183,5 +113,68 @@ pfq_get_skb_pool_stats(void)
                 sparse_read(global->percpu_mem_stats, err_memory),
 	};
 	return ret;
+}
+
+/* public */
+
+int pfq_skb_pool_init_all(void)
+{
+	int cpu, total = 0;
+	for_each_present_cpu(cpu)
+	{
+		struct pfq_percpu_pool *pool = per_cpu_ptr(global->percpu_pool, cpu);
+		if (pool) {
+                        int n;
+
+			spin_lock_init(&pool->tx_pool_lock);
+
+			if ((n = pfq_skb_pool_init(&pool->tx_pool, global->skb_pool_size, cpu)) < 0)
+				return -ENOMEM;
+			total += n;
+
+			if ((n = pfq_skb_pool_init(&pool->rx_pool, global->skb_pool_size, cpu)) < 0)
+				return -ENOMEM;
+			total += n;
+		}
+	}
+
+	printk(KERN_INFO "[PFQ] %d sk_buff allocated!\n", total);
+
+	return 0;
+}
+
+
+int pfq_skb_pool_free_all(void)
+{
+	int cpu, total = 0;
+
+	for_each_present_cpu(cpu)
+	{
+		struct pfq_percpu_pool *pool = per_cpu_ptr(global->percpu_pool, cpu);
+		if (pool) {
+			total += pfq_skb_pool_free(&pool->rx_pool);
+			spin_lock(&pool->tx_pool_lock);
+			total += pfq_skb_pool_free(&pool->tx_pool);
+			spin_unlock(&pool->tx_pool_lock);
+		}
+	}
+
+	printk(KERN_INFO "[PFQ] %d sk_buff freed!\n", total);
+	return total;
+}
+
+
+void pfq_skb_pool_toggle(bool value)
+{
+	int cpu;
+
+	smp_wmb();
+	for_each_present_cpu(cpu)
+	{
+		struct pfq_percpu_pool *pool = per_cpu_ptr(global->percpu_pool, cpu);
+		if (pool)
+			atomic_set(&pool->enable, value);
+	}
+	smp_wmb();
 }
 

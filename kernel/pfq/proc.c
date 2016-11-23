@@ -201,8 +201,6 @@ static int pfq_proc_memory_open(struct inode *inode, struct file *file)
 static ssize_t
 pfq_proc_memory_reset(struct file *file, const char __user *buf, size_t length, loff_t *ppos)
 {
-	core_memory_stats_reset(global->percpu_mem_stats);
-	pfq_skb_pool_flush_all();
 	return 1;
 }
 

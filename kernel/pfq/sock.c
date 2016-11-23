@@ -28,7 +28,7 @@ void
 pfq_sock_init_once(void)
 {
 #ifdef PFQ_USE_SKB_POOL
-	pfq_skb_pool_enable(true);
+	pfq_skb_pool_enable();
 #endif
 }
 
@@ -37,7 +37,7 @@ void
 pfq_sock_fini_once(void)
 {
 #ifdef PFQ_USE_SKB_POOL
-	pfq_skb_pool_enable(false);
+	pfq_skb_pool_disable();
 #endif
 }
 
