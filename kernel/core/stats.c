@@ -44,7 +44,7 @@ void core_kernel_stats_read(struct core_kernel_stats __percpu *kstats, struct pf
 void core_kernel_stats_reset(struct core_kernel_stats __percpu *stats)
 {
 	int i;
-	for_each_possible_cpu(i)
+	for_each_present_cpu(i)
 	{
 		struct core_kernel_stats * stat = per_cpu_ptr(stats, i);
 
@@ -63,7 +63,7 @@ void core_group_counters_reset(struct core_group_counters __percpu *counters)
 {
 
 	int i, n;
-	for_each_possible_cpu(i)
+	for_each_present_cpu(i)
 	{
 		struct core_group_counters * ctr = per_cpu_ptr(counters, i);
 		for(n = 0; n < Q_MAX_COUNTERS; n++)
@@ -75,7 +75,7 @@ void core_group_counters_reset(struct core_group_counters __percpu *counters)
 void core_memory_stats_reset(struct core_memory_stats __percpu *stats)
 {
 	int i;
-	for_each_possible_cpu(i)
+	for_each_present_cpu(i)
 	{
 		struct core_memory_stats * stat = per_cpu_ptr(stats, i);
 

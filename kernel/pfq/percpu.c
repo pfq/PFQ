@@ -39,7 +39,7 @@ int pfq_percpu_init(void)
 		return -ENOMEM;
 	}
 
-	for_each_possible_cpu(cpu)
+	for_each_present_cpu(cpu)
 	{
 		if (n == Q_CORE_MAX_CPU) {
 			printk(KERN_ERR "[PFQ] percpu: maximum number of cpu reached (%d)!\n", Q_CORE_MAX_CPU);
@@ -56,7 +56,7 @@ int pfq_percpu_init(void)
 
 
 	n = 0;
-        for_each_possible_cpu(cpu)
+        for_each_present_cpu(cpu)
         {
                 struct core_percpu_data *data;
 
@@ -93,7 +93,7 @@ int pfq_percpu_destruct(void)
 
         /* destroy prefetch queues (of each cpu) */
 
-        for_each_possible_cpu(cpu) {
+        for_each_present_cpu(cpu) {
 
 		struct core_percpu_data *data;
 		struct qbuff *buff;

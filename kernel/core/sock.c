@@ -131,7 +131,7 @@ int core_sock_init(struct core_sock *so, pfq_id_t id)
 	if (!so->stats)
 		return -ENOMEM;
 
-	for_each_possible_cpu(i)
+	for_each_present_cpu(i)
 	{
 		core_sock_stats_t * stat = per_cpu_ptr(so->stats, i);
 

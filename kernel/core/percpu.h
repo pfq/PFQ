@@ -63,7 +63,7 @@ core_invalidate_percpu_eligible_mask(pfq_id_t id)
 	int cpu;
 
 	(void)id;
-	for_each_possible_cpu(cpu)
+	for_each_present_cpu(cpu)
 	{
 		struct core_percpu_sock * sock = per_cpu_ptr(global->percpu_sock, cpu);
 		sock->eligible_mask = 0;

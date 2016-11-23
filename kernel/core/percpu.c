@@ -81,7 +81,7 @@ void core_percpu_free(void)
         struct core_percpu_data *data;
 	int cpu;
 
-	for_each_possible_cpu(cpu) {
+	for_each_present_cpu(cpu) {
                 data = per_cpu_ptr(global->percpu_data, cpu);
 		kfree(data->GC);
 	}
