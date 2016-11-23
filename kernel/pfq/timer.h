@@ -30,9 +30,8 @@
 #include <pragma/diagnostic_pop>
 
 
-extern void pfq_setup_timer(struct timer_list *timer, unsigned long cpu);
-extern void pfq_del_timer(struct timer_list *timer);
-
+extern void pfq_timer_init(void);
+extern void pfq_timer_fini(void);
 
 #endif /* PFQ_TIMER_H */
 

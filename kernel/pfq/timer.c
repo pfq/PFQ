@@ -34,7 +34,7 @@ static void pfq_timer(unsigned long cpu)
 	pfq_receive(NULL, NULL, 0);
 	data = per_cpu_ptr(global->percpu_data, cpu);
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 31) || LINUX_VERSION_CODE >= KERNEL_VERSION(4, 8, 0) 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 31) || LINUX_VERSION_CODE >= KERNEL_VERSION(4, 8, 0)
 	mod_timer(&data->timer, jiffies + msecs_to_jiffies(100));
 #else
 	mod_timer_pinned(&data->timer, jiffies + msecs_to_jiffies(100));
@@ -42,6 +42,7 @@ static void pfq_timer(unsigned long cpu)
 }
 
 
+static
 void pfq_setup_timer(struct timer_list *timer, unsigned long cpu)
 {
 	init_timer_deferrable(timer);
@@ -54,9 +55,32 @@ void pfq_setup_timer(struct timer_list *timer, unsigned long cpu)
 }
 
 
-void pfq_del_timer(struct timer_list *timer)
+
+void pfq_timer_init(void)
 {
-	del_timer(timer);
+	int cpu;
+	for_each_present_cpu(cpu)
+	{
+                struct core_percpu_data *data;
+		preempt_disable();
+		data = per_cpu_ptr(global->percpu_data, cpu);
+        	pfq_setup_timer(&data->timer, cpu);
+		preempt_enable();
+	}
+}
+
+
+void pfq_timer_fini(void)
+{
+	int cpu;
+	for_each_present_cpu(cpu)
+	{
+                struct core_percpu_data *data;
+		preempt_disable();
+		data = per_cpu_ptr(global->percpu_data, cpu);
+        	del_timer(&data->timer);
+		preempt_enable();
+	}
 }
 
 

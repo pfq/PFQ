@@ -606,6 +606,10 @@ static int __init pfq_init_module(void)
 			BUG_ON(dev->ifindex >= Q_CORE_MAX_DEVICE);
 	}
 
+	/* start a timer */
+
+	pfq_timer_init();
+
         printk(KERN_INFO "[PFQ] version %d.%d.%d ready!\n",
                PFQ_MAJOR(PFQ_VERSION_CODE),
                PFQ_MINOR(PFQ_VERSION_CODE),
@@ -636,6 +640,10 @@ err:
 static void __exit pfq_exit_module(void)
 {
         int total = 0;
+
+	/* stop the timer */
+
+	pfq_timer_fini();
 
 	/* stop Tx threads */
 	pfq_stop_all_tx_threads();
