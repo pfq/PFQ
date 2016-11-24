@@ -649,7 +649,7 @@ static void __exit pfq_exit_module(void)
 	pfq_stop_all_tx_threads();
 
 #ifdef PFQ_USE_SKB_POOL
-        pfq_skb_pool_enable();
+        pfq_skb_pool_disable();
 #endif
 	/* unregister netdevice notifier */
         unregister_netdevice_notifier(&pfq_netdev_notifier_block);
