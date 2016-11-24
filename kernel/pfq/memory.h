@@ -42,6 +42,8 @@
 #include <pfq/percpu.h>
 
 
+#define PFQ_SKB_DEFAULT_SIZE 2048
+
 extern struct sk_buff * __pfq_alloc_skb(unsigned int size, gfp_t priority, int fclone, int node);
 extern struct sk_buff * pfq_dev_alloc_skb(unsigned int length);
 extern struct sk_buff * __pfq_netdev_alloc_skb(struct net_device *dev, unsigned int length, gfp_t gfp);
@@ -186,27 +188,18 @@ struct sk_buff *
 ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, pfq_skb_pool_t *skb_pool)
 {
 #ifdef PFQ_USE_SKB_POOL
-	struct sk_buff *skb = pfq_skb_pool_pop(skb_pool);
-	if (likely(skb != NULL)) {
 
-		sparse_inc(global->percpu_mem_stats, pool_pop);
-		return skb;
+	if (size < PFQ_SKB_DEFAULT_SIZE) {
 
-#if 0
-		if (likely(pfq_skb_is_recycleable(skb, size))) {
-			sparse_inc(global->percpu_mem_stats, pool_alloc);
-			return pfq_skb_recycle(skb);
-		} else {
-			sparse_inc(global->percpu_mem_stats, err_norecyl);
-			sparse_inc(global->percpu_mem_stats, os_free);
-			kfree_skb(skb);
+		struct sk_buff *skb = pfq_skb_pool_pop(skb_pool);
+
+		if (likely(skb != NULL)) {
+			sparse_inc(global->percpu_mem_stats, pool_pop);
+			return skb;
 		}
-#endif
+	}
 
-	}
-	else {
-		sparse_inc(global->percpu_mem_stats, err_pop);
-	}
+	sparse_inc(global->percpu_mem_stats, err_pop);
 #endif
 	sparse_inc(global->percpu_mem_stats, os_alloc);
 	return  __alloc_skb(size, priority, fclone, node);

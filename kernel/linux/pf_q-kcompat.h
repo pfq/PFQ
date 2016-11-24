@@ -31,7 +31,7 @@ extern  int pfq_netif_rx(struct sk_buff *);
 extern  int pfq_netif_receive_skb(struct sk_buff *);
 extern  gro_result_t pfq_gro_receive(struct napi_struct *, struct sk_buff *);
 
-extern struct sk_buff * __pfq_alloc_skb(unsigned int size, gfp_t priority, int fclone, int node);
+extern struct sk_buff * __pfq_alloc_skb(unsigned int len, gfp_t priority, int fclone, int node);
 extern struct sk_buff * pfq_dev_alloc_skb(unsigned int length);
 extern struct sk_buff * __pfq_netdev_alloc_skb(struct net_device *dev, unsigned int length, gfp_t gfp);
 
@@ -64,32 +64,39 @@ pfq_netdev_alloc_skb_ip_align(struct net_device *dev, unsigned int length)
 
 static inline
 struct sk_buff *
-pfq_alloc_skb(unsigned int size, gfp_t priority)
+pfq_alloc_skb(unsigned int len, gfp_t priority)
 {
-        return __pfq_alloc_skb(size, priority, 0, NUMA_NO_NODE);
+        return __pfq_alloc_skb(len, priority, 0, NUMA_NO_NODE);
 }
 
 
 static inline
 struct sk_buff *
-pfq_alloc_skb_fclone(unsigned int size, gfp_t priority)
+pfq_alloc_skb_fclone(unsigned int len, gfp_t priority)
 {
-        return __pfq_alloc_skb(size, priority, 1, NUMA_NO_NODE);
+        return __pfq_alloc_skb(len, priority, 1, NUMA_NO_NODE);
 }
 
 #define netif_receive_skb(_skb)                         pfq_netif_receive_skb(_skb)
 #define netif_rx(_skb)                                  pfq_netif_rx(_skb)
 #define napi_gro_receive(_napi, _skb)                   pfq_gro_receive(_napi, _skb)
 
+#define __alloc_skb(len,mask,fclone,node)               __pfq_alloc_skb(len,mask,fclone,node)
+#define alloc_skb(len, mask)				pfq_alloc_skb(len, mask)
+#define alloc_skb_fclone(len,mask)			pfq_alloc_skb_fclone(len, mask)
+
 #define netdev_alloc_skb(dev,len)			pfq_netdev_alloc_skb(dev,len)
+#define __netdev_alloc_skb(dev,len,gfp)			__pfq_netdev_alloc_skb(dev,len,gfp)
+
 #define __netdev_alloc_skb_ip_align(dev,len, gfp)	__pfq_netdev_alloc_skb_ip_align(dev,len, gfp)
 #define   netdev_alloc_skb_ip_align(dev,len)		pfq_netdev_alloc_skb_ip_align(dev,len)
-#define alloc_skb(size, prio)				pfq_alloc_skb(size, prio)
-#define alloc_skb_fclone(size,prio)			pfq_alloc_skb_fclone(size, prio)
 
-#define __alloc_skb(size,prio,fclone,node)              __pfq_alloc_skb(size,prio,fclone,node)
-#define __netdev_alloc_skb(dev,len,gfp)			__pfq_netdev_alloc_skb(dev,len,gfp)
 #define dev_alloc_skb(len)				pfq_dev_alloc_skb(len)
+#define __dev_alloc_skb(len)				pfq_dev_alloc_skb(len)
+
+#define __napi_alloc_skb(napi, len, mask)		pfq_alloc_skb(len, mask)
+#define napi_alloc_skb(napi, len)			pfq_alloc_skb(len, GFP_ATOMIC)
+
 
 
 #endif /* PF_Q_KCOMPAT_H */

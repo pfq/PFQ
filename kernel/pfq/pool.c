@@ -24,6 +24,7 @@
 #include <core/percpu.h>
 #include <core/global.h>
 
+#include <pfq/memory.h>
 #include <pfq/percpu.h>
 #include <pfq/pool.h>
 #include <pfq/printk.h>
@@ -63,7 +64,7 @@ int pfq_skb_pool_init (pfq_skb_pool_t **pool, size_t size, int cpu)
 
 		for(; total < size; total++)
 		{
-			skb = __alloc_skb(2048, GFP_KERNEL, 1, cpu_to_node(cpu));
+			skb = __alloc_skb(PFQ_SKB_DEFAULT_SIZE, GFP_KERNEL, 1, cpu_to_node(cpu));
 			if (!skb) {
 				return total;
 			}
