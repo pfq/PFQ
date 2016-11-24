@@ -191,15 +191,23 @@ ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, 
 
 	if (size < PFQ_SKB_DEFAULT_SIZE) {
 
-		struct sk_buff *skb = pfq_skb_pool_pop(skb_pool);
+		struct sk_buff *skb = pfq_skb_pool_peek(skb_pool);
 
 		if (likely(skb != NULL)) {
-			sparse_inc(global->percpu_mem_stats, pool_pop);
-			return skb;
+			if(!skb_shared(skb)) {
+				sparse_inc(global->percpu_mem_stats, pool_pop);
+				pfq_skb_pool_discard(skb_pool);
+				return skb;
+			}
+			else {
+				sparse_inc(global->percpu_mem_stats, err_shared);
+			}
+		}
+		else {
+			sparse_inc(global->percpu_mem_stats, err_empty);
 		}
 	}
 
-	sparse_inc(global->percpu_mem_stats, err_pop);
 #endif
 	sparse_inc(global->percpu_mem_stats, os_alloc);
 	return  __alloc_skb(size, priority, fclone, node);
@@ -253,9 +261,13 @@ void pfq_kfree_skb_pool(struct sk_buff *skb, pfq_skb_pool_t *skb_pool)
 #ifdef PFQ_USE_SKB_POOL
 	if (likely(skb_pool)) {
 		if (skb->pkt_type == PACKET_USER) {
-			pfq_skb_pool_push(skb_pool, skb);
-			sparse_inc(global->percpu_mem_stats, pool_push);
-			return;
+			struct pfq_percpu_pool *pool = this_cpu_ptr(global->percpu_pool);
+			if (likely(atomic_read(&pool->enable)))
+			{
+				pfq_skb_pool_push(skb_pool, skb);
+				sparse_inc(global->percpu_mem_stats, pool_push);
+				return;
+			}
 		}
 	}
 #endif
