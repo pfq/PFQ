@@ -1,0 +1,18 @@
+List of kernel API used to allocate socket buffers:
+
+                                                                        sk_buff.h   sk_buff.c
+
+1.  __alloc_skb                                                                         *
+2.  alloc_skb                       ->  __alloc_skb                     *
+3.  alloc_skb_fclone                ->  __alloc_skb                     *
+4.  alloc_skb_with_frags                                                                *
+5.  __alloc_skb_head                                                                    *
+6.  alloc_skb_head                  -> __alloc_skb_head                 *
+7.  __netdev_alloc_skb                                                                  *
+8.  netdev_alloc_skb                -> __netdev_alloc_skb               *
+9.  __dev_alloc_skb                 -> __netdev_alloc_skb               *
+10. dev_alloc_skb                   -> netdev_alloc_skb                 *
+11. __netdev_alloc_skb_ip_align     -> __netdev_alloc_skb               *                                                 
+12. netdev_alloc_skb_ip_align       -> __netdev_alloc_skb_ip_align      *
+13. __napi_alloc_skb                                                                    *
+14. napi_alloc_skb                  -> __napi_alloc_skb                 *
