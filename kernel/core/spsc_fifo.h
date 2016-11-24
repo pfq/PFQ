@@ -93,14 +93,37 @@ void *core_spsc_pop(struct core_spsc_fifo *fifo)
         void *ret;
 
 	if (unlikely(w == r))
-		return false;
+		return NULL;
 
 	ret = fifo->ring[r];
 
 	next = core_spsc_next_index(fifo, r);
 
-	__atomic_store_n(&fifo->tail,next, __ATOMIC_RELEASE);
+	__atomic_store_n(&fifo->tail, next, __ATOMIC_RELEASE);
 	return ret;
+}
+
+
+static inline
+void *core_spsc_peek(struct core_spsc_fifo *fifo)
+{
+        size_t w = __atomic_load_n(&fifo->head, __ATOMIC_ACQUIRE);
+        size_t r = __atomic_load_n(&fifo->tail, __ATOMIC_RELAXED); // only written from pop thread
+
+	if (unlikely(w == r))
+		return NULL;
+
+	return fifo->ring[r];
+}
+
+
+static inline
+void core_spsc_discard(struct core_spsc_fifo *fifo)
+{
+        size_t r = __atomic_load_n(&fifo->tail, __ATOMIC_RELAXED); // only written from pop thread
+	size_t next = core_spsc_next_index(fifo, r);
+
+	__atomic_store_n(&fifo->tail, next, __ATOMIC_RELEASE);
 }
 
 
