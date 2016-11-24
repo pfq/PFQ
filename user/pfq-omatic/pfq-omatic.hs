@@ -33,48 +33,77 @@ import Data.Maybe
 import Data.Function(on)
 import qualified Network.PFQ as Q (version)
 
-pfq_kcompat,proc_cpuinfo :: String
-pfq_symvers :: [String]
 
-proc_cpuinfo    = "/proc/cpuinfo"
-pfq_kcompat     = "/usr/include/linux/pf_q-kcompat.h"
-pfq_symvers     = [ "/lib/modules/" ++ uname_r ++ "/kernel/net/pfq/Module.symvers"
-                  , home_dir ++ "/PFQ/kernel/Module.symvers"
-                  , "/opt/PFQ/kernel/Module.symvers"
-                  ]
+--
+-- Configuration 
+--
+
+procCpuInfo = "/proc/cpuinfo" :: String
+
+pfqKcompat  = "/usr/include/linux/pf_q-kcompat.h" :: String
+
+pfqSymvers  = 
+    [ "/lib/modules/" ++ uname_r ++ "/kernel/net/pfq/Module.symvers"
+    , home_dir ++ "/PFQ/kernel/Module.symvers"
+    , "/opt/PFQ/kernel/Module.symvers"
+    , "/usr/src/PFQ/kernel/Module.symvers"
+    ] :: [String] 
+
+makeFilePatch = unlines 
+    [ ""
+    , "all:"
+    , "\tmake -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules"
+    , "\n"
+    , "clean:"
+    , "\tmake -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean" 
+    ] :: String
 
 
-getMostRecentFile :: [FilePath] -> IO (Maybe FilePath)
-getMostRecentFile xs = do
-    xs' <- filterM doesFileExist xs >>=
-             mapM (\f -> liftM (\m -> (f,m)) $ getModificationTime f) >>= \x ->
-               return $ sortBy (flip compare `on` snd) x
-    return $ listToMaybe (map fst xs')
+--
+-- Builder script
+--
+
+data Option = Option
+    {
+        inKernel :: Bool
+
+    } deriving (Eq, Show)
+
+
+getArguments :: IO (Option, [String])
+getArguments = do
+    args <- getArgs
+    let xs = deleteFirstsBy (==) args ["-ik", "--ik", "--in-kernel"]
+    let ik = length xs /= length args
+    return $ (Option ik, xs)
 
 
 main :: IO ()
 main = do
-    args <- getArgs
+    (opt, args) <- getArguments
     putStrLn $ "[PFQ] pfq-omatic: PFQ v" ++ Q.version
-    generalChecks
+    checkPreconditions
     getRecursiveContents "." [".c"] >>= mapM_ tryPatch
-    symver <- liftM fromJust $ getMostRecentFile pfq_symvers
+    symver <- fromJust <$> getMostRecentFile pfqSymvers
     copyFile symver "Module.symvers"
-    let cmd = "make KBUILD_EXTRA_SYMBOLS=" ++ symver ++ " -j" ++ show getNumberOfPhyCores ++ " " ++ unwords args
+
+    makefile <- if (inKernel opt) 
+                then do patchMakeFile "Makefile"
+                        return "Makefile.ik"
+                else return "Makefile"
+
+    let cmd = "make KBUILD_EXTRA_SYMBOLS=" ++ symver ++ " -j" ++ show getNumberOfPhyCores ++ " -f " ++ makefile ++ " " ++ unwords args
     putStrLn $ "[PFQ] compiling: " ++ cmd ++ "..."
     void $ system cmd
     putStrLn "[PFQ] done."
 
 
-{-# NOINLINE uname_r #-}
-uname_r :: String
-uname_r = unsafePerformIO $
-    head . lines <$> readProcess "/bin/uname" ["-r"] ""
-
-
-{-# NOINLINE home_dir #-}
-home_dir :: String
-home_dir = unsafePerformIO getHomeDirectory
+getMostRecentFile :: [FilePath] -> IO (Maybe FilePath)
+getMostRecentFile xs = do
+    xs' <- filterM doesFileExist xs >>=
+             mapM (\f -> (\m -> (f,m)) <$> getModificationTime f) >>= \x ->
+               return $ sortBy (flip compare `on` snd) x
+    return $ listToMaybe (map fst xs')
 
 
 regexFunCall :: String -> Int -> String
@@ -92,22 +121,29 @@ tryPatch file =
             doesFileExist (file ++ ".omatic") >>= \orig ->
                 if orig
                 then putStrLn $ "[PFQ] " ++ file ++ " is already patched :)"
-                else makePatch file
+                else patchSource file
 
 
-makePatch :: FilePath -> IO ()
-makePatch file = do
+patchSource :: FilePath -> IO ()
+patchSource file = do
     putStrLn $ "[PFQ] patching " ++ file
     src <- readFile file
     renameFile file $ file ++ ".omatic"
-    writeFile file $ "#include " ++ show pfq_kcompat ++ "\n" ++ src
+    writeFile file $ "#include " ++ show pfqKcompat ++ "\n" ++ src
 
 
-generalChecks :: IO ()
-generalChecks = do
-    doesFileExist pfq_kcompat >>= \kc ->
-        unless kc $ error "error: could not locate pfq-kcompat header!"
-    symver <- getMostRecentFile pfq_symvers
+patchMakeFile :: FilePath -> IO ()
+patchMakeFile file = do
+    putStrLn "[PFQ] creating Makefile.ik..." 
+    orig <- readFile file        
+    writeFile (file ++ ".ik") (orig ++ makeFilePatch)
+
+
+checkPreconditions :: IO ()
+checkPreconditions = do
+    doesFileExist pfqKcompat >>= \kc ->
+        unless kc $ error "error: could not locate pfq-kcompat.h header!"
+    symver <- getMostRecentFile pfqSymvers
     unless (isJust symver) $ error "error: could not locate pfq Module.symvers!"
     putStrLn $ "[PFQ] using " ++ fromJust symver ++ " file (most recent)"
     doesFileExist "Makefile"  >>= \mf ->
@@ -115,6 +151,7 @@ generalChecks = do
 
 
 type Ext = String
+
 
 getRecursiveContents :: FilePath -> [Ext] -> IO [FilePath]
 getRecursiveContents topdir ext = do
@@ -132,5 +169,17 @@ getRecursiveContents topdir ext = do
 {-# NOINLINE getNumberOfPhyCores #-}
 getNumberOfPhyCores :: Int
 getNumberOfPhyCores = unsafePerformIO $
-    length . filter (isInfixOf "processor") . lines <$> readFile proc_cpuinfo
+    length . filter (isInfixOf "processor") . lines <$> readFile procCpuInfo
+
+
+{-# NOINLINE uname_r #-}
+uname_r :: String
+uname_r = unsafePerformIO $
+    head . lines <$> readProcess "/bin/uname" ["-r"] ""
+
+
+{-# NOINLINE home_dir #-}
+home_dir :: String
+home_dir = unsafePerformIO getHomeDirectory
+
 
