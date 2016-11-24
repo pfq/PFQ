@@ -65,9 +65,22 @@ struct sk_buff *pfq_skb_pool_pop(pfq_skb_pool_t *pool)
 }
 
 static inline
+struct sk_buff *pfq_skb_pool_peek(pfq_skb_pool_t *pool)
+{
+	return core_spsc_peek(pool);
+}
+
+static inline
+void pfq_skb_pool_discard(pfq_skb_pool_t *pool)
+{
+	core_spsc_discard(pool);
+}
+
+static inline
 bool pfq_skb_pool_push(pfq_skb_pool_t *pool, struct sk_buff *skb)
 {
 	return core_spsc_push(pool, skb);
 }
+
 
 #endif /* PFQ_SKBUFF_POOL_H */
