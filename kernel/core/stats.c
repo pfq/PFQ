@@ -81,17 +81,11 @@ void core_memory_stats_reset(struct core_memory_stats __percpu *stats)
 
 		local_set(&stat->os_alloc,   0);
 		local_set(&stat->os_free,    0);
-		local_set(&stat->pool_alloc, 0);
-		local_set(&stat->pool_free,  0);
 		local_set(&stat->pool_push,  0);
 		local_set(&stat->pool_pop,   0);
-		local_set(&stat->err_norecyl,0);
-		local_set(&stat->err_pop,    0);
-		local_set(&stat->err_push,   0);
-		local_set(&stat->err_intdis, 0);
 		local_set(&stat->err_shared, 0);
-		local_set(&stat->err_cloned, 0);
-		local_set(&stat->err_memory, 0);
+		local_set(&stat->err_empty,  0);
+		local_set(&stat->err_conf,   0);
 	}
 }
 

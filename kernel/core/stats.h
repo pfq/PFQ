@@ -62,17 +62,13 @@ struct core_memory_stats
 {
 	local_t os_alloc;
 	local_t os_free;
-	local_t pool_alloc;
-	local_t pool_free;
+
 	local_t pool_push;
 	local_t pool_pop;
-	local_t err_norecyl;
-	local_t err_pop;
-	local_t err_push;
-	local_t err_intdis;
+
 	local_t err_shared;
-	local_t err_cloned;
-	local_t err_memory;
+	local_t err_empty;
+	local_t err_conf;
 };
 
 
@@ -81,18 +77,12 @@ struct core_pool_stat
 	uint64_t os_alloc;
 	uint64_t os_free;
 
-	uint64_t pool_alloc;
-	uint64_t pool_free;
 	uint64_t pool_push;
 	uint64_t pool_pop;
 
-	uint64_t err_norecyl;
-	uint64_t err_pop;
-	uint64_t err_push;
-	uint64_t err_intdis;
 	uint64_t err_shared;
-	uint64_t err_cloned;
-	uint64_t err_memory;
+	uint64_t err_empty;
+	uint64_t err_conf;
 };
 
 

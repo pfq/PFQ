@@ -100,18 +100,12 @@ pfq_get_skb_pool_stats(void)
 		sparse_read(global->percpu_mem_stats, os_alloc),
 		sparse_read(global->percpu_mem_stats, os_free),
 
-		sparse_read(global->percpu_mem_stats, pool_alloc),
-		sparse_read(global->percpu_mem_stats, pool_free),
 		sparse_read(global->percpu_mem_stats, pool_push),
 		sparse_read(global->percpu_mem_stats, pool_pop),
 
-                sparse_read(global->percpu_mem_stats, err_norecyl),
-                sparse_read(global->percpu_mem_stats, err_pop),
-                sparse_read(global->percpu_mem_stats, err_push),
-                sparse_read(global->percpu_mem_stats, err_intdis),
                 sparse_read(global->percpu_mem_stats, err_shared),
-                sparse_read(global->percpu_mem_stats, err_cloned),
-                sparse_read(global->percpu_mem_stats, err_memory),
+                sparse_read(global->percpu_mem_stats, err_empty),
+                sparse_read(global->percpu_mem_stats, err_conf),
 	};
 	return ret;
 }
