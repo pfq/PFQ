@@ -108,8 +108,6 @@ pfq_packet_rcv
 #endif
     )
 {
-	struct pfq_percpu_pool * pool;
-
 	if (skb->pkt_type == PACKET_LOOPBACK)
 		goto out;
 
@@ -138,8 +136,7 @@ pfq_packet_rcv
 
         return pfq_receive(NULL, skb, 0);
 out:
-	pool = per_cpu_ptr(global->percpu_pool, smp_processor_id());
-	pfq_kfree_skb_pool(skb, pool->rx_pool);
+	kfree_skb(skb);
 	return 0;
 }
 
