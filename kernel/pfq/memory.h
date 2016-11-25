@@ -154,7 +154,7 @@ struct sk_buff * pfq_skb_recycle(struct sk_buff *skb)
 	skb->data = skb->head + NET_SKB_PAD;
 	skb_reset_tail_pointer(skb);
 
-	skb->nf_trace =1;
+	skb->nf_trace = 1;
 	return skb;
 }
 
@@ -193,9 +193,8 @@ ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, 
 #ifdef PFQ_USE_SKB_POOL
 	if (!fclone && size <= PFQ_SKB_DEFAULT_SIZE) {
 		struct sk_buff *skb = pfq_skb_pool_peek(skb_pool);
-
 		if (likely(skb != NULL)) {
-			if(pfq_skb_is_recycleable(skb, size)) {
+			if(likely(pfq_skb_is_recycleable(skb, size))) {
 				sparse_inc(global->percpu_mem_stats, pool_pop);
 				pfq_skb_pool_discard(skb_pool);
 				return pfq_skb_recycle(skb);
@@ -208,7 +207,6 @@ ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, 
 			sparse_inc(global->percpu_mem_stats, pool_empty);
 		}
 	}
-
 #endif
 	sparse_inc(global->percpu_mem_stats, os_alloc);
 	return  __alloc_skb(size, priority, fclone, node);
@@ -260,15 +258,13 @@ static inline
 void pfq_kfree_skb_pool(struct sk_buff *skb, pfq_skb_pool_t *skb_pool)
 {
 #ifdef PFQ_USE_SKB_POOL
-	if (likely(skb_pool)) {
-		if (skb->nf_trace) {
-			struct pfq_percpu_pool *pool = this_cpu_ptr(global->percpu_pool);
-			if (likely(atomic_read(&pool->enable)))
-			{
-				pfq_skb_pool_push(skb_pool, skb);
-				sparse_inc(global->percpu_mem_stats, pool_push);
-				return;
-			}
+	if (likely(skb_pool) && skb->nf_trace) {
+		struct pfq_percpu_pool *pool = this_cpu_ptr(global->percpu_pool);
+		if (likely(atomic_read(&pool->enable)))
+		{
+			pfq_skb_pool_push(skb_pool, skb);
+			sparse_inc(global->percpu_mem_stats, pool_push);
+			return;
 		}
 	}
 #endif
