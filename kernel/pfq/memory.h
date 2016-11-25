@@ -42,14 +42,12 @@
 #include <pfq/percpu.h>
 
 
-#define PFQ_SKB_DEFAULT_SIZE 2048
+#define PFQ_SKB_DEFAULT_SIZE  1536
 
 extern struct sk_buff * __pfq_alloc_skb(unsigned int size, gfp_t priority, int fclone, int node);
 extern struct sk_buff * pfq_dev_alloc_skb(unsigned int length);
 extern struct sk_buff * __pfq_netdev_alloc_skb(struct net_device *dev, unsigned int length, gfp_t gfp);
 
-
-#if 0
 
 #ifdef NET_SKBUFF_DATA_USES_OFFSET
 static inline
@@ -69,19 +67,23 @@ unsigned int pfq_skb_end_offset(const struct sk_buff *skb)
 static inline bool pfq_skb_is_recycleable(const struct sk_buff *skb, unsigned int skb_size)
 {
 	if (irqs_disabled()) {
-		sparse_inc(global->percpu_mem_stats, err_intdis);
+		sparse_inc(global->percpu_mem_stats, err_irqdis);
 		return false;
 	}
 
-	if (skb_is_nonlinear(skb))
+	if (skb_is_nonlinear(skb)) {
+		sparse_inc(global->percpu_mem_stats, err_nolinr);
 		return false;
+	}
 
-	if (skb->fclone != SKB_FCLONE_UNAVAILABLE)
-		return false;
+	// if (skb->fclone != SKB_FCLONE_UNAVAILABLE) {
+	// 	sparse_inc(global->percpu_mem_stats, err_fclone);
+	// 	return false;
+	// }
 
 	/*  check whether the skb is shared with someone else.. */
 
-	if (atomic_read(&skb->users) > 1) {
+	if (atomic_read(&skb->users) != 1) {
 		sparse_inc(global->percpu_mem_stats, err_shared);
 		return false;
 	}
@@ -151,10 +153,10 @@ struct sk_buff * pfq_skb_recycle(struct sk_buff *skb)
 	skb->data = skb->head + NET_SKB_PAD;
 	skb_reset_tail_pointer(skb);
 
+	skb->nf_trace =1;
 	return skb;
 }
 
-#endif
 
 static inline
 struct sk_buff * pfq_netdev_alloc_skb(struct net_device *dev, unsigned int length)
@@ -194,17 +196,17 @@ ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, 
 		struct sk_buff *skb = pfq_skb_pool_peek(skb_pool);
 
 		if (likely(skb != NULL)) {
-			if(!skb_shared(skb)) {
+			if(pfq_skb_is_recycleable(skb, size)) {
 				sparse_inc(global->percpu_mem_stats, pool_pop);
 				pfq_skb_pool_discard(skb_pool);
-				return skb;
+				return pfq_skb_recycle(skb);
 			}
 			else {
-				sparse_inc(global->percpu_mem_stats, err_shared);
+				sparse_inc(global->percpu_mem_stats, pool_norecycl);
 			}
 		}
 		else {
-			sparse_inc(global->percpu_mem_stats, err_empty);
+			sparse_inc(global->percpu_mem_stats, pool_empty);
 		}
 	}
 
@@ -260,7 +262,7 @@ void pfq_kfree_skb_pool(struct sk_buff *skb, pfq_skb_pool_t *skb_pool)
 {
 #ifdef PFQ_USE_SKB_POOL
 	if (likely(skb_pool)) {
-		if (skb->pkt_type == PACKET_USER) {
+		if (skb->nf_trace) {
 			struct pfq_percpu_pool *pool = this_cpu_ptr(global->percpu_pool);
 			if (likely(atomic_read(&pool->enable)))
 			{

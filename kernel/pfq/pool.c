@@ -65,11 +65,15 @@ int pfq_skb_pool_init (pfq_skb_pool_t **pool, size_t size, int cpu)
 		for(; total < size; total++)
 		{
 			skb = __alloc_skb(PFQ_SKB_DEFAULT_SIZE, GFP_KERNEL, 1, cpu_to_node(cpu));
-			if (!skb) {
+			if (!skb)
+				return total;
+
+			if (skb_linearize(skb) < 0) {
+				kfree_skb(skb);
 				return total;
 			}
 
-			skb->pkt_type = PACKET_USER;
+			skb->nf_trace = 1;
 			pfq_skb_pool_push(*pool, skb);
 			sparse_inc(global->percpu_mem_stats, os_alloc);
 		}
