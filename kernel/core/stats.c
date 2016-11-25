@@ -90,7 +90,6 @@ void core_memory_stats_reset(struct core_memory_stats __percpu *stats)
 		local_set(&stat->err_memory, 0);
 		local_set(&stat->err_irqdis, 0);
 		local_set(&stat->err_nolinr, 0);
-		local_set(&stat->err_fclone, 0);
 	}
 }
 

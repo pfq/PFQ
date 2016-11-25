@@ -76,11 +76,12 @@ static inline bool pfq_skb_is_recycleable(const struct sk_buff *skb, unsigned in
 		return false;
 	}
 
-	// if (skb->fclone != SKB_FCLONE_UNAVAILABLE) {
-	// 	sparse_inc(global->percpu_mem_stats, err_fclone);
-	// 	return false;
-	// }
-
+#if 0
+	if (skb->fclone != SKB_FCLONE_UNAVAILABLE) {
+		sparse_inc(global->percpu_mem_stats, err_fclone);
+		return false;
+	}
+#endif
 	/*  check whether the skb is shared with someone else.. */
 
 	if (atomic_read(&skb->users) != 1) {
@@ -190,9 +191,7 @@ struct sk_buff *
 ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, pfq_skb_pool_t *skb_pool)
 {
 #ifdef PFQ_USE_SKB_POOL
-
-	if (size < PFQ_SKB_DEFAULT_SIZE) {
-
+	if (!fclone && size <= PFQ_SKB_DEFAULT_SIZE) {
 		struct sk_buff *skb = pfq_skb_pool_peek(skb_pool);
 
 		if (likely(skb != NULL)) {

@@ -186,7 +186,6 @@ static int pfq_proc_memory(struct seq_file *m, void *v)
 	seq_printf(m, "  error memory   : %ld\n", sparse_read(global->percpu_mem_stats, err_memory));
 	seq_printf(m, "  error irqdis   : %ld\n", sparse_read(global->percpu_mem_stats, err_irqdis));
 	seq_printf(m, "  error nolinr   : %ld\n", sparse_read(global->percpu_mem_stats, err_nolinr));
-	seq_printf(m, "  error fclone   : %ld\n", sparse_read(global->percpu_mem_stats, err_fclone));
 	return 0;
 }
 

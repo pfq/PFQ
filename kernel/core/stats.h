@@ -73,7 +73,6 @@ struct core_memory_stats
 	local_t err_memory;
 	local_t err_irqdis;
 	local_t err_nolinr;
-	local_t err_fclone;
 };
 
 
@@ -92,7 +91,6 @@ struct core_pool_stat
 	uint64_t err_memory;
 	uint64_t err_irqdis;
 	uint64_t err_nolinr;
-	uint64_t err_fclone;
 };
 
 
