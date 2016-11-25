@@ -158,7 +158,7 @@ module Network.PFQ
         sendAsync,
         sendAt,
 
-        transmitQueue,
+        syncQueue,
 
         bindTx,
         unbindTx,
@@ -1078,15 +1078,15 @@ setGroupComputationFromDescr hdl gid descr =
             pfq_set_group_computation hdl (fromIntegral gid) ptr >>= throwPFqIf_ hdl (== -1)
 
 
--- |Flush the Tx queue(s)
+-- |Sync the Tx queue(s)
 --
 -- Transmit the packets in the Tx queues of the socket.
 
-transmitQueue :: Ptr PFqTag
-              -> Int     -- ^ queue index (0 is sync tx queue)
-              -> IO ()
-transmitQueue hdl queue =
-    pfq_transmit_queue hdl (fromIntegral queue) >>= throwPFqIf_ hdl (== -1)
+syncQueue :: Ptr PFqTag
+          -> Int     -- ^ queue index (0 is sync tx queue)
+          -> IO ()
+syncQueue hdl queue =
+    pfq_sync_queue hdl (fromIntegral queue) >>= throwPFqIf_ hdl (== -1)
 
 
 -- |Store the packet and transmit the packets in the queue.
@@ -1250,5 +1250,5 @@ foreign import ccall unsafe pfq_send                :: Ptr PFqTag -> Ptr CChar -
 foreign import ccall unsafe pfq_send_to             :: Ptr PFqTag -> Ptr CChar -> CSize -> CInt -> CInt -> CSize -> CUInt -> IO CInt
 foreign import ccall unsafe pfq_send_raw            :: Ptr PFqTag -> Ptr CChar -> CSize -> CInt -> CInt -> CULLong -> CUInt -> CInt -> CInt -> IO CInt
 
-foreign import ccall unsafe pfq_transmit_queue      :: Ptr PFqTag -> CInt -> IO CInt
+foreign import ccall unsafe pfq_sync_queue          :: Ptr PFqTag -> CInt -> IO CInt
 

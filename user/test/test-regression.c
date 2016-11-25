@@ -587,12 +587,12 @@ void test_tx_thread()
 void test_tx_queue()
 {
         pfq_t * q = pfq_open(64, 1024, 1024);
-        assert(pfq_transmit_queue(q, 1) == -1);
+        assert(pfq_sync_queue(q, 1) == -1);
 
         assert(pfq_bind_tx(q, "lo", Q_ANY_QUEUE, Q_NO_KTHREAD) == 0);
         assert(pfq_enable(q) == 0);
 
-        assert(pfq_transmit_queue(q, 0) == 0);
+        assert(pfq_sync_queue(q, 0) == 0);
 
         pfq_close(q);
 }

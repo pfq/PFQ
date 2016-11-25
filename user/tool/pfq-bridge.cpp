@@ -116,7 +116,7 @@ void make_user_bridge(int gid, Bridge const &b)
                     out.send(pfq::const_buffer(reinterpret_cast<const char *>(buff), h.len), b.queue);
                 }
 
-                out.transmit_queue(0);
+                out.sync_queue(0);
             }
 
             if (opt::stop.load(std::memory_order_relaxed))

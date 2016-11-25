@@ -1777,7 +1777,7 @@ pfq_send(pfq_t *q, const void *ptr, size_t len, size_t fhint, unsigned int copie
 	int ret = pfq_send_raw(q, ptr, len, 0, 0, 0, copies, 0, Q_ANY_QUEUE);
 	if (++q->tx_attempt == fhint) {
 		q->tx_attempt = 0;
-		pfq_transmit_queue(q, 0);
+		pfq_sync_queue(q, 0);
 	}
 	return ret;
 }
@@ -1789,14 +1789,14 @@ pfq_send_to(pfq_t *q, const void *ptr, size_t len, int ifindex, int qindex, size
 	int ret = pfq_send_raw(q, ptr, len, ifindex, qindex, 0, copies, 0, Q_ANY_QUEUE);
 	if (++q->tx_attempt == fhint) {
 		q->tx_attempt = 0;
-		pfq_transmit_queue(q, 0);
+		pfq_sync_queue(q, 0);
 	}
 	return ret;
 }
 
 
 int
-pfq_transmit_queue(pfq_t *q, int queue)
+pfq_sync_queue(pfq_t *q, int queue)
 {
         /* if (setsockopt(q->fd, PF_Q, Q_SO_TX_QUEUE_XMIT, &queue, sizeof(queue)) == -1) */
         if (ioctl(q->fd, QIOCTX, queue) == -1)

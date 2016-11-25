@@ -578,7 +578,7 @@ extern int pfq_get_group_counters(pfq_t const *q, int gid, struct pfq_counters *
  * queue enabled for synchronous transmission.
  */
 
-extern int pfq_transmit_queue(pfq_t *q, int queue);
+extern int pfq_sync_queue(pfq_t *q, int queue);
 
 
 /*! Schedule packet transmission. */

@@ -1055,7 +1055,7 @@ namespace pfq {
             if (++data_->tx_attempt == fhint)
             {
                 data_->tx_attempt = 0;
-                this->transmit_queue(0);
+                this->sync_queue(0);
             }
             return ret;
         }
@@ -1073,7 +1073,7 @@ namespace pfq {
             if (++data_->tx_attempt == fhint)
             {
                 data_->tx_attempt = 0;
-                this->transmit_queue(0);
+                this->sync_queue(0);
             }
             return ret;
         }
@@ -1208,7 +1208,7 @@ namespace pfq {
          */
 
         void
-        transmit_queue(int queue = 0)
+        sync_queue(int queue = 0)
         {
             /*
              * if (::setsockopt(data()->fd, PF_Q, Q_SO_TX_QUEUE_XMIT, &queue, sizeof(queue)) == -1)
