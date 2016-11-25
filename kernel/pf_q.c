@@ -237,7 +237,7 @@ static int pfq_ioctl(struct socket *sock, unsigned int cmd, unsigned long arg)
 		}
 
 		printk(KERN_INFO "[PFQ|%d] QIOCTX queue: bad argument %lu!\n", so->id, arg);
-		return 0;
+		return -EINVAL;
 	}
 #ifdef CONFIG_INET
         case SIOCGIFFLAGS:
