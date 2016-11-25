@@ -82,5 +82,10 @@ bool pfq_skb_pool_push(pfq_skb_pool_t *pool, struct sk_buff *skb)
 	return core_spsc_push(pool, skb);
 }
 
+static inline
+size_t pfq_skb_pool_size(pfq_skb_pool_t const *pool)
+{
+	return core_spsc_len(pool);
+}
 
 #endif /* PFQ_SKBUFF_POOL_H */

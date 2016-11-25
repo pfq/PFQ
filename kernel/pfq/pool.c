@@ -97,15 +97,20 @@ pfq_get_skb_pool_stats(void)
 {
         struct core_pool_stat ret =
         {
-		sparse_read(global->percpu_mem_stats, os_alloc),
-		sparse_read(global->percpu_mem_stats, os_free),
+           .os_alloc      = sparse_read(global->percpu_mem_stats, os_alloc)
+        ,  .os_free       = sparse_read(global->percpu_mem_stats, os_free)
 
-		sparse_read(global->percpu_mem_stats, pool_push),
-		sparse_read(global->percpu_mem_stats, pool_pop),
+        ,  .pool_push     = sparse_read(global->percpu_mem_stats, pool_push)
+        ,  .pool_pop      = sparse_read(global->percpu_mem_stats, pool_pop)
+        ,  .pool_empty    = sparse_read(global->percpu_mem_stats, pool_empty)
+        ,  .pool_norecycl = sparse_read(global->percpu_mem_stats, pool_norecycl)
 
-                sparse_read(global->percpu_mem_stats, err_shared),
-                sparse_read(global->percpu_mem_stats, err_empty),
-                sparse_read(global->percpu_mem_stats, err_conf),
+        ,  .err_shared    = sparse_read(global->percpu_mem_stats, err_shared)
+        ,  .err_cloned    = sparse_read(global->percpu_mem_stats, err_cloned)
+        ,  .err_memory    = sparse_read(global->percpu_mem_stats, err_memory)
+        ,  .err_irqdis    = sparse_read(global->percpu_mem_stats, err_irqdis)
+        ,  .err_nolinr    = sparse_read(global->percpu_mem_stats, err_nolinr)
+        ,  .err_fclone    = sparse_read(global->percpu_mem_stats, err_fclone)
 	};
 	return ret;
 }

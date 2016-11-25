@@ -65,10 +65,15 @@ struct core_memory_stats
 
 	local_t pool_push;
 	local_t pool_pop;
+	local_t pool_empty;
+	local_t pool_norecycl;
 
 	local_t err_shared;
-	local_t err_empty;
-	local_t err_conf;
+	local_t err_cloned;
+	local_t err_memory;
+	local_t err_irqdis;
+	local_t err_nolinr;
+	local_t err_fclone;
 };
 
 
@@ -79,10 +84,15 @@ struct core_pool_stat
 
 	uint64_t pool_push;
 	uint64_t pool_pop;
+	uint64_t pool_empty;
+	uint64_t pool_norecycl;
 
 	uint64_t err_shared;
-	uint64_t err_empty;
-	uint64_t err_conf;
+	uint64_t err_cloned;
+	uint64_t err_memory;
+	uint64_t err_irqdis;
+	uint64_t err_nolinr;
+	uint64_t err_fclone;
 };
 
 
