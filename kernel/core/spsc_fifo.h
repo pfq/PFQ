@@ -24,10 +24,15 @@
 #ifndef Q_CORE_SPSC_FIFO_H
 #define Q_CORE_SPSC_FIFO_H
 
-#include <linux/kernel.h>
-#include <linux/version.h>
+#ifdef __KERNEL__
 #include <linux/slab.h>
-
+#else
+#include <stdlib.h>
+#define likely(x)	__builtin_expect((x),1)
+#define unlikely(x)     __builtin_expect((x),0)
+#define kmalloc(s,m)	malloc(s)
+#define kfree(s) free(s)
+#endif
 
 struct core_spsc_fifo
 {
@@ -96,10 +101,9 @@ void *core_spsc_pop(struct core_spsc_fifo *fifo)
 		return NULL;
 
 	ret = fifo->ring[r];
-
 	next = core_spsc_next_index(fifo, r);
-
 	__atomic_store_n(&fifo->tail, next, __ATOMIC_RELEASE);
+
 	return ret;
 }
 
@@ -144,7 +148,7 @@ static inline
 struct core_spsc_fifo *
 core_spsc_init(size_t size)
 {
-	struct core_spsc_fifo *fifo = kmalloc(sizeof(struct core_spsc_fifo) + sizeof(void *)*size, GFP_KERNEL);
+	struct core_spsc_fifo *fifo = (struct core_spsc_fifo *)kmalloc(sizeof(struct core_spsc_fifo) + sizeof(void *)*size, GFP_KERNEL);
 	if (fifo != NULL)
 	{
 		fifo->size = size;
