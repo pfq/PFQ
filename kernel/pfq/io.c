@@ -184,6 +184,7 @@ bool giveup_tx_process(atomic_t const *stop)
  *
  */
 
+#if 0
 static inline
 ktime_t wait_until_busy(uint64_t ts, atomic_t const *stop, bool *intr)
 {
@@ -248,7 +249,7 @@ ktime_t wait_until(uint64_t tv64, ktime_t now, struct net_dev_queue *dev_queue, 
 
 	return now_;
 }
-
+#endif
 
 
 static inline
@@ -307,7 +308,7 @@ unsigned int dev_tx_max_skb_copies(struct net_device *dev, unsigned int req_copi
  */
 
 static inline int
-__pfq_xmit_retry(struct sk_buff *skb, struct net_device *dev, int xmit_more, bool retry)
+__pfq_xmit(struct sk_buff *skb, struct net_device *dev, int xmit_more)
 {
 	int rc;
 
@@ -322,20 +323,10 @@ __pfq_xmit_retry(struct sk_buff *skb, struct net_device *dev, int xmit_more, boo
 		return rc;
 	}
 
-	if (!retry) {
-		sparse_inc(global->percpu_mem_stats, os_free);
-		kfree_skb(skb);
-	}
-
+	kfree_skb(skb);
 	return rc;
 }
 
-
-static inline int
-__pfq_xmit(struct sk_buff *skb, struct net_device *dev, int xmit_more)
-{
-	return __pfq_xmit_retry(skb, dev, xmit_more, false);
-}
 
 
 int
@@ -374,7 +365,7 @@ pfq_xmit(struct qbuff *buff, struct net_device *dev, int queue, int more)
  * transmit a mbuff packet with copies
  */
 
-static tx_res_t
+static tx_response_t
 __pfq_mbuff_xmit(struct pfq_pkthdr *hdr,
 		 const void *buf,
 		 size_t len,
@@ -382,26 +373,30 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr,
 		 struct pfq_mbuff_xmit_context *ctx)
 {
 	struct sk_buff *skb;
-        tx_res_t ret = { 0 };
+        tx_response_t ret = { 0 };
 
 	if (unlikely(!dev_queue->dev))
-		return (tx_res_t){.ok = 0, .fail = ctx->copies};
+		return (tx_response_t){.ok = 0, .fail = ctx->copies};
 
+#if 0
 	/* wait until for the timestap to expire (if specified) */
-
 	if (hdr->tstamp.tv64) {
 		ctx->now = wait_until(hdr->tstamp.tv64, ctx->now, dev_queue, ctx->stop, ctx->intr);
 		if (*ctx->intr)
-			return (tx_res_t){.ok = 0, .fail = ctx->copies};
+			return (tx_response_t){.ok = 0, .fail = ctx->copies};
 	}
+#endif
 
 	/* allocate a new socket buffer */
 
-	skb = pfq_alloc_skb_pool(LL_RESERVED_SPACE(dev_queue->dev) + global->xmit_slot_size, GFP_KERNEL, ctx->node, ctx->skb_pool);
+	skb = pfq_alloc_skb_pool( LL_RESERVED_SPACE(dev_queue->dev) + global->xmit_slot_size
+				, GFP_KERNEL
+				, ctx->node
+				, ctx->skb_pool);
 	if (unlikely(skb == NULL)) {
 		if (printk_ratelimit())
 			printk(KERN_INFO "[PFQ] Tx could not allocate an skb!\n");
-		return (tx_res_t){.ok = 0, .fail = ctx->copies};
+		return (tx_response_t){.ok = 0, .fail = ctx->copies};
 	}
 
 	/* fill the socket buffer */
@@ -416,7 +411,7 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr,
 
 	/* set the Tx queue */
 
-	skb_set_queue_mapping(skb, dev_queue->queue_mapping);
+	skb_set_queue_mapping(skb, dev_queue->mapping);
 
 	/* prepare the payload... */
 
@@ -431,29 +426,15 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr,
 
 		/* if copies > 1, when the device support TX_SKB_SHARING */
 
-		if (likely(!netif_xmit_frozen_or_drv_stopped(dev_queue->queue)) &&
-			__pfq_xmit_retry(skb, dev_queue->dev, xmit_more_, true) == NETDEV_TX_OK) {
+		if (!netif_xmit_frozen_or_drv_stopped(dev_queue->queue) &&
+			__pfq_xmit(skb, dev_queue->dev, xmit_more_) == NETDEV_TX_OK) {
 			ret.ok++;
-			ctx->copies--;
 		}
 		else {
 			ret.fail++;
-
-			pfq_hard_tx_unlock(dev_queue);
-			local_bh_enable();
-
-			if (need_resched())
-				schedule();
-
-			local_bh_disable();
-			pfq_hard_tx_lock(dev_queue);
-
-			if (giveup_tx_process(ctx->stop)) {
-				atomic_set(&skb->users, 1);
-				*ctx->intr = true;
-				break;
-			}
 		}
+
+		ctx->copies--;
 	}
 	while (ctx->copies > 0);
 
@@ -467,11 +448,12 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr,
 	return ret;
 }
 
+
 /*
  * transmit a queue of packets (from socket queue)...
  */
 
-tx_res_t
+tx_response_t
 pfq_sk_queue_xmit(struct core_sock *so,
 		  int sock_queue,
 		  int cpu,
@@ -479,8 +461,7 @@ pfq_sk_queue_xmit(struct core_sock *so,
 		  atomic_t const *stop)
 {
 	struct core_tx_info const * txinfo = core_sock_get_tx_queue_info(&so->opt, sock_queue);
-	// const void * huge_base = so->shmem.hugepages_descr ? so->shmem.hugepages_descr->addr : NULL;
-	struct net_dev_queue dev_queue = net_dev_queue_null;
+	struct net_dev_queue dev_queue = {.dev = NULL, .queue = NULL, .mapping = 0};
 	struct pfq_mbuff_xmit_context ctx;
 	struct pfq_percpu_pool *pool;
 	int batch_cntr = 0, cons_idx;
@@ -488,8 +469,7 @@ pfq_sk_queue_xmit(struct core_sock *so,
 	struct pfq_pkthdr *hdr, *hdr1;
 	ptrdiff_t prod_off;
         char *begin, *end;
-        tx_res_t ret = {0};
-
+        tx_response_t ret = {0};
 
 
 	/* get the Tx queue descriptor */
@@ -501,6 +481,7 @@ pfq_sk_queue_xmit(struct core_sock *so,
 	/* enable skb_pool for Tx threads */
 
 	pool = this_cpu_ptr(global->percpu_pool);
+
 	ctx.skb_pool = likely(atomic_read(&pool->enable)) ? pool->tx_pool : NULL;
 
 	/* lock the Tx pool */
@@ -521,25 +502,28 @@ pfq_sk_queue_xmit(struct core_sock *so,
 
         /* setup the context */
 
-        ctx.net = sock_net(&so->sk);
-	ctx.now = ktime_get_real();
+        ctx.net	    = sock_net(&so->sk);
+	ctx.now	    = ktime_get_real();
 	ctx.jiffies = jiffies;
-        ctx.node = node;
-        ctx.intr = false;
-        ctx.stop = stop;
+        ctx.node    = node;
+        ctx.intr    = false;
+        ctx.stop    = stop;
 
 	/* lock the dev_queue and disable bh */
 
-	if (pfq_dev_queue_get(ctx.net, PFQ_DEVQ_ID(txinfo->def_ifindex, txinfo->def_queue), &dev_queue) < 0)
-	{
+	if (pfq_dev_queue_get(ctx.net, txinfo->def_ifindex, txinfo->def_queue, &dev_queue) < 0) {
+
+		if (ctx.skb_pool)
+			spin_unlock(&pool->tx_pool_lock);
+
 		if (printk_ratelimit())
 			printk(KERN_INFO "[PFQ] sk_queue_xmit: could not lock default device!\n");
-		{
-			if (ctx.skb_pool)
-				spin_unlock(&pool->tx_pool_lock);
-			return ret;
-		}
+
+		return ret;
 	}
+
+	local_bh_disable();
+	HARD_TX_LOCK(dev_queue.dev, dev_queue.queue, cpu);
 
 	/* prefetch packets... */
 
@@ -551,15 +535,10 @@ pfq_sk_queue_xmit(struct core_sock *so,
         prefetch_r3(hdr1);
         prefetch_r3((char *)hdr1+64);
 
-	/* traverse the socket queue */
-
-	local_bh_disable();
-	pfq_hard_tx_lock(&dev_queue);
 
 	for_each_sk_mbuff(hdr, end, 0 /* dynamic slot size */)
 	{
-		dev_queue_t qid;
-                tx_res_t tmp = {0};
+                tx_response_t tmp = {0};
 
 		hdr1 = PFQ_SHARED_QUEUE_NEXT_PKTHDR(hdr1, 0);
                 prefetch_r3(hdr1);
@@ -571,42 +550,6 @@ pfq_sk_queue_xmit(struct core_sock *so,
 			if (printk_ratelimit())
 				printk(KERN_INFO "[PFQ] sk_queue_xmit: zero caplen (BUG!)\n");
 			break;
-		}
-
-		/* skip the current packet ? */
-
-		qid = PFQ_DEVQ_ID(hdr->info.ifindex, hdr->info.queue);
-		if (unlikely(PFQ_DEVQ_IS_NULL(qid)))
-			continue;
-
-		/* swap queue/device lock if required */
-
-		if (unlikely(qid != PFQ_DEVQ_DEFAULT && qid != dev_queue.id)) {
-
-			/* unlock the current locked queue */
-
-			if (likely(!PFQ_DEVQ_IS_NULL(dev_queue.id))) {
-
-				pfq_hard_tx_unlock(&dev_queue);
-				local_bh_enable();
-
-				/* release the device */
-				pfq_dev_queue_put(ctx.net, &dev_queue);
-			}
-
-			/* try to get the new dev_queue */
-
-			if (unlikely(pfq_dev_queue_get(ctx.net, qid, &dev_queue) < 0))
-			{
-				if (printk_ratelimit())
-					printk(KERN_INFO "[PFQ] sk_queue_xmit: could not lock " PFQ_DEVQ_FMT "!\n", PFQ_DEVQ_ARG(qid));
-				continue;
-			}
-
-			/* disable bh and lock it */
-
-			local_bh_disable();
-			pfq_hard_tx_lock(&dev_queue);
 		}
 
 		/* get the number of copies to transmit */
@@ -637,19 +580,25 @@ pfq_sk_queue_xmit(struct core_sock *so,
 			break;
 	}
 
-	/* unlock the current locked queue */
 
-	pfq_hard_tx_unlock(&dev_queue);
+	/* unlock the current queue */
+
+	HARD_TX_UNLOCK(dev_queue.dev, dev_queue.queue);
+
+	/* enable local bottom half */
+
 	local_bh_enable();
 
 	/* release the dev_queue */
 
-	pfq_dev_queue_put(ctx.net, &dev_queue);
+	pfq_dev_queue_put(&dev_queue);
 
-	/* unlock the tx pool... */
+
+	/* unlock the Tx pool... */
 
 	if (ctx.skb_pool);
 		spin_unlock(&pool->tx_pool_lock);
+
 
 	/* update the local consumer offset */
 
@@ -673,13 +622,13 @@ pfq_sk_queue_xmit(struct core_sock *so,
  * transmit queues of packets (from a skbuff_queue)...
  */
 
-tx_res_t
+tx_response_t
 pfq_qbuff_queue_xmit(struct core_qbuff_queue *buffs, unsigned long long mask, struct net_device *dev, int queue)
 {
 	struct netdev_queue *txq;
 	struct qbuff *buff;
 	int n, last_idx;
-	tx_res_t ret = {0};
+	tx_response_t ret = {0};
 
 	/* get txq and fix the queue for this batch.
 	 *

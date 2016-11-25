@@ -30,39 +30,18 @@
 #include <pragma/diagnostic_pop>
 
 
-typedef uint64_t dev_queue_t;
-
-
 struct net_dev_queue
 {
-	dev_queue_t	     id;
-
-	/* ---- the following parameters are set by dev_queue_get etc. */
-
 	struct net_device   *dev;
 	struct netdev_queue *queue;
-	uint16_t		     queue_mapping;
-
+	uint16_t	     mapping;
 };
-
-extern struct net_dev_queue net_dev_queue_null;
-
-
-#define PFQ_DEVQ_ID(ifindex, queue)	((uint64_t)ifindex << 32 | (uint32_t)queue)
-#define PFQ_DEVQ_IFINDEX(id)		((int)(id >> 32))
-#define PFQ_DEVQ_QUEUE(id)		((int)(id & 0xffffffff))
-
-#define PFQ_DEVQ_NULL			PFQ_DEVQ_ID(-1,0)
-#define PFQ_DEVQ_DEFAULT		PFQ_DEVQ_ID(0,0)
-
-#define PFQ_DEVQ_IS_NULL(id)		(PFQ_DEVQ_IFINDEX(id) == -1)
-
-#define PFQ_DEVQ_FMT			"(%d:%d)"
-#define PFQ_DEVQ_ARG(id)		PFQ_DEVQ_IFINDEX(id), PFQ_DEVQ_QUEUE(id)
 
 
 extern int pfq_dev_refcnt_read_by_index(struct net *net, int ifindex);
-extern int pfq_dev_queue_get(struct net *net, dev_queue_t id, struct net_dev_queue *dq);
+extern int pfq_dev_queue_get(struct net *net, int ifindex, int queue, struct net_dev_queue *dq);
+extern void pfq_dev_queue_put(struct net_dev_queue *dq);
+
 
 static inline int
 __pfq_dev_cap_txqueue(struct net_device *dev, int queue)
@@ -72,36 +51,6 @@ __pfq_dev_cap_txqueue(struct net_device *dev, int queue)
 	return queue;
 }
 
-static inline
-void pfq_hard_tx_lock(struct net_dev_queue *dq)
-{
-	if(likely(dq->dev && dq->queue))
-		HARD_TX_LOCK(dq->dev, dq->queue, smp_processor_id());
-}
-
-
-static inline
-void pfq_hard_tx_unlock(struct net_dev_queue *dq)
-{
-	if(likely(dq->dev && dq->queue))
-		HARD_TX_UNLOCK(dq->dev, dq->queue);
-}
-
-
-static inline
-void pfq_dev_queue_put(struct net *net, struct net_dev_queue *dq)
-{
-	if(likely(dq->dev)) {
-#ifdef PFQ_DEBUG
-		int ifindex = PFQ_DEVQ_IFINDEX(dq->id);
-		printk(KERN_INFO "[PFQ] dev_queue_put: ifindex=%d, ref=%d\n", ifindex, pfq_dev_refcnt_read_by_index(net, ifindex));
-#else
-		(void)net;
-#endif
-		dev_put(dq->dev);
-		*dq = net_dev_queue_null;
-	}
-}
 
 
 static inline

@@ -227,7 +227,7 @@ static int pfq_ioctl(struct socket *sock, unsigned int cmd, unsigned long arg)
 
 		if (likely(arg == 0)) { /* transmit Tx queue */
 			atomic_t stop = {0};
-			tx_res_t tx = pfq_sk_queue_xmit(so, -1, Q_NO_KTHREAD, NUMA_NO_NODE, &stop);
+			tx_response_t tx = pfq_sk_queue_xmit(so, -1, Q_NO_KTHREAD, NUMA_NO_NODE, &stop);
 
 			sparse_add(so->stats, sent, tx.ok);
 			sparse_add(so->stats, fail, tx.fail);

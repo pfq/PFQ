@@ -24,10 +24,8 @@
 #include <pfq/netdev.h>
 
 
-struct net_dev_queue net_dev_queue_null = { PFQ_DEVQ_NULL, NULL, NULL, 0 };
-
-
-int pfq_dev_refcnt_read_by_index(struct net *net, int ifindex)
+int
+pfq_dev_refcnt_read_by_index(struct net *net, int ifindex)
 {
 	struct net_device *dev;
 	int ref = -1;
@@ -41,26 +39,26 @@ int pfq_dev_refcnt_read_by_index(struct net *net, int ifindex)
 }
 
 
-int pfq_dev_queue_get(struct net *net, dev_queue_t id, struct net_dev_queue *dq)
-{
-	int ifindex = PFQ_DEVQ_IFINDEX(id);
 
-	if ( ifindex != 0 &&
-	     ifindex != PFQ_DEVQ_IFINDEX(dq->id))
-	{
-		struct net_device *dev = dev_get_by_index(net, ifindex);
-		if (dev == NULL) {
-			*dq = net_dev_queue_null;
-			return -EFAULT;
-		}
-#ifdef PFQ_DEBUG
-		printk(KERN_INFO "[PFQ] dev_queue_get: ifindex=%d, ref=%d\n", ifindex, pfq_dev_refcnt_read_by_index(net, ifindex));
-#endif
-		dq->id = id;
-		dq->dev = dev;
-		dq->queue_mapping = __pfq_dev_cap_txqueue(dev, PFQ_DEVQ_QUEUE(id));
-		dq->queue = netdev_get_tx_queue(dev, dq->queue_mapping);
+int pfq_dev_queue_get(struct net *net, int ifindex, int queue, struct net_dev_queue *dq)
+{
+	struct net_device *dev = dev_get_by_index(net, ifindex);
+	if (dev == NULL) {
+		*dq = (struct net_dev_queue){.dev = NULL, .queue = NULL, .mapping = 0};
+		return -EFAULT;
 	}
+
+	dq->dev = dev;
+	dq->mapping = __pfq_dev_cap_txqueue(dev, queue);
+	dq->queue = netdev_get_tx_queue(dev, dq->mapping);
 	return 0;
 }
 
+
+void pfq_dev_queue_put(struct net_dev_queue *dq)
+{
+	if(likely(dq->dev)) {
+		dev_put(dq->dev);
+		dq->dev = NULL;
+	}
+}

@@ -101,7 +101,7 @@ pfq_tx_thread(void *_data)
 		{
 			struct core_sock *sock;
 			int sock_queue;
-			tx_res_t tx;
+			tx_response_t tx;
 
 			sock_queue = atomic_read(&data->sock_queue[n]);
 			smp_rmb();

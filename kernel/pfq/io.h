@@ -44,7 +44,7 @@ typedef union
 		uint32_t fail;
 	};
 
-} tx_res_t;
+} tx_response_t;
 
 
 extern size_t pfq_sk_queue_recv(struct core_sock_opt *opt,
@@ -69,13 +69,16 @@ struct pfq_mbuff_xmit_context
 
 /* socket queues */
 
-extern tx_res_t pfq_sk_queue_xmit(struct core_sock *so, int qindex, int cpu, int node, atomic_t const *stop);
+extern tx_response_t
+pfq_sk_queue_xmit(struct core_sock *so, int qindex, int cpu, int node, atomic_t const *stop);
 
 
 /* skb queues */
 
 extern int pfq_xmit(struct qbuff *buff, struct net_device *dev, int queue, int more);
-extern tx_res_t pfq_qbuff_queue_xmit(struct core_qbuff_queue *buff, unsigned long long buffs_mask, struct net_device *dev, int queue_index);
+
+extern tx_response_t
+pfq_qbuff_queue_xmit(struct core_qbuff_queue *buff, unsigned long long buffs_mask, struct net_device *dev, int queue_index);
 
 
 /* skb lazy xmit */
