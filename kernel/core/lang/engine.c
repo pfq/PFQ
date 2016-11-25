@@ -150,31 +150,7 @@ pfq_lang_bind(struct qbuff * buff, struct pfq_lang_functional_node *node)
 ActionQbuff
 pfq_lang_run(struct qbuff * buff, struct pfq_lang_computation_tree *prg)
 {
-#ifdef PFQ_LANG_PROFILE
-	static uint64_t nrun, total;
-	uint64_t stop, start;
-#endif
-
-#ifdef PFQ_LANG_PROFILE
-	start = get_cycles();
-
-	buff =
-#else
-	return
-#endif
-
-	pfq_lang_bind(buff, prg->entry_point);
-
-#ifdef PFQ_LANG_PROFILE
-	stop = get_cycles();
-	total += (stop-start);
-
-	if ((nrun++ % 1048576) == 0)
-		printk(KERN_INFO "[pfq-lang] run: %llu_tsc.\n", total/nrun);
-
-	return buff;
-#endif
-
+	return pfq_lang_bind(buff, prg->entry_point);
 }
 
 

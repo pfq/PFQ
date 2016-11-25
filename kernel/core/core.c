@@ -123,10 +123,6 @@ int core_process_batch(struct core_percpu_data *data,
 	size_t current_batch_len;
 	struct pfq_lang_monad monad;
 
-#ifdef PFQ_RX_PROFILE
-	cycles_t start, stop;
-#endif
-
 	PFQ_BUILD_BUG_ON_MSG(Q_CORE_BUFF_BATCH_LEN > (sizeof(sock_queue[0]) << 3), "qbuff batch overflow");
 
 	current_batch_len = GC_size(GC_ptr);
@@ -137,10 +133,6 @@ int core_process_batch(struct core_percpu_data *data,
 
         memset(sock_queue, 0, sizeof(sock_queue));
 	all_group_mask = 0;
-
-#ifdef PFQ_RX_PROFILE
-	start = get_cycles();
-#endif
 
         /* setup all the qbuff collected */
 
@@ -351,12 +343,6 @@ int core_process_batch(struct core_percpu_data *data,
 	/* reset the GC */
 
 	GC_reset(GC_ptr);
-
-#ifdef PFQ_RX_PROFILE
-	stop = get_cycles();
-	if (printk_ratelimit())
-		printk(KERN_INFO "[PFQ] Rx profile: %llu_tsc.\n", (stop-start)/batch_len);
-#endif
         return 0;
 }
 
