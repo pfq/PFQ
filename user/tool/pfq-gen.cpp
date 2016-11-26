@@ -78,7 +78,7 @@ namespace more
 
 namespace opt
 {
-    size_t flush_hint   = 1;
+    size_t queue_sync   = 1;
     size_t len          = 1514;
     size_t slots        = 8192;
     size_t npackets     = std::numeric_limits<size_t>::max();
@@ -313,7 +313,7 @@ namespace thread
                 }
                 else
                 {
-                    if (!m_pfq.send(pfq::const_buffer(reinterpret_cast<const char *>(m_packet.get()), len), opt::flush_hint, opt::copies))
+                    if (!m_pfq.send(pfq::const_buffer(reinterpret_cast<const char *>(m_packet.get()), len), opt::queue_sync, opt::copies))
                     {
                         m_fail->fetch_add(1, std::memory_order_relaxed);
                         continue;
@@ -370,7 +370,7 @@ namespace thread
                 }
                 else
                 {
-                    if (!m_pfq.send(pfq::const_buffer(reinterpret_cast<const char *>(m_packet.get() + idx * opt::len), len), opt::flush_hint, opt::copies))
+                    if (!m_pfq.send(pfq::const_buffer(reinterpret_cast<const char *>(m_packet.get() + idx * opt::len), len), opt::queue_sync, opt::copies))
                     {
                         m_fail->fetch_add(1, std::memory_order_relaxed);
                         continue;
@@ -522,7 +522,7 @@ namespace thread
                     }
                     else
                     {
-                        if (!m_pfq.send(pfq::const_buffer(reinterpret_cast<const char *>(data), plen), opt::flush_hint, opt::copies))
+                        if (!m_pfq.send(pfq::const_buffer(reinterpret_cast<const char *>(data), plen), opt::queue_sync, opt::copies))
                         {
                             m_fail->fetch_add(1, std::memory_order_relaxed);
                             continue;
@@ -610,7 +610,7 @@ void usage(std::string name)
         "    --interactive              Transmit a packet at time\n"
         " -a --active-tstamp            Use active timestamp as rate control\n"
         " -p --poisson                  Use a Poisson process for inter-packet gaps, implies -a\n"
-        " -f --flush INT                Set flush length, used in sync Tx\n"
+        " -S --queue-sync INT           Set queue sync value, used to Tx sync\n"
         " -t --thread BINDING\n\n"
         "      " + more::netdev_format + "\n" +
         "      " + more::thread_binding_format
@@ -683,14 +683,14 @@ try
 
 #endif
 
-        if ( any_strcmp(argv[i], "-f", "--flush") )
+        if ( any_strcmp(argv[i], "-S", "--sync") )
         {
             if (++i == argc)
             {
                 throw std::runtime_error("hint missing");
             }
 
-            opt::flush_hint = static_cast<size_t>(std::atoi(argv[i]));
+            opt::queue_sync = static_cast<size_t>(std::atoi(argv[i]));
             continue;
         }
 
@@ -941,7 +941,7 @@ try
 
 
     std::cout << "len        : "  << opt::len << std::endl;
-    std::cout << "flush-hint : "  << opt::flush_hint << std::endl;
+    std::cout << "queue sync : "  << opt::queue_sync << std::endl;
 
     if (opt::npackets != std::numeric_limits<size_t>::max())
         std::cout << "npackets   : " << opt::npackets << std::endl;
