@@ -262,7 +262,7 @@ void pfq_kfree_skb_pool(struct sk_buff *skb, struct pfq_skb_pools *pools)
 		struct pfq_percpu_pool *pool = this_cpu_ptr(global->percpu_pool);
 		if (likely(atomic_read(&pool->enable)))
 		{
-			pfq_skb_pool_t *pool = pfq_skb_pool_get(pools, skb->truesize);
+			pfq_skb_pool_t *pool = pfq_skb_pool_get(pools, skb->len);
 			pfq_skb_pool_push(pool, skb);
 			sparse_inc(global->percpu_mem_stats, pool_push);
 			return;
