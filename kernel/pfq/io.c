@@ -133,7 +133,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 
 static inline int
-__pfq_xmit(struct sk_buff *skb, struct net_device *dev, int xmit_more);
+__pfq_xmit(struct sk_buff *skb, struct net_device *dev, int xmit_more, struct pfq_skb_pools *);
 
 
 #if (LINUX_VERSION_CODE > KERNEL_VERSION(3,13,0))
@@ -308,7 +308,7 @@ unsigned int dev_tx_max_skb_copies(struct net_device *dev, unsigned int req_copi
  */
 
 static inline int
-__pfq_xmit(struct sk_buff *skb, struct net_device *dev, int xmit_more)
+__pfq_xmit(struct sk_buff *skb, struct net_device *dev, int xmit_more, struct pfq_skb_pools *pools)
 {
 	int rc;
 
@@ -323,7 +323,7 @@ __pfq_xmit(struct sk_buff *skb, struct net_device *dev, int xmit_more)
 		return rc;
 	}
 
-	kfree_skb(skb);
+	pfq_kfree_skb_pool(skb, pools);
 	return rc;
 }
 
@@ -352,7 +352,7 @@ pfq_xmit(struct qbuff *buff, struct net_device *dev, int queue, int more)
 	if (unlikely(netif_xmit_frozen_or_drv_stopped(txq)))
 		return NETDEV_TX_BUSY;
 
-	ret = __pfq_xmit(skb, dev, more);
+	ret = __pfq_xmit(skb, dev, more, NULL);
 
 	HARD_TX_UNLOCK(dev, txq);
         local_bh_enable();
@@ -427,7 +427,7 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr,
 		/* if copies > 1, when the device support TX_SKB_SHARING */
 
 		if (!netif_xmit_frozen_or_drv_stopped(dev_queue->queue) &&
-			__pfq_xmit(skb, dev_queue->dev, xmit_more_) == NETDEV_TX_OK) {
+			__pfq_xmit(skb, dev_queue->dev, xmit_more_, ctx->pools) == NETDEV_TX_OK) {
 			ret.ok++;
 		}
 		else {
@@ -648,7 +648,7 @@ pfq_qbuff_queue_xmit(struct core_qbuff_queue *buffs, unsigned long long mask, st
 		skb_set_queue_mapping(QBUFF_SKB(buff), queue);
 
 		if (likely(!netif_xmit_frozen_or_drv_stopped(txq)) &&
-			__pfq_xmit(QBUFF_SKB(buff), dev, !( n == last_idx || ((mask & (mask-1)) == 0))) == NETDEV_TX_OK)
+			__pfq_xmit(QBUFF_SKB(buff), dev, !( n == last_idx || ((mask & (mask-1)) == 0)), NULL) == NETDEV_TX_OK)
 			++ret.ok;
 		else {
 			++ret.fail;
@@ -755,7 +755,7 @@ pfq_qbuff_queue_lazy_xmit_run(struct core_qbuff_queue *buffs, struct core_endpoi
 
 				struct sk_buff *nskb = to_clone ? skb_clone(skb, GFP_ATOMIC) : skb_get(skb);
 
-				if (nskb && __pfq_xmit(nskb, dev, xmit_more) == NETDEV_TX_OK)
+				if (nskb && __pfq_xmit(nskb, dev, xmit_more, NULL) == NETDEV_TX_OK)
 					sent++;
 				else
 					sparse_inc(global->percpu_stats, disc);
