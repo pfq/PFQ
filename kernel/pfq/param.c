@@ -39,7 +39,6 @@ module_param_named(capt_batch_len,	 default_global.capt_batch_len,		int, 0644);
 module_param_named(xmit_batch_len,	 default_global.xmit_batch_len,		int, 0644);
 module_param_named(skb_pool_size,	 default_global.skb_pool_size,		int, 0644);
 module_param_named(vlan_untag,		 default_global.vlan_untag,		int, 0644);
-module_param_named(tx_rate_control_eager,default_global.tx_rate_control_eager,	int, 0644);
 
 module_param_array_named(tx_affinity,	 default_global.tx_affinity,		int, &default_global.tx_thread_nr, 0644);
 
@@ -56,5 +55,4 @@ MODULE_PARM_DESC(skb_pool_size,		" Socket buffer pool size (default=1024)");
 #endif
 
 MODULE_PARM_DESC(tx_affinity,		" Tx threads cpus' affinity");
-MODULE_PARM_DESC(tx_rate_control_eager, " Tx rate control eager (default enabled = 1)");
 

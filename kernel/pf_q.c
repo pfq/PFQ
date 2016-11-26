@@ -607,11 +607,21 @@ static int __init pfq_init_module(void)
 
 	pfq_timer_init();
 
-        printk(KERN_INFO "[PFQ] version %d.%d.%d ready!\n",
+
+        printk(KERN_INFO "[PFQ] version %d.%d.%d...\n",
                PFQ_MAJOR(PFQ_VERSION_CODE),
                PFQ_MINOR(PFQ_VERSION_CODE),
                PFQ_PATCHLEVEL(PFQ_VERSION_CODE));
 
+        printk(KERN_INFO "[PFQ] capture_incoming: %d\n", global->capture_incoming);
+        printk(KERN_INFO "[PFQ] capture_outgoing: %d\n", global->capture_outgoing);
+        printk(KERN_INFO "[PFQ] capt_slot_size  : %d\n", global->capt_slot_size);
+        printk(KERN_INFO "[PFQ] xmit_slot_size  : %d\n", global->xmit_slot_size);
+        printk(KERN_INFO "[PFQ] capt_batch_len  : %d\n", global->capt_batch_len);
+        printk(KERN_INFO "[PFQ] xmit_batch_len  : %d\n", global->xmit_batch_len);
+        printk(KERN_INFO "[PFQ] skb_pool_size   : %d\n", global->skb_pool_size);
+        printk(KERN_INFO "[PFQ] vlan_untag      : %d\n", global->vlan_untag);
+        printk(KERN_INFO "[PFQ] ready!\n");
         return 0;
 
 err7:

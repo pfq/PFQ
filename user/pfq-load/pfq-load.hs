@@ -292,7 +292,7 @@ data LoadMode = InsertMod | ProbeMod
 
 loadModule :: LoadMode -> String -> [String] -> IO ()
 loadModule mode name opts = do
-    putStrBoldLn $ "Loading " ++ name ++ "..."
+    putStrBoldLn $ "Loading " ++ name ++ " " ++ show opts
     runSystem (tool ++ " " ++ name ++ " " ++ unwords opts) ("insmod " ++ name ++ " error.", True)
     where tool = if mode == InsertMod then "/sbin/insmod"
                                       else "/sbin/modprobe"
