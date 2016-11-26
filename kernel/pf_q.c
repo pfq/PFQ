@@ -681,7 +681,6 @@ static void __exit pfq_exit_module(void)
 
 #ifdef PFQ_USE_SKB_POOL
         pfq_skb_pool_free_all();
-	sparse_add(global->percpu_mem_stats, pool_pop, total);
 #endif
         if (total)
                 printk(KERN_INFO "[PFQ] %d additional sk_buff freed (GC)!\n", total);

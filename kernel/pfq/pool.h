@@ -56,6 +56,9 @@ extern void	pfq_skb_pool_toggle(bool);
 extern struct	core_pool_stat pfq_get_skb_pool_stats(void);
 
 
+#define PFQ_SKB_POOL_IDX(size) (size <= PFQ_SKB_POOL_SML ? 0 : \
+				size <= PFQ_SKB_POOL_AVG ? 1 : \
+				2)
 
 static inline
 pfq_skb_pool_t *pfq_skb_pool_get(struct pfq_skb_pools *pools, size_t size)
