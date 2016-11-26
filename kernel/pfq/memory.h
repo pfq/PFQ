@@ -42,7 +42,6 @@
 #include <pfq/percpu.h>
 
 
-#define PFQ_SKB_DEFAULT_SIZE  1536
 
 extern struct sk_buff * __pfq_alloc_skb(unsigned int size, gfp_t priority, int fclone, int node);
 extern struct sk_buff * pfq_dev_alloc_skb(unsigned int length);
@@ -188,15 +187,15 @@ struct sk_buff * pfq_netdev_alloc_skb_ip_align(struct net_device *dev,
 
 static inline
 struct sk_buff *
-____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, pfq_skb_pool_t *skb_pool)
+____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, pfq_skb_pool_t *pool)
 {
 #ifdef PFQ_USE_SKB_POOL
-	if (!fclone && size <= PFQ_SKB_DEFAULT_SIZE) {
-		struct sk_buff *skb = pfq_skb_pool_peek(skb_pool);
+	if (likely(pool)) {
+		struct sk_buff *skb = pfq_skb_pool_peek(pool);
 		if (likely(skb != NULL)) {
 			if(likely(pfq_skb_is_recycleable(skb, size))) {
 				sparse_inc(global->percpu_mem_stats, pool_pop);
-				pfq_skb_pool_discard(skb_pool);
+				pfq_skb_pool_discard(pool);
 				return pfq_skb_recycle(skb);
 			}
 			else {
@@ -217,10 +216,12 @@ static inline
 struct sk_buff * pfq_alloc_skb(unsigned int size, gfp_t priority)
 {
 #ifdef PFQ_USE_SKB_POOL
-	struct pfq_percpu_pool *pool = this_cpu_ptr(global->percpu_pool);
+	struct pfq_percpu_pool *local_pool = this_cpu_ptr(global->percpu_pool);
 
-	if (likely(atomic_read(&pool->enable)))
-		return ____pfq_alloc_skb_pool(size, priority, 0, NUMA_NO_NODE, pool->rx_pool);
+	if (likely(atomic_read(&local_pool->enable))) {
+		pfq_skb_pool_t *pool = pfq_skb_pool_get(&local_pool->rx_multi, size);
+		return ____pfq_alloc_skb_pool(size, priority, 0, NUMA_NO_NODE, pool);
+	}
 
 	sparse_inc(global->percpu_mem_stats, os_alloc);
 #endif
@@ -240,13 +241,12 @@ struct sk_buff * pfq_alloc_skb_fclone(unsigned int size, gfp_t priority)
 
 static inline
 struct sk_buff *
-pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int node, pfq_skb_pool_t *skb_pool)
+pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int node, struct pfq_skb_pools *pools)
 {
 #ifdef PFQ_USE_SKB_POOL
-	if (likely(skb_pool)) {
-		struct pfq_percpu_pool *pool = this_cpu_ptr(global->percpu_pool);
-		if (likely(atomic_read(&pool->enable)))
-			return ____pfq_alloc_skb_pool(size, priority, 0, node, skb_pool);
+	if (likely(pools)) {
+		pfq_skb_pool_t *pool = pfq_skb_pool_get(pools, size);
+		return ____pfq_alloc_skb_pool(size, priority, 0, node, pool);
 	}
 	sparse_inc(global->percpu_mem_stats, os_alloc);
 #endif
@@ -255,14 +255,15 @@ pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int node, pfq_skb_pool_t *
 
 
 static inline
-void pfq_kfree_skb_pool(struct sk_buff *skb, pfq_skb_pool_t *skb_pool)
+void pfq_kfree_skb_pool(struct sk_buff *skb, struct pfq_skb_pools *pools)
 {
 #ifdef PFQ_USE_SKB_POOL
-	if (likely(skb_pool) && skb->nf_trace) {
+	if (likely(pools) && skb->nf_trace) {
 		struct pfq_percpu_pool *pool = this_cpu_ptr(global->percpu_pool);
 		if (likely(atomic_read(&pool->enable)))
 		{
-			pfq_skb_pool_push(skb_pool, skb);
+			pfq_skb_pool_t *pool = pfq_skb_pool_get(pools, skb->truesize);
+			pfq_skb_pool_push(pool, skb);
 			sparse_inc(global->percpu_mem_stats, pool_push);
 			return;
 		}

@@ -49,7 +49,7 @@ pfq_skb_pool_flush(pfq_skb_pool_t *pool)
 
 
 static
-int pfq_skb_pool_init (pfq_skb_pool_t **pool, size_t size, int cpu)
+int pfq_skb_pool_init (pfq_skb_pool_t **pool, size_t size, size_t skb_len, int cpu)
 {
 	int total = 0;
 	if (!*pool) {
@@ -64,7 +64,7 @@ int pfq_skb_pool_init (pfq_skb_pool_t **pool, size_t size, int cpu)
 
 		for(; total < size; total++)
 		{
-			skb = __alloc_skb(PFQ_SKB_DEFAULT_SIZE, GFP_KERNEL, 0, cpu_to_node(cpu));
+			skb = __alloc_skb(skb_len, GFP_KERNEL, 0, cpu_to_node(cpu));
 			if (!skb)
 				return total;
 
@@ -130,13 +130,25 @@ int pfq_skb_pool_init_all(void)
 		if (pool) {
                         int n;
 
-			spin_lock_init(&pool->tx_pool_lock);
+			spin_lock_init(&pool->tx_lock);
 
-			if ((n = pfq_skb_pool_init(&pool->tx_pool, global->skb_pool_size, cpu)) < 0)
+			if ((n = pfq_skb_pool_init(&pool->tx_multi.fifo_sml, global->skb_pool_size, PFQ_SKB_POOL_SML, cpu)) < 0)
+				return -ENOMEM;
+			total += n;
+			if ((n = pfq_skb_pool_init(&pool->tx_multi.fifo_avg, global->skb_pool_size, PFQ_SKB_POOL_AVG, cpu)) < 0)
+				return -ENOMEM;
+			total += n;
+			if ((n = pfq_skb_pool_init(&pool->tx_multi.fifo_lrg, global->skb_pool_size, PFQ_SKB_POOL_LRG, cpu)) < 0)
 				return -ENOMEM;
 			total += n;
 
-			if ((n = pfq_skb_pool_init(&pool->rx_pool, global->skb_pool_size, cpu)) < 0)
+			if ((n = pfq_skb_pool_init(&pool->rx_multi.fifo_sml, global->skb_pool_size, PFQ_SKB_POOL_SML, cpu)) < 0)
+				return -ENOMEM;
+			total += n;
+			if ((n = pfq_skb_pool_init(&pool->rx_multi.fifo_avg, global->skb_pool_size, PFQ_SKB_POOL_AVG, cpu)) < 0)
+				return -ENOMEM;
+			total += n;
+			if ((n = pfq_skb_pool_init(&pool->rx_multi.fifo_lrg, global->skb_pool_size, PFQ_SKB_POOL_LRG, cpu)) < 0)
 				return -ENOMEM;
 			total += n;
 		}
@@ -156,10 +168,14 @@ int pfq_skb_pool_free_all(void)
 	{
 		struct pfq_percpu_pool *pool = per_cpu_ptr(global->percpu_pool, cpu);
 		if (pool) {
-			total += pfq_skb_pool_free(&pool->rx_pool);
-			spin_lock(&pool->tx_pool_lock);
-			total += pfq_skb_pool_free(&pool->tx_pool);
-			spin_unlock(&pool->tx_pool_lock);
+			total += pfq_skb_pool_free(&pool->rx_multi.fifo_sml);
+			total += pfq_skb_pool_free(&pool->rx_multi.fifo_avg);
+			total += pfq_skb_pool_free(&pool->rx_multi.fifo_lrg);
+			spin_lock(&pool->tx_lock);
+			total += pfq_skb_pool_free(&pool->tx_multi.fifo_sml);
+			total += pfq_skb_pool_free(&pool->tx_multi.fifo_avg);
+			total += pfq_skb_pool_free(&pool->tx_multi.fifo_lrg);
+			spin_unlock(&pool->tx_lock);
 		}
 	}
 

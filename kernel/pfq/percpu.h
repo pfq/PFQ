@@ -35,9 +35,9 @@ extern int  pfq_percpu_destruct(void);
 struct pfq_percpu_pool
 {
         atomic_t                enable;
-        struct spinlock		tx_pool_lock;
-	pfq_skb_pool_t		*tx_pool;
-        pfq_skb_pool_t		*rx_pool;
+        struct spinlock		tx_lock;
+	struct pfq_skb_pools	tx_multi;
+	struct pfq_skb_pools	rx_multi;
 
 } ____cacheline_aligned;
 

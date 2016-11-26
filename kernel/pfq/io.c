@@ -66,7 +66,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 	if (unlikely(core_sock_get_socket_count() == 0)) {
 		if (skb) {
 			sparse_inc(global->percpu_mem_stats, os_free);
-			pfq_kfree_skb_pool(skb, pool->rx_pool);
+			pfq_kfree_skb_pool(skb, &pool->rx_multi);
 		}
 		return 0;
 	}
@@ -105,7 +105,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 				printk(KERN_INFO "[PFQ] GC: memory exhausted!\n");
 			__sparse_inc(global->percpu_stats, lost, cpu);
 			__sparse_inc(global->percpu_mem_stats, os_free, cpu);
-			pfq_kfree_skb_pool(skb, pool->rx_pool);
+			pfq_kfree_skb_pool(skb, &pool->rx_multi);
 			return 0;
 		}
 
@@ -392,7 +392,7 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr,
 	skb = pfq_alloc_skb_pool( LL_RESERVED_SPACE(dev_queue->dev) + global->xmit_slot_size
 				, GFP_KERNEL
 				, ctx->node
-				, ctx->skb_pool);
+				, ctx->pools);
 	if (unlikely(skb == NULL)) {
 		if (printk_ratelimit())
 			printk(KERN_INFO "[PFQ] Tx could not allocate an skb!\n");
@@ -440,7 +440,7 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr,
 
 	/* release the packet */
 
-	pfq_kfree_skb_pool(skb, ctx->skb_pool);
+	pfq_kfree_skb_pool(skb, ctx->pools);
 
 	if (ret.ok)
 		dev_queue->queue->trans_start = ctx->jiffies;
@@ -482,12 +482,12 @@ pfq_sk_queue_xmit(struct core_sock *so,
 
 	pool = this_cpu_ptr(global->percpu_pool);
 
-	ctx.skb_pool = likely(atomic_read(&pool->enable)) ? pool->tx_pool : NULL;
+	ctx.pools = likely(atomic_read(&pool->enable)) ? &pool->tx_multi : NULL;
 
 	/* lock the Tx pool */
 
-	if (ctx.skb_pool) {
-		spin_lock(&pool->tx_pool_lock);
+	if (ctx.pools) {
+		spin_lock(&pool->tx_lock);
 	}
 
 	if (cpu == Q_NO_KTHREAD) {
@@ -513,8 +513,8 @@ pfq_sk_queue_xmit(struct core_sock *so,
 
 	if (pfq_dev_queue_get(ctx.net, txinfo->def_ifindex, txinfo->def_queue, &dev_queue) < 0) {
 
-		if (ctx.skb_pool)
-			spin_unlock(&pool->tx_pool_lock);
+		if (ctx.pools)
+			spin_unlock(&pool->tx_lock);
 
 		if (printk_ratelimit())
 			printk(KERN_INFO "[PFQ] sk_queue_xmit: could not lock default device!\n");
@@ -596,8 +596,8 @@ pfq_sk_queue_xmit(struct core_sock *so,
 
 	/* unlock the Tx pool... */
 
-	if (ctx.skb_pool);
-		spin_unlock(&pool->tx_pool_lock);
+	if (ctx.pools);
+		spin_unlock(&pool->tx_lock);
 
 
 	/* update the local consumer offset */

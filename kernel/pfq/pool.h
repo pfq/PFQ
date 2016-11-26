@@ -33,16 +33,41 @@
 #include <core/stats.h>
 
 
+#define PFQ_SKB_POOL_SML  320
+#define PFQ_SKB_POOL_AVG  576
+#define PFQ_SKB_POOL_LRG  2048
+
+
 typedef struct core_spsc_fifo pfq_skb_pool_t;
+
+
+struct pfq_skb_pools
+{
+	pfq_skb_pool_t *fifo_sml;
+	pfq_skb_pool_t *fifo_avg;
+	pfq_skb_pool_t *fifo_lrg;
+};
 
 
 extern int	pfq_skb_pool_init_all(void);
 extern int	pfq_skb_pool_free_all(void);
-
 extern void	pfq_skb_pool_toggle(bool);
 
 extern struct	core_pool_stat pfq_get_skb_pool_stats(void);
 
+
+
+static inline
+pfq_skb_pool_t *pfq_skb_pool_get(struct pfq_skb_pools *pools, size_t size)
+{
+	if (size <= PFQ_SKB_POOL_SML)
+		return pools->fifo_sml;
+	if (size <= PFQ_SKB_POOL_AVG)
+		return pools->fifo_avg;
+	if (size <= PFQ_SKB_POOL_LRG)
+		return pools->fifo_lrg;
+	return NULL;
+}
 
 
 static inline

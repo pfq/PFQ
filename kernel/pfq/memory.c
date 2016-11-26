@@ -39,10 +39,12 @@ struct sk_buff *
 __pfq_alloc_skb(unsigned int size, gfp_t priority, int fclone, int node)
 {
 #ifdef PFQ_USE_SKB_POOL
-        struct pfq_percpu_pool *pool = this_cpu_ptr(global->percpu_pool);
+        struct pfq_percpu_pool *local_pool = this_cpu_ptr(global->percpu_pool);
 
-        if (atomic_read(&pool->enable))
-                return ____pfq_alloc_skb_pool(size, priority, fclone, node, pool->rx_pool);
+        if (atomic_read(&local_pool->enable)) {
+		pfq_skb_pool_t *pool = pfq_skb_pool_get(&local_pool->rx_multi, size);
+                return ____pfq_alloc_skb_pool(size, priority, fclone, node, pool);
+	}
 #endif
         return __alloc_skb(size, priority, fclone, node);
 }
