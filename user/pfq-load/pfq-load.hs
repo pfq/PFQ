@@ -24,6 +24,7 @@ import Data.Semigroup
 import Data.List
 import Data.List.Split
 import Data.Maybe
+import Data.Either
 import Data.Char
 
 import Control.Applicative
@@ -45,9 +46,10 @@ import System.Posix.Signals
 import System.Posix.Types
 import qualified Network.PFQ as Q (version)
 
-proc_cpuinfo, proc_modules :: String
+proc_cpuinfo, proc_modules, tmp_pfq :: String
 proc_cpuinfo = "/proc/cpuinfo"
 proc_modules = "/proc/modules"
+tmp_pfq      = "/tmp/pfq.opt"
 
 bold  = setSGRCode [SetConsoleIntensity BoldIntensity]
 reset = setSGRCode []
@@ -122,6 +124,7 @@ data Options = Options
     ,   first_core :: Int
     ,   exclude    :: [Int]
     ,   queues     :: Maybe Int
+    ,   force      :: Bool
     ,   others     :: [String]
     } deriving (Show, Read, Data, Typeable)
 
@@ -135,6 +138,7 @@ options = cmdArgsMode $ Options
     ,   governor   = ""            &= help "Set cpufreq governor"
     ,   first_core = 0             &= typ "NUM" &= help "First core used for irq affinity"
     ,   exclude    = []            &= typ "CORE" &= help "Exclude core from irq affinity"
+    ,   force      = False         &= help "Force PFQ reload!"
     ,   others     = []            &= args
     } &= summary ("pfq-load (PFQ " ++ Q.version ++ ")") &= program "pfq-load"
 
@@ -154,11 +158,26 @@ main = do
     bal  <- getProcessID "irqbalance"
     frd  <- getProcessID "cpufreqd"
 
+    -- compute the command to load pfq...
+
+    let pfqModCmd = if null (pfq_module conf)
+        then mkLoadModuleCmd ProbeMod  "pfq" (pfq_options conf)
+        else mkLoadModuleCmd InsertMod (pfq_module conf) (pfq_options conf)
+
+
+    -- determine whether pfq load is required...
+
+    pfqForceLoad <- or <$> sequence [ return $ force opt
+                                    , not <$> isLoaded "pfq"
+                                    , (/= pfqModCmd) <$> possiblyReadFile tmp_pfq]
+
+    writeFile tmp_pfq pfqModCmd
+
     -- check queues
     when (maybe False (> core) (queues opt)) $ error "queues number is too big!"
 
     -- unload pfq and drivers that depend on it...
-    evalStateT (unloadModule "pfq") pmod
+    evalStateT (unloadDependencies pfqForceLoad "pfq") pmod
 
     -- check irqbalance deaemon
     unless (null bal) $ do
@@ -174,10 +193,10 @@ main = do
     unless (null (cpu_governor conf)) $
         runSystem ("/usr/bin/cpufreq-set -g " ++ cpu_governor conf) ("*** cpufreq-set error! Make sure you have cpufrequtils installed! *** ", True)
 
-    -- load PFQ...
-    if null (pfq_module conf)
-        then loadModule ProbeMod  "pfq" (pfq_options conf)
-        else loadModule InsertMod (pfq_module conf) (pfq_options conf)
+    -- load PFQ (if required)...
+    when pfqForceLoad $ do
+        putStrBoldLn $ "Loading pfq (" ++ pfqModCmd ++ ")"
+        runSystem pfqModCmd ("insmod pfq.ko error.", True)
 
     -- update current loaded proc/modules
     pmod2 <- getProcModules
@@ -185,7 +204,7 @@ main = do
     -- unload drivers...
     unless (null (drivers conf)) $ do
         putStrBoldLn "Unloading vanilla/standard drivers..."
-        evalStateT (forM_ (drivers conf) $ unloadModule . takeBaseName . drvmod) pmod2
+        evalStateT (forM_ (drivers conf) $ unloadDependencies True . takeBaseName . drvmod) pmod2
 
     -- load and configure device drivers...
     forM_ (drivers conf) $ \drv -> do
@@ -242,7 +261,7 @@ loadConfig confs opt =
     getFirstConfig confs >>= \case
         Nothing   -> putStrBoldLn "Using default config..." >> return (mkConfig opt)
         Just conf -> putStrBoldLn ("Using " ++ conf ++ " config...") >>
-                        liftM (read . clean) (readFile conf)
+                        (read . clean) <$> readFile conf
 
 
 getNumberOfPhyCores :: IO Int
@@ -266,7 +285,7 @@ rmmodFromProcMOdules name = filter (\(m,ds) -> m /= name )
 
 
 getProcessID :: String -> IO [ProcessID]
-getProcessID name = liftM (map read . words) $ catchIOError (readProcess "/bin/pidof" [name] "") (\_-> return [])
+getProcessID name = (map read . words) <$> catchIOError (readProcess "/bin/pidof" [name] "") (\_-> return [])
 
 
 moduleDependencies :: String -> ProcModules -> [String]
@@ -274,11 +293,13 @@ moduleDependencies  name =
     concatMap (\(m,ds) -> if m == name then ds else [])
 
 
-unloadModule :: String -> ModStateT IO ()
-unloadModule name = do
+unloadDependencies :: Bool              -- unload the given module as well
+                   -> String            -- kernel module name
+                   -> ModStateT IO ()
+unloadDependencies rm name = do
     proc_mods <- get
-    forM_ (moduleDependencies name proc_mods) unloadModule
-    when (isModuleLoaded name proc_mods) $ do
+    mapM_ (unloadDependencies True) (moduleDependencies name proc_mods)
+    when (rm && isModuleLoaded name proc_mods) $ do
         liftIO $ rmmod name
         put $ rmmodFromProcMOdules name proc_mods
     where rmmod name = do
@@ -290,12 +311,28 @@ unloadModule name = do
 data LoadMode = InsertMod | ProbeMod
                     deriving Eq
 
+
+isLoaded :: String -> IO Bool
+isLoaded mod = do
+    pmod <- getProcModules
+    return $ mod `elem` fmap fst pmod
+
+
+-- putStrBoldLn $ "Loading " ++ name ++ " " ++ show opts
+
+
+mkLoadModuleCmd :: LoadMode -> String -> [String] -> String
+mkLoadModuleCmd mode name opts =
+    tool ++ " " ++ name ++ " " ++ unwords opts
+    where tool = if mode == InsertMod then "/sbin/insmod"
+                                      else "/sbin/modprobe"
+
+
 loadModule :: LoadMode -> String -> [String] -> IO ()
 loadModule mode name opts = do
     putStrBoldLn $ "Loading " ++ name ++ " " ++ show opts
-    runSystem (tool ++ " " ++ name ++ " " ++ unwords opts) ("insmod " ++ name ++ " error.", True)
-    where tool = if mode == InsertMod then "/sbin/insmod"
-                                      else "/sbin/modprobe"
+    runSystem (mkLoadModuleCmd mode name opts) ("insmod " ++ name ++ " error.", True)
+
 
 
 setupDevice :: Maybe Int -> Device -> IO ()
@@ -355,4 +392,12 @@ runSystem cmd (errmsg,term) = do
 
 putStrBoldLn :: String -> IO ()
 putStrBoldLn msg = putStrLn $ bold ++ msg ++ reset
+
+
+possiblyReadFile :: FilePath -> IO String
+possiblyReadFile file = do
+    res <- tryIOError $ readFile file
+    case res of
+        Left _    -> return ""
+        Right str -> length str `seq` return str
 
