@@ -424,11 +424,14 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr,
 
 		const bool xmit_more_ = ctx->xmit_more || ctx->copies != 1;
 
-		if (!netif_xmit_frozen_or_drv_stopped(dev_queue->queue) &&
-			__pfq_xmit(skb, dev_queue->dev, xmit_more_) == NETDEV_TX_OK) {
-			ret.ok++;
+		if (!netif_xmit_frozen_or_drv_stopped(dev_queue->queue)) {
+			if (__pfq_xmit(skb, dev_queue->dev, xmit_more_) == NETDEV_TX_OK)
+				ret.ok++;
+			else
+				ret.fail++;
 		}
 		else {
+			kfree_skb(skb);
 			ret.fail++;
 		}
 
