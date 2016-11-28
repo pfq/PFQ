@@ -390,7 +390,7 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr,
 	/* allocate a new socket buffer */
 
 	skb = pfq_alloc_skb_pool( len
-				, GFP_KERNEL
+				, GFP_ATOMIC
 				, ctx->node
 				, ctx->pools);
 	if (unlikely(skb == NULL)) {
