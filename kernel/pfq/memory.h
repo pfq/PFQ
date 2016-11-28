@@ -83,7 +83,7 @@ static inline bool pfq_skb_is_recycleable(const struct sk_buff *skb, unsigned in
 #endif
 	/*  check whether the skb is shared with someone else.. */
 
-	if (atomic_read(&skb->users) != 1) {
+	if (atomic_read(&skb->users) > 1) {
 		sparse_inc(global->percpu_mem_stats, err_shared);
 		return false;
 	}

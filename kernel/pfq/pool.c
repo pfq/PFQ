@@ -36,14 +36,21 @@ static
 size_t
 pfq_skb_pool_flush(pfq_skb_pool_t *pool)
 {
-	size_t total = 0;
+	size_t total = 0, in_use = 0;
 	struct sk_buff *skb;
 	while ((skb = pfq_skb_pool_pop(pool)))
 	{
 		sparse_inc(global->percpu_mem_stats, os_free);
+		if (atomic_read(&skb->users) > 1) {
+			in_use++;
+		}
 		kfree_skb(skb);
 		total++;
 	}
+
+	if (in_use)
+		printk(KERN_WARNING "[PFQ] pfq_skb_pool_flush: pool@%p -> %zu buffers still in use!!\n", pool, in_use);
+
 	return total;
 }
 
