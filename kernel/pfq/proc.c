@@ -170,11 +170,20 @@ static int pfq_proc_stats(struct seq_file *m, void *v)
 static int pfq_proc_memory(struct seq_file *m, void *v)
 {
 	long int push_0 = sparse_read(global->percpu_mem_stats, pool_push[0]);
-	long int pop_0  = sparse_read(global->percpu_mem_stats, pool_pop[0]);
 	long int push_1 = sparse_read(global->percpu_mem_stats, pool_push[1]);
-	long int pop_1  = sparse_read(global->percpu_mem_stats, pool_pop[1]);
 	long int push_2 = sparse_read(global->percpu_mem_stats, pool_push[2]);
+
+	long int pop_0  = sparse_read(global->percpu_mem_stats, pool_pop[0]);
+	long int pop_1  = sparse_read(global->percpu_mem_stats, pool_pop[1]);
 	long int pop_2  = sparse_read(global->percpu_mem_stats, pool_pop[2]);
+
+	long int empty_0  = sparse_read(global->percpu_mem_stats, pool_empty[0]);
+	long int empty_1  = sparse_read(global->percpu_mem_stats, pool_empty[1]);
+	long int empty_2  = sparse_read(global->percpu_mem_stats, pool_empty[2]);
+
+	long int norecycl_0  = sparse_read(global->percpu_mem_stats, pool_norecycl[0]);
+	long int norecycl_1  = sparse_read(global->percpu_mem_stats, pool_norecycl[1]);
+	long int norecycl_2  = sparse_read(global->percpu_mem_stats, pool_norecycl[2]);
 
 	seq_printf(m, "OS:\n");
 	seq_printf(m, "  alloc          : %10ld\n", sparse_read(global->percpu_mem_stats, os_alloc));
@@ -182,8 +191,8 @@ static int pfq_proc_memory(struct seq_file *m, void *v)
 	seq_printf(m, "POOL:\n");
 	seq_printf(m, "  push           : %10ld %10ld %10ld\n", push_0, push_1, push_2);
 	seq_printf(m, "  pop            : %10ld %10ld %10ld\n", pop_0, pop_1, pop_2);
-	seq_printf(m, "  empty          : %10ld\n", sparse_read(global->percpu_mem_stats, pool_empty));
-	seq_printf(m, "  no recycl.     : %10ld\n", sparse_read(global->percpu_mem_stats, pool_norecycl));
+	seq_printf(m, "  empty          : %10ld %10ld %10ld\n", empty_0, empty_1, empty_2);
+	seq_printf(m, "  norecycl       : %10ld %10ld %10ld\n", norecycl_0, norecycl_1, norecycl_2);
 	seq_printf(m, "ERROR:\n");
 	seq_printf(m, "  error shared   : %10ld\n", sparse_read(global->percpu_mem_stats, err_shared));
 	seq_printf(m, "  error cloned   : %10ld\n", sparse_read(global->percpu_mem_stats, err_cloned));

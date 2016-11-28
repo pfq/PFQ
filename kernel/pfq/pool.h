@@ -34,7 +34,7 @@
 
 
 #define PFQ_SKB_POOL_SML  320
-#define PFQ_SKB_POOL_AVG  576
+#define PFQ_SKB_POOL_MID  576
 #define PFQ_SKB_POOL_LRG  2048
 
 
@@ -44,7 +44,7 @@ typedef struct core_spsc_fifo pfq_skb_pool_t;
 struct pfq_skb_pools
 {
 	pfq_skb_pool_t *fifo_sml;
-	pfq_skb_pool_t *fifo_avg;
+	pfq_skb_pool_t *fifo_mid;
 	pfq_skb_pool_t *fifo_lrg;
 };
 
@@ -57,7 +57,7 @@ extern struct	core_pool_stat pfq_get_skb_pool_stats(void);
 
 
 #define PFQ_SKB_POOL_IDX(size) (size <= PFQ_SKB_POOL_SML ? 0 : \
-				size <= PFQ_SKB_POOL_AVG ? 1 : \
+				size <= PFQ_SKB_POOL_MID ? 1 : \
 				2)
 
 static inline
@@ -65,8 +65,8 @@ pfq_skb_pool_t *pfq_skb_pool_get(struct pfq_skb_pools *pools, size_t size)
 {
 	if (size <= PFQ_SKB_POOL_SML)
 		return pools->fifo_sml;
-	if (size <= PFQ_SKB_POOL_AVG)
-		return pools->fifo_avg;
+	if (size <= PFQ_SKB_POOL_MID)
+		return pools->fifo_mid;
 	if (size <= PFQ_SKB_POOL_LRG)
 		return pools->fifo_lrg;
 	return NULL;
