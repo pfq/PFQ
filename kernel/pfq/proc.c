@@ -169,6 +169,8 @@ static int pfq_proc_stats(struct seq_file *m, void *v)
 
 static int pfq_proc_memory(struct seq_file *m, void *v)
 {
+	int i;
+
 	long int push_0 = sparse_read(global->percpu_mem_stats, pool_push[0]);
 	long int push_1 = sparse_read(global->percpu_mem_stats, pool_push[1]);
 	long int push_2 = sparse_read(global->percpu_mem_stats, pool_push[2]);
@@ -185,15 +187,36 @@ static int pfq_proc_memory(struct seq_file *m, void *v)
 	long int norecycl_1  = sparse_read(global->percpu_mem_stats, pool_norecycl[1]);
 	long int norecycl_2  = sparse_read(global->percpu_mem_stats, pool_norecycl[2]);
 
-	seq_printf(m, "OS:\n");
+	seq_printf(m, "Kernel\n");
 	seq_printf(m, "  alloc          : %10ld\n", sparse_read(global->percpu_mem_stats, os_alloc));
 	seq_printf(m, "  free           : %10ld\n", sparse_read(global->percpu_mem_stats, os_free));
-	seq_printf(m, "POOL:\n");
+	seq_printf(m, "\nPFQ POOL           %10s %10s %10s\n", "small", "mid", "large");
 	seq_printf(m, "  push           : %10ld %10ld %10ld\n", push_0, push_1, push_2);
 	seq_printf(m, "  pop            : %10ld %10ld %10ld\n", pop_0, pop_1, pop_2);
 	seq_printf(m, "  empty          : %10ld %10ld %10ld\n", empty_0, empty_1, empty_2);
-	seq_printf(m, "  norecycl       : %10ld %10ld %10ld\n", norecycl_0, norecycl_1, norecycl_2);
-	seq_printf(m, "ERROR:\n");
+	seq_printf(m, "  norecycl       : %10ld %10ld %10ld\n\n", norecycl_0, norecycl_1, norecycl_2);
+
+	for_each_present_cpu(i)
+	{
+		struct pfq_percpu_pool *pool = per_cpu_ptr(global->percpu_pool, i);
+
+		seq_printf(m, "CPU-%d:\n", i);
+		if (pool)
+		{
+			long int rx_0 = pfq_skb_pool_size(pool->rx_multi.fifo_sml);
+			long int rx_1 = pfq_skb_pool_size(pool->rx_multi.fifo_mid);
+			long int rx_2 = pfq_skb_pool_size(pool->rx_multi.fifo_lrg);
+
+			long int tx_0 = pfq_skb_pool_size(pool->tx_multi.fifo_sml);
+			long int tx_1 = pfq_skb_pool_size(pool->tx_multi.fifo_mid);
+			long int tx_2 = pfq_skb_pool_size(pool->tx_multi.fifo_lrg);
+
+			seq_printf(m, "  Rx pool size   : %10ld %10ld %10ld\n", rx_0, rx_1, rx_2);
+			seq_printf(m, "  Tx pool size   : %10ld %10ld %10ld\n", tx_0, tx_1, tx_2);
+		}
+	}
+
+	seq_printf(m, "\nPFQ POOL error\n");
 	seq_printf(m, "  error shared   : %10ld\n", sparse_read(global->percpu_mem_stats, err_shared));
 	seq_printf(m, "  error cloned   : %10ld\n", sparse_read(global->percpu_mem_stats, err_cloned));
 	seq_printf(m, "  error memory   : %10ld\n", sparse_read(global->percpu_mem_stats, err_memory));
