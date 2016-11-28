@@ -389,7 +389,7 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr,
 
 	/* allocate a new socket buffer */
 
-	skb = pfq_alloc_skb_pool( LL_RESERVED_SPACE(dev_queue->dev) + global->xmit_slot_size
+	skb = pfq_alloc_skb_pool( len
 				, GFP_KERNEL
 				, ctx->node
 				, ctx->pools);
@@ -422,9 +422,9 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr,
 	atomic_set(&skb->users, ctx->copies + 1);
 
 	do {
-		const bool xmit_more_ = ctx->xmit_more || ctx->copies != 1;
+		/* copies > 1 when the device support TX_SKB_SHARING */
 
-		/* if copies > 1, when the device support TX_SKB_SHARING */
+		const bool xmit_more_ = ctx->xmit_more || ctx->copies != 1;
 
 		if (!netif_xmit_frozen_or_drv_stopped(dev_queue->queue) &&
 			__pfq_xmit(skb, dev_queue->dev, xmit_more_) == NETDEV_TX_OK) {
