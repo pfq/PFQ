@@ -607,7 +607,6 @@ static int __init pfq_init_module(void)
 
 	pfq_timer_init();
 
-
         printk(KERN_INFO "[PFQ] version %d.%d.%d...\n",
                PFQ_MAJOR(PFQ_VERSION_CODE),
                PFQ_MINOR(PFQ_VERSION_CODE),
@@ -628,8 +627,11 @@ err7:
 	pfq_stop_all_tx_threads();
 err6:
 	unregister_netdevice_notifier(&pfq_netdev_notifier_block);
+
 	unregister_device_handler();
+#ifdef PFQ_USE_SKB_POOL
 err5:
+#endif
         sock_unregister(PF_Q);
 err4:
         proto_unregister(&pfq_proto);
