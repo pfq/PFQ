@@ -310,7 +310,7 @@ unsigned int dev_tx_max_skb_copies(struct net_device *dev, unsigned int req_copi
 static inline int
 __pfq_xmit(struct sk_buff *skb, struct net_device *dev, int xmit_more)
 {
-	int rc;
+	int ret;
 
 #if(LINUX_VERSION_CODE >= KERNEL_VERSION(3,18,0))
 	skb->xmit_more = xmit_more;
@@ -318,13 +318,13 @@ __pfq_xmit(struct sk_buff *skb, struct net_device *dev, int xmit_more)
 	skb->mark = xmit_more;
 #endif
 
-	rc = dev->netdev_ops->ndo_start_xmit(skb, dev);
-	if (dev_xmit_complete(rc)) {
-		return rc;
+	ret = dev->netdev_ops->ndo_start_xmit(skb, dev);
+	if (dev_xmit_complete(ret)) {
+		return ret;
 	}
 
 	kfree_skb(skb);
-	return rc;
+	return ret;
 }
 
 
@@ -334,7 +334,7 @@ pfq_xmit(struct qbuff *buff, struct net_device *dev, int queue, int more)
 {
 	struct netdev_queue *txq;
 	struct sk_buff *skb = QBUFF_SKB(buff);
-	int ret = 0;
+	int ret = NETDEV_TX_BUSY;
 
 	/* get txq and fix the queue for this batch.
 	 *
@@ -349,10 +349,8 @@ pfq_xmit(struct qbuff *buff, struct net_device *dev, int queue, int more)
 	local_bh_disable();
 	HARD_TX_LOCK(dev, txq, smp_processor_id());
 
-	if (unlikely(netif_xmit_frozen_or_drv_stopped(txq)))
-		return NETDEV_TX_BUSY;
-
-	ret = __pfq_xmit(skb, dev, more);
+	if (!netif_xmit_frozen_or_drv_stopped(txq))
+		ret = __pfq_xmit(skb, dev, more);
 
 	HARD_TX_UNLOCK(dev, txq);
         local_bh_enable();

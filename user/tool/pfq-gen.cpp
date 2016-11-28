@@ -589,7 +589,7 @@ void usage(std::string name)
         " -h --help                     Display this help\n"
         " -l --len INT                  Set packet length\n"
         " -n --packets INT              Number of packets to transmit\n"
-        "    --second NT                Number of seconds to transmit\n"
+        "    --seconds INT              Number of seconds to transmit\n"
         " -c --copies INT               Number of per-packet copies\n"
         " -s --queue-slots INT          Set Tx queue length\n"
         " -k --kthread IDX,IDX...       Async with kernel threads\n"
