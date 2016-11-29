@@ -1596,7 +1596,7 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 
 	/* swap the queue... */
 
-        data = __atomic_exchange_n(&qd->rx.shinfo, ((qver+1) << (PFQ_SHARED_QUEUE_LEN_SIZE<<3)), __ATOMIC_SEQ_CST);
+        data = __atomic_exchange_n(&qd->rx.shinfo, ((qver+1) << (PFQ_SHARED_QUEUE_LEN_SIZE<<3)), __ATOMIC_RELAXED);
 
 	if (PFQ_SHARED_QUEUE_LEN(data) == 0) {
 #ifdef PFQ_USE_POLL
