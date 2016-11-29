@@ -628,7 +628,7 @@ pfq_opt_default(pcap_t *handle)
 		.caplen		= handle->snapshot,
 		.rx_slots	= 4096,
 		.tx_slots	= 4096,
-		.tx_flush_hint	= 1,
+		.tx_sync	= 1,
 		.tx_async	= 0,
 		.tx_hw_queue	= {-1, -1, -1, -1},
 		.tx_idx_thread	= { Q_NO_KTHREAD, Q_NO_KTHREAD, Q_NO_KTHREAD, Q_NO_KTHREAD },
@@ -656,8 +656,8 @@ pfq_parse_env(struct pfq_opt *opt)
 	if ((var = getenv("PFQ_TX_SLOTS")))
 		opt->tx_slots = atoi(var);
 
-	if ((var = getenv("PFQ_TX_FLUSH_HINT")))
-		opt->tx_flush_hint = atoi(var);
+	if ((var = getenv("PFQ_TX_SYNC")))
+		opt->tx_sync = atoi(var);
 
 	if ((var = getenv("PFQ_VLAN")))
 		opt->vlan[PFQ_GROUP_DEF] = var;
@@ -711,7 +711,7 @@ pfq_parse_env(struct pfq_opt *opt)
 #define KEY_caplen		1
 #define KEY_rx_slots		2
 #define KEY_tx_slots            3
-#define KEY_tx_flush_hint	4
+#define KEY_tx_sync		4
 #define KEY_tx_hw_queue		5
 #define KEY_tx_idx_thread	6
 #define KEY_vlan		7
@@ -727,7 +727,7 @@ struct pfq_conf_key
 	KEY(caplen),
 	KEY(rx_slots),
 	KEY(tx_slots),
-	KEY(tx_flush_hint),
+	KEY(tx_sync),
 	KEY(tx_hw_queue),
 	KEY(tx_idx_thread),
 	KEY(vlan),
@@ -865,7 +865,7 @@ pfq_parse_config(struct pfq_opt *opt, const char *filename)
 			case KEY_caplen:	pfq_warn_if(index, filename, tkey); opt->caplen   = atoi(value);  break;
 			case KEY_rx_slots:	pfq_warn_if(index, filename, tkey); opt->rx_slots = atoi(value);  break;
 			case KEY_tx_slots:	pfq_warn_if(index, filename, tkey); opt->tx_slots = atoi(value);  break;
-			case KEY_tx_flush_hint:	pfq_warn_if(index, filename, tkey); opt->tx_flush_hint = atoi(value);  break;
+			case KEY_tx_sync:	pfq_warn_if(index, filename, tkey); opt->tx_sync = atoi(value);  break;
 			case KEY_tx_hw_queue:  {
 				pfq_warn_if(index, filename, tkey);
 				if (pfq_parse_integers(opt->tx_hw_queue, 4, value) < 0) {
@@ -1055,11 +1055,11 @@ pfq_activate_linux(pcap_t *handle)
 		handle->opt.pfq.rx_slots = handle->opt.buffer_size/handle->opt.pfq.caplen;
 
 
-	fprintf(stdout, "[PFQ] config caplen = %d, rx_slots = %d, tx_slots = %d, tx_flush_hint = %d\n",
+	fprintf(stdout, "[PFQ] config caplen = %d, rx_slots = %d, tx_slots = %d, tx_sync = %d\n",
 		handle->opt.pfq.caplen,
 		handle->opt.pfq.rx_slots,
 		handle->opt.pfq.tx_slots,
-		handle->opt.pfq.tx_flush_hint);
+		handle->opt.pfq.tx_sync);
 
 
 	pfq_group_map_dump(&handle->opt.pfq.group_map);
@@ -1347,7 +1347,7 @@ pfq_inject_linux(pcap_t *handle, const void * buf, size_t size)
 	if (handle->opt.pfq.tx_async)
 		ret = pfq_send_async(handle->md.pfq.q, buf, size, 1);
 	else
-		ret = pfq_send(handle->md.pfq.q, buf, size, handle->opt.pfq.tx_flush_hint, 1);
+		ret = pfq_send(handle->md.pfq.q, buf, size, handle->opt.pfq.tx_sync, 1);
         if (ret == -1) {
 		snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "%s", pfq_error(handle->md.pfq.q));
 		return PCAP_ERROR;
