@@ -56,6 +56,7 @@ reset = setSGRCode []
 
 configFiles = [ "/etc/pfq.conf", "/root/.pfq.conf" ]
 
+defaultDelay = 500000
 
 data YesNo = Yes | No | Unspec
     deriving (Show, Read, Eq)
@@ -340,10 +341,10 @@ setupDevice queues (Device dev speed channels fctrl opts) = do
 
     putStrBoldLn $ "Activating " ++ dev ++ "..."
 
-    threadDelay 1000000
+    threadDelay defaultDelay
     runSystem ("/sbin/ifconfig " ++ dev ++ " up") ("ifconfig error!", True)
 
-    threadDelay 1000000
+    threadDelay defaultDelay
     case fctrl of
         No -> do
                 putStrBoldLn $ "Disabling flow control for " ++ dev ++ "..."
@@ -353,20 +354,20 @@ setupDevice queues (Device dev speed channels fctrl opts) = do
                 runSystem ("/sbin/ethtool -A " ++ dev ++ " autoneg on rx on tx on") ("ethtool: flowctrl error!", False)
         Unspec -> return ()
 
-    threadDelay 1000000
+    threadDelay defaultDelay
     when (isJust speed) $ do
         let s = fromJust speed
         putStrBoldLn $ "Setting speed (" ++ show s ++ ") for " ++ dev ++ "..."
         runSystem ("/sbin/ethtool -s " ++ dev ++ " speed " ++ show s ++ " duplex full") ("ethtool: set speed error!", False)
 
-    threadDelay 1000000
+    threadDelay defaultDelay
     when (isJust queues || isJust channels) $ do
         let c = fromJust (queues <|> channels)
         putStrBoldLn $ "Setting channels to " ++ show c ++ "..."
         runSystem ("/sbin/ethtool -L " ++ dev ++ " combined " ++ show c) ("", False)
 
     forM_ opts $ \(opt, arg) -> do
-        threadDelay 1000000
+        threadDelay defaultDelay
         runSystem ("/sbin/ethtool " ++ opt ++ " " ++ dev ++ " " ++ arg) ("ethtool:" ++ opt ++ " error!", True)
 
 
