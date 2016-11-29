@@ -799,51 +799,53 @@ size_t pfq_sk_queue_recv(struct core_sock_opt *opt,
 	if (unlikely(rx_queue == NULL))
 		return 0;
 
-	data = __atomic_load_n(&rx_queue->shinfo, __ATOMIC_RELAXED);
-	if (PFQ_SHARED_QUEUE_LEN(data) > opt->rx_queue_len)
-		return 0;
-
-	data = __atomic_add_fetch(&rx_queue->shinfo, burst_len, __ATOMIC_RELAXED);
-	qlen = PFQ_SHARED_QUEUE_LEN(data) - burst_len;
+	data = __atomic_fetch_add(&rx_queue->shinfo, burst_len, __ATOMIC_RELAXED);
+	qlen = PFQ_SHARED_QUEUE_LEN(data);
 	qver = PFQ_SHARED_QUEUE_VER(data);
 
 	hdr  = (struct pfq_pkthdr *) core_mpsc_slot_ptr(opt, rx_queue, qver, qlen);
 
 	for_each_qbuff_with_mask(mask, buffs, buff, n)
 	{
-		size_t bytes, slot_index;
 		struct sk_buff *skb = QBUFF_SKB(buff);
+		size_t bytes, slot_index;
 		char *pkt;
 
 		/* prefetch skb data that is to be copied soon */
+		if (likely(skb))
+			prefetch_r1(skb->data);
 
-		if (likely(skb)) prefetch_r1(skb->data);
+		slot_index = qlen + copied;
 
-		/* compute the basic values */
-
-		bytes = min_t(size_t, skb->len, opt->caplen);
-		slot_index = qlen + sent;
-		pkt = (char *)(hdr+1);
-
-		if (unlikely(slot_index > opt->rx_queue_len)) {
+		if (unlikely(slot_index >= opt->rx_queue_len)) {
+#ifdef PFQ_USE_POLL
 			if (waitqueue_active(&opt->waitqueue)) {
 				wake_up_interruptible(&opt->waitqueue);
 			}
-			return sent;
+#endif
+			return copied;
 		}
+
+		/* compute the boundaries */
+
+		bytes = min_t(size_t, skb->len, opt->caplen);
+		pkt = (char *)(hdr+1);
 
 		/* copy bytes of packet */
 
 #ifdef PFQ_USE_SKB_LINEARIZE
-		if (unlikely(skb_is_nonlinear(skb))) {
+		if (unlikely(skb_is_nonlinear(skb)))
 #else
-		if (skb_is_nonlinear(skb)) {
+		if (skb_is_nonlinear(skb))
 #endif
-			if (skb_copy_bits(skb, 0, pkt, bytes) != 0) {
-				printk(KERN_WARNING "[PFQ] BUG! skb_copy_bits failed (bytes=%zu, skb_len=%d mac_len=%d)!\n",
-				       bytes, skb->len, skb->mac_len);
-				return 0;
-			}
+		{
+
+		if (skb_copy_bits(skb, 0, pkt, bytes) != 0) {
+			printk(KERN_WARNING "[PFQ] BUG! skb_copy_bits failed (bytes=%zu, skb_len=%d mac_len=%d)!\n",
+			       bytes, skb->len, skb->mac_len);
+			return copied;
+		}
+
 		}
 		else {
 			pfq_skb_copy_from_linear_data(skb, pkt, bytes);
@@ -879,16 +881,18 @@ size_t pfq_sk_queue_recv(struct core_sock_opt *opt,
 
 		/* check for pending waitqueue... */
 
-		if ((slot_index & 4095) == 0 &&
+#ifdef PFQ_USE_POLL
+		if ((slot_index & 127) == 0 &&
 		    waitqueue_active(&opt->waitqueue)) {
 			wake_up_interruptible(&opt->waitqueue);
 		}
+#endif
 
-		sent++;
+		copied++;
 
 		hdr = PFQ_SHARED_QUEUE_NEXT_PKTHDR(hdr, opt->rx_slot_size);
 	}
 
-	return sent;
+	return copied;
 }
 
