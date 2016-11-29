@@ -792,8 +792,8 @@ size_t pfq_sk_queue_recv(struct core_sock_opt *opt,
 	struct pfq_pkthdr *hdr;
 	struct qbuff *buff;
 	unsigned long data;
-	size_t n, sent = 0;
-	pfq_ver_t qver;
+	size_t n, copied = 0;
+	pfq_qver_t qver;
 	int qlen;
 
 	if (unlikely(rx_queue == NULL))

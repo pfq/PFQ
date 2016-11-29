@@ -858,7 +858,7 @@ namespace pfq {
             {
                 auto raw = static_cast<char *>(data_->rx_queue_addr) + ((qver+1) & 1) * data_->rx_queue_size;
                 auto end = raw + data_->rx_queue_size;
-                const pfq_ver_t rst = qver & 1;
+                const pfq_qver_t rst = qver & 1;
                 for(; raw < end; raw += data_->rx_slot_size)
                     reinterpret_cast<pfq_pkthdr *>(raw)->info.commit = rst;
             }
@@ -878,20 +878,23 @@ namespace pfq {
 #endif
             }
 
-            auto queue_len = std::min(static_cast<size_t>(PFQ_SHARED_QUEUE_LEN(data)), data_->rx_slots);
+            auto queue_len = std::min( static_cast<size_t>(PFQ_SHARED_QUEUE_LEN(data))
+                                      , data_->rx_slots);
 
-            return net_queue(static_cast<char *>(data_->rx_queue_addr) + (qver & 1) * data_->rx_queue_size,
-                         data_->rx_slot_size, queue_len, qver);
+            return net_queue( static_cast<char *>(data_->rx_queue_addr) + (qver & 1) * data_->rx_queue_size
+                            , data_->rx_slot_size
+                            , queue_len
+                            , qver);
         }
 
         //! Return the current commit version (used internally by the memory mapped queue).
 
-        pfq_ver_t
+        pfq_qver_t
         current_commit() const
         {
             auto q = static_cast<struct pfq_shared_queue *>(data_->shm_addr);
             auto data = __atomic_load_n(&q->rx.shinfo, __ATOMIC_RELAXED);
-            return static_cast<pfq_ver_t>(PFQ_SHARED_QUEUE_VER(data));
+            return static_cast<pfq_qver_t>(PFQ_SHARED_QUEUE_VER(data));
         }
 
         //! Receive packets in the given buffer.

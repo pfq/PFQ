@@ -70,12 +70,12 @@
 #define PFQ_VERSION_STRING			"6.0.0"
 
 #ifdef __x86_64__
-typedef uint32_t pfq_ver_t;
+typedef uint32_t pfq_qver_t;
 #else
-typedef uint8_t  pfq_ver_t;
+typedef uint8_t  pfq_qver_t;
 #endif
 
-#define PFQ_SHARED_QUEUE_VER_SIZE		(sizeof(pfq_ver_t))
+#define PFQ_SHARED_QUEUE_VER_SIZE		(sizeof(pfq_qver_t))
 #define PFQ_SHARED_QUEUE_LEN_SIZE		(sizeof(unsigned long) - PFQ_SHARED_QUEUE_VER_SIZE)
 
 #define PFQ_SHARED_QUEUE_VER_MASK		((1UL << (PFQ_SHARED_QUEUE_VER_SIZE<<3))-1)
