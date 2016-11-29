@@ -523,9 +523,6 @@ pfq_sk_queue_xmit(struct core_sock *so,
 		return ret;
 	}
 
-	local_bh_disable();
-	HARD_TX_LOCK(dev_queue.dev, dev_queue.queue, cpu);
-
 	/* prefetch packets... */
 
 	hdr  = (struct pfq_pkthdr *)begin;
@@ -536,6 +533,9 @@ pfq_sk_queue_xmit(struct core_sock *so,
         prefetch_r3(hdr1);
         prefetch_r3((char *)hdr1+64);
 
+
+	local_bh_disable();
+	HARD_TX_LOCK(dev_queue.dev, dev_queue.queue, cpu);
 
 	for_each_sk_mbuff(hdr, end, 0 /* dynamic slot size */)
 	{
@@ -812,9 +812,16 @@ size_t pfq_sk_queue_recv(struct core_sock_opt *opt,
 		char *pkt;
 
 		/* prefetch skb data that is to be copied soon */
-		if (likely(skb))
-			prefetch_r1(skb->data);
 
+		if (likely(skb)) {
+			prefetch_r3(skb->data);
+			prefetch_r3((char *)skb->data+64);
+		}
+
+		/* compute the boundaries */
+
+		bytes = min_t(size_t, skb->len, opt->caplen);
+		pkt = (char *)(hdr+1);
 		slot_index = qlen + copied;
 
 		if (unlikely(slot_index >= opt->rx_queue_len)) {
@@ -826,10 +833,6 @@ size_t pfq_sk_queue_recv(struct core_sock_opt *opt,
 			return copied;
 		}
 
-		/* compute the boundaries */
-
-		bytes = min_t(size_t, skb->len, opt->caplen);
-		pkt = (char *)(hdr+1);
 
 		/* copy bytes of packet */
 
