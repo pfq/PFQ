@@ -50,90 +50,9 @@
 #include <pfq/prefetch.h>
 
 
-int
-pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
-{
-	struct core_percpu_data * data;
-	struct pfq_percpu_pool * pool;
-	int cpu;
-
-	/* if no socket is open drop the packet */
-
-        cpu = smp_processor_id();
-	data = per_cpu_ptr(global->percpu_data, cpu);
-	pool = per_cpu_ptr(global->percpu_pool, cpu);
-
-	if (unlikely(core_sock_get_socket_count() == 0)) {
-		if (skb) {
-			sparse_inc(global->percpu_mem_stats, os_free);
-			pfq_kfree_skb_pool(skb, &pool->rx_multi);
-		}
-		return 0;
-	}
-
-	if (likely(skb))
-	{
-		struct qbuff * buff;
-
-		/* if required, timestamp the packet now */
-
-		if (skb->tstamp.tv64 == 0)
-			__net_timestamp(skb);
-
-		/* if vlan header is present, remove it */
-
-		if (global->vlan_untag && skb->protocol == cpu_to_be16(ETH_P_8021Q)) {
-			skb = pfq_vlan_untag(skb);
-			if (unlikely(!skb)) {
-				__sparse_inc(global->percpu_stats, lost, cpu);
-				return -1;
-			}
-		}
-
-		skb_reset_mac_len(skb);
-
-		/* push the mac header: reset skb->data to the beginning of the packet */
-
-		if (likely(skb->pkt_type != PACKET_OUTGOING))
-		    skb_push(skb, skb->mac_len);
-
-		/* pass the ownership of this skb to the garbage collector */
-
-		buff = GC_make_buff(data->GC, skb);
-		if (buff == NULL) {
-			if (printk_ratelimit())
-				printk(KERN_INFO "[PFQ] GC: memory exhausted!\n");
-			__sparse_inc(global->percpu_stats, lost, cpu);
-			__sparse_inc(global->percpu_mem_stats, os_free, cpu);
-			pfq_kfree_skb_pool(skb, &pool->rx_multi);
-			return 0;
-		}
-
-		buff->direct = direct;
-
-		if ((GC_size(data->GC) < (size_t)global->capt_batch_len) &&
-		     (ktime_to_ns(ktime_sub(qbuff_get_ktime(buff), data->last_rx)) < 1000000))
-		{
-			return 0;
-		}
-
-		data->last_rx = qbuff_get_ktime(buff);
-	}
-	else {
-                if (GC_size(data->GC) == 0)
-			return 0;
-	}
-
-	return core_process_batch( data
-				 , per_cpu_ptr(global->percpu_sock, cpu)
-				 , pool
-				 , data->GC
-				 , cpu);
-}
-
-
-static inline int
-__pfq_xmit(struct sk_buff *skb, struct net_device *dev, int xmit_more);
+/*
+ * Packet Tx 
+ */
 
 
 #if (LINUX_VERSION_CODE > KERNEL_VERSION(3,13,0))
@@ -171,6 +90,13 @@ pfq_netdev_pick_tx(struct net_device *dev, struct sk_buff *skb, int *queue)
 }
 
 
+#if 0
+
+/*
+ * wait function for active timestamping
+ *
+ */
+
 
 static inline
 bool giveup_tx_process(atomic_t const *stop)
@@ -178,13 +104,6 @@ bool giveup_tx_process(atomic_t const *stop)
 	return atomic_read(stop) == -1 || signal_pending(current) || is_kthread_should_stop();
 }
 
-
-/*
- * wait function for active timestamping
- *
- */
-
-#if 0
 static inline
 ktime_t wait_until_busy(uint64_t ts, atomic_t const *stop, bool *intr)
 {
@@ -510,7 +429,7 @@ pfq_sk_queue_xmit(struct core_sock *so,
         ctx.intr    = false;
         ctx.stop    = stop;
 
-	/* lock the dev_queue and disable bh */
+	/* lock the dev_queue */
 
 	if (pfq_dev_queue_get(ctx.net, txinfo->def_ifindex, txinfo->def_queue, &dev_queue) < 0) {
 
@@ -533,6 +452,7 @@ pfq_sk_queue_xmit(struct core_sock *so,
         prefetch_r3(hdr1);
         prefetch_r3((char *)hdr1+64);
 
+	/* disable bottom half and lock the queue */
 
 	local_bh_disable();
 	HARD_TX_LOCK(dev_queue.dev, dev_queue.queue, cpu);
@@ -566,8 +486,7 @@ pfq_sk_queue_xmit(struct core_sock *so,
 
 		/* transmit this packet */
 
-		if (likely(netif_running(dev_queue.dev) &&
-			netif_carrier_ok(dev_queue.dev))) {
+		if (likely(netif_running(dev_queue.dev) && netif_carrier_ok(dev_queue.dev))) {
 
 			size_t len = min_t(size_t, hdr->len, global->xmit_slot_size);
 
@@ -582,18 +501,15 @@ pfq_sk_queue_xmit(struct core_sock *so,
 	}
 
 
-	/* unlock the current queue */
+	/* unlock the current queue, enable bottom half */
 
 	HARD_TX_UNLOCK(dev_queue.dev, dev_queue.queue);
-
-	/* enable local bottom half */
-
 	local_bh_enable();
+
 
 	/* release the dev_queue */
 
 	pfq_dev_queue_put(&dev_queue);
-
 
 	/* unlock the Tx pool... */
 
@@ -620,7 +536,7 @@ pfq_sk_queue_xmit(struct core_sock *so,
 
 
 /*
- * transmit queues of packets (from a skbuff_queue)...
+ * transmit queue of qbuff...
  */
 
 tx_response_t
@@ -772,6 +688,92 @@ pfq_qbuff_queue_lazy_xmit_run(struct core_qbuff_queue *buffs, struct core_endpoi
 	return sent;
 }
 
+
+/*
+ * Packet(s) Rx...
+ */
+
+
+int
+pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
+{
+	struct core_percpu_data * data;
+	struct pfq_percpu_pool * pool;
+	int cpu;
+
+	/* if no socket is open drop the packet */
+
+        cpu = smp_processor_id();
+	data = per_cpu_ptr(global->percpu_data, cpu);
+	pool = per_cpu_ptr(global->percpu_pool, cpu);
+
+	if (unlikely(core_sock_get_socket_count() == 0)) {
+		if (skb) {
+			sparse_inc(global->percpu_mem_stats, os_free);
+			pfq_kfree_skb_pool(skb, &pool->rx_multi);
+		}
+		return 0;
+	}
+
+	if (likely(skb))
+	{
+		struct qbuff * buff;
+
+		/* if required, timestamp the packet now */
+
+		if (skb->tstamp.tv64 == 0)
+			__net_timestamp(skb);
+
+		/* if vlan header is present, remove it */
+
+		if (global->vlan_untag && skb->protocol == cpu_to_be16(ETH_P_8021Q)) {
+			skb = pfq_vlan_untag(skb);
+			if (unlikely(!skb)) {
+				__sparse_inc(global->percpu_stats, lost, cpu);
+				return -1;
+			}
+		}
+
+		skb_reset_mac_len(skb);
+
+		/* push the mac header: reset skb->data to the beginning of the packet */
+
+		if (likely(skb->pkt_type != PACKET_OUTGOING))
+		    skb_push(skb, skb->mac_len);
+
+		/* pass the ownership of this skb to the garbage collector */
+
+		buff = GC_make_buff(data->GC, skb);
+		if (buff == NULL) {
+			if (printk_ratelimit())
+				printk(KERN_INFO "[PFQ] GC: memory exhausted!\n");
+			__sparse_inc(global->percpu_stats, lost, cpu);
+			__sparse_inc(global->percpu_mem_stats, os_free, cpu);
+			pfq_kfree_skb_pool(skb, &pool->rx_multi);
+			return 0;
+		}
+
+		buff->direct = direct;
+
+		if ((GC_size(data->GC) < (size_t)global->capt_batch_len) &&
+		     (ktime_to_ns(ktime_sub(qbuff_get_ktime(buff), data->last_rx)) < 1000000))
+		{
+			return 0;
+		}
+
+		data->last_rx = qbuff_get_ktime(buff);
+	}
+	else {
+                if (GC_size(data->GC) == 0)
+			return 0;
+	}
+
+	return core_process_batch( data
+				 , per_cpu_ptr(global->percpu_sock, cpu)
+				 , pool
+				 , data->GC
+				 , cpu);
+}
 
 static inline
 void *pfq_skb_copy_from_linear_data(const struct sk_buff *skb, void *to, size_t len)
