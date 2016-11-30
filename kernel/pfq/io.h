@@ -80,11 +80,10 @@ extern int pfq_xmit(struct qbuff *buff, struct net_device *dev, int queue, int m
 extern tx_response_t
 pfq_qbuff_queue_xmit(struct core_qbuff_queue *buff, unsigned long long buffs_mask, struct net_device *dev, int queue_index);
 
-
 /* skb lazy xmit */
 
-extern int pfq_lazy_xmit(struct qbuff * buff, struct net_device *dev, int queue_index);
-extern int pfq_qbuff_queue_lazy_xmit_run(struct core_qbuff_queue *queue, struct core_endpoint_info const *info);
+extern int pfq_qbuff_lazy_xmit(struct qbuff * buff, struct net_device *dev, int queue_index);
+extern int pfq_qbuff_lazy_xmit_run(struct core_qbuff_queue *queue, struct core_endpoint_info const *info);
 
 
 #define pfq_qbuff_queue_lazy_xmit(buffs, mask, dev, queue_index) ({ \
@@ -97,7 +96,7 @@ extern int pfq_qbuff_queue_lazy_xmit_run(struct core_qbuff_queue *queue, struct 
                 \
 		for_each_qbuff_with_mask(mask, buffs, buff, i) \
 		{   \
-			if (pfq_lazy_xmit(buff, dev, queue_index)) \
+			if (pfq_qbuff_lazy_xmit(buff, dev, queue_index)) \
 				++n; \
 		} \
 		n; \

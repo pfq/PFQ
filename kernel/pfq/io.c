@@ -596,7 +596,7 @@ intr:
  */
 
 int
-pfq_lazy_xmit(struct qbuff * buff, struct net_device *dev, int queue)
+pfq_qbuff_lazy_xmit(struct qbuff * buff, struct net_device *dev, int queue)
 {
 	struct GC_log *buff_log = buff->log;
 
@@ -616,7 +616,7 @@ pfq_lazy_xmit(struct qbuff * buff, struct net_device *dev, int queue)
 
 
 int
-pfq_qbuff_queue_lazy_xmit_run(struct core_qbuff_queue *buffs, struct core_endpoint_info const *endpoints)
+pfq_qbuff_lazy_xmit_run(struct core_qbuff_queue *buffs, struct core_endpoint_info const *endpoints)
 {
 	struct netdev_queue *txq;
 	struct net_device *dev;

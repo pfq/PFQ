@@ -150,7 +150,7 @@ forward(arguments_t args, struct qbuff * buff)
                 return Pass(buff);
 	}
 
-	pfq_lazy_xmit(buff, dev, qbuff_get_queue_mapping(buff));
+	pfq_qbuff_lazy_xmit(buff, dev, qbuff_get_queue_mapping(buff));
 
 	stats = get_group_stats(buff);
 	local_inc(&stats->frwd);
@@ -170,7 +170,7 @@ bridge(arguments_t args, struct qbuff * buff)
                 return Drop(buff);
 	}
 
-	pfq_lazy_xmit(buff, dev, qbuff_get_queue_mapping(buff));
+	pfq_qbuff_lazy_xmit(buff, dev, qbuff_get_queue_mapping(buff));
 
 	local_inc(&get_group_stats(buff)->frwd);
 
@@ -190,7 +190,7 @@ link_(arguments_t args, struct qbuff * buff)
 	{
 		if (dev[n] != NULL && qbuff_device(buff) != dev[n])
 		{
-			pfq_lazy_xmit(buff, dev[n], qbuff_get_queue_mapping(buff));
+			pfq_qbuff_lazy_xmit(buff, dev[n], qbuff_get_queue_mapping(buff));
 			local_inc(&stats->frwd);
 		}
 	}
@@ -214,7 +214,7 @@ tap(arguments_t args, struct qbuff * buff)
         if (EVAL_PREDICATE(pred_, buff))
 		return Pass(buff);
 
-	pfq_lazy_xmit(buff, dev, qbuff_get_queue_mapping(buff));
+	pfq_qbuff_lazy_xmit(buff, dev, qbuff_get_queue_mapping(buff));
 
 	local_inc(&get_group_stats(buff)->frwd);
 
@@ -234,7 +234,7 @@ tee(arguments_t args, struct qbuff * buff)
                 return Drop(buff);
 	}
 
-	pfq_lazy_xmit(buff, dev, qbuff_get_queue_mapping(buff));
+	pfq_qbuff_lazy_xmit(buff, dev, qbuff_get_queue_mapping(buff));
 
 	local_inc(&get_group_stats(buff)->frwd);
 

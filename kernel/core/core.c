@@ -321,7 +321,7 @@ int core_process_batch(struct core_percpu_data *data,
 
 	if (endpoints.cnt_total)
 	{
-		size_t total = (size_t)pfq_qbuff_queue_lazy_xmit_run(PFQ_QBUFF_QUEUE(&GC_ptr->pool), &endpoints);
+		size_t total = (size_t)pfq_qbuff_lazy_xmit_run(PFQ_QBUFF_QUEUE(&GC_ptr->pool), &endpoints);
 
 		__sparse_add(global->percpu_stats, frwd, total, cpu);
 		__sparse_add(global->percpu_stats, disc, endpoints.cnt_total - total, cpu);
