@@ -335,9 +335,8 @@ int core_process_batch(struct core_percpu_data *data,
 			qbuff_copy_to_kernel(buff, cpu);
 			__sparse_inc(global->percpu_stats, kern, cpu);
 		}
-		else {
-			qbuff_free(buff, &pool->rx_multi);
-		}
+
+		qbuff_free(buff, &pool->rx_multi);
 	}
 
 	/* reset the GC */
