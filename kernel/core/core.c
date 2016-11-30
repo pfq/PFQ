@@ -235,7 +235,7 @@ int core_process_batch(struct core_percpu_data *data,
 				/* update stats */
 
                                 __sparse_add(this_group->stats, frwd, buff->log->num_devs -num_fwd, cpu);
-                                __sparse_add(this_group->stats, kern, buff->log->to_kernel -to_kernel, cpu);
+                                __sparse_add(this_group->stats, kern, buff->log->to_kernel - to_kernel, cpu);
 
 				/* skip the packet? */
 
@@ -332,7 +332,7 @@ int core_process_batch(struct core_percpu_data *data,
 	for_each_qbuff(PFQ_QBUFF_QUEUE(&GC_ptr->pool), buff, n)
 	{
 		if (buff->direct && fwd_to_kernel(buff)) {
-			qbuff_send_to_kernel(buff, cpu);
+			qbuff_copy_to_kernel(buff, cpu);
 			__sparse_inc(global->percpu_stats, kern, cpu);
 		}
 		else {

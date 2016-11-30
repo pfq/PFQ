@@ -202,6 +202,17 @@ ptrdiff_t maybe_swap_sk_tx_queue(struct pfq_tx_queue *txm, unsigned int *cons_id
 }
 
 
+static inline
+struct sk_buff *
+skb_clone_for_tx(struct sk_buff *skb, struct net_device *dev, gfp_t pri)
+{
+	if (likely(dev->priv_flags & IFF_TX_SKB_SHARING))
+		return skb_get(skb);
+
+	return skb_clone(skb, pri);
+}
+
+
 static
 unsigned int dev_tx_max_skb_copies(struct net_device *dev, unsigned int req_copies)
 {
@@ -481,7 +492,7 @@ pfq_sk_queue_xmit(struct core_sock *so,
                 /* set the xmit_more bit */
 
 		ctx.xmit_more = (batch_cntr >= global->xmit_batch_len) ?
-				batch_cntr=0, false :
+				batch_cntr = 0, false :
 				PFQ_SHARED_QUEUE_NEXT_PKTHDR(hdr, 0) < (struct pfq_pkthdr *)end;
 
 		/* transmit this packet */
@@ -564,9 +575,13 @@ pfq_qbuff_queue_xmit(struct core_qbuff_queue *buffs, unsigned long long mask, st
 		skb_reset_mac_header(QBUFF_SKB(buff));
 		skb_set_queue_mapping(QBUFF_SKB(buff), queue);
 
-		if (likely(!netif_xmit_frozen_or_drv_stopped(txq)) &&
-			__pfq_xmit(QBUFF_SKB(buff), dev, !( n == last_idx || ((mask & (mask-1)) == 0))) == NETDEV_TX_OK)
-			++ret.ok;
+		if (likely(!netif_xmit_frozen_or_drv_stopped(txq))) {
+
+			if (__pfq_xmit(QBUFF_SKB(buff), dev, !( n == last_idx || ((mask & (mask-1)) == 0))) == NETDEV_TX_OK)
+				++ret.ok;
+			else
+				++ret.fail;
+		}
 		else {
 			++ret.fail;
 			goto intr;
@@ -644,7 +659,6 @@ pfq_qbuff_lazy_xmit_run(struct core_qbuff_queue *buffs, struct core_endpoint_inf
 			struct sk_buff *skb = QBUFF_SKB(buff);
 
 			num = GC_count_dev_in_log(dev, buff->log);
-
 			if (num == 0)
 				continue;
 
@@ -667,10 +681,8 @@ pfq_qbuff_lazy_xmit_run(struct core_qbuff_queue *buffs, struct core_endpoint_inf
 
 			for (j = 0; j < num; j++)
 			{
-				const int xmit_more  = ++sent_dev != endpoints->cnt[n];
-				const bool to_clone  = buff->log->to_kernel || buff->log->xmit_todo-- > 1;
-
-				struct sk_buff *nskb = to_clone ? skb_clone(skb, GFP_ATOMIC) : skb_get(skb);
+				const int xmit_more = ++sent_dev != endpoints->cnt[n];
+				struct sk_buff *nskb = skb_clone_for_tx(skb, dev, GFP_ATOMIC);
 
 				if (nskb && __pfq_xmit(nskb, dev, xmit_more) == NETDEV_TX_OK)
 					sent++;

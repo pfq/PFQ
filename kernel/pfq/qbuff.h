@@ -150,12 +150,12 @@ qbuff_maclen(struct qbuff const *buff)
 
 
 static inline void
-qbuff_send_to_kernel(struct qbuff *buff, int cpu)
+qbuff_copy_to_kernel(struct qbuff *buff, gfp_t pri)
 {
-	struct sk_buff *skb = QBUFF_SKB(buff);
-	skb_pull(skb, skb->mac_len);
-	skb->peeked = global->capture_incoming;
-	netif_receive_skb(skb);
+	struct sk_buff *nskb = skb_copy(QBUFF_SKB(buff), pri);
+	skb_pull(nskb, nskb->mac_len);
+	nskb->peeked = global->capture_incoming;
+	netif_receive_skb(nskb);
 }
 
 
