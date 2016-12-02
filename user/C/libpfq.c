@@ -1574,7 +1574,7 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 	struct pfq_shared_queue * qd;
 	unsigned long int data, qver;
 
-        if (q->shm_addr == NULL) {
+        if (unlikely(q->shm_addr == NULL)) {
 		return Q_ERROR(q, "PFQ: read: socket not enabled");
 	}
 
@@ -1585,7 +1585,7 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 
         /* at wrap-around reset Rx slots... */
 
-        if (((qver+1) & (PFQ_SHARED_QUEUE_VER_MASK^1))== 0)
+        if (unlikely(((qver+1) & (PFQ_SHARED_QUEUE_VER_MASK^1))== 0))
         {
             char * raw = (char *)(q->rx_queue_addr) + ((qver+1) & 1) * q->rx_queue_size;
             char * end = raw + q->rx_queue_size;
@@ -1598,7 +1598,7 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 
         data = __atomic_exchange_n(&qd->rx.shinfo, ((qver+1) << (PFQ_SHARED_QUEUE_LEN_SIZE<<3)), __ATOMIC_RELAXED);
 
-	if (PFQ_SHARED_QUEUE_LEN(data) == 0) {
+	if (unlikely(PFQ_SHARED_QUEUE_LEN(data) == 0)) {
 #ifdef PFQ_USE_POLL
 		if (pfq_poll(q, microseconds) < 0)
 			return Q_ERROR(q, "PFQ: poll error");
@@ -1752,7 +1752,7 @@ pfq_send_raw(pfq_t *q
 
 	this_slot_size = ALIGN(sizeof(struct pfq_pkthdr) + caplen, 64);
 
-	if (((size_t)(offset) + this_slot_size) < q->tx_queue_size)
+	if (likely(((size_t)(offset) + this_slot_size) < q->tx_queue_size))
 	{
 		struct pfq_pkthdr *hdr = (struct pfq_pkthdr *)(base_addr + offset);
 		hdr->tstamp.tv64	= nsec;

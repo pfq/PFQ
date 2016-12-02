@@ -842,7 +842,7 @@ namespace pfq {
         net_queue
         read(long int microseconds = -1)
         {
-            if (!data()->shm_addr)
+            if (unlikely(!data()->shm_addr))
                 throw system_error("PFQ: read: socket not enabled");
 
             auto q = static_cast<struct pfq_shared_queue *>(data()->shm_addr);
@@ -854,7 +854,7 @@ namespace pfq {
             // at wrap-around reset Rx slots...
             //
 
-            if (((qver+1) & (PFQ_SHARED_QUEUE_VER_MASK^1))== 0)
+            if (unlikely(((qver+1) & (PFQ_SHARED_QUEUE_VER_MASK^1))== 0))
             {
                 auto raw = static_cast<char *>(data_->rx_queue_addr) + ((qver+1) & 1) * data_->rx_queue_size;
                 auto end = raw + data_->rx_queue_size;
@@ -868,7 +868,7 @@ namespace pfq {
 
             data = __atomic_exchange_n(&q->rx.shinfo, ((qver+1) << (PFQ_SHARED_QUEUE_LEN_SIZE<<3)), __ATOMIC_RELAXED);
 
-            if (PFQ_SHARED_QUEUE_LEN(data) == 0)
+            if (unlikely(PFQ_SHARED_QUEUE_LEN(data) == 0))
             {
 #ifdef PFQ_USE_POLL
                 this->poll(microseconds);
@@ -1184,7 +1184,7 @@ namespace pfq {
 
             // ensure there's enough space for the current this_slot_size + the next header:
             //
-            if ((static_cast<size_t>(offset) + this_slot_size) < data_->tx_queue_size)
+            if (likely((static_cast<size_t>(offset) + this_slot_size) < data_->tx_queue_size))
             {
                 auto hdr = (struct pfq_pkthdr *)(base_addr + offset);
 

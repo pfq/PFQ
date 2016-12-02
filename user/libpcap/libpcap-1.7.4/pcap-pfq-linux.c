@@ -1431,7 +1431,8 @@ pfq_read_linux(pcap_t *handle, int max_packets, pcap_handler callback, u_char *u
 	int n = max_packets;
 
         if (it == pfq_net_queue_end(nq)) {
-		if (pfq_read(handle->md.pfq.q, nq, handle->md.timeout > 0 ? handle->md.timeout * 1000 : 1000000) < 0) {
+
+		if (unlikely(pfq_read(handle->md.pfq.q, nq, handle->md.timeout > 0 ? handle->md.timeout * 1000 : 1000000) < 0)) {
 			snprintf(handle->errbuf, sizeof(handle->errbuf), "PFQ read error");
 			return PCAP_ERROR;
 		}
@@ -1453,7 +1454,7 @@ pfq_read_linux(pcap_t *handle, int max_packets, pcap_handler callback, u_char *u
 		__builtin_prefetch((char *)(pfq_pkt_header(it))+128, 0, 3);
 
 		while (!pfq_pkt_ready(nq, it)) {
-			if (handle->break_loop) {
+			if (unlikely(handle->break_loop)) {
 				handle->break_loop = 0;
 				return PCAP_ERROR_BREAK;
 			}
@@ -1500,7 +1501,7 @@ pfq_read_linux(pcap_t *handle, int max_packets, pcap_handler callback, u_char *u
 
 	handle->md.pfq.current = it;
 
-	if (handle->break_loop) {
+	if (unlikely(handle->break_loop)) {
 		handle->break_loop = 0;
 		return PCAP_ERROR_BREAK;
 	}
