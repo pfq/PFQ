@@ -491,9 +491,9 @@ pfq_sk_queue_xmit(struct core_sock *so,
 
                 /* set the xmit_more bit */
 
-		ctx.xmit_more = (batch_cntr >= global->xmit_batch_len) ?
-				batch_cntr = 0, false :
-				PFQ_SHARED_QUEUE_NEXT_PKTHDR(hdr, 0) < (struct pfq_pkthdr *)end;
+		ctx.xmit_more = likely(batch_cntr < global->xmit_batch_len) ?
+				likely(PFQ_SHARED_QUEUE_NEXT_PKTHDR(hdr, 0) < (struct pfq_pkthdr *)end) :
+				(batch_cntr = 0, false);
 
 		/* transmit this packet */
 
