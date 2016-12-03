@@ -53,13 +53,13 @@ int core_percpu_alloc(void)
 
 	global->percpu_stats = alloc_percpu(core_global_stats_t);
 	if (!global->percpu_stats) {
-                printk(KERN_ERR "[PFQ] could not allocate percpu pool!\n");
+                printk(KERN_ERR "[PFQ] could not allocate percpu stats!\n");
                 goto err2;
         }
 
 	global->percpu_mem_stats = alloc_percpu(struct core_memory_stats);
 	if (!global->percpu_mem_stats) {
-                printk(KERN_ERR "[PFQ] could not allocate percpu pool!\n");
+                printk(KERN_ERR "[PFQ] could not allocate percpu memory stats!\n");
                 goto err3;
         }
 
