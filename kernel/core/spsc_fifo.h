@@ -146,9 +146,9 @@ size_t core_spsc_len(struct core_spsc_fifo const *fifo)
 
 static inline
 struct core_spsc_fifo *
-core_spsc_init(size_t size)
+core_spsc_init(size_t size, int cpu)
 {
-	struct core_spsc_fifo *fifo = (struct core_spsc_fifo *)kmalloc(sizeof(struct core_spsc_fifo) + sizeof(void *)*size, GFP_KERNEL);
+	struct core_spsc_fifo *fifo = (struct core_spsc_fifo *)kmalloc_node(sizeof(struct core_spsc_fifo) + sizeof(void *)*size, GFP_KERNEL, cpu_to_node(cpu));
 	if (fifo != NULL)
 	{
 		fifo->size = size;
