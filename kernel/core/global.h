@@ -54,8 +54,8 @@ struct core_global_data
 
 	int vlan_untag;
 
-	int tx_affinity[Q_CORE_MAX_CPU];
-	int tx_thread_nr;
+	int tx_cpu[Q_CORE_MAX_CPU];
+	int tx_cpu_nr;
 
 	atomic_long_t   socket_ptr[Q_CORE_MAX_ID];
 	atomic_t        socket_count;

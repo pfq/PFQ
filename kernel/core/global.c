@@ -38,8 +38,8 @@ struct core_global_data default_global =
 	.vlan_untag		= 0,
 
 	.skb_pool_size		= 1024,
-	.tx_affinity		= {0},
-	.tx_thread_nr		= 0,
+	.tx_cpu			= {0},
+	.tx_cpu_nr		= 0,
 
 	.socket_ptr		= {{0}},
 	.socket_count		= {0},

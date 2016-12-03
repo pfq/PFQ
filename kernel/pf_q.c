@@ -483,21 +483,21 @@ check_tx_threads_affinity(void)
 {
 	int i, j;
 
-	for(i=0; i < global->tx_thread_nr; ++i)
+	for(i=0; i < global->tx_cpu_nr; ++i)
 	{
-		if (global->tx_affinity[i] < 0 || global->tx_affinity[i] >= num_online_cpus())
+		if (global->tx_cpu[i] < 0 || global->tx_cpu[i] >= num_online_cpus())
 		{
-			printk(KERN_INFO "[PFQ] error: Tx thread bad affinity on cpu:%d!\n", global->tx_affinity[i]);
+			printk(KERN_INFO "[PFQ] error: Tx thread bad affinity on cpu:%d!\n", global->tx_cpu[i]);
 			return -EFAULT;
 		}
 	}
 
-	for(i=0; i < global->tx_thread_nr-1; ++i)
-	for(j=i+1; j < global->tx_thread_nr; ++j)
+	for(i=0; i < global->tx_cpu_nr-1; ++i)
+	for(j=i+1; j < global->tx_cpu_nr; ++j)
 	{
-		if (global->tx_affinity[i] == global->tx_affinity[j])
+		if (global->tx_cpu[i] == global->tx_cpu[j])
 		{
-			printk(KERN_INFO "[PFQ] error: Tx thread affinity for cpu:%d already in use!\n", global->tx_affinity[i]);
+			printk(KERN_INFO "[PFQ] error: Tx thread affinity for cpu:%d already in use!\n", global->tx_cpu[i]);
 			return -EFAULT;
 		}
 	}
@@ -587,7 +587,7 @@ static int __init pfq_init_module(void)
         register_netdevice_notifier(&pfq_netdev_notifier_block);
 
 	/* start Tx threads for asynchronous transmission */
-	if (global->tx_thread_nr)
+	if (global->tx_cpu_nr)
 	{
 		if ((err = check_tx_threads_affinity()) < 0)
 			goto err6;
