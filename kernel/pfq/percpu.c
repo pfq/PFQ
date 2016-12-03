@@ -30,32 +30,29 @@
 
 int pfq_percpu_init(void)
 {
-	struct GC_data **GCs;
-	int cpu, i, n = 0;
+	struct GC_data **GCptrs;
+	int cpu, i;
 
-	GCs = (struct GC_data **)kzalloc(sizeof(struct GC_data *) * Q_CORE_MAX_CPU, GFP_KERNEL);
-	if (!GCs) {
+	GCptrs = (struct GC_data **)kzalloc(sizeof(struct GC_data *) * Q_CORE_MAX_CPU, GFP_KERNEL);
+	if (!GCptrs) {
 		printk(KERN_ERR "[PFQ] percpu: out of memory!\n");
 		return -ENOMEM;
 	}
 
 	for_each_present_cpu(cpu)
 	{
-		if (n == Q_CORE_MAX_CPU) {
+		if (cpu >= Q_CORE_MAX_CPU) {
 			printk(KERN_ERR "[PFQ] percpu: maximum number of cpu reached (%d)!\n", Q_CORE_MAX_CPU);
 			goto err;
 		}
 
-		GCs[n] = (struct GC_data *)kmalloc(sizeof(struct GC_data), GFP_KERNEL);
-		if (!GCs[n]) {
-			printk(KERN_ERR "[PFQ] percpu: could not allocate GC[%d]!\n", n);
+		GCptrs[cpu] = (struct GC_data *)kmalloc_node(sizeof(struct GC_data), GFP_KERNEL, cpu_to_node(cpu));
+		if (!GCptrs[cpu]) {
+			printk(KERN_ERR "[PFQ] percpu: could not allocate GC[%d]!\n", cpu);
 			goto err;
 		}
-		n++;
 	}
 
-
-	n = 0;
         for_each_present_cpu(cpu)
         {
                 struct core_percpu_data *data;
@@ -68,19 +65,20 @@ int pfq_percpu_init(void)
                 data = per_cpu_ptr(global->percpu_data, cpu);
 
 		data->counter = 0;
-		data->GC = GCs[n++];
+		data->GC = GCptrs[cpu];
 		GC_data_init(data->GC);
 
 		preempt_enable();
 	}
 
-	kfree(GCs);
+	kfree(GCptrs);
 	return 0;
-err:
-	for(i = 0; i < n; i++)
-		kfree(GCs[i]);
 
-	kfree(GCs);
+err:
+	for(i = 0; i < Q_CORE_MAX_CPU; i++)
+		kfree(GCptrs[i]);
+
+	kfree(GCptrs);
 	return -ENOMEM;
 }
 
@@ -118,7 +116,5 @@ int pfq_percpu_destruct(void)
 	sparse_add(global->percpu_stats, lost, total);
         return total;
 }
-
-
 
 
