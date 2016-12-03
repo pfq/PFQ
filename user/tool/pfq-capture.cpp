@@ -549,6 +549,9 @@ try
     {
         std::this_thread::sleep_for(std::chrono::seconds(1));
 
+        if (opt::stop.load(std::memory_order_relaxed))
+            break;
+
         if (opt::dump)
             continue;
 
@@ -601,9 +604,6 @@ try
 
         old = sum, begin = end;
         old_stats = sum_stats;
-
-        if (opt::stop.load(std::memory_order_relaxed))
-            break;
     }
 
     std::cout << "closing...";
