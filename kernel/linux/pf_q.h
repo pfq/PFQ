@@ -50,6 +50,7 @@
 
 #define likely(x)	__builtin_expect((x),1)
 #define unlikely(x)     __builtin_expect((x),0)
+#define barrier()	asm volatile("" ::: "memory")
 
 #endif /* __KERNEL__ */
 

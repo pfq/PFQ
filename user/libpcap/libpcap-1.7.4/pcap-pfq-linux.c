@@ -1458,7 +1458,7 @@ pfq_read_linux(pcap_t *handle, int max_packets, pcap_handler callback, u_char *u
 				handle->break_loop = 0;
 				return PCAP_ERROR_BREAK;
 			}
-			pfq_yield();
+			pfq_relax();
 		}
 
 		h = (struct pfq_pkthdr *)pfq_pkt_header(it);

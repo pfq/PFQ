@@ -1650,7 +1650,7 @@ pfq_dispatch(pfq_t *q, pfq_handler_t cb, long int microseconds, char *user)
 	for(; it != it_end; it = pfq_net_queue_next(&q->nq, it))
 	{
 		while (!pfq_pkt_ready(&q->nq, it))
-			pfq_yield();
+			pfq_relax();
 
 		cb(user, pfq_pkt_header(it), pfq_pkt_data(it));
 		n++;

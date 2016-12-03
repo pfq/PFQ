@@ -132,6 +132,25 @@ pfq_yield()
 }
 
 
+
+static inline
+void
+pfq_relax()
+{
+#if defined(__i386__)
+	asm volatile("rep; nop" ::: "memory");
+#elif defined(__x86_64__)
+	asm volatile("rep; nop" ::: "memory");
+#elif defined(__ia64__)
+	asm volatile ("hint @pause" ::: "memory")
+#elif defined(__aarch64__)
+	asm volatile("yield" ::: "memory")
+#else
+	barrier();
+#endif
+}
+
+
 /*! Symmetric hashx */
 
 
