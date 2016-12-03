@@ -104,35 +104,6 @@ static inline bool pfq_skb_is_recycleable(const struct sk_buff *skb, unsigned in
 }
 
 
-static inline void
-skb_release_head_state(struct sk_buff *skb)
-{
-	skb_dst_drop(skb);
-
-	if (skb->destructor) {
-		WARN_ON(in_irq());
-		skb->destructor(skb);
-	}
-
-#if IS_ENABLED(CONFIG_NF_CONNTRACK)
-	nf_conntrack_put(skb->nfct);
-#endif
-#ifdef NET_SKBUFF_NF_DEFRAG_NEEDED
-	nf_conntrack_put_reasm(skb->nfct_reasm);
-#endif
-#ifdef CONFIG_BRIDGE_NETFILTER
-	nf_bridge_put(skb->nf_bridge);
-#endif
-#ifdef CONFIG_NET_SCHED
-	skb->tc_index = 0;
-#ifdef CONFIG_NET_CLS_ACT
-	skb->tc_verd = 0;
-#endif
-#endif
-
-}
-
-
 static inline
 struct sk_buff * pfq_skb_recycle(struct sk_buff *skb)
 {
@@ -140,15 +111,17 @@ struct sk_buff * pfq_skb_recycle(struct sk_buff *skb)
 
 	struct skb_shared_info *shinfo;
 
-	skb_release_head_state(skb);
+	if (skb->destructor) {
+		WARN_ON(in_irq());
+		skb->destructor(skb);
+	}
+
+	memset(skb, 0, offsetof(struct sk_buff, tail));
+	atomic_set(&skb->users, 1);
 
 	shinfo = skb_shinfo(skb);
 	memset(shinfo, 0, offsetof(struct skb_shared_info, dataref));
-
-	atomic_set(&skb->users, 1);
 	atomic_set(&shinfo->dataref,1);
-
-	memset(skb, 0, offsetof(struct sk_buff, tail));
 
 	skb->data = skb->head + NET_SKB_PAD;
 	skb_reset_tail_pointer(skb);
