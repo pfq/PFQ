@@ -756,7 +756,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 		/* pass the ownership of this skb to the garbage collector */
 
 		buff = GC_make_buff(data->GC, skb);
-		if (buff == NULL) {
+		if (unlikely(buff == NULL)) {
 			if (printk_ratelimit())
 				printk(KERN_INFO "[PFQ] GC: memory exhausted!\n");
 			__sparse_inc(global->percpu_stats, lost, cpu);
@@ -870,7 +870,7 @@ size_t pfq_sk_queue_recv(struct core_sock_opt *opt,
 
 		/* fill pkt header */
 
-		if (opt->tstamp != 0) {
+		if (likely(opt->tstamp != 0)) {
 			struct timespec ts;
 			skb_get_timestampns(skb, &ts);
 			hdr->tstamp.tv.sec  = (uint32_t)ts.tv_sec;
