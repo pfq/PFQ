@@ -42,6 +42,10 @@
 	__builtin_choose_expr(__builtin_types_compatible_p(typeof(buff),struct qbuff const *), (struct sk_buff const *)((buff)->addr), (void)0))
 
 
+#define PFQ_CB(addr)    ((struct pfq_cb *)(((struct sk_buff *)(addr))->cb))
+
+#define QBUFF_CB(buff)  (PFQ_CB(buff->addr))
+
 
 bool qbuff_ingress(struct qbuff const *buff, struct iphdr const *ip);
 

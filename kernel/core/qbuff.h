@@ -31,6 +31,12 @@
 struct pfq_lang_monad;
 
 
+struct pfq_cb
+{
+	bool	direct;
+};
+
+
 struct qbuff
 {
 	void		       *addr;		/* struct sk_buff * */
@@ -39,7 +45,6 @@ struct qbuff
         unsigned long		group_mask;
         uint32_t		counter;
         uint32_t		state;
-	bool			direct;
 };
 
 

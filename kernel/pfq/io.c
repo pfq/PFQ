@@ -765,7 +765,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 			return 0;
 		}
 
-		buff->direct = direct;
+		QBUFF_CB(buff)->direct = direct;
 
 		if ((GC_size(data->GC) < (size_t)global->capt_batch_len) &&
 		     (ktime_to_ns(ktime_sub(qbuff_get_ktime(buff), data->last_rx)) < 1000000))

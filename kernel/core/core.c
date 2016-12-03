@@ -331,7 +331,7 @@ int core_process_batch(struct core_percpu_data *data,
 
 	for_each_qbuff(PFQ_QBUFF_QUEUE(&GC_ptr->pool), buff, n)
 	{
-		if (buff->direct && fwd_to_kernel(buff)) {
+		if (QBUFF_CB(buff)->direct && fwd_to_kernel(buff)) {
 			qbuff_copy_to_kernel(buff, cpu);
 			__sparse_inc(global->percpu_stats, kern, cpu);
 		}
