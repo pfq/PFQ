@@ -39,14 +39,6 @@ int  core_percpu_alloc(void);
 void core_percpu_free(void);
 
 
-struct core_percpu_queue
-{
-	struct core_spsc_fifo rx_fifo;
-
-} ____cacheline_aligned;
-
-
-
 struct core_percpu_sock
 {
         unsigned long           eligible_mask;
@@ -59,10 +51,11 @@ struct core_percpu_sock
 
 struct core_percpu_data
 {
+	struct core_spsc_fifo   *rx_fifo;
 	struct GC_data		*GC;
-	ktime_t			last_rx;
-	struct timer_list	timer;
-	uint32_t		counter;
+	ktime_t			 last_rx;
+	struct timer_list	 timer;
+	uint32_t		 counter;
 
 } ____cacheline_aligned;
 

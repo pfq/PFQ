@@ -63,17 +63,10 @@ int core_percpu_alloc(void)
                 goto err3;
         }
 
-	global->percpu_queue = alloc_percpu(struct core_percpu_queue);
-	if (!global->percpu_queue) {
-                printk(KERN_ERR "[PFQ] could not allocate percpu queue!\n");
-                goto err4;
-        }
-
 	printk(KERN_INFO "[PFQ] number of online cpus %d\n", num_online_cpus());
         return 0;
 
-
-err4:   free_percpu(global->percpu_mem_stats);
+	free_percpu(global->percpu_mem_stats);
 err3:   free_percpu(global->percpu_stats);
 err2:   free_percpu(global->percpu_pool);
 err1:	free_percpu(global->percpu_sock);
@@ -84,13 +77,16 @@ err0:	free_percpu(global->percpu_data);
 
 void core_percpu_free(void)
 {
-        struct core_percpu_data *data;
 	int cpu;
 
 	for_each_present_cpu(cpu) {
-                data = per_cpu_ptr(global->percpu_data, cpu);
+
+		struct core_percpu_data *data = per_cpu_ptr(global->percpu_data, cpu);
+
 		kfree(data->GC);
+		kfree(data->rx_fifo);
 	}
+
 
 	free_percpu(global->percpu_stats);
 	free_percpu(global->percpu_mem_stats);

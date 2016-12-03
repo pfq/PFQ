@@ -36,6 +36,7 @@ struct pfq_percpu_pool
 {
         atomic_t                enable;
         struct spinlock		tx_lock;
+
 	struct pfq_skb_pools	tx_multi;
 	struct pfq_skb_pools	rx_multi;
 
