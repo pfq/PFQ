@@ -459,7 +459,7 @@ pfq_sk_queue_xmit(struct core_sock *so,
         prefetch_r3(hdr);
         prefetch_r3((char *)hdr+64);
 
-	hdr1 = PFQ_SHARED_QUEUE_NEXT_PKTHDR(hdr, 0);
+	hdr1 = PFQ_SHARED_QUEUE_NEXT_VAR_PKTHDR(hdr);
         prefetch_r3(hdr1);
         prefetch_r3((char *)hdr1+64);
 
@@ -472,7 +472,7 @@ pfq_sk_queue_xmit(struct core_sock *so,
 	{
                 tx_response_t tmp = {0};
 
-		hdr1 = PFQ_SHARED_QUEUE_NEXT_PKTHDR(hdr1, 0);
+		hdr1 = PFQ_SHARED_QUEUE_NEXT_VAR_PKTHDR(hdr1);
                 prefetch_r3(hdr1);
                 prefetch_r3((char *)hdr1+64);
 
@@ -492,7 +492,7 @@ pfq_sk_queue_xmit(struct core_sock *so,
                 /* set the xmit_more bit */
 
 		ctx.xmit_more = likely(batch_cntr < global->xmit_batch_len) ?
-				likely(PFQ_SHARED_QUEUE_NEXT_PKTHDR(hdr, 0) < (struct pfq_pkthdr *)end) :
+				likely(PFQ_SHARED_QUEUE_NEXT_VAR_PKTHDR(hdr) < (struct pfq_pkthdr *)end) :
 				(batch_cntr = 0, false);
 
 		/* transmit this packet */
@@ -907,7 +907,7 @@ size_t pfq_sk_queue_recv(struct core_sock_opt *opt,
 
 		copied++;
 
-		hdr = PFQ_SHARED_QUEUE_NEXT_PKTHDR(hdr, opt->rx_slot_size);
+		hdr = PFQ_SHARED_QUEUE_NEXT_FIX_PKTHDR(hdr, opt->rx_slot_size);
 	}
 
 	return copied;
