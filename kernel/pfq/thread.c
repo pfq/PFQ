@@ -46,7 +46,6 @@ static struct pfq_thread_tx_data pfq_thread_tx_pool[Q_CORE_MAX_CPU] =
 	[0 ... Q_CORE_MAX_CPU-1] = {
 		.id	= -1,
 		.cpu    = -1,
-		.node   = -1,
 		.task	= NULL,
 		.sock   = {NULL, NULL, NULL, NULL},
 		.sock_queue = {{-1}, {-1}, {-1}, {-1}}
@@ -57,21 +56,17 @@ static struct pfq_thread_tx_data pfq_thread_tx_pool[Q_CORE_MAX_CPU] =
 
 #ifdef PFQ_DEBUG
 static void
-pfq_tx_thread_dump(struct pfq_thread_tx_data const *data)
+pfq_thread_ping(const char *type, struct pfq_thread_data const *data)
 {
-	char msg[256];
-	int n, off = 0;
-	off += sprintf(msg + off, "Tx[%d] cpu=%d node=%d ", data->id, data->cpu, data->node);
-	for(n = 0; n < Q_MAX_TX_QUEUES; ++n)
-	{
-		int sock_queue = atomic_read(&data->sock_queue[n]);
-		if (sock_queue != -1)
-			off += sprintf(msg + off, "(sock:%d,queue:%d) ", data->sock[n]->id, sock_queue);
-	}
-
-	printk(KERN_INFO "[PFQ] %s...(PING!)\n", msg);
+	printk( KERN_INFO "%s[%d] cpu=%d task=%p (PING)!\n"
+	       , type
+	       , data->id
+	       , data->cpu
+	       , data->task);
 }
 #endif
+
+
 
 static int
 pfq_tx_thread(void *_data)
@@ -108,7 +103,7 @@ pfq_tx_thread(void *_data)
 			sock = data->sock[n];
 			if (sock_queue != -1 && sock != NULL) {
 				reg = true;
-				tx = pfq_sk_queue_xmit(sock, sock_queue, data->cpu, data->node, &data->sock_queue[n]);
+				tx = pfq_sk_queue_xmit(sock, sock_queue, data->cpu, &data->sock_queue[n]);
 				total_sent += tx.ok;
 
 				sparse_add(sock->stats,	  sent, tx.ok);
@@ -126,7 +121,7 @@ pfq_tx_thread(void *_data)
 #ifdef PFQ_DEBUG
 		if (now != jiffies/(HZ*30)) {
 			now = jiffies/(HZ*30);
-			pfq_tx_thread_dump(data);
+			pfq_thread_ping("Tx", (struct pfq_thread_data *)data);
 		}
 #endif
 
@@ -216,19 +211,20 @@ pfq_start_tx_threads(void)
 
 	if (global->tx_cpu_nr)
 	{
-		int n;
+		int n, node;
 		printk(KERN_INFO "[PFQ] starting %d Tx thread(s)...\n", global->tx_cpu_nr);
 
 		for(n = 0; n < global->tx_cpu_nr; n++)
 		{
 			struct pfq_thread_tx_data *data = &pfq_thread_tx_pool[n];
 
+			node = global->tx_cpu[n] == -1 ? NUMA_NO_NODE : cpu_to_node(global->tx_cpu[n]);
+
 			data->id = n;
 			data->cpu = global->tx_cpu[n];
-			data->node = cpu_online(global->tx_cpu[n]) ? cpu_to_node(global->tx_cpu[n]) : NUMA_NO_NODE;
 			data->task = kthread_create_on_node(pfq_tx_thread,
-							    data, data->node,
-							    "kpfq/%d:%d", n, data->cpu);
+							    data, node,
+							    "kpfq-Tx/%d", data->cpu);
 			if (IS_ERR(data->task)) {
 				printk(KERN_INFO "[PFQ] kernel_thread: create failed on cpu %d!\n",
 				       data->cpu);

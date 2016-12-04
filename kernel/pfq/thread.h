@@ -41,6 +41,28 @@ extern int  pfq_bind_tx_thread(int tx_index, struct core_sock *sock, int sock_qu
 extern int  pfq_unbind_tx_thread(struct core_sock *sock);
 
 
+struct pfq_thread_data
+{
+	int			id;
+	int			cpu;
+	struct task_struct *	task;
+};
+
+
+struct pfq_thread_tx_data
+{
+	int			id;
+	int			cpu;
+	struct task_struct *	task;
+
+	/* specific for tx data */
+
+	struct core_sock *	sock[Q_MAX_TX_QUEUES];
+	atomic_t		sock_queue[Q_MAX_TX_QUEUES];
+
+} __attribute__((aligned(64)));
+
+
 static inline
 void pfq_relax(void)
 {
@@ -49,18 +71,6 @@ void pfq_relax(void)
 	else
 		cpu_relax();
 }
-
-
-struct pfq_thread_tx_data
-{
-	int			id;
-	int			cpu;
-	int			node;
-	struct task_struct *	task;
-	struct core_sock *	sock[Q_MAX_TX_QUEUES];
-	atomic_t		sock_queue[Q_MAX_TX_QUEUES];
-
-} __attribute__((aligned(64)));
 
 
 static inline
