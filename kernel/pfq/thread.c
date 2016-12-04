@@ -131,8 +131,8 @@ pfq_tx_thread(void *_data)
 		pfq_relax();
 
 #ifdef PFQ_DEBUG
-		if (now != jiffies/(HZ*30)) {
-			now = jiffies/(HZ*30);
+		if (now != jiffies/(HZ*10)) {
+			now = jiffies/(HZ*10);
 			pfq_thread_ping("Tx", (struct pfq_thread_data *)data);
 		}
 #endif
@@ -326,23 +326,18 @@ pfq_rx_thread(void *_data)
 		pfq_relax();
 
 #ifdef PFQ_DEBUG
-		if (now != jiffies/(HZ*30)) {
-			now = jiffies/(HZ*30);
+		if (now != jiffies/(HZ*10)) {
+			now = jiffies/(HZ*10);
 			pfq_thread_ping("Rx", (struct pfq_thread_data *)data);
 		}
 #endif
-
-		if (total_sent == 0)
-			schedule();
-
-		if (!reg)
-			msleep(1);
 	}
 
         printk(KERN_INFO "[PFQ] Rx[%d] thread stopped on cpu %d.\n", data->id, data->cpu);
 	data->task = NULL;
         return 0;
 }
+
 
 int
 pfq_start_rx_threads(void)

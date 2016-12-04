@@ -710,15 +710,18 @@ pfq_rx_run(int cpu)
 	struct core_percpu_data * data;
 	struct pfq_percpu_pool * pool;
 	struct sk_buff *skb;
+	int work = 0;
 
 	/* if no socket is open drop the packet */
 
 	data = per_cpu_ptr(global->percpu_data, cpu);
 	pool = per_cpu_ptr(global->percpu_pool, cpu);
 
-	while ((skb = core_spsc_pop(data->rx_fifo)))
+	for(;(skb = core_spsc_pop(data->rx_fifo)) && (work < 1024);)
 	{
 		struct qbuff * buff;
+
+		work++;
 
 		if (unlikely(core_sock_get_socket_count() == 0)) {
 			if (skb) {
@@ -781,7 +784,7 @@ done:
 				  , cpu);
 	}
 
-	return 0;
+	return work;
 }
 
 
