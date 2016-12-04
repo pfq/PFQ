@@ -457,3 +457,27 @@ pfq_check_threads_affinity(void)
 }
 
 
+int
+pfq_check_napi_contexts(void)
+{
+	bool inuse[Q_CORE_MAX_CPU] = {false};
+	int i, cpu;
+
+	for(i=0; i < global->napi_cpu_nr; ++i)
+	{
+		cpu = global->napi_cpu[i];
+		if ( cpu < 0 || cpu >= num_online_cpus()) {
+			printk(KERN_INFO "[PFQ] error: Napi[%d] context: cpu %d bad value!\n", i, cpu);
+			return -EFAULT;
+		}
+		if (inuse[cpu]) {
+			printk(KERN_INFO "[PFQ] error: Napi[%d] context: cpu %d already bound!\n", i, cpu);
+			return -EFAULT;
+		}
+		inuse[cpu] = true;
+	}
+
+	return 0;
+}
+
+

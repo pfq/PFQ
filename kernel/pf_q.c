@@ -562,6 +562,9 @@ static int __init pfq_init_module(void)
 	if ((err = pfq_check_threads_affinity()) < 0)
 		goto err6;
 
+	/* check napi contexts */
+	if ((err = pfq_check_napi_contexts()) < 0)
+		goto err6;
 
 	/* start Tx threads */
 	if (global->tx_cpu_nr)
