@@ -102,7 +102,7 @@ makeBinding s = case splitOn "." s of
     [_]        ->  error "thread_binding: parse error"
     [c, g]     ->  Binding (read c) (read g) []
     c : g : ds ->  Binding (read c) (read g) (map (\s -> let (dn : qs) = splitOn ":" s
-                                                         in  NetDev dn (case qs of [] -> [-1]; otherwise -> map read (splitOn "," (head qs)))) ds)
+                                                         in  NetDev dn (case qs of [] -> [-1]; _ -> map read (splitOn "," (head qs)))) ds)
 
 
 -- main function

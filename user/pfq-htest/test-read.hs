@@ -45,8 +45,8 @@ prettyPrinter comp = let (xs,_) = serialize comp 0
 dumpPacket :: Q.Packet -> IO ()
 dumpPacket p = do
     Q.waitForPacket p
-    w0 <- liftM byteSwap64 $ peekByteOff (Q.pData p) 0 :: IO Word64
-    w1 <- liftM byteSwap64 $ peekByteOff (Q.pData p) 8 :: IO Word64
+    w0 <- byteSwap64 <$> peekByteOff (Q.pData p) 0 :: IO Word64
+    w1 <- byteSwap64 <$> peekByteOff (Q.pData p) 8 :: IO Word64
     putStrLn $ "[" ++ showHex w0 "" ++ showHex w1 "" ++ "... ]"
 
 

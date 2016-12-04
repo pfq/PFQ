@@ -255,7 +255,7 @@ getInterruptsByDevice dev msi = unsafePerformIO $ readFile proc_interrupt >>= \f
 {-# NOINLINE getInterrupts #-}
 getInterrupts :: [(String, String)]
 getInterrupts = unsafePerformIO $ readFile proc_interrupt >>= \file ->
-    return $ map (\(f,s) -> (show f, last . words $ s)) (concatMap (reads) $ lines file  :: [(Int, String)])
+    return $ map (\(f,s) -> (show f, last . words $ s)) (concatMap reads $ lines file  :: [(Int, String)])
 
 
 {-# NOINLINE getNumberOfPhyCores #-}

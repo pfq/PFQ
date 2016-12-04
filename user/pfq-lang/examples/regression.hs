@@ -243,7 +243,7 @@ comparators12 =
 
 cond = do
     conditional is_tcp (log_msg "tcp") unit
-    when is_tcp (drop)
+    when is_tcp drop
     unless is_ip kernel
 
 

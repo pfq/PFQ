@@ -75,7 +75,7 @@ getArguments = do
     args <- getArgs
     let xs = deleteFirstsBy (==) args ["-ik", "--ik", "--in-kernel"]
     let ik = length xs /= length args
-    return $ (Option ik, xs)
+    return (Option ik, xs)
 
 
 main :: IO ()
@@ -87,7 +87,7 @@ main = do
     symver <- fromJust <$> getMostRecentFile pfqSymvers
     copyFile symver "Module.symvers"
 
-    makefile <- if (inKernel opt) 
+    makefile <- if inKernel opt 
                 then do patchMakeFile "Makefile"
                         return "Makefile.ik"
                 else return "Makefile"
