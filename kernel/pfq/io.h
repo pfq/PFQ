@@ -70,7 +70,7 @@ struct pfq_mbuff_xmit_context
 /* socket queues */
 
 extern tx_response_t
-pfq_sk_queue_xmit(struct core_sock *so, int qindex, int cpu, int node, atomic_t const *stop);
+pfq_sk_queue_xmit(struct core_sock *so, int qindex, int cpu, atomic_t const *stop);
 
 
 /* skb queues */

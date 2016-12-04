@@ -388,7 +388,6 @@ tx_response_t
 pfq_sk_queue_xmit(struct core_sock *so,
 		  int sock_queue,
 		  int cpu,
-		  int node,
 		  atomic_t const *stop)
 {
 	struct core_tx_info const * txinfo = core_sock_get_tx_queue_info(&so->opt, sock_queue);
@@ -436,7 +435,7 @@ pfq_sk_queue_xmit(struct core_sock *so,
         ctx.net	    = sock_net(&so->sk);
 	ctx.now	    = ktime_get_real();
 	ctx.jiffies = jiffies;
-        ctx.node    = node;
+        ctx.node    = cpu == -1 ? NUMA_NO_NODE : cpu_to_node(cpu);
         ctx.intr    = false;
         ctx.stop    = stop;
 

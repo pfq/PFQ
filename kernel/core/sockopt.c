@@ -808,7 +808,7 @@ int core_setsockopt(struct socket *sock,
 
 		if (queue == 0) { /* transmit Tx queue */
 			atomic_t stop = {0};
-			tx_response_t tx = pfq_sk_queue_xmit(so, -1, Q_NO_KTHREAD, NUMA_NO_NODE, &stop);
+			tx_response_t tx = pfq_sk_queue_xmit(so, -1, Q_NO_KTHREAD, &stop);
 
 			sparse_add(so->stats, sent, tx.ok);
 			sparse_add(so->stats, fail, tx.fail);
