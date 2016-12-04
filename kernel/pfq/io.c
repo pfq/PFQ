@@ -821,7 +821,10 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 		data->last_rx = skb_get_ktime(skb);
 	}
 
-	return pfq_process(cpu);
+	if (data->rx_napi)
+		return pfq_process(cpu);
+
+	return 0;
 }
 
 

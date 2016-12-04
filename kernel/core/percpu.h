@@ -52,6 +52,7 @@ struct core_percpu_sock
 struct core_percpu_data
 {
 	struct core_spsc_fifo   *rx_fifo;
+	bool			 rx_napi;
 	struct GC_data		*GC;
 	ktime_t			 last_rx;
 	struct timer_list	 timer;
