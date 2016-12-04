@@ -558,15 +558,20 @@ static int __init pfq_init_module(void)
 	/* register netdev notifier */
         register_netdevice_notifier(&pfq_netdev_notifier_block);
 
+	/* start Rx threads for asynchronous transmission */
+
+	if ((err = pfq_check_threads_affinity()) < 0)
+		goto err6;
+
 	/* start Tx threads for asynchronous transmission */
+
 	if (global->tx_cpu_nr)
 	{
-		if ((err = check_tx_threads_affinity()) < 0)
-			goto err6;
-
 		if ((err = pfq_start_tx_threads()) < 0)
 			goto err7;
 	}
+
+	/* start Rx threads for asynchronous transmission */
 
 	if (global->rx_cpu_nr)
 	{
