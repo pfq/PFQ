@@ -40,6 +40,8 @@ struct core_global_data default_global =
 	.skb_pool_size		= 1024,
 	.tx_cpu			= {0},
 	.tx_cpu_nr		= 0,
+	.rx_cpu			= {0},
+	.rx_cpu_nr		= 0,
 
 	.socket_ptr		= {{0}},
 	.socket_count		= {0},

@@ -39,6 +39,7 @@
 
 
 static DEFINE_MUTEX(pfq_thread_tx_pool_lock);
+static DEFINE_MUTEX(pfq_thread_rx_pool_lock);
 
 
 static struct pfq_thread_tx_data pfq_thread_tx_pool[Q_CORE_MAX_CPU] =
@@ -52,6 +53,17 @@ static struct pfq_thread_tx_data pfq_thread_tx_pool[Q_CORE_MAX_CPU] =
 	}
 };
 
+
+static struct pfq_thread_rx_data pfq_thread_rx_pool[Q_CORE_MAX_CPU] =
+{
+	[0 ... Q_CORE_MAX_CPU-1] = {
+		.id   = -1,
+		.cpu  = -1,
+		.task = NULL,
+		.napi = {-1, -1, -1, -1},
+		.napi_nr = 0
+	}
+};
 
 
 #ifdef PFQ_DEBUG
@@ -278,3 +290,126 @@ pfq_stop_tx_threads(void)
 	}
 }
 
+
+static int
+pfq_rx_thread(void *_data)
+{
+	struct pfq_thread_rx_data *data = (struct pfq_thread_rx_data *)_data;
+
+#ifdef PFQ_DEBUG
+        int now = 0;
+#endif
+
+	if (data == NULL) {
+		printk(KERN_INFO "[PFQ] Rx thread data error!\n");
+		return -EPERM;
+	}
+
+	printk(KERN_INFO "[PFQ] Rx[%d] thread started on cpu %d.\n", data->id, data->cpu);
+
+	__set_current_state(TASK_RUNNING);
+
+        for(;;)
+	{
+		bool reg = false;
+		int total_sent = 0, n;
+
+		/* poll the registered NAPI queues */
+
+		for(n = 0; n < data->napi_nr; n++)
+		{
+			pfq_relax();
+		}
+
+                if (kthread_should_stop())
+                        break;
+
+		pfq_relax();
+
+#ifdef PFQ_DEBUG
+		if (now != jiffies/(HZ*30)) {
+			now = jiffies/(HZ*30);
+			pfq_thread_ping("Rx", (struct pfq_thread_data *)data);
+		}
+#endif
+
+		if (total_sent == 0)
+			schedule();
+
+		if (!reg)
+			msleep(1);
+	}
+
+        printk(KERN_INFO "[PFQ] Rx[%d] thread stopped on cpu %d.\n", data->id, data->cpu);
+	data->task = NULL;
+        return 0;
+}
+
+int
+pfq_start_rx_threads(void)
+{
+	int err = 0;
+
+	if (global->rx_cpu_nr)
+	{
+		int n, node;
+
+		printk(KERN_INFO "[PFQ] starting %d Rx thread(s)...\n", global->rx_cpu_nr);
+
+		for(n = 0; n < global->rx_cpu_nr; n++)
+		{
+			struct pfq_thread_rx_data *data = &pfq_thread_rx_pool[n];
+
+			node = global->rx_cpu[n] == -1 ? NUMA_NO_NODE : cpu_to_node(global->rx_cpu[n]);
+
+			data->id = n;
+			data->cpu = global->rx_cpu[n];
+			data->task = kthread_create_on_node(pfq_rx_thread,
+							    data, node,
+							    "kpfq-Rx/%d", data->cpu);
+			if (IS_ERR(data->task)) {
+				printk(KERN_INFO "[PFQ] kernel_thread: create failed on cpu %d!\n",
+				       data->cpu);
+				err = PTR_ERR(data->task);
+				data->task = NULL;
+				return err;
+			}
+
+			kthread_bind(data->task, data->cpu);
+
+			pr_devel("[PFQ] created Rx[%d] kthread on cpu %d...\n", data->id, data->cpu);
+
+			wake_up_process(data->task);
+		}
+	}
+
+	return err;
+}
+
+
+void
+pfq_stop_rx_threads(void)
+{
+	if (global->rx_cpu_nr)
+	{
+		int n;
+
+		printk(KERN_INFO "[PFQ] stopping %d Rx thread(s)...\n", global->rx_cpu_nr);
+
+		for(n = 0; n < global->rx_cpu_nr; n++)
+		{
+			struct pfq_thread_rx_data *data = &pfq_thread_rx_pool[n];
+
+			if (data->task)
+			{
+				pr_devel("[PFQ stopping Rx[%d] thread@%p\n", data->id, data->task);
+
+				kthread_stop(data->task);
+
+				data->id   = -1;
+				data->cpu  = -1;
+				data->task = NULL;
+			}
+		}
+	}
+}

@@ -186,6 +186,7 @@ typedef uint8_t  pfq_qver_t;
 
 #define Q_MAX_COUNTERS			64
 #define Q_MAX_TX_QUEUES			4
+#define Q_MAX_RX_NAPI			4
 
 
 /* PFQ socket queue */

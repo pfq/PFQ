@@ -595,6 +595,12 @@ static int __init pfq_init_module(void)
 			goto err7;
 	}
 
+	if (global->rx_cpu_nr)
+	{
+		if ((err = pfq_start_rx_threads()) < 0)
+			goto err8;
+	}
+
 	/* ensure each device has ifindex < Q_MAX_DEVICE */
 	{
 		struct net_device *dev;
@@ -622,6 +628,8 @@ static int __init pfq_init_module(void)
         printk(KERN_INFO "[PFQ] ready!\n");
         return 0;
 
+err8:
+	pfq_stop_rx_threads();
 err7:
 	pfq_stop_tx_threads();
 err6:
@@ -653,6 +661,9 @@ static void __exit pfq_exit_module(void)
 	/* stop the timer */
 
 	pfq_timer_fini();
+
+	/* stop Rx threads */
+	pfq_stop_rx_threads();
 
 	/* stop Tx threads */
 	pfq_stop_tx_threads();
