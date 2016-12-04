@@ -44,6 +44,7 @@ extern void pfq_stop_rx_threads(void);
 extern int  pfq_bind_tx_thread(int tx_index, struct core_sock *sock, int sock_queue);
 extern int  pfq_unbind_tx_thread(struct core_sock *sock);
 
+extern int pfq_check_threads_affinity(void);
 
 struct pfq_thread_data
 {

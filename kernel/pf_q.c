@@ -478,33 +478,6 @@ static struct notifier_block pfq_netdev_notifier_block =
 
 
 
-static int
-check_tx_threads_affinity(void)
-{
-	int i, j;
-
-	for(i=0; i < global->tx_cpu_nr; ++i)
-	{
-		if (global->tx_cpu[i] < 0 || global->tx_cpu[i] >= num_online_cpus())
-		{
-			printk(KERN_INFO "[PFQ] error: Tx thread bad affinity on cpu:%d!\n", global->tx_cpu[i]);
-			return -EFAULT;
-		}
-	}
-
-	for(i=0; i < global->tx_cpu_nr-1; ++i)
-	for(j=i+1; j < global->tx_cpu_nr; ++j)
-	{
-		if (global->tx_cpu[i] == global->tx_cpu[j])
-		{
-			printk(KERN_INFO "[PFQ] error: Tx thread affinity for cpu:%d already in use!\n", global->tx_cpu[i]);
-			return -EFAULT;
-		}
-	}
-
-	return 0;
-}
-
 
 static int __init pfq_init_module(void)
 {

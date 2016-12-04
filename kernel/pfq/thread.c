@@ -413,3 +413,47 @@ pfq_stop_rx_threads(void)
 		}
 	}
 }
+
+
+int
+pfq_check_threads_affinity(void)
+{
+	bool inuse[Q_CORE_MAX_CPU] = {false};
+	int i, cpu;
+
+	/* check Rx thread affinity */
+
+	for(i=0; i < global->rx_cpu_nr; ++i)
+	{
+		cpu = global->rx_cpu[i];
+		if ( cpu < 0 || cpu >= num_online_cpus()) {
+			printk(KERN_INFO "[PFQ] error: Rx[%d] thread bad affinity on cpu:%d!\n", i, cpu);
+			return -EFAULT;
+		}
+		if (inuse[cpu]) {
+			printk(KERN_INFO "[PFQ] error: Rx[%d] thread cpu:%d already in use!\n", i, cpu);
+			return -EFAULT;
+		}
+		inuse[cpu] = true;
+	}
+
+	/* check Tx thread affinity */
+
+	for(i=0; i < global->tx_cpu_nr; ++i)
+	{
+		cpu = global->tx_cpu[i];
+		if (cpu < 0 || cpu >= num_online_cpus()) {
+			printk(KERN_INFO "[PFQ] error: Tx[%d] thread bad affinity on cpu:%d!\n", i, cpu);
+			return -EFAULT;
+		}
+		if (inuse[cpu]) {
+			printk(KERN_INFO "[PFQ] error: Tx[%d] thread cpu:%d already in use!\n", i, cpu);
+			return -EFAULT;
+		}
+		inuse[cpu] = true;
+	}
+
+	return 0;
+}
+
+
