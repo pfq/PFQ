@@ -311,14 +311,13 @@ pfq_rx_thread(void *_data)
 
         for(;;)
 	{
-		bool reg = false;
-		int total_sent = 0, n;
+		int n;
 
 		/* poll the registered NAPI queues */
 
 		for(n = 0; n < data->napi_nr; n++)
 		{
-			pfq_relax();
+			pfq_rx_run(data->napi[n]);
 		}
 
                 if (kthread_should_stop())
@@ -352,9 +351,13 @@ pfq_start_rx_threads(void)
 
 	if (global->rx_cpu_nr)
 	{
-		int n, node;
+		int napi_idx, napi_quota;
+		int i, n, node;
 
-		printk(KERN_INFO "[PFQ] starting %d Rx thread(s)...\n", global->rx_cpu_nr);
+		napi_quota = (global->napi_cpu_nr + global->rx_cpu_nr - 1)/global->rx_cpu_nr;
+                napi_idx = 0;
+
+		printk(KERN_INFO "[PFQ] starting %d Rx thread(s): napi quota %d...\n", global->rx_cpu_nr, napi_quota);
 
 		for(n = 0; n < global->rx_cpu_nr; n++)
 		{
@@ -375,10 +378,25 @@ pfq_start_rx_threads(void)
 				return err;
 			}
 
+			/* bind napi context to this thread */
+
+			printk(KERN_INFO "[PFQ] creating Rx[%d] kthread on cpu %d...\n", data->id, data->cpu);
+
+			for(i = 0; i < min(napi_quota, Q_MAX_RX_NAPI) &&
+					napi_idx < global->napi_cpu_nr;  i++)
+			{
+				int napi_cpu = global->napi_cpu[napi_idx++];
+
+				printk(KERN_INFO "[PFQ]    bound -> napi cpu %d\n", napi_cpu);
+
+				data->napi[data->napi_nr++] = napi_cpu;
+
+				/* disable napi processing on napi_cpu */
+ 				per_cpu_ptr(global->percpu_data, napi_cpu)->rx_napi = false;
+			}
+
+
 			kthread_bind(data->task, data->cpu);
-
-			pr_devel("[PFQ] created Rx[%d] kthread on cpu %d...\n", data->id, data->cpu);
-
 			wake_up_process(data->task);
 		}
 	}

@@ -105,6 +105,7 @@ extern int pfq_qbuff_lazy_xmit_run(struct core_qbuff_queue *queue, struct core_e
 /* receive */
 
 extern int pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct);
+extern int pfq_rx_run(int cpu);
 
 
 #endif /* PFQ_IO_H */

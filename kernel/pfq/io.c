@@ -54,7 +54,6 @@
  * Packet Tx 
  */
 
-
 #if (LINUX_VERSION_CODE > KERNEL_VERSION(3,13,0))
 static uint16_t __pfq_pick_tx_default(struct net_device *dev, struct sk_buff *skb)
 {
@@ -706,7 +705,7 @@ pfq_qbuff_lazy_xmit_run(struct core_qbuff_queue *buffs, struct core_endpoint_inf
 
 
 int
-pfq_process(int cpu)
+pfq_rx_run(int cpu)
 {
 	struct core_percpu_data * data;
 	struct pfq_percpu_pool * pool;
@@ -822,7 +821,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 	}
 
 	if (data->rx_napi)
-		return pfq_process(cpu);
+		pfq_rx_run(cpu);
 
 	return 0;
 }
