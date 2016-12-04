@@ -210,7 +210,7 @@ pfq_unbind_tx_thread(struct core_sock *sock)
 
 
 int
-pfq_start_all_tx_threads(void)
+pfq_start_tx_threads(void)
 {
 	int err = 0;
 
@@ -250,7 +250,7 @@ pfq_start_all_tx_threads(void)
 
 
 void
-pfq_stop_all_tx_threads(void)
+pfq_stop_tx_threads(void)
 {
 	if (global->tx_cpu_nr)
 	{

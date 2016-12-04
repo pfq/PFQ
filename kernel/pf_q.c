@@ -570,10 +570,9 @@ static int __init pfq_init_module(void)
 
 #ifdef PFQ_USE_SKB_POOL
 	err = pfq_skb_pool_init_all();
-        if (err < 0) {
-		pfq_skb_pool_free_all();
+        if (err < 0)
 		goto err5;
-	}
+
         printk(KERN_INFO "[PFQ] skb pool initialized.\n");
 #endif
 
@@ -592,7 +591,7 @@ static int __init pfq_init_module(void)
 		if ((err = check_tx_threads_affinity()) < 0)
 			goto err6;
 
-		if ((err = pfq_start_all_tx_threads()) < 0)
+		if ((err = pfq_start_tx_threads()) < 0)
 			goto err7;
 	}
 
@@ -624,12 +623,13 @@ static int __init pfq_init_module(void)
         return 0;
 
 err7:
-	pfq_stop_all_tx_threads();
+	pfq_stop_tx_threads();
 err6:
 	unregister_netdevice_notifier(&pfq_netdev_notifier_block);
 
 	unregister_device_handler();
 #ifdef PFQ_USE_SKB_POOL
+	pfq_skb_pool_free_all();
 err5:
 #endif
         sock_unregister(PF_Q);
@@ -655,7 +655,7 @@ static void __exit pfq_exit_module(void)
 	pfq_timer_fini();
 
 	/* stop Tx threads */
-	pfq_stop_all_tx_threads();
+	pfq_stop_tx_threads();
 
 #ifdef PFQ_USE_SKB_POOL
         pfq_skb_pool_disable();
