@@ -296,6 +296,7 @@ pfq_rx_thread(void *_data)
 {
 	struct pfq_thread_rx_data *data = (struct pfq_thread_rx_data *)_data;
 
+
 #ifdef PFQ_DEBUG
         int now = 0;
 #endif
@@ -311,16 +312,21 @@ pfq_rx_thread(void *_data)
 
         for(;;)
 	{
-		int n;
+		int i, n;
 
 		/* poll the registered NAPI queues */
 
-		for(n = 0; n < data->napi_nr; n++)
+		for(i = 0; i < 1024; i++)
 		{
-			pfq_rx_run(data->napi[n]);
+			for(n = 0; n < data->napi_nr; n++)
+			{
+				struct core_percpu_data * cpudata = per_cpu_ptr(global->percpu_data, data->napi[n]);
+				struct pfq_percpu_pool * pool = per_cpu_ptr(global->percpu_pool, data->napi[n]);
+				pfq_rx_run(data->napi[n], 65536, cpudata, pool);
+			}
 		}
 
-                if (kthread_should_stop())
+                if (unlikely(kthread_should_stop()))
                         break;
 
 		pfq_relax();

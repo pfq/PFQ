@@ -705,23 +705,22 @@ pfq_qbuff_lazy_xmit_run(struct core_qbuff_queue *buffs, struct core_endpoint_inf
 
 
 int
-pfq_rx_run(int cpu)
+pfq_rx_run( int cpu
+	  , int budget
+	  , struct core_percpu_data *data
+	  , struct pfq_percpu_pool *pool)
 {
-	struct core_percpu_data * data;
-	struct pfq_percpu_pool * pool;
 	struct sk_buff *skb;
 	int work = 0;
 
 	/* if no socket is open drop the packet */
 
-	data = per_cpu_ptr(global->percpu_data, cpu);
-	pool = per_cpu_ptr(global->percpu_pool, cpu);
-
-	for(;(skb = core_spsc_pop(data->rx_fifo)) && (work < 1024);)
+	while(work < budget &&
+	      (skb = core_spsc_pop(data->rx_fifo)))
 	{
 		struct qbuff * buff;
 
-		work++;
+		++work;
 
 		if (unlikely(core_sock_get_socket_count() == 0)) {
 			if (skb) {
@@ -758,7 +757,7 @@ pfq_rx_run(int cpu)
 			__sparse_inc(global->percpu_stats, lost, cpu);
 			__sparse_inc(global->percpu_mem_stats, os_free, cpu);
 			pfq_kfree_skb_pool(skb, &pool->rx_multi);
-			goto done;
+			continue;
 		}
 
 		/* push another skb to GC? */
@@ -766,17 +765,6 @@ pfq_rx_run(int cpu)
 		if ((GC_size(data->GC) < (size_t)global->capt_batch_len))
 			continue;
 
-		core_process_batch( data
-				  , per_cpu_ptr(global->percpu_sock, cpu)
-				  , pool
-				  , data->GC
-				  , cpu);
-	}
-
-
-done:
-	if (GC_size(data->GC))
-	{
 		core_process_batch( data
 				  , per_cpu_ptr(global->percpu_sock, cpu)
 				  , pool
@@ -793,6 +781,7 @@ int
 pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 {
 	struct core_percpu_data * data;
+
 	int cpu;
 	(void)napi;
 
@@ -801,10 +790,12 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 	/* if required, timestamp the packet now */
 
-	if (skb)
+	if (likely(skb))
 	{
+#if 0
 		if (skb->tstamp.tv64 == 0)
 			__net_timestamp(skb);
+#endif
 
 		PFQ_CB(skb)->direct = direct;
 
@@ -814,17 +805,13 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 			return 0;
 		}
 
-		if (core_spsc_len(data->rx_fifo) < (size_t)global->capt_batch_len &&
-		    (ktime_to_ns(ktime_sub(skb_get_ktime(skb), data->last_rx)) < 1000000)) {
-			data->last_rx = skb_get_ktime(skb);
+		if (likely(core_spsc_len(data->rx_fifo) < (size_t)global->capt_batch_len)) {
 			return 0;
 		}
-
-		data->last_rx = skb_get_ktime(skb);
 	}
 
 	if (data->rx_napi)
-		pfq_rx_run(cpu);
+		pfq_rx_run(cpu, 0, data, per_cpu_ptr(global->percpu_pool, cpu));
 
 	return 0;
 }
