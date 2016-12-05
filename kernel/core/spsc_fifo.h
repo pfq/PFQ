@@ -28,18 +28,38 @@
 #include <linux/slab.h>
 #else
 #include <stdlib.h>
-#define likely(x)	__builtin_expect((x),1)
-#define unlikely(x)     __builtin_expect((x),0)
-#define kmalloc(s,m)	malloc(s)
+#define likely(x)		__builtin_expect((x),1)
+#define unlikely(x)		__builtin_expect((x),0)
+#define kmalloc(s,m)		malloc(s)
+#define kmalloc_node(s,m,n)	malloc(s)
 #define kfree(s) free(s)
 #endif
 
+
+#define SPSC_FIFO_BATCH		64
+
+
 struct core_spsc_fifo
 {
-	size_t size;
-	size_t tail;
-	size_t head;
-	void *ring[];
+	struct
+	{
+		int tail_cache;
+
+	} __attribute__((aligned(128)));
+
+	struct
+	{
+		int head_cache;
+
+	} __attribute__((aligned(128)));
+
+	struct
+	{
+		size_t size;
+		size_t tail;
+		size_t head;
+		void *ring[];
+	} __attribute__((aligned(128)));
 };
 
 
@@ -71,38 +91,82 @@ bool core_spsc_is_full(struct core_spsc_fifo const *fifo)
 }
 
 
+static inline
+size_t core_spsc_distance(struct core_spsc_fifo const *fifo, size_t h, size_t t)
+{
+	if (likely(h >= t))
+		return h - t;
+	return h + fifo->size - t;
+}
+
+
+static inline
+size_t core_spsc_len(struct core_spsc_fifo const *fifo)
+{
+	size_t h = __atomic_load_n(&fifo->head, __ATOMIC_ACQUIRE);
+	size_t t = __atomic_load_n(&fifo->tail, __ATOMIC_RELAXED);
+	return core_spsc_distance(fifo, h, t);
+}
+
+
+static inline
+void core_spsc_push_sync(struct core_spsc_fifo *fifo)
+{
+	__atomic_store_n(&fifo->head, fifo->head_cache, __ATOMIC_RELEASE);
+}
+
+
+static inline
+void core_spsc_pop_sync(struct core_spsc_fifo *fifo)
+{
+	__atomic_store_n(&fifo->tail, fifo->tail_cache, __ATOMIC_RELEASE);
+}
+
 
 static inline
 bool core_spsc_push(struct core_spsc_fifo *fifo, void *ptr)
 {
-        size_t w = __atomic_load_n(&fifo->head, __ATOMIC_RELAXED);
+        size_t w = fifo->head_cache;
         size_t next = core_spsc_next_index(fifo, w);
 
-        if (next == __atomic_load_n(&fifo->tail, __ATOMIC_ACQUIRE))
+        if (unlikely(next == __atomic_load_n(&fifo->tail, __ATOMIC_ACQUIRE))) {
+	    core_spsc_push_sync(fifo);
             return false;
+	}
 
 	fifo->ring[w] = ptr;
+	fifo->head_cache = next;
 
-	__atomic_store_n(&fifo->head, next, __ATOMIC_RELEASE);
+	if (core_spsc_distance(fifo, fifo->head_cache, __atomic_load_n(&fifo->head, __ATOMIC_RELAXED))
+	    > SPSC_FIFO_BATCH) {
+		core_spsc_push_sync(fifo);
+	}
+
         return true;
 }
-
 
 
 static inline
 void *core_spsc_pop(struct core_spsc_fifo *fifo)
 {
         size_t w = __atomic_load_n(&fifo->head, __ATOMIC_ACQUIRE);
-        size_t r = __atomic_load_n(&fifo->tail, __ATOMIC_RELAXED); // only written from pop thread
+        size_t r = fifo->tail_cache;
         size_t next;
         void *ret;
 
-	if (unlikely(w == r))
+	if (unlikely(w == r)) {
 		return NULL;
+	}
 
 	ret = fifo->ring[r];
 	next = core_spsc_next_index(fifo, r);
-	__atomic_store_n(&fifo->tail, next, __ATOMIC_RELEASE);
+
+	fifo->tail_cache = next;
+
+	if (core_spsc_distance(fifo, fifo->tail_cache, __atomic_load_n(&fifo->tail, __ATOMIC_RELAXED))
+	    > SPSC_FIFO_BATCH) {
+		core_spsc_pop_sync(fifo);
+	}
 
 	return ret;
 }
@@ -112,7 +176,7 @@ static inline
 void *core_spsc_peek(struct core_spsc_fifo *fifo)
 {
         size_t w = __atomic_load_n(&fifo->head, __ATOMIC_ACQUIRE);
-        size_t r = __atomic_load_n(&fifo->tail, __ATOMIC_RELAXED); // only written from pop thread
+        size_t r = fifo->tail_cache;
 
 	if (unlikely(w == r))
 		return NULL;
@@ -124,22 +188,14 @@ void *core_spsc_peek(struct core_spsc_fifo *fifo)
 static inline
 void core_spsc_discard(struct core_spsc_fifo *fifo)
 {
-        size_t r = __atomic_load_n(&fifo->tail, __ATOMIC_RELAXED); // only written from pop thread
+        size_t r = fifo->tail_cache;
 	size_t next = core_spsc_next_index(fifo, r);
 
-	__atomic_store_n(&fifo->tail, next, __ATOMIC_RELEASE);
-}
-
-
-static inline
-size_t core_spsc_len(struct core_spsc_fifo const *fifo)
-{
-	size_t h = __atomic_load_n(&fifo->head, __ATOMIC_ACQUIRE);
-	size_t t = __atomic_load_n(&fifo->tail, __ATOMIC_RELAXED);
-
-	if (h >= t)
-		return h - t;
-	return h + fifo->size - t;
+	fifo->tail_cache = next;
+	if (core_spsc_distance(fifo, fifo->tail_cache, __atomic_load_n(&fifo->tail, __ATOMIC_RELAXED))
+	    > SPSC_FIFO_BATCH) {
+		core_spsc_pop_sync(fifo);
+	}
 }
 
 
@@ -154,6 +210,8 @@ core_spsc_init(size_t size, int cpu)
 		fifo->size = size;
 		fifo->head = 0;
 		fifo->tail = 0;
+		fifo->head_cache = 0;
+		fifo->tail_cache = 0;
 	}
 	return fifo;
 }
