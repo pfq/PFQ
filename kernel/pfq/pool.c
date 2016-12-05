@@ -85,6 +85,8 @@ int pfq_skb_pool_init (pfq_skb_pool_t **pool, size_t size, size_t skb_len, int c
 			pfq_skb_pool_push(*pool, skb);
 			sparse_inc(global->percpu_mem_stats, os_alloc);
 		}
+
+		core_spsc_push_sync(*pool);
 	}
 
 	return size;
