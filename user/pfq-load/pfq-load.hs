@@ -196,7 +196,7 @@ main = do
 
     -- load PFQ (if required)...
     when pfqForceLoad $ do
-        putStrBoldLn $ "Loading pfq (" ++ pfqModCmd ++ ")"
+        putStrBoldLn $ "Loading pfq [" ++ pfqModCmd ++ "]"
         runSystem pfqModCmd ("insmod pfq.ko error.", True)
 
     -- update current loaded proc/modules
