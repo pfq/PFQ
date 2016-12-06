@@ -514,19 +514,15 @@ static int __init pfq_init_module(void)
 
 	err = core_groups_init();
 	if (err < 0)
-		goto err;
+		goto err1;
 
 	/* initialization */
 
 	err = core_percpu_alloc();
 	if (err < 0)
-		goto err;
-
-	err = pfq_percpu_init();
-	if (err < 0)
 		goto err1;
 
-	err = pfq_proc_init();
+	err = pfq_percpu_init();
 	if (err < 0)
 		goto err2;
 
@@ -581,16 +577,22 @@ static int __init pfq_init_module(void)
 			goto err8;
 	}
 
+	/* proc init */
+
+	err = pfq_proc_init();
+	if (err < 0)
+		goto err9;
+
+	/* start a timer */
+
+	pfq_timer_init();
+
 	/* ensure each device has ifindex < Q_MAX_DEVICE */
 	{
 		struct net_device *dev;
 		for_each_netdev(&init_net, dev)
 			BUG_ON(dev->ifindex >= Q_CORE_MAX_DEVICE);
 	}
-
-	/* start a timer */
-
-	pfq_timer_init();
 
         printk(KERN_INFO "[PFQ] version %d.%d.%d...\n",
                PFQ_MAJOR(PFQ_VERSION_CODE),
@@ -608,6 +610,8 @@ static int __init pfq_init_module(void)
         printk(KERN_INFO "[PFQ] ready!\n");
         return 0;
 
+err9:
+	pfq_proc_destruct();
 err8:
 	pfq_stop_rx_threads();
 err7:
@@ -616,6 +620,7 @@ err6:
 	unregister_netdevice_notifier(&pfq_netdev_notifier_block);
 
 	unregister_device_handler();
+
 #ifdef PFQ_USE_SKB_POOL
 	pfq_skb_pool_free_all();
 err5:
@@ -624,12 +629,10 @@ err5:
 err4:
         proto_unregister(&pfq_proto);
 err3:
-	pfq_proc_destruct();
-err2:
 	pfq_percpu_destruct();
-err1:
+err2:
 	core_percpu_free();
-err:
+err1:
 	return err < 0 ? err : -EFAULT;
 }
 
@@ -639,8 +642,10 @@ static void __exit pfq_exit_module(void)
         int total = 0;
 
 	/* stop the timer */
-
 	pfq_timer_fini();
+
+	/* unregister proc */
+	pfq_proc_destruct();
 
 	/* stop Rx threads */
 	pfq_stop_rx_threads();
@@ -648,14 +653,15 @@ static void __exit pfq_exit_module(void)
 	/* stop Tx threads */
 	pfq_stop_tx_threads();
 
-#ifdef PFQ_USE_SKB_POOL
-	atomic_set(&global->pool_enabled, 0);
-#endif
 	/* unregister netdevice notifier */
         unregister_netdevice_notifier(&pfq_netdev_notifier_block);
 
         /* unregister the basic device handler */
         unregister_device_handler();
+
+#ifdef PFQ_USE_SKB_POOL
+	atomic_set(&global->pool_enabled, 0);
+#endif
 
         /* unregister the pfq socket */
         sock_unregister(PF_Q);
@@ -683,8 +689,6 @@ static void __exit pfq_exit_module(void)
 
 	/* free symbol table of pfq-lang functions */
 	pfq_lang_symtable_free();
-
-	pfq_proc_destruct();
 
 	core_groups_destruct();
 
