@@ -204,17 +204,4 @@ int pfq_skb_pool_free_all(void)
 }
 
 
-void pfq_skb_pool_toggle(bool value)
-{
-	int cpu;
-
-	smp_wmb();
-	for_each_present_cpu(cpu)
-	{
-		struct pfq_percpu_pool *pool = per_cpu_ptr(global->percpu_pool, cpu);
-		if (pool)
-			atomic_set(&pool->enable, value);
-	}
-	smp_wmb();
-}
 

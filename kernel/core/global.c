@@ -51,6 +51,7 @@ struct core_global_data default_global =
 	.devmap_monitor		= {{0}},
      // .devmap_lock		= {{0}},
 
+	.pool_enabled		= {0},
 	.groups			= {{}},
      // .groups_lock		= {{0}},
 

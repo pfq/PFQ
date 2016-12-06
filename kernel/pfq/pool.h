@@ -49,7 +49,6 @@ struct pfq_skb_pools
 
 extern int	pfq_skb_pool_init_all(void);
 extern int	pfq_skb_pool_free_all(void);
-extern void	pfq_skb_pool_toggle(bool);
 
 extern struct  core_pool_stat pfq_get_skb_pool_stats(void);
 
@@ -68,19 +67,6 @@ struct core_spsc_fifo *pfq_skb_pool_get(struct pfq_skb_pools *pools, size_t size
 	if (size <= PFQ_SKB_POOL_LRG)
 		return pools->fifo_lrg;
 	return NULL;
-}
-
-
-static inline
-void pfq_skb_pool_enable(void)
-{
-	pfq_skb_pool_toggle(true);
-}
-
-static inline
-void pfq_skb_pool_disable(void)
-{
-	pfq_skb_pool_toggle(false);
 }
 
 

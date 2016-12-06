@@ -71,6 +71,8 @@ struct core_global_data
 	atomic_t        devmap_monitor [Q_CORE_MAX_DEVICE];
 	struct mutex	devmap_lock;
 
+	atomic_t	pool_enabled;
+
 	struct core_group groups[Q_CORE_MAX_GID];
 	struct mutex	  groups_lock;
 
