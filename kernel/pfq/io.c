@@ -703,10 +703,7 @@ pfq_rx_run( int cpu
 		++work;
 
 		if (unlikely(core_sock_get_socket_count() == 0)) {
-			if (skb) {
-				sparse_inc(global->percpu_mem_stats, os_free);
-				pfq_kfree_skb_pool(skb, &pool->rx_multi);
-			}
+			pfq_kfree_skb_pool(skb, &pool->rx_multi);
 			continue;
 		}
 
