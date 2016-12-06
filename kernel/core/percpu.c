@@ -85,6 +85,7 @@ void core_percpu_free(void)
 
 		kfree(data->GC);
 		kfree(data->rx_fifo);
+		kfree(data->rx_free);
 	}
 
 

@@ -749,6 +749,9 @@ pfq_rx_run( int cpu
 				  , cpu);
 	}
 
+	while ((skb = core_spsc_pop(data->rx_free)))
+		pfq_kfree_skb_pool(skb, &pool->rx_multi);
+
 	return work;
 }
 
@@ -775,8 +778,12 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 		PFQ_CB(skb)->direct = direct;
 
 		if (!core_spsc_push(data->rx_fifo, skb)) {
-			sparse_inc(global->percpu_mem_stats, os_free);
-			kfree_skb(skb);
+			if (skb->nf_trace) {
+				core_spsc_push(data->rx_free, skb);
+			} else {
+				sparse_inc(global->percpu_mem_stats, os_free);
+				kfree_skb(skb);
+			}
 			return 0;
 		}
 
