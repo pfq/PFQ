@@ -331,6 +331,9 @@ pfq_rx_thread(void *_data)
 
 		pfq_relax();
 
+		if (core_sock_counter() == 0)
+			msleep(1);
+
 #ifdef PFQ_DEBUG
 		if (now != jiffies/(HZ*10)) {
 			now = jiffies/(HZ*10);
