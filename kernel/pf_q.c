@@ -664,7 +664,7 @@ static void __exit pfq_exit_module(void)
         proto_unregister(&pfq_proto);
 
         /* disable direct capture */
-        core_devmap_monitor_reset();
+        core_devmap_toggle_reset();
 
         /* wait grace period */
         msleep(Q_CORE_GRACE_PERIOD);
@@ -697,7 +697,7 @@ static void __exit pfq_exit_module(void)
 static inline
 int pfq_direct_capture(const struct sk_buff *skb)
 {
-        return core_devmap_monitor_get(skb->dev->ifindex);
+        return core_devmap_toggle_get(skb->dev->ifindex);
 }
 
 

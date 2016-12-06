@@ -30,7 +30,7 @@
 #include <core/group.h>
 
 
-void core_devmap_monitor_update(void)
+void core_devmap_toggle_update(void)
 {
     int i,j;
     for(i=0; i < Q_CORE_MAX_DEVICE; ++i)
@@ -41,7 +41,7 @@ void core_devmap_monitor_update(void)
             val |= (unsigned long)atomic_long_read(&global->devmap[i][j]);
         }
 
-        atomic_set(&global->devmap_monitor[i], val ? 1 : 0);
+        atomic_set(&global->devmap_toggle[i], val ? 1 : 0);
     }
 }
 
@@ -88,9 +88,9 @@ int core_devmap_update(int action, int index, int queue, pfq_gid_t gid)
         }
     }
 
-    /* update capture monitor filter... */
+    /* update capture toggle filter... */
 
-    core_devmap_monitor_update();
+    core_devmap_toggle_update();
 
     mutex_unlock(&global->devmap_lock);
     return n;

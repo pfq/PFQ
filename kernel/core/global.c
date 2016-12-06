@@ -48,7 +48,7 @@ struct core_global_data default_global =
      // .socket_lock		= {{0}},
 
 	.devmap			= {{{0}}},
-	.devmap_monitor		= {{0}},
+	.devmap_toggle		= {{0}},
      // .devmap_lock		= {{0}},
 
 	.pool_enabled		= {0},

@@ -68,7 +68,7 @@ struct core_global_data
 	struct mutex	socket_lock;
 
 	atomic_long_t   devmap [Q_CORE_MAX_DEVICE][Q_CORE_MAX_HW_QUEUE];
-	atomic_t        devmap_monitor [Q_CORE_MAX_DEVICE];
+	atomic_t        devmap_toggle [Q_CORE_MAX_DEVICE];
 	struct mutex	devmap_lock;
 
 	atomic_t	pool_enabled;
