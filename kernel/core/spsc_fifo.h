@@ -155,6 +155,7 @@ void *core_spsc_pop(struct core_spsc_fifo *fifo)
         void *ret;
 
 	if (unlikely(w == r)) {
+		core_spsc_pop_sync(fifo);
 		return NULL;
 	}
 
@@ -178,8 +179,10 @@ void *core_spsc_peek(struct core_spsc_fifo *fifo)
         size_t w = __atomic_load_n(&fifo->head, __ATOMIC_ACQUIRE);
         size_t r = fifo->tail_cache;
 
-	if (unlikely(w == r))
+	if (unlikely(w == r)) {
+		core_spsc_pop_sync(fifo);
 		return NULL;
+	}
 
 	return fifo->ring[r];
 }
@@ -203,10 +206,11 @@ static inline
 struct core_spsc_fifo *
 core_spsc_init(size_t size, int cpu)
 {
-	struct core_spsc_fifo *fifo = (struct core_spsc_fifo *)kmalloc_node(sizeof(struct core_spsc_fifo) + sizeof(void *)*size, GFP_KERNEL, cpu_to_node(cpu));
+	struct core_spsc_fifo *fifo = (struct core_spsc_fifo *)
+		kmalloc_node(sizeof(struct core_spsc_fifo) + sizeof(void *)*(size+1), GFP_KERNEL, cpu_to_node(cpu));
 	if (fifo != NULL)
 	{
-		fifo->size = size;
+		fifo->size = size+1;
 		fifo->head = 0;
 		fifo->tail = 0;
 		fifo->head_cache = 0;

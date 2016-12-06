@@ -242,7 +242,7 @@ void pfq_kfree_skb_pool(struct sk_buff *skb, struct pfq_skb_pools *pools)
 			const int idx = PFQ_SKB_POOL_IDX(skb->len);
 
 			if (!core_spsc_push(pool, skb)) {
-				printk(KERN_WARNING "[PFQ] BUG: pfq kfree_skb: internal error!\n");
+				printk(KERN_WARNING "[PFQ] BUG: pfq_kfree_skb_pool: internal error!\n");
 				sparse_inc(global->percpu_mem_stats, os_free);
 				kfree_skb(skb);
 				return;

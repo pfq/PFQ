@@ -38,7 +38,6 @@
 #define PFQ_SKB_POOL_LRG  2048
 
 
-
 struct pfq_skb_pools
 {
 	struct core_spsc_fifo *fifo_sml;
