@@ -769,10 +769,8 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 	if (likely(skb))
 	{
-#if 0
 		if (skb->tstamp.tv64 == 0)
 			__net_timestamp(skb);
-#endif
 
 		PFQ_CB(skb)->direct = direct;
 

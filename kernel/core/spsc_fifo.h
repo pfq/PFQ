@@ -43,13 +43,13 @@ struct core_spsc_fifo
 {
 	struct
 	{
-		int tail_cache;
+		size_t tail_cache;
 
 	} __attribute__((aligned(128)));
 
 	struct
 	{
-		int head_cache;
+		size_t head_cache;
 
 	} __attribute__((aligned(128)));
 
@@ -103,8 +103,8 @@ size_t core_spsc_distance(struct core_spsc_fifo const *fifo, size_t h, size_t t)
 static inline
 size_t core_spsc_len(struct core_spsc_fifo const *fifo)
 {
-	size_t h = __atomic_load_n(&fifo->head, __ATOMIC_ACQUIRE);
-	size_t t = __atomic_load_n(&fifo->tail, __ATOMIC_RELAXED);
+	size_t h = __atomic_load_n(&fifo->head_cache, __ATOMIC_ACQUIRE);
+	size_t t = __atomic_load_n(&fifo->tail_cache, __ATOMIC_RELAXED);
 	return core_spsc_distance(fifo, h, t);
 }
 
