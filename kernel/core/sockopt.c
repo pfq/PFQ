@@ -378,6 +378,8 @@ int core_setsockopt(struct socket *sock,
                         return err;
                 }
 
+		msleep(Q_CORE_GRACE_PERIOD);
+
 	} break;
 
         case Q_SO_GROUP_BIND:
