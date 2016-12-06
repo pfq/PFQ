@@ -51,7 +51,7 @@
 
 
 /*
- * Packet Tx 
+ * Packet Tx
  */
 
 #if (LINUX_VERSION_CODE > KERNEL_VERSION(3,13,0))
@@ -240,7 +240,6 @@ static inline int
 __pfq_xmit(struct sk_buff *skb, struct net_device *dev, int xmit_more)
 {
 	int ret;
-
 #if(LINUX_VERSION_CODE >= KERNEL_VERSION(3,18,0))
 	skb->xmit_more = xmit_more;
 #else
@@ -248,11 +247,10 @@ __pfq_xmit(struct sk_buff *skb, struct net_device *dev, int xmit_more)
 #endif
 
 	ret = dev->netdev_ops->ndo_start_xmit(skb, dev);
-	if (dev_xmit_complete(ret)) {
-		return ret;
+	if (!dev_xmit_complete(ret)) {
+		kfree_skb(skb);
 	}
 
-	kfree_skb(skb);
 	return ret;
 }
 
@@ -278,8 +276,7 @@ pfq_xmit(struct qbuff *buff, struct net_device *dev, int queue, int more)
 	local_bh_disable();
 	HARD_TX_LOCK(dev, txq, smp_processor_id());
 
-	if (!netif_xmit_frozen_or_drv_stopped(txq))
-		ret = __pfq_xmit(skb, dev, more);
+	ret = __pfq_xmit(skb, dev, more);
 
 	HARD_TX_UNLOCK(dev, txq);
         local_bh_enable();
@@ -353,16 +350,10 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr,
 
 		const bool xmit_more_ = ctx->xmit_more || ctx->copies != 1;
 
-		if (!netif_xmit_frozen_or_drv_stopped(dev_queue->queue)) {
-			if (__pfq_xmit(skb, dev_queue->dev, xmit_more_) == NETDEV_TX_OK)
-				ret.ok++;
-			else
-				ret.fail++;
-		}
-		else {
-			kfree_skb(skb);
+		if (__pfq_xmit(skb, dev_queue->dev, xmit_more_) == NETDEV_TX_OK)
+			ret.ok++;
+		else
 			ret.fail++;
-		}
 
 		ctx->copies--;
 	}
@@ -489,7 +480,7 @@ pfq_sk_queue_xmit(struct core_sock *so,
 
                 /* set the xmit_more bit */
 
-		ctx.xmit_more = likely(batch_cntr < global->xmit_batch_len) ?
+		ctx.xmit_more = likely(batch_cntr < (global->xmit_batch_len/ctx.copies)) ?
 				likely(PFQ_SHARED_QUEUE_NEXT_VAR_PKTHDR(hdr) < (struct pfq_pkthdr *)end) :
 				(batch_cntr = 0, false);
 
