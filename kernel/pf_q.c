@@ -148,7 +148,7 @@ pfq_release(struct socket *sock)
         struct sock * sk = sock->sk;
         struct core_sock *so;
         pfq_id_t id;
-        int total = 0;
+	int numb = 0;
 
 	if (!sk)
 		return 0;
@@ -176,15 +176,13 @@ pfq_release(struct socket *sock)
 
         mutex_lock(&global->socket_lock);
 
-        /* purge both batch and recycle queues if no socket is open */
-
         if (core_sock_counter() == 0)
-                total += pfq_percpu_destruct();
+                numb = pfq_percpu_GC_reset();
 
         mutex_unlock(&global->socket_lock);
 
-        if (total)
-                printk(KERN_INFO "[PFQ|%d] cleanup: %d skb purged.\n", id, total);
+	if (numb)
+		printk(KERN_INFO "[PFQ|%d] cleanup: %d skb recovered from GC.\n", id, numb);
 
         sock_orphan(sk);
 	sock->sk = NULL;

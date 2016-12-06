@@ -26,6 +26,7 @@
 
 #include <pfq/percpu.h>
 #include <pfq/qbuff.h>
+#include <pfq/memory.h>
 
 
 int pfq_percpu_init(void)
@@ -85,6 +86,43 @@ err:
 
 	kfree(GCptrs);
 	return -ENOMEM;
+}
+
+
+
+int pfq_percpu_GC_reset(void)
+{
+        int cpu;
+        int total = 0;
+
+        /* destroy prefetch queues (of each cpu) */
+
+        for_each_present_cpu(cpu) {
+
+		struct core_percpu_data *data;
+		struct pfq_percpu_pool *pool;
+		struct qbuff *buff;
+		size_t n;
+
+		preempt_disable();
+
+                data = per_cpu_ptr(global->percpu_data, cpu);
+                pool = per_cpu_ptr(global->percpu_pool, cpu);
+
+		for_each_qbuff(&data->GC->pool, buff, n)
+		{
+			pfq_kfree_skb_pool(QBUFF_SKB(buff), &pool->rx_multi);
+		}
+
+                total += data->GC->pool.len;
+
+		GC_reset(data->GC);
+
+		preempt_enable();
+        }
+
+	sparse_add(global->percpu_stats, lost, total);
+	return total;
 }
 
 
