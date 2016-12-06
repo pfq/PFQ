@@ -46,6 +46,7 @@
 #include <pfq/thread.h>
 #include <pfq/memory.h>
 #include <pfq/qbuff.h>
+#include <pfq/skbuff.h>
 #include <pfq/netdev.h>
 #include <pfq/prefetch.h>
 
@@ -201,17 +202,6 @@ ptrdiff_t maybe_swap_sk_tx_queue(struct pfq_tx_queue *txm, unsigned int *cons_id
 }
 
 
-static inline
-struct sk_buff *
-skb_clone_for_tx(struct sk_buff *skb, struct net_device *dev, gfp_t pri)
-{
-	if (likely(dev->priv_flags & IFF_TX_SKB_SHARING))
-		return skb_get(skb);
-
-	return skb_clone(skb, pri);
-}
-
-
 static
 unsigned int dev_tx_max_skb_copies(struct net_device *dev, unsigned int req_copies)
 {
@@ -316,7 +306,7 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr,
 	skb = pfq_alloc_skb_pool( len
 				, GFP_ATOMIC
 				, ctx->node
-				, ctx->pools);
+				, ctx->tx_multi);
 	if (unlikely(skb == NULL)) {
 		if (printk_ratelimit())
 			printk(KERN_INFO "[PFQ] Tx could not allocate an skb!\n");
@@ -361,7 +351,7 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr,
 
 	/* release the packet */
 
-	pfq_kfree_skb_pool(skb, ctx->pools);
+	pfq_kfree_skb_pool(skb, ctx->tx_multi);
 
 	if (ret.ok)
 		dev_queue->queue->trans_start = ctx->jiffies;
@@ -402,13 +392,12 @@ pfq_sk_queue_xmit(struct core_sock *so,
 
 	pool = this_cpu_ptr(global->percpu_pool);
 
-	ctx.pools = likely(atomic_read(&pool->enable)) ? &pool->tx_multi : NULL;
+	ctx.tx_multi = &pool->tx_multi;
 
 	/* lock the Tx pool */
 
-	if (ctx.pools) {
-		spin_lock(&pool->tx_lock);
-	}
+	spin_lock(&pool->tx_lock);
+
 
 	if (cpu == Q_NO_KTHREAD) {
 		cpu = smp_processor_id();
@@ -433,8 +422,7 @@ pfq_sk_queue_xmit(struct core_sock *so,
 
 	if (pfq_dev_queue_get(ctx.net, txinfo->def_ifindex, txinfo->def_queue, &dev_queue) < 0) {
 
-		if (ctx.pools)
-			spin_unlock(&pool->tx_lock);
+		spin_unlock(&pool->tx_lock);
 
 		if (printk_ratelimit())
 			printk(KERN_INFO "[PFQ] sk_queue_xmit: could not lock default device!\n");
@@ -513,8 +501,7 @@ pfq_sk_queue_xmit(struct core_sock *so,
 
 	/* unlock the Tx pool... */
 
-	if (ctx.pools);
-		spin_unlock(&pool->tx_lock);
+	spin_unlock(&pool->tx_lock);
 
 
 	/* update the local consumer offset */
@@ -672,11 +659,13 @@ pfq_qbuff_lazy_xmit_run(struct core_qbuff_queue *buffs, struct core_endpoint_inf
 			{
 				const int xmit_more = ++sent_dev != endpoints->cnt[n];
 				struct sk_buff *nskb = skb_clone_for_tx(skb, dev, GFP_ATOMIC);
-
-				if (nskb && __pfq_xmit(nskb, dev, xmit_more) == NETDEV_TX_OK)
-					sent++;
-				else
-					sparse_inc(global->percpu_stats, disc);
+				if (likely(nskb))
+				{
+					if (__pfq_xmit(nskb, dev, xmit_more) == NETDEV_TX_OK)
+						sent++;
+					else
+						sparse_inc(global->percpu_stats, disc);
+				}
 			}
 		}
 
@@ -772,8 +761,8 @@ int
 pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 {
 	struct core_percpu_data * data;
-
 	int cpu;
+
 	(void)napi;
 
 	cpu = smp_processor_id();
