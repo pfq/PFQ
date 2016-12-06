@@ -177,7 +177,7 @@ extern pfq_id_t core_sock_get_free_id(struct core_sock * so);
 extern void	core_sock_opt_init(struct core_sock_opt *that, size_t caplen, size_t maxlen);
 extern int	core_sock_init(struct core_sock *so, pfq_id_t id);
 extern struct	core_sock * core_sock_get_by_id(pfq_id_t id);
-extern int	core_sock_get_socket_count(void);
+extern int	core_sock_counter(void);
 extern void	core_sock_release_id(pfq_id_t id);
 extern int	core_sock_tx_bind(struct core_sock *so, int tid, int if_index, int queue);
 extern int	core_sock_tx_unbind(struct core_sock *so);

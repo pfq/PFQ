@@ -50,7 +50,7 @@ core_sock_get_free_id(struct core_sock * so)
 }
 
 
-int core_sock_get_socket_count(void)
+int core_sock_counter(void)
 {
         return atomic_read(&global->socket_count);
 }

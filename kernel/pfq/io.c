@@ -702,7 +702,7 @@ pfq_rx_run( int cpu
 
 		++work;
 
-		if (unlikely(core_sock_get_socket_count() == 0)) {
+		if (unlikely(core_sock_counter() == 0)) {
 			pfq_kfree_skb_pool(skb, &pool->rx_multi);
 			continue;
 		}

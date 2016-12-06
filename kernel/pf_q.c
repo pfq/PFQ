@@ -178,7 +178,7 @@ pfq_release(struct socket *sock)
 
         /* purge both batch and recycle queues if no socket is open */
 
-        if (core_sock_get_socket_count() == 0)
+        if (core_sock_counter() == 0)
                 total += pfq_percpu_destruct();
 
         mutex_unlock(&global->socket_lock);
