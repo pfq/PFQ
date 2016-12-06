@@ -78,6 +78,7 @@
 #include <pfq/pool.h>
 #include <pfq/io.h>
 #include <pfq/kcompat.h>
+#include <pfq/skbuff.h>
 #include <pfq/io.h>
 
 
@@ -719,6 +720,8 @@ int pfq_normalize_skb(struct sk_buff *skb)
 static int
 pfq_netif_receive_skb(struct sk_buff *skb)
 {
+	struct sk_buff *nskb;
+
         if (likely(pfq_direct_capture(skb))) {
 
 		if (pfq_normalize_skb(skb) < 0)
@@ -728,13 +731,29 @@ pfq_netif_receive_skb(struct sk_buff *skb)
 		return NET_RX_SUCCESS;
 	}
 
-	return netif_receive_skb(skb);
+	nskb = skb_copy_for_kernel(skb, GFP_ATOMIC);
+	if (skb != nskb) {
+		struct pfq_percpu_pool *pool;
+
+		/* if skb belongs to the pool, 
+		   nskb can be either a new skb or NULL */
+
+		pool = per_cpu_ptr(global->percpu_pool, smp_processor_id());
+		pfq_kfree_skb_pool(skb, &pool->rx_multi);
+	}
+
+	if (nskb)
+		return netif_receive_skb(nskb);
+
+	return 0;
 }
 
 
 static int
 pfq_netif_rx(struct sk_buff *skb)
 {
+	struct sk_buff *nskb;
+
         if (likely(pfq_direct_capture(skb))) {
 
 		if (pfq_normalize_skb(skb) < 0)
@@ -744,13 +763,29 @@ pfq_netif_rx(struct sk_buff *skb)
 		return NET_RX_SUCCESS;
 	}
 
-	return netif_rx(skb);
+	nskb = skb_copy_for_kernel(skb, GFP_ATOMIC);
+	if (skb != nskb) {
+		struct pfq_percpu_pool *pool;
+
+		/* if skb belongs to the pool, 
+		   nskb can be either a new skb or NULL */
+
+		pool = per_cpu_ptr(global->percpu_pool, smp_processor_id());
+		pfq_kfree_skb_pool(skb, &pool->rx_multi);
+	}
+
+	if (nskb)
+		return netif_rx(nskb);
+
+	return 0;
 }
 
 
 static gro_result_t
 pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
 {
+	struct sk_buff *nskb;
+
         if (likely(pfq_direct_capture(skb))) {
 
 		if (pfq_normalize_skb(skb) < 0)
@@ -760,7 +795,21 @@ pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
                 return GRO_NORMAL;
         }
 
-        return napi_gro_receive(napi,skb);
+	nskb = skb_copy_for_kernel(skb, GFP_ATOMIC);
+	if (skb != nskb) {
+		struct pfq_percpu_pool *pool;
+
+		/* if skb belongs to the pool, 
+		   nskb can be either a new skb or NULL */
+
+		pool = per_cpu_ptr(global->percpu_pool, smp_processor_id());
+		pfq_kfree_skb_pool(skb, &pool->rx_multi);
+	}
+
+	if (nskb)
+		return napi_gro_receive(napi,skb);
+
+	return 0;
 }
 
 
