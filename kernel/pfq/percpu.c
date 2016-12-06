@@ -67,7 +67,7 @@ int pfq_percpu_init(void)
 		data->counter = 0;
 		data->GC = GCptrs[cpu];
 
-		data->rx_fifo = core_spsc_init(1024, cpu);
+		data->rx_fifo = core_spsc_init(global->skb_pool_size, cpu);
                 data->rx_napi = true;
 
 		GC_data_init(data->GC);
