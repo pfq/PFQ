@@ -38,6 +38,7 @@
 #include <core/stats.h>
 
 #include <pfq/pool.h>
+#include <pfq/global.h>
 #include <pfq/sparse.h>
 #include <pfq/percpu.h>
 
@@ -193,10 +194,11 @@ static inline
 struct sk_buff * pfq_alloc_skb(unsigned int size, gfp_t priority)
 {
 #ifdef PFQ_USE_SKB_POOL
-	struct pfq_percpu_pool *local_pool = this_cpu_ptr(global->percpu_pool);
 
-	if (likely(atomic_read(&local_pool->enable))) {
-		struct core_spsc_fifo *pool = pfq_skb_pool_get(&local_pool->rx_multi, size);
+	if (likely(atomic_read(&global->pool_enabled))) {
+		struct pfq_percpu_pool *cpu_pool = this_cpu_ptr(global->percpu_pool);
+
+		struct core_spsc_fifo *pool = pfq_skb_pool_get(&cpu_pool->rx_multi, size);
 		return ____pfq_alloc_skb_pool(size, priority, 0, NUMA_NO_NODE, pool);
 	}
 
@@ -234,12 +236,11 @@ void pfq_kfree_skb_pool(struct sk_buff *skb, struct pfq_skb_pools *pools)
 {
 #ifdef PFQ_USE_SKB_POOL
 	if (skb->nf_trace) {
-		const int idx = PFQ_SKB_POOL_IDX(skb->len);
+		if (likely(atomic_read(&global->pool_enabled))) {
 
-		struct pfq_percpu_pool *pool = this_cpu_ptr(global->percpu_pool);
-		if (likely(atomic_read(&pool->enable)))
-		{
 			struct core_spsc_fifo *pool = pfq_skb_pool_get(pools, skb->len);
+			const int idx = PFQ_SKB_POOL_IDX(skb->len);
+
 			core_spsc_push(pool, skb);
 			sparse_inc(global->percpu_mem_stats, pool_push[idx]);
 			return;
