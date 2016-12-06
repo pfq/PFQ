@@ -65,12 +65,12 @@ unsigned int pfq_skb_end_offset(const struct sk_buff *skb)
 
 static inline bool pfq_skb_is_recycleable(const struct sk_buff *skb, unsigned int skb_size)
 {
-	if (irqs_disabled()) {
+	if (unlikely(irqs_disabled())) {
 		sparse_inc(global->percpu_mem_stats, err_irqdis);
 		return false;
 	}
 
-	if (skb_is_nonlinear(skb)) {
+	if (unlikely(skb_is_nonlinear(skb))) {
 		sparse_inc(global->percpu_mem_stats, err_nolinr);
 		return false;
 	}
@@ -83,19 +83,19 @@ static inline bool pfq_skb_is_recycleable(const struct sk_buff *skb, unsigned in
 #endif
 	/*  check whether the skb is shared with someone else.. */
 
-	if (atomic_read(&skb->users) > 1) {
+	if (unlikely(atomic_read(&skb->users) > 1)) {
 		sparse_inc(global->percpu_mem_stats, err_shared);
 		return false;
 	}
 
-	if(skb_cloned(skb)) {
+	if(unlikely(skb_cloned(skb))) {
 		sparse_inc(global->percpu_mem_stats, err_cloned);
 		return false;
 	}
 
 	skb_size = SKB_DATA_ALIGN(skb_size + NET_SKB_PAD);
 
-	if (pfq_skb_end_offset(skb) < skb_size) {
+	if (unlikely(pfq_skb_end_offset(skb) < skb_size)) {
 		sparse_inc(global->percpu_mem_stats, err_memory);
 		return false;
 	}
