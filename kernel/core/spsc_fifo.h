@@ -186,10 +186,9 @@ void *core_spsc_peek(struct core_spsc_fifo *fifo)
 
 
 static inline
-void core_spsc_discard(struct core_spsc_fifo *fifo)
+void core_spsc_consume(struct core_spsc_fifo *fifo)
 {
-        size_t r = fifo->tail_cache;
-	size_t next = core_spsc_next_index(fifo, r);
+	size_t next = core_spsc_next_index(fifo, fifo->tail_cache);
 
 	fifo->tail_cache = next;
 	if (core_spsc_distance(fifo, fifo->tail_cache, __atomic_load_n(&fifo->tail, __ATOMIC_RELAXED))

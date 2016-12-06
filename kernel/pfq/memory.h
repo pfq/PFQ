@@ -160,19 +160,19 @@ struct sk_buff * pfq_netdev_alloc_skb_ip_align(struct net_device *dev,
 
 static inline
 struct sk_buff *
-____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, pfq_skb_pool_t *pool)
+____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, struct core_spsc_fifo *pool)
 {
 #ifdef PFQ_USE_SKB_POOL
 	if (likely(pool)) {
 
 		const int idx = PFQ_SKB_POOL_IDX(size);
 
-		struct sk_buff *skb = pfq_skb_pool_peek(pool);
+		struct sk_buff *skb = core_spsc_peek(pool);
 		if (likely(skb != NULL)) {
 
-			if(likely(pfq_skb_is_recycleable(skb, size))) {
+			if(pfq_skb_is_recycleable(skb, size)) {
 				sparse_inc(global->percpu_mem_stats, pool_pop[idx]);
-				pfq_skb_pool_discard(pool);
+				core_spsc_consume(pool);
 				return pfq_skb_recycle(skb);
 			}
 			else {
@@ -196,7 +196,7 @@ struct sk_buff * pfq_alloc_skb(unsigned int size, gfp_t priority)
 	struct pfq_percpu_pool *local_pool = this_cpu_ptr(global->percpu_pool);
 
 	if (likely(atomic_read(&local_pool->enable))) {
-		pfq_skb_pool_t *pool = pfq_skb_pool_get(&local_pool->rx_multi, size);
+		struct core_spsc_fifo *pool = pfq_skb_pool_get(&local_pool->rx_multi, size);
 		return ____pfq_alloc_skb_pool(size, priority, 0, NUMA_NO_NODE, pool);
 	}
 
@@ -221,7 +221,7 @@ struct sk_buff *
 pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int node, struct pfq_skb_pools *pools)
 {
 #ifdef PFQ_USE_SKB_POOL
-	pfq_skb_pool_t *pool = pfq_skb_pool_get(pools, size);
+	struct core_spsc_fifo *pool = pfq_skb_pool_get(pools, size);
 	return ____pfq_alloc_skb_pool(size, priority, 0, node, pool);
 #endif
 	sparse_inc(global->percpu_mem_stats, os_alloc);
@@ -239,8 +239,8 @@ void pfq_kfree_skb_pool(struct sk_buff *skb, struct pfq_skb_pools *pools)
 		struct pfq_percpu_pool *pool = this_cpu_ptr(global->percpu_pool);
 		if (likely(atomic_read(&pool->enable)))
 		{
-			pfq_skb_pool_t *pool = pfq_skb_pool_get(pools, skb->len);
-			pfq_skb_pool_push(pool, skb);
+			struct core_spsc_fifo *pool = pfq_skb_pool_get(pools, skb->len);
+			core_spsc_push(pool, skb);
 			sparse_inc(global->percpu_mem_stats, pool_push[idx]);
 			return;
 		}

@@ -34,11 +34,11 @@
 
 static
 size_t
-pfq_skb_pool_flush(pfq_skb_pool_t *pool)
+pfq_skb_pool_flush(struct core_spsc_fifo *pool)
 {
 	size_t total = 0, in_use = 0;
 	struct sk_buff *skb;
-	while ((skb = pfq_skb_pool_pop(pool)))
+	while ((skb = core_spsc_pop(pool)))
 	{
 		sparse_inc(global->percpu_mem_stats, os_free);
 		if (atomic_read(&skb->users) > 1) {
@@ -56,7 +56,7 @@ pfq_skb_pool_flush(pfq_skb_pool_t *pool)
 
 
 static
-int pfq_skb_pool_init (pfq_skb_pool_t **pool, size_t size, size_t skb_len, int cpu)
+int pfq_skb_pool_init (struct core_spsc_fifo **pool, size_t size, size_t skb_len, int cpu)
 {
 	int total = 0;
 	if (!*pool) {
@@ -82,7 +82,7 @@ int pfq_skb_pool_init (pfq_skb_pool_t **pool, size_t size, size_t skb_len, int c
 
 			skb->nf_trace = 1;
 
-			pfq_skb_pool_push(*pool, skb);
+			core_spsc_push(*pool, skb);
 			sparse_inc(global->percpu_mem_stats, os_alloc);
 		}
 
@@ -94,7 +94,7 @@ int pfq_skb_pool_init (pfq_skb_pool_t **pool, size_t size, size_t skb_len, int c
 
 
 
-size_t pfq_skb_pool_free(pfq_skb_pool_t **pool)
+size_t pfq_skb_pool_free(struct core_spsc_fifo **pool)
 {
 	size_t total = 0;
 	if (*pool) {

@@ -203,13 +203,13 @@ static int pfq_proc_memory(struct seq_file *m, void *v)
 		seq_printf(m, "CPU-%d:\n", i);
 		if (pool)
 		{
-			long int rx_0 = pfq_skb_pool_size(pool->rx_multi.fifo_sml);
-			long int rx_1 = pfq_skb_pool_size(pool->rx_multi.fifo_mid);
-			long int rx_2 = pfq_skb_pool_size(pool->rx_multi.fifo_lrg);
+			long int rx_0 = core_spsc_len(pool->rx_multi.fifo_sml);
+			long int rx_1 = core_spsc_len(pool->rx_multi.fifo_mid);
+			long int rx_2 = core_spsc_len(pool->rx_multi.fifo_lrg);
 
-			long int tx_0 = pfq_skb_pool_size(pool->tx_multi.fifo_sml);
-			long int tx_1 = pfq_skb_pool_size(pool->tx_multi.fifo_mid);
-			long int tx_2 = pfq_skb_pool_size(pool->tx_multi.fifo_lrg);
+			long int tx_0 = core_spsc_len(pool->tx_multi.fifo_sml);
+			long int tx_1 = core_spsc_len(pool->tx_multi.fifo_mid);
+			long int tx_2 = core_spsc_len(pool->tx_multi.fifo_lrg);
 
 			seq_printf(m, "  Rx pool size   : %10ld %10ld %10ld\n", rx_0, rx_1, rx_2);
 			seq_printf(m, "  Tx pool size   : %10ld %10ld %10ld\n", tx_0, tx_1, tx_2);

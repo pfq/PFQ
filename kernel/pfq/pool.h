@@ -38,14 +38,12 @@
 #define PFQ_SKB_POOL_LRG  2048
 
 
-typedef struct core_spsc_fifo pfq_skb_pool_t;
-
 
 struct pfq_skb_pools
 {
-	pfq_skb_pool_t *fifo_sml;
-	pfq_skb_pool_t *fifo_mid;
-	pfq_skb_pool_t *fifo_lrg;
+	struct core_spsc_fifo *fifo_sml;
+	struct core_spsc_fifo *fifo_mid;
+	struct core_spsc_fifo *fifo_lrg;
 };
 
 
@@ -53,7 +51,7 @@ extern int	pfq_skb_pool_init_all(void);
 extern int	pfq_skb_pool_free_all(void);
 extern void	pfq_skb_pool_toggle(bool);
 
-extern struct	core_pool_stat pfq_get_skb_pool_stats(void);
+extern struct  core_pool_stat pfq_get_skb_pool_stats(void);
 
 
 #define PFQ_SKB_POOL_IDX(size) (size <= PFQ_SKB_POOL_SML ? 0 : \
@@ -61,7 +59,7 @@ extern struct	core_pool_stat pfq_get_skb_pool_stats(void);
 				2)
 
 static inline
-pfq_skb_pool_t *pfq_skb_pool_get(struct pfq_skb_pools *pools, size_t size)
+struct core_spsc_fifo *pfq_skb_pool_get(struct pfq_skb_pools *pools, size_t size)
 {
 	if (size <= PFQ_SKB_POOL_SML)
 		return pools->fifo_sml;
@@ -85,37 +83,5 @@ void pfq_skb_pool_disable(void)
 	pfq_skb_pool_toggle(false);
 }
 
-
-static inline
-struct sk_buff *pfq_skb_pool_pop(pfq_skb_pool_t *pool)
-{
-	return core_spsc_pop(pool);
-}
-
-static inline
-struct sk_buff *pfq_skb_pool_peek(pfq_skb_pool_t *pool)
-{
-	return core_spsc_peek(pool);
-}
-
-static inline
-void pfq_skb_pool_discard(pfq_skb_pool_t *pool)
-{
-	core_spsc_discard(pool);
-}
-
-static inline
-bool pfq_skb_pool_push(pfq_skb_pool_t *pool, struct sk_buff *skb)
-{
-	return core_spsc_push(pool, skb);
-}
-
-static inline
-size_t pfq_skb_pool_size(pfq_skb_pool_t const *pool)
-{
-	if (pool)
-		return core_spsc_len(pool);
-	return 0;
-}
 
 #endif /* PFQ_SKBUFF_POOL_H */
