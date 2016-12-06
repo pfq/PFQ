@@ -780,6 +780,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 		if (!core_spsc_push(data->rx_fifo, skb)) {
 			if (skb->nf_trace) {
 				core_spsc_push(data->rx_free, skb);
+				core_spsc_push_sync(data->rx_free);
 			} else {
 				sparse_inc(global->percpu_mem_stats, os_free);
 				kfree_skb(skb);
