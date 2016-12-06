@@ -200,8 +200,8 @@ struct sk_buff * pfq_alloc_skb(unsigned int size, gfp_t priority)
 		return ____pfq_alloc_skb_pool(size, priority, 0, NUMA_NO_NODE, pool);
 	}
 
-	sparse_inc(global->percpu_mem_stats, os_alloc);
 #endif
+	sparse_inc(global->percpu_mem_stats, os_alloc);
 	return __alloc_skb(size, priority, 0, NUMA_NO_NODE);
 }
 
@@ -225,8 +225,8 @@ pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int node, struct pfq_skb_p
 		pfq_skb_pool_t *pool = pfq_skb_pool_get(pools, size);
 		return ____pfq_alloc_skb_pool(size, priority, 0, node, pool);
 	}
-	sparse_inc(global->percpu_mem_stats, os_alloc);
 #endif
+	sparse_inc(global->percpu_mem_stats, os_alloc);
 	return __alloc_skb(size, priority, 0, NUMA_NO_NODE);
 }
 
