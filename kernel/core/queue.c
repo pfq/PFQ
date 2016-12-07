@@ -148,6 +148,7 @@ core_shared_queue_disable(struct core_sock *so)
 	if (so->shmem.addr) {
 
 		atomic_long_set(&so->opt.rxq_info.addr, 0);
+		atomic_long_set(&so->opt.txq_info.addr, 0);
 
 		for(n = 0; n < Q_MAX_TX_QUEUES; n++)
 		{
@@ -157,7 +158,6 @@ core_shared_queue_disable(struct core_sock *so)
 		msleep(Q_CORE_GRACE_PERIOD);
 
 		pfq_shared_memory_free(&so->shmem);
-
 		so->shmem.addr = NULL;
 		so->shmem.size = 0;
 

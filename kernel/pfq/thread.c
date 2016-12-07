@@ -359,6 +359,7 @@ pfq_start_rx_threads(void)
 		int i, n, node;
 
 		napi_quota = (global->napi_cpu_nr + global->rx_cpu_nr - 1)/global->rx_cpu_nr;
+
                 napi_idx = 0;
 
 		printk(KERN_INFO "[PFQ] starting %d Rx thread(s): napi quota %d...\n", global->rx_cpu_nr, napi_quota);
@@ -398,7 +399,6 @@ pfq_start_rx_threads(void)
 				/* disable napi processing on napi_cpu */
  				per_cpu_ptr(global->percpu_data, napi_cpu)->rx_napi = false;
 			}
-
 
 			kthread_bind(data->task, data->cpu);
 			wake_up_process(data->task);

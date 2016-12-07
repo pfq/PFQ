@@ -794,7 +794,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 	}
 
 	if (data->rx_napi)
-		pfq_rx_run(cpu, 0, data, per_cpu_ptr(global->percpu_pool, cpu));
+		pfq_rx_run(cpu, global->capt_batch_len, data, per_cpu_ptr(global->percpu_pool, cpu));
 
 	return 0;
 }
