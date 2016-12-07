@@ -370,7 +370,7 @@ pfq_sk_queue_xmit(struct core_sock *so,
 		  int cpu,
 		  atomic_t const *stop)
 {
-	struct core_tx_info const * txinfo = core_sock_get_tx_queue_info(&so->opt, sock_queue);
+	struct core_txq_info const * txinfo = core_sock_get_tx_queue_info(&so->opt, sock_queue);
 	struct net_dev_queue dev_queue = {.dev = NULL, .queue = NULL, .mapping = 0};
 	struct pfq_mbuff_xmit_context ctx;
 	struct pfq_percpu_pool *pool;

@@ -749,7 +749,7 @@ int core_setsockopt(struct socket *sock,
 		}
 
 		if (bind.tid >= 0 &&
-		    so->opt.tx_num_async_queues >= Q_MAX_TX_QUEUES) {
+		    so->opt.txq_num_async >= Q_MAX_TX_QUEUES) {
 			printk(KERN_INFO "[PFQ|%d] Tx thread: max number of sock queues exceeded!\n", so->id);
 			return -EPERM;
 		}
@@ -779,11 +779,11 @@ int core_setsockopt(struct socket *sock,
 		}
 		else /* sync queue */
 		{
-			so->opt.tx_info.def_ifindex = bind.ifindex;
-			so->opt.tx_info.def_queue = bind.qindex;
+			so->opt.txq_info.def_ifindex = bind.ifindex;
+			so->opt.txq_info.def_queue = bind.qindex;
 			pr_devel("[PFQ|%d] Tx bind: if_index=%d qindex=%d\n", so->id,
-				so->opt.tx_info.def_ifindex,
-				so->opt.tx_info.def_queue);
+				so->opt.txq_info.def_ifindex,
+				so->opt.txq_info.def_queue);
 		}
 
         } break;

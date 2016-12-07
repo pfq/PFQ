@@ -59,7 +59,7 @@ core_shared_queue_enable(struct core_sock *so, unsigned long user_addr, size_t u
 		mapped_queue->rx.size      = (unsigned int)core_mpsc_queue_mem(so)/2;
 		mapped_queue->rx.slot_size = (unsigned int)so->opt.rx_slot_size;
 
-		so->opt.rx_info.shmem_addr = so->shmem.addr + sizeof(struct pfq_shared_queue);
+		so->opt.rxq_info.shmem_addr = so->shmem.addr + sizeof(struct pfq_shared_queue);
 
 		/* reset Rx slots */
 
@@ -82,7 +82,7 @@ core_shared_queue_enable(struct core_sock *so, unsigned long user_addr, size_t u
 		mapped_queue->tx.cons.index = 0;
 		mapped_queue->tx.cons.off   = 0;
 
-		so->opt.tx_info.shmem_addr = so->shmem.addr + sizeof(struct pfq_shared_queue) + core_mpsc_queue_mem(so);
+		so->opt.txq_info.shmem_addr = so->shmem.addr + sizeof(struct pfq_shared_queue) + core_mpsc_queue_mem(so);
 
 
 		/* initialize TX async queues */
@@ -97,7 +97,7 @@ core_shared_queue_enable(struct core_sock *so, unsigned long user_addr, size_t u
 			mapped_queue->tx_async[n].cons.index = 0;
 			mapped_queue->tx_async[n].cons.off   = 0;
 
-			so->opt.tx_info_async[n].shmem_addr = so->shmem.addr + sizeof(struct pfq_shared_queue)
+			so->opt.txq_info_async[n].shmem_addr = so->shmem.addr + sizeof(struct pfq_shared_queue)
 				+ core_mpsc_queue_mem(so)
 				+ core_spsc_queue_mem(so) * (1 + n);
 		}
@@ -106,12 +106,12 @@ core_shared_queue_enable(struct core_sock *so, unsigned long user_addr, size_t u
 
 		smp_wmb();
 
-		atomic_long_set(&so->opt.rx_info.addr, (long)&mapped_queue->rx);
-		atomic_long_set(&so->opt.tx_info.addr, (long)&mapped_queue->tx);
+		atomic_long_set(&so->opt.rxq_info.addr, (long)&mapped_queue->rx);
+		atomic_long_set(&so->opt.txq_info.addr, (long)&mapped_queue->tx);
 
 		for(n = 0; n < Q_MAX_TX_QUEUES; n++)
 		{
-			atomic_long_set(&so->opt.tx_info_async[n].addr, (long)&mapped_queue->tx_async[n]);
+			atomic_long_set(&so->opt.txq_info_async[n].addr, (long)&mapped_queue->tx_async[n]);
 		}
 
 		pr_devel("[PFQ|%d] Rx queue: len=%zu slot_size=%zu caplen=%zu, mem=%zu bytes\n",
@@ -147,11 +147,11 @@ core_shared_queue_disable(struct core_sock *so)
 
 	if (so->shmem.addr) {
 
-		atomic_long_set(&so->opt.rx_info.addr, 0);
+		atomic_long_set(&so->opt.rxq_info.addr, 0);
 
 		for(n = 0; n < Q_MAX_TX_QUEUES; n++)
 		{
-			atomic_long_set(&so->opt.tx_info_async[n].addr, 0);
+			atomic_long_set(&so->opt.txq_info_async[n].addr, 0);
 		}
 
 		msleep(Q_CORE_GRACE_PERIOD);

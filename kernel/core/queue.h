@@ -77,7 +77,7 @@ static inline
 char *core_mpsc_slot_ptr(struct core_sock_opt *opt, struct pfq_rx_queue *qd, size_t qindex, size_t slot)
 {
 	(void)qd;
-	return (char *)(opt->rx_info.shmem_addr) + (opt->rx_queue_len * (qindex & 1) + slot) * opt->rx_slot_size;
+	return (char *)(opt->rxq_info.shmem_addr) + (opt->rx_queue_len * (qindex & 1) + slot) * opt->rx_slot_size;
 }
 
 
