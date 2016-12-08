@@ -67,37 +67,37 @@ unsigned int pfq_skb_end_offset(const struct sk_buff *skb)
 static inline bool pfq_skb_is_recycleable(const struct sk_buff *skb, unsigned int skb_size)
 {
 	if (unlikely(irqs_disabled())) {
-		sparse_inc(global->percpu_mem_stats, err_irqdis);
+		sparse_inc(global->percpu_memory, err_irqdis);
 		return false;
 	}
 
 	if (unlikely(skb_is_nonlinear(skb))) {
-		sparse_inc(global->percpu_mem_stats, err_nolinr);
+		sparse_inc(global->percpu_memory, err_nolinr);
 		return false;
 	}
 
 #if 0
 	if (skb->fclone != SKB_FCLONE_UNAVAILABLE) {
-		sparse_inc(global->percpu_mem_stats, err_fclone);
+		sparse_inc(global->percpu_memory, err_fclone);
 		return false;
 	}
 #endif
 	/*  check whether the skb is shared with someone else.. */
 
 	if (unlikely(atomic_read(&skb->users) > 1)) {
-		sparse_inc(global->percpu_mem_stats, err_shared);
+		sparse_inc(global->percpu_memory, err_shared);
 		return false;
 	}
 
 	if(unlikely(skb_cloned(skb))) {
-		sparse_inc(global->percpu_mem_stats, err_cloned);
+		sparse_inc(global->percpu_memory, err_cloned);
 		return false;
 	}
 
 	skb_size = SKB_DATA_ALIGN(skb_size + NET_SKB_PAD);
 
 	if (unlikely(pfq_skb_end_offset(skb) < skb_size)) {
-		sparse_inc(global->percpu_mem_stats, err_memory);
+		sparse_inc(global->percpu_memory, err_memory);
 		return false;
 	}
 
@@ -172,20 +172,20 @@ ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, 
 		if (likely(skb != NULL)) {
 
 			if(pfq_skb_is_recycleable(skb, size)) {
-				sparse_inc(global->percpu_mem_stats, pool_pop[idx]);
+				sparse_inc(global->percpu_memory, pool_pop[idx]);
 				core_spsc_consume(pool);
 				return pfq_skb_recycle(skb);
 			}
 			else {
-				sparse_inc(global->percpu_mem_stats, pool_norecycl[idx]);
+				sparse_inc(global->percpu_memory, pool_norecycl[idx]);
 			}
 		}
 		else {
-			sparse_inc(global->percpu_mem_stats, pool_empty[idx]);
+			sparse_inc(global->percpu_memory, pool_empty[idx]);
 		}
 	}
 #endif
-	sparse_inc(global->percpu_mem_stats, os_alloc);
+	sparse_inc(global->percpu_memory, os_alloc);
 	return  __alloc_skb(size, priority, fclone, node);
 }
 
@@ -203,7 +203,7 @@ struct sk_buff * pfq_alloc_skb(unsigned int size, gfp_t priority)
 	}
 
 #endif
-	sparse_inc(global->percpu_mem_stats, os_alloc);
+	sparse_inc(global->percpu_memory, os_alloc);
 	return __alloc_skb(size, priority, 0, NUMA_NO_NODE);
 }
 
@@ -226,7 +226,7 @@ pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int node, struct pfq_skb_p
 	struct core_spsc_fifo *pool = pfq_skb_pool_get(pools, size);
 	return ____pfq_alloc_skb_pool(size, priority, 0, node, pool);
 #endif
-	sparse_inc(global->percpu_mem_stats, os_alloc);
+	sparse_inc(global->percpu_memory, os_alloc);
 	return __alloc_skb(size, priority, 0, NUMA_NO_NODE);
 }
 
@@ -243,19 +243,19 @@ void pfq_kfree_skb_pool(struct sk_buff *skb, struct pfq_skb_pools *pools)
 #ifdef PFQ_DEBUG
 			if (!core_spsc_push(pool, skb)) {
 				printk(KERN_WARNING "[PFQ] BUG: pfq_kfree_skb_pool: internal error!\n");
-				sparse_inc(global->percpu_mem_stats, os_free);
+				sparse_inc(global->percpu_memory, os_free);
 				kfree_skb(skb);
 				return;
 			}
 #else
 			core_spsc_push(pool, skb);
 #endif
-			sparse_inc(global->percpu_mem_stats, pool_push[idx]);
+			sparse_inc(global->percpu_memory, pool_push[idx]);
 			return;
 		}
 	}
 #endif
-	sparse_inc(global->percpu_mem_stats, os_free);
+	sparse_inc(global->percpu_memory, os_free);
 	kfree_skb(skb);
 }
 

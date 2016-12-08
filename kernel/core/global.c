@@ -57,11 +57,9 @@ struct core_global_data default_global =
 
 
 	.percpu_stats		= NULL,
-	.percpu_mem_stats	= NULL,
+	.percpu_memory		= NULL,
 	.percpu_data		= NULL,
-	.percpu_sock		= NULL,
 	.percpu_pool		= NULL,
-	.percpu_queue		= NULL,
 
 	.functions		= {}
      // .symtable_sem		= {0},

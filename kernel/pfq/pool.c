@@ -40,7 +40,7 @@ pfq_skb_pool_flush(struct core_spsc_fifo *pool)
 	struct sk_buff *skb;
 	while ((skb = core_spsc_pop(pool)))
 	{
-		sparse_inc(global->percpu_mem_stats, os_free);
+		sparse_inc(global->percpu_memory, os_free);
 		if (atomic_read(&skb->users) > 1) {
 			in_use++;
 		}
@@ -83,7 +83,7 @@ int pfq_skb_pool_init (struct core_spsc_fifo **pool, size_t size, size_t skb_len
 			skb->nf_trace = 1;
 
 			core_spsc_push(*pool, skb);
-			sparse_inc(global->percpu_mem_stats, os_alloc);
+			sparse_inc(global->percpu_memory, os_alloc);
 		}
 
 		core_spsc_push_sync(*pool);
@@ -111,30 +111,30 @@ pfq_get_skb_pool_stats(void)
 {
         struct core_pool_stat ret =
         {
-           .os_alloc      = sparse_read(global->percpu_mem_stats, os_alloc)
-        ,  .os_free       = sparse_read(global->percpu_mem_stats, os_free)
+           .os_alloc      = sparse_read(global->percpu_memory, os_alloc)
+        ,  .os_free       = sparse_read(global->percpu_memory, os_free)
 
-        ,  .pool_pop[0]   = sparse_read(global->percpu_mem_stats, pool_pop[0])
-        ,  .pool_pop[1]   = sparse_read(global->percpu_mem_stats, pool_pop[1])
-        ,  .pool_pop[2]   = sparse_read(global->percpu_mem_stats, pool_pop[2])
+        ,  .pool_pop[0]   = sparse_read(global->percpu_memory, pool_pop[0])
+        ,  .pool_pop[1]   = sparse_read(global->percpu_memory, pool_pop[1])
+        ,  .pool_pop[2]   = sparse_read(global->percpu_memory, pool_pop[2])
 
-        ,  .pool_push[0]  = sparse_read(global->percpu_mem_stats, pool_push[0])
-        ,  .pool_push[1]  = sparse_read(global->percpu_mem_stats, pool_push[1])
-        ,  .pool_push[2]  = sparse_read(global->percpu_mem_stats, pool_push[2])
+        ,  .pool_push[0]  = sparse_read(global->percpu_memory, pool_push[0])
+        ,  .pool_push[1]  = sparse_read(global->percpu_memory, pool_push[1])
+        ,  .pool_push[2]  = sparse_read(global->percpu_memory, pool_push[2])
 
-        ,  .pool_empty[0]  = sparse_read(global->percpu_mem_stats, pool_empty[0])
-        ,  .pool_empty[1]  = sparse_read(global->percpu_mem_stats, pool_empty[1])
-        ,  .pool_empty[2]  = sparse_read(global->percpu_mem_stats, pool_empty[2])
+        ,  .pool_empty[0]  = sparse_read(global->percpu_memory, pool_empty[0])
+        ,  .pool_empty[1]  = sparse_read(global->percpu_memory, pool_empty[1])
+        ,  .pool_empty[2]  = sparse_read(global->percpu_memory, pool_empty[2])
 
-        ,  .pool_norecycl[0]  = sparse_read(global->percpu_mem_stats, pool_norecycl[0])
-        ,  .pool_norecycl[1]  = sparse_read(global->percpu_mem_stats, pool_norecycl[1])
-        ,  .pool_norecycl[2]  = sparse_read(global->percpu_mem_stats, pool_norecycl[2])
+        ,  .pool_norecycl[0]  = sparse_read(global->percpu_memory, pool_norecycl[0])
+        ,  .pool_norecycl[1]  = sparse_read(global->percpu_memory, pool_norecycl[1])
+        ,  .pool_norecycl[2]  = sparse_read(global->percpu_memory, pool_norecycl[2])
 
-        ,  .err_shared    = sparse_read(global->percpu_mem_stats, err_shared)
-        ,  .err_cloned    = sparse_read(global->percpu_mem_stats, err_cloned)
-        ,  .err_memory    = sparse_read(global->percpu_mem_stats, err_memory)
-        ,  .err_irqdis    = sparse_read(global->percpu_mem_stats, err_irqdis)
-        ,  .err_nolinr    = sparse_read(global->percpu_mem_stats, err_nolinr)
+        ,  .err_shared    = sparse_read(global->percpu_memory, err_shared)
+        ,  .err_cloned    = sparse_read(global->percpu_memory, err_cloned)
+        ,  .err_memory    = sparse_read(global->percpu_memory, err_memory)
+        ,  .err_irqdis    = sparse_read(global->percpu_memory, err_irqdis)
+        ,  .err_nolinr    = sparse_read(global->percpu_memory, err_nolinr)
 	};
 	return ret;
 }

@@ -109,7 +109,6 @@ unsigned int pfq_fold(unsigned int a, unsigned int b)
 
 
 int core_process_batch(struct core_percpu_data *data,
-		       struct core_percpu_sock *sock,
 		       struct pfq_percpu_pool *pool,
 		       struct GC_data *GC_ptr,
 		       int cpu)
@@ -265,10 +264,10 @@ int core_process_batch(struct core_percpu_data *data,
 
 					/* cache the number of sockets in the mask */
 
-					if (eligible_mask != sock->eligible_mask) {
+					if (eligible_mask != data->sock_eligible_mask) {
 						unsigned long ebit;
-						sock->eligible_mask = eligible_mask;
-						sock->cnt = 0;
+						data->sock_eligible_mask = eligible_mask;
+						data->sock_cnt = 0;
 						core_bitwise_foreach(eligible_mask, ebit,
 						{
 							pfq_id_t id = (__force pfq_id_t)core_ctz(ebit);
@@ -278,16 +277,16 @@ int core_process_batch(struct core_percpu_data *data,
 							/* max weight = Q_MAX_SOCK_MASK / Q_MAX_ID */
 
 							for(i = 0; i < so->weight; ++i)
-								sock->mask[sock->cnt++] = ebit;
+								data->sock_mask[data->sock_cnt++] = ebit;
 						})
 					}
 
-					if (likely(sock->cnt)) {
+					if (likely(data->sock_cnt)) {
 
-						sock_mask |= sock->mask[pfq_fold(prefold(monad.fanout.hash), (unsigned int)sock->cnt)];
+						sock_mask |= data->sock_mask[pfq_fold(prefold(monad.fanout.hash), (unsigned int)data->sock_cnt)];
 
 						if (is_double_steering(monad.fanout))
-							sock_mask |= sock->mask[pfq_fold(prefold(monad.fanout.hash2), (unsigned int)sock->cnt)];
+							sock_mask |= data->sock_mask[pfq_fold(prefold(monad.fanout.hash2), (unsigned int)data->sock_cnt)];
 					}
 				}
 				else {  /* broadcast */

@@ -59,7 +59,7 @@ int pfq_percpu_init(void)
                 struct core_percpu_data *data;
 
 		memset(per_cpu_ptr(global->percpu_stats, cpu), 0, sizeof(core_global_stats_t));
-		memset(per_cpu_ptr(global->percpu_mem_stats, cpu), 0, sizeof(struct core_memory_stats));
+		memset(per_cpu_ptr(global->percpu_memory, cpu), 0, sizeof(struct core_memory_stats));
 
 		preempt_disable();
 
@@ -146,7 +146,7 @@ int pfq_percpu_destruct(void)
 
 		for_each_qbuff(&data->GC->pool, buff, n)
 		{
-			sparse_inc(global->percpu_mem_stats, os_free);
+			sparse_inc(global->percpu_memory, os_free);
 			kfree_skb(QBUFF_SKB(buff));
 		}
 
@@ -156,13 +156,13 @@ int pfq_percpu_destruct(void)
 
 		while ((skb = core_spsc_pop(data->rx_fifo)))
 		{
-			sparse_inc(global->percpu_mem_stats, os_free);
+			sparse_inc(global->percpu_memory, os_free);
 			kfree_skb(skb);
 			total++;
 		}
 		while ((skb = core_spsc_pop(data->rx_free)))
 		{
-			sparse_inc(global->percpu_mem_stats, os_free);
+			sparse_inc(global->percpu_memory, os_free);
 			kfree_skb(skb);
 			total++;
 		}

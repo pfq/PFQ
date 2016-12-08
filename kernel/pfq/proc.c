@@ -171,25 +171,25 @@ static int pfq_proc_memory(struct seq_file *m, void *v)
 {
 	int i;
 
-	long int push_0 = sparse_read(global->percpu_mem_stats, pool_push[0]);
-	long int push_1 = sparse_read(global->percpu_mem_stats, pool_push[1]);
-	long int push_2 = sparse_read(global->percpu_mem_stats, pool_push[2]);
+	long int push_0 = sparse_read(global->percpu_memory, pool_push[0]);
+	long int push_1 = sparse_read(global->percpu_memory, pool_push[1]);
+	long int push_2 = sparse_read(global->percpu_memory, pool_push[2]);
 
-	long int pop_0  = sparse_read(global->percpu_mem_stats, pool_pop[0]);
-	long int pop_1  = sparse_read(global->percpu_mem_stats, pool_pop[1]);
-	long int pop_2  = sparse_read(global->percpu_mem_stats, pool_pop[2]);
+	long int pop_0  = sparse_read(global->percpu_memory, pool_pop[0]);
+	long int pop_1  = sparse_read(global->percpu_memory, pool_pop[1]);
+	long int pop_2  = sparse_read(global->percpu_memory, pool_pop[2]);
 
-	long int empty_0  = sparse_read(global->percpu_mem_stats, pool_empty[0]);
-	long int empty_1  = sparse_read(global->percpu_mem_stats, pool_empty[1]);
-	long int empty_2  = sparse_read(global->percpu_mem_stats, pool_empty[2]);
+	long int empty_0  = sparse_read(global->percpu_memory, pool_empty[0]);
+	long int empty_1  = sparse_read(global->percpu_memory, pool_empty[1]);
+	long int empty_2  = sparse_read(global->percpu_memory, pool_empty[2]);
 
-	long int norecycl_0  = sparse_read(global->percpu_mem_stats, pool_norecycl[0]);
-	long int norecycl_1  = sparse_read(global->percpu_mem_stats, pool_norecycl[1]);
-	long int norecycl_2  = sparse_read(global->percpu_mem_stats, pool_norecycl[2]);
+	long int norecycl_0  = sparse_read(global->percpu_memory, pool_norecycl[0]);
+	long int norecycl_1  = sparse_read(global->percpu_memory, pool_norecycl[1]);
+	long int norecycl_2  = sparse_read(global->percpu_memory, pool_norecycl[2]);
 
 	seq_printf(m, "Kernel\n");
-	seq_printf(m, "  alloc          : %10ld\n", sparse_read(global->percpu_mem_stats, os_alloc));
-	seq_printf(m, "  free           : %10ld\n", sparse_read(global->percpu_mem_stats, os_free));
+	seq_printf(m, "  alloc          : %10ld\n", sparse_read(global->percpu_memory, os_alloc));
+	seq_printf(m, "  free           : %10ld\n", sparse_read(global->percpu_memory, os_free));
 	seq_printf(m, "\nPFQ POOL           %10s %10s %10s\n", "small", "mid", "large");
 	seq_printf(m, "  push           : %10ld %10ld %10ld\n", push_0, push_1, push_2);
 	seq_printf(m, "  pop            : %10ld %10ld %10ld\n", pop_0, pop_1, pop_2);
@@ -217,11 +217,11 @@ static int pfq_proc_memory(struct seq_file *m, void *v)
 	}
 
 	seq_printf(m, "\nPFQ POOL error\n");
-	seq_printf(m, "  error shared   : %10ld\n", sparse_read(global->percpu_mem_stats, err_shared));
-	seq_printf(m, "  error cloned   : %10ld\n", sparse_read(global->percpu_mem_stats, err_cloned));
-	seq_printf(m, "  error memory   : %10ld\n", sparse_read(global->percpu_mem_stats, err_memory));
-	seq_printf(m, "  error irqdis   : %10ld\n", sparse_read(global->percpu_mem_stats, err_irqdis));
-	seq_printf(m, "  error nolinr   : %10ld\n", sparse_read(global->percpu_mem_stats, err_nolinr));
+	seq_printf(m, "  error shared   : %10ld\n", sparse_read(global->percpu_memory, err_shared));
+	seq_printf(m, "  error cloned   : %10ld\n", sparse_read(global->percpu_memory, err_cloned));
+	seq_printf(m, "  error memory   : %10ld\n", sparse_read(global->percpu_memory, err_memory));
+	seq_printf(m, "  error irqdis   : %10ld\n", sparse_read(global->percpu_memory, err_irqdis));
+	seq_printf(m, "  error nolinr   : %10ld\n", sparse_read(global->percpu_memory, err_nolinr));
 	return 0;
 }
 

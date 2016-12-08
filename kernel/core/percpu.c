@@ -39,12 +39,6 @@ int core_percpu_alloc(void)
 		return -ENOMEM;
         }
 
-	global->percpu_sock = alloc_percpu(struct core_percpu_sock);
-	if (!global->percpu_sock) {
-                printk(KERN_ERR "[PFQ] could not allocate percpu sock!\n");
-                goto err0;
-        }
-
 	global->percpu_pool = alloc_percpu(struct pfq_percpu_pool);
 	if (!global->percpu_pool) {
                 printk(KERN_ERR "[PFQ] could not allocate percpu pool!\n");
@@ -57,8 +51,8 @@ int core_percpu_alloc(void)
                 goto err2;
         }
 
-	global->percpu_mem_stats = alloc_percpu(struct core_memory_stats);
-	if (!global->percpu_mem_stats) {
+	global->percpu_memory = alloc_percpu(struct core_memory_stats);
+	if (!global->percpu_memory) {
                 printk(KERN_ERR "[PFQ] could not allocate percpu memory stats!\n");
                 goto err3;
         }
@@ -66,11 +60,10 @@ int core_percpu_alloc(void)
 	printk(KERN_INFO "[PFQ] number of online cpus %d\n", num_online_cpus());
         return 0;
 
-	free_percpu(global->percpu_mem_stats);
+	free_percpu(global->percpu_memory);
 err3:   free_percpu(global->percpu_stats);
 err2:   free_percpu(global->percpu_pool);
-err1:	free_percpu(global->percpu_sock);
-err0:	free_percpu(global->percpu_data);
+err1:	free_percpu(global->percpu_data);
 	return -ENOMEM;
 }
 
@@ -88,14 +81,10 @@ void core_percpu_free(void)
 		kfree(data->rx_free);
 	}
 
-
 	free_percpu(global->percpu_stats);
-	free_percpu(global->percpu_mem_stats);
-
+	free_percpu(global->percpu_memory);
 	free_percpu(global->percpu_data);
-	free_percpu(global->percpu_sock);
 	free_percpu(global->percpu_pool);
-	free_percpu(global->percpu_queue);
 }
 
 

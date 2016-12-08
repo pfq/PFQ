@@ -572,7 +572,7 @@ intr:
 	/* the ret-i packet is already freed by the driver */
 
 	for_each_qbuff_from(ret.ok + 1, buffs, buff, n) {
-		sparse_inc(global->percpu_mem_stats, os_free);
+		sparse_inc(global->percpu_memory, os_free);
 		kfree_skb(QBUFF_SKB(buff));
 		++ret.fail;
 	}
@@ -732,7 +732,7 @@ pfq_rx_run( int cpu
 			if (printk_ratelimit())
 				printk(KERN_INFO "[PFQ] GC: memory exhausted!\n");
 			__sparse_inc(global->percpu_stats, lost, cpu);
-			__sparse_inc(global->percpu_mem_stats, os_free, cpu);
+			__sparse_inc(global->percpu_memory, os_free, cpu);
 			pfq_kfree_skb_pool(skb, &pool->rx_multi);
 			continue;
 		}
@@ -743,7 +743,6 @@ pfq_rx_run( int cpu
 			continue;
 
 		core_process_batch( data
-				  , per_cpu_ptr(global->percpu_sock, cpu)
 				  , pool
 				  , data->GC
 				  , cpu);
@@ -782,7 +781,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 				core_spsc_push(data->rx_free, skb);
 				core_spsc_push_sync(data->rx_free);
 			} else {
-				sparse_inc(global->percpu_mem_stats, os_free);
+				sparse_inc(global->percpu_memory, os_free);
 				kfree_skb(skb);
 			}
 			return 0;

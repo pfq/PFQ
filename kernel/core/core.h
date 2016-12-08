@@ -26,12 +26,10 @@
 #define Q_CORE_CORE_H
 
 struct core_percpu_data;
-struct core_percpu_sock;
 struct pfq_percpu_pool;
 struct GC_data;
 
 int core_process_batch(struct core_percpu_data *data,
-		       struct core_percpu_sock *sock,
 		       struct pfq_percpu_pool *pool,
 		       struct GC_data *GC_ptr,
 		       int cpu);

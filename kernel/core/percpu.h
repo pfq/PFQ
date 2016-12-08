@@ -39,26 +39,20 @@ int  core_percpu_alloc(void);
 void core_percpu_free(void);
 
 
-struct core_percpu_sock
-{
-        unsigned long           eligible_mask;
-	unsigned long           mask[Q_CORE_MAX_SOCK_MASK];
-        int                     cnt;
-
-} ____cacheline_aligned;
-
-
-
 struct core_percpu_data
 {
 	struct core_spsc_fifo   *rx_fifo;
 	struct core_spsc_fifo   *rx_free;
-
-	bool			 rx_napi;
 	struct GC_data		*GC;
-	ktime_t			 last_rx;
-	struct timer_list	 timer;
-	uint32_t		 counter;
+
+	struct timer_list	timer;
+	uint32_t		counter;
+
+        unsigned long		sock_eligible_mask;
+	unsigned long           sock_mask[Q_CORE_MAX_SOCK_MASK];
+        int                     sock_cnt;
+
+	bool			rx_napi;
 
 } ____cacheline_aligned;
 
@@ -71,9 +65,9 @@ core_invalidate_percpu_eligible_mask(pfq_id_t id)
 	(void)id;
 	for_each_present_cpu(cpu)
 	{
-		struct core_percpu_sock * sock = per_cpu_ptr(global->percpu_sock, cpu);
-		sock->eligible_mask = 0;
-		sock->cnt = 0;
+		struct core_percpu_data * this_data = per_cpu_ptr(global->percpu_data, cpu);
+		this_data->sock_eligible_mask = 0;
+		this_data->sock_cnt = 0;
 	}
 }
 

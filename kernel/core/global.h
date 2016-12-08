@@ -36,7 +36,6 @@
 struct core_kernel_stats __percpu;
 struct core_memory_stats __percpu;
 struct core_percpu_data  __percpu;
-struct core_percpu_sock  __percpu;
 struct pfq_percpu_pool   __percpu;
 
 
@@ -77,10 +76,8 @@ struct core_global_data
 	struct mutex	  groups_lock;
 
 	struct core_kernel_stats	__percpu   * percpu_stats;
-	struct core_memory_stats	__percpu   * percpu_mem_stats;
+	struct core_memory_stats	__percpu   * percpu_memory;
 	struct core_percpu_data		__percpu   * percpu_data;
-	struct core_percpu_sock		__percpu   * percpu_sock;
-	struct core_percpu_queue	__percpu   * percpu_queue;
 	struct pfq_percpu_pool		__percpu   * percpu_pool;
 
 	struct symtable	 functions;
