@@ -156,28 +156,18 @@ pfq_release(struct socket *sock)
         so = pfq_sk(sk);
         id = so->id;
 
-        /* unbind AX threads */
+	/* disable the current socket (if not already) */
 
-        pr_devel("[PFQ|%d] unbinding devs and Tx threads...\n", id);
+	core_sock_disable(so);
 
-	core_sock_tx_unbind(so);
-
-        pr_devel("[PFQ|%d] releasing socket...\n", id);
-
-        core_group_leave_all(so->id);
-        core_sock_release_id(so->id);
-
-	msleep(Q_CORE_GRACE_PERIOD);
-
-        if (so->shmem.addr) {
-		pr_devel("[PFQ|%d] freeing shared memory...\n", id);
-                core_shared_queue_disable(so);
-	}
+	/* reset the GC at the last socket closed */
 
         mutex_lock(&global->socket_lock);
 
-        if (core_sock_counter() == 0)
+        if (core_sock_counter() == 0) {
+		pr_devel("[PFQ|%d] resetting GC...\n", id);
                 numb = pfq_percpu_GC_reset();
+	}
 
         mutex_unlock(&global->socket_lock);
 

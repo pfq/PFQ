@@ -23,6 +23,7 @@
 
 #include <core/global.h>
 #include <core/sock.h>
+#include <core/queue.h>
 
 #include <pfq/printk.h>
 #include <pfq/kcompat.h>
@@ -30,6 +31,7 @@
 #include <pfq/atomic.h>
 #include <pfq/pool.h>
 
+#include <linux/pf_q.h>
 
 /* vector of pointers to core_sock */
 
@@ -218,4 +220,69 @@ core_sock_tx_unbind(struct core_sock *so)
 
 	return 0;
 }
+
+
+bool
+core_sock_enable(struct core_sock *so, struct pfq_so_enable *mem)
+{
+        int err;
+
+	printk(KERN_INFO "[PFQ|%d] enable: user_addr=%lu user_size=%zu hugepage_size=%zu...\n", so->id,
+		mem->user_addr, mem->user_size, mem->hugepage_size);
+
+        err = core_shared_queue_enable(so, mem->user_addr, mem->user_size, mem->hugepage_size);
+        if (err < 0) {
+                printk(KERN_INFO "[PFQ|%d] enable error!\n", so->id);
+                return err;
+        }
+
+	if (mem->hugepage_size) {
+		if (!so->shmem.hugepages_descr) {
+			printk(KERN_INFO "[PFQ|%d] enable error (null HugePages descriptor)!\n", so->id);
+			return -EFAULT;
+		}
+
+		mem->user_addr = (unsigned long)(mem->user_addr + so->shmem.hugepages_descr->offset - so->shmem.size);
+
+	}
+
+	return 0;
+}
+
+
+bool
+core_sock_disable(struct core_sock *so)
+{
+	if (so->shmem.addr) {
+
+		/* unbind Tx threads */
+
+		pr_devel("[PFQ|%d] unbinding Tx threads...\n", so->id);
+		core_sock_tx_unbind(so);
+
+		msleep(Q_CORE_GRACE_PERIOD);
+
+		pr_devel("[PFQ|%d] leaving all groups...\n", so->id);
+		core_group_leave_all(so->id);
+
+		msleep(Q_CORE_GRACE_PERIOD);
+
+		pr_devel("[PFQ|%d] release socket...\n", so->id);
+
+		core_sock_release_id(so->id);
+		msleep(Q_CORE_GRACE_PERIOD);
+
+		pr_devel("[PFQ|%d] disabling shared queue...\n", so->id);
+		core_shared_queue_disable(so);
+
+		pr_devel("[PFQ|%d] socket disabled.\n", so->id);
+		so->shmem.addr = NULL;
+	}
+	else {
+		pr_devel("[PFQ|%d] socket (already) disabled.\n", so->id);
+	}
+
+	return 0;
+}
+
 

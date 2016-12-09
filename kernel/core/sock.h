@@ -182,4 +182,8 @@ extern void	core_sock_release_id(pfq_id_t id);
 extern int	core_sock_tx_bind(struct core_sock *so, int tid, int if_index, int queue);
 extern int	core_sock_tx_unbind(struct core_sock *so);
 
+extern bool	core_sock_enable(struct core_sock *so, struct pfq_so_enable *mem);
+extern bool	core_sock_disable(struct core_sock *so);
+
+
 #endif /* Q_CORE_SOCK_H */

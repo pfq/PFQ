@@ -331,7 +331,7 @@ int core_setsockopt(struct socket *sock,
         case Q_SO_ENABLE:
 	{
 		struct pfq_so_enable mem;
-		int err = 0;
+                int err;
 
                 if (optlen != sizeof(mem))
                         return -EINVAL;
@@ -339,46 +339,18 @@ int core_setsockopt(struct socket *sock,
                 if (copy_from_user(&mem, optval, optlen))
                         return -EFAULT;
 
-                printk(KERN_INFO "[PFQ|%d] enable: user_addr=%lu user_size=%zu hugepage_size=%zu...\n", so->id,
-                       mem.user_addr, mem.user_size, mem.hugepage_size);
+		err = core_sock_enable(so, &mem);
 
-                err = core_shared_queue_enable(so, mem.user_addr, mem.user_size, mem.hugepage_size);
-                if (err < 0) {
-                        printk(KERN_INFO "[PFQ|%d] enable error!\n", so->id);
-                        return err;
-                }
+		if (copy_to_user(optval, &mem, optlen))
+		    return -EFAULT;
 
-		if (mem.hugepage_size) {
-			if (!so->shmem.hugepages_descr) {
-				printk(KERN_INFO "[PFQ|%d] enable error (null HugePages descriptor)!\n", so->id);
-				return -EFAULT;
-			}
-
-			mem.user_addr = (unsigned long)(mem.user_addr + so->shmem.hugepages_descr->offset - so->shmem.size);
-
-			if (copy_to_user(optval, &mem, optlen))
-			    return -EFAULT;
-		}
-
-		return 0;
+		return err;
 
 	} break;
 
 	case Q_SO_DISABLE:
 	{
-		int err = 0;
-
-		core_sock_tx_unbind(so);
-
-		msleep(Q_CORE_GRACE_PERIOD);
-
-                err = core_shared_queue_disable(so);
-                if (err < 0) {
-                        printk(KERN_INFO "[PFQ|%d] disable error!\n", so->id);
-                        return err;
-                }
-
-		msleep(Q_CORE_GRACE_PERIOD);
+		return core_sock_disable(so);
 
 	} break;
 
