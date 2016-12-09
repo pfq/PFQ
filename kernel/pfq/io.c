@@ -685,10 +685,10 @@ pfq_qbuff_lazy_xmit_run(struct core_qbuff_queue *buffs, struct core_endpoint_inf
 
 
 int
-pfq_rx_run( int cpu
-	  , int budget
-	  , struct core_percpu_data *data
-	  , struct pfq_percpu_pool *pool)
+pfq_receive_run( int cpu
+	       , int budget
+	       , struct core_percpu_data *data
+	       , struct pfq_percpu_pool *pool)
 {
 	struct sk_buff *skb;
 	int work = 0;
@@ -793,7 +793,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 	}
 
 	if (data->rx_napi)
-		pfq_rx_run(cpu, global->capt_batch_len, data, per_cpu_ptr(global->percpu_pool, cpu));
+		pfq_receive_run(cpu, global->capt_batch_len, data, per_cpu_ptr(global->percpu_pool, cpu));
 
 	return 0;
 }

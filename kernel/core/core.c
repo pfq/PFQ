@@ -133,7 +133,7 @@ int core_process_batch(struct core_percpu_data *data,
         memset(sock_queue, 0, sizeof(sock_queue));
 	all_group_mask = 0;
 
-        /* setup all the qbuff collected */
+        /* setup the qbuff in GC */
 
 	for_each_qbuff(&GC_ptr->pool, buff, n)
         {
@@ -147,7 +147,8 @@ int core_process_batch(struct core_percpu_data *data,
 		buff->counter = data->counter++;
 	}
 
-        /* process all groups enabled for this batch */
+
+        /* process all groups enabled for the packets */
 
 	core_bitwise_foreach(all_group_mask, bit,
 	{
@@ -317,7 +318,6 @@ int core_process_batch(struct core_percpu_data *data,
 	/* forward buffs to network devices */
 
 	GC_get_lazy_endpoints(GC_ptr, &endpoints);
-
 	if (endpoints.cnt_total)
 	{
 		size_t total = (size_t)pfq_qbuff_lazy_xmit_run(PFQ_QBUFF_QUEUE(&GC_ptr->pool), &endpoints);
@@ -326,7 +326,7 @@ int core_process_batch(struct core_percpu_data *data,
 		__sparse_add(global->percpu_stats, disc, endpoints.cnt_total - total, cpu);
 	}
 
-	/* forward buffs to kernel or release them... */
+	/* forward buffs to kernel and release them... */
 
 	for_each_qbuff(PFQ_QBUFF_QUEUE(&GC_ptr->pool), buff, n)
 	{

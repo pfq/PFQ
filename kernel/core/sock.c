@@ -60,20 +60,20 @@ struct core_sock *
 core_sock_get_by_id(pfq_id_t id)
 {
         struct core_sock *so;
-        if (unlikely((__force int)id >= Q_CORE_MAX_ID)) {
+        if ((__force int)id >= Q_CORE_MAX_ID ||
+            (__force int)id < 0) {
                 pr_devel("[PFQ] core_get_sock_by_id: bad id=%d!\n", id);
                 return NULL;
         }
 	so = (struct core_sock *)atomic_long_read(&global->socket_ptr[(__force int)id]);
-	// smp_read_barrier_depends();
 	return so;
 }
 
 
 void core_sock_release_id(pfq_id_t id)
 {
-        if (unlikely((__force int)id >= Q_CORE_MAX_ID ||
-		     (__force int)id < 0)) {
+        if ((__force int)id >= Q_CORE_MAX_ID ||
+	    (__force int)id < 0) {
                 pr_devel("[PFQ] core_release_sock_by_id: bad id=%d!\n", id);
                 return;
         }

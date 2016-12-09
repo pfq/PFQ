@@ -697,7 +697,7 @@ static void __exit pfq_exit_module(void)
 /* pfq direct capture drivers support */
 
 static inline
-int pfq_direct_capture(const struct sk_buff *skb)
+bool pfq_capture_enabled(const struct sk_buff *skb)
 {
         return core_devmap_toggle_get(skb->dev->ifindex);
 }
@@ -724,7 +724,7 @@ pfq_netif_receive_skb(struct sk_buff *skb)
 {
 	struct sk_buff *nskb;
 
-        if (likely(pfq_direct_capture(skb))) {
+        if (likely(pfq_capture_enabled(skb))) {
 
 		if (pfq_normalize_skb(skb) < 0)
 			return NET_RX_DROP;
@@ -756,7 +756,7 @@ pfq_netif_rx(struct sk_buff *skb)
 {
 	struct sk_buff *nskb;
 
-        if (likely(pfq_direct_capture(skb))) {
+        if (likely(pfq_capture_enabled(skb))) {
 
 		if (pfq_normalize_skb(skb) < 0)
 			return NET_RX_DROP;
@@ -788,7 +788,7 @@ pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
 {
 	struct sk_buff *nskb;
 
-        if (likely(pfq_direct_capture(skb))) {
+        if (likely(pfq_capture_enabled(skb))) {
 
 		if (pfq_normalize_skb(skb) < 0)
 			return GRO_DROP;

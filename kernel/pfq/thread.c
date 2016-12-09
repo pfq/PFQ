@@ -322,7 +322,7 @@ pfq_rx_thread(void *_data)
 			{
 				struct core_percpu_data * cpudata = per_cpu_ptr(global->percpu_data, data->napi[n]);
 				struct pfq_percpu_pool * pool = per_cpu_ptr(global->percpu_pool, data->napi[n]);
-				pfq_rx_run(data->napi[n], 65536, cpudata, pool);
+				pfq_receive_run(data->napi[n], 65536, cpudata, pool);
 			}
 		}
 
