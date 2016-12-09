@@ -98,7 +98,7 @@ struct core_sock_opt
 	struct core_txq_info	txq_info;
 	struct core_rxq_info	rxq_info;
 
-} ____cacheline_aligned_in_smp;
+} ____pfq_cacheline_aligned;
 
 
 
@@ -117,7 +117,7 @@ struct core_sock
 
         core_sock_stats_t __percpu *stats;
 
-} ____cacheline_aligned_in_smp;
+} ____pfq_cacheline_aligned;
 
 
 /* queue info */

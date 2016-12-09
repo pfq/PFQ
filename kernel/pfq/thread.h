@@ -66,7 +66,7 @@ struct pfq_thread_tx_data
 	struct core_sock *	sock[Q_MAX_TX_QUEUES];
 	atomic_t		sock_queue[Q_MAX_TX_QUEUES];
 
-} __attribute__((aligned(64)));
+} ____pfq_cacheline_aligned;
 
 
 
@@ -80,7 +80,8 @@ struct pfq_thread_rx_data
 
 	int			napi[Q_MAX_RX_NAPI];
 	int			napi_nr;
-} __attribute__((aligned(64)));
+
+} ____pfq_cacheline_aligned;
 
 
 

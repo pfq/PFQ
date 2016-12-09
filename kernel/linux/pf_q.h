@@ -54,6 +54,8 @@
 
 #endif /* __KERNEL__ */
 
+#define ____pfq_cacheline_aligned		__attribute__((aligned(128)))
+
 /* PFQ version as in Linux kernel */
 
 #define PF_Q					27   /* pfq socket family */
@@ -199,7 +201,7 @@ struct pfq_rx_queue
         unsigned int            size;       /* queue size in bytes */
         unsigned int            slot_size;  /* sizeof(pfq_pkthdr) + caplen  */
 
-} __attribute__((aligned(64)));
+} ____pfq_cacheline_aligned;
 
 
 
@@ -213,16 +215,16 @@ struct pfq_tx_queue
 		ptrdiff_t		off0;
 		ptrdiff_t	        off1;
 
-	} prod __attribute__((aligned(64)));
+	} prod  ____pfq_cacheline_aligned;
 
 	struct
 	{
 		unsigned int		index;
 		ptrdiff_t		off;
 
-	} cons __attribute__((aligned(64)));
+	} cons ____pfq_cacheline_aligned;
 
-} __attribute__((aligned(64)));
+} ____pfq_cacheline_aligned;
 
 
 struct pfq_shared_queue

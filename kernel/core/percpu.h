@@ -54,7 +54,7 @@ struct core_percpu_data
 
 	bool			rx_napi;
 
-} ____cacheline_aligned;
+} ____pfq_cacheline_aligned;
 
 
 static inline void

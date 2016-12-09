@@ -40,7 +40,7 @@ struct pfq_percpu_pool
 	struct pfq_skb_pools	tx_multi;
 	struct pfq_skb_pools	rx_multi;
 
-} ____cacheline_aligned;
+} ____pfq_cacheline_aligned;
 
 
 #endif /* PFQ_PERCPU_H */

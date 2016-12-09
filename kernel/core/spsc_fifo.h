@@ -34,7 +34,7 @@
 #define kmalloc_node(s,m,n)	malloc(s)
 #define kfree(s) free(s)
 #endif
-
+#include <linux/pf_q.h>
 
 #define SPSC_FIFO_BATCH		64
 
@@ -45,13 +45,13 @@ struct core_spsc_fifo
 	{
 		size_t tail_cache;
 
-	} __attribute__((aligned(128)));
+	} ____pfq_cacheline_aligned;
 
 	struct
 	{
 		size_t head_cache;
 
-	} __attribute__((aligned(128)));
+        } ____pfq_cacheline_aligned;
 
 	struct
 	{
@@ -59,7 +59,8 @@ struct core_spsc_fifo
 		size_t tail;
 		size_t head;
 		void *ring[];
-	} __attribute__((aligned(128)));
+
+        } ____pfq_cacheline_aligned;
 };
 
 
