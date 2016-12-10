@@ -37,8 +37,8 @@
 
 static DEFINE_MUTEX(pfq_hugepages_mutex);
 
-struct pfq_hugepages_descr pfq_hugepages[Q_CORE_MAX_ID];
-size_t pfq_hugepages_numb;
+static struct pfq_hugepages_descr pfq_hugepages[Q_CORE_MAX_ID];
+static size_t pfq_hugepages_numb;
 
 
 static const char *__size_HugePage(size_t size)
@@ -79,7 +79,7 @@ __free_HugePages(void)
 }
 
 
-struct pfq_hugepages_descr *
+static struct pfq_hugepages_descr *
 get_HugePages(unsigned long user_addr, size_t user_size, size_t hugepage_size, size_t size)
 {
 	struct pfq_hugepages_descr *ret = NULL, *descr;
@@ -179,6 +179,7 @@ done:
 }
 
 
+static
 int put_HugePages(void)
 {
 	int i, n;

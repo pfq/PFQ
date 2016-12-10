@@ -40,6 +40,7 @@
 #include <core/queue.h>
 #include <core/bitops.h>
 #include <core/sock.h>
+#include <core/core.h>
 #include <core/GC.h>
 
 

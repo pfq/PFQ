@@ -94,7 +94,8 @@ int pfq_skb_pool_init (struct core_spsc_fifo **pool, size_t size, size_t skb_len
 
 
 
-size_t pfq_skb_pool_free(struct core_spsc_fifo **pool)
+static size_t
+skb_pool_free(struct core_spsc_fifo **pool)
 {
 	size_t total = 0;
 	if (*pool) {
@@ -188,13 +189,13 @@ int pfq_skb_pool_free_all(void)
 	{
 		struct pfq_percpu_pool *pool = per_cpu_ptr(global->percpu_pool, cpu);
 		if (pool) {
-			total += pfq_skb_pool_free(&pool->rx_multi.fifo_sml);
-			total += pfq_skb_pool_free(&pool->rx_multi.fifo_mid);
-			total += pfq_skb_pool_free(&pool->rx_multi.fifo_lrg);
+			total += skb_pool_free(&pool->rx_multi.fifo_sml);
+			total += skb_pool_free(&pool->rx_multi.fifo_mid);
+			total += skb_pool_free(&pool->rx_multi.fifo_lrg);
 			spin_lock(&pool->tx_lock);
-			total += pfq_skb_pool_free(&pool->tx_multi.fifo_sml);
-			total += pfq_skb_pool_free(&pool->tx_multi.fifo_mid);
-			total += pfq_skb_pool_free(&pool->tx_multi.fifo_lrg);
+			total += skb_pool_free(&pool->tx_multi.fifo_sml);
+			total += skb_pool_free(&pool->tx_multi.fifo_mid);
+			total += skb_pool_free(&pool->tx_multi.fifo_lrg);
 			spin_unlock(&pool->tx_lock);
 		}
 	}

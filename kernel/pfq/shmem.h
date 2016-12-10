@@ -70,8 +70,8 @@ extern int    pfq_mmap(struct file *file, struct socket *sock, struct vm_area_st
 extern int    pfq_vmalloc_user(struct pfq_shmem_descr *shmem, size_t size);
 extern int    pfq_shared_memory_alloc(struct pfq_shmem_descr *shmem, unsigned long user_addr, size_t user_size, size_t huge_size, size_t req_size);
 extern void   pfq_shared_memory_free(struct pfq_shmem_descr *shmem);
-extern int    pfq_hugepage_map(struct pfq_shmem_descr *shmem, unsigned long addr, size_t size);
-extern int    pfq_hugepage_unmap(struct pfq_shmem_descr *shmem);
 
+extern int    pfq_hugepages_map(struct pfq_shmem_descr *shmem, unsigned long user_addr, size_t user_size, size_t hugepage_size, size_t req_size);
+extern int    pfq_hugepages_unmap(struct pfq_shmem_descr *shmem);
 
 #endif /* PFQ_SHMEM_H */

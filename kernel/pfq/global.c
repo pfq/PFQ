@@ -24,6 +24,8 @@
  ****************************************************************/
 
 #include <core/global.h>
+#include <pfq/global.h>
+
 
 extern struct core_global_data default_global;
 

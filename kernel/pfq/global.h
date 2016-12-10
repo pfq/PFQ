@@ -22,4 +22,3 @@
  ****************************************************************/
 
 extern struct core_global_data * pfq_global_alloc(void);
-
