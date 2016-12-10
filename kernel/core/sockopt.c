@@ -350,8 +350,8 @@ int core_setsockopt(struct socket *sock,
 
 	case Q_SO_DISABLE:
 	{
-		return core_sock_disable(so);
-
+		core_sock_disable(so);
+		return 0;
 	} break;
 
         case Q_SO_GROUP_BIND:

@@ -158,11 +158,18 @@ pfq_release(struct socket *sock)
 
 	/* disable the current socket (if not already) */
 
+        mutex_lock(&global->socket_lock);
+
+	/* disable socket... */
+
 	core_sock_disable(so);
 
-	/* reset the GC at the last socket closed */
+	/* release the socket id */
 
-        mutex_lock(&global->socket_lock);
+	pr_devel("[PFQ|%d] releasing socket...\n", so->id);
+	core_sock_release_id(so->id);
+
+	/* reset the GC at the last socket closed */
 
         if (core_sock_counter() == 0) {
 		pr_devel("[PFQ|%d] resetting GC...\n", id);

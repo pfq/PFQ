@@ -222,7 +222,7 @@ core_sock_tx_unbind(struct core_sock *so)
 }
 
 
-bool
+int
 core_sock_enable(struct core_sock *so, struct pfq_so_enable *mem)
 {
         int err;
@@ -250,7 +250,7 @@ core_sock_enable(struct core_sock *so, struct pfq_so_enable *mem)
 }
 
 
-bool
+int
 core_sock_disable(struct core_sock *so)
 {
 	if (so->shmem.addr) {
@@ -267,13 +267,10 @@ core_sock_disable(struct core_sock *so)
 
 		msleep(Q_CORE_GRACE_PERIOD);
 
-		pr_devel("[PFQ|%d] release socket...\n", so->id);
-
-		core_sock_release_id(so->id);
-		msleep(Q_CORE_GRACE_PERIOD);
-
 		pr_devel("[PFQ|%d] disabling shared queue...\n", so->id);
 		core_shared_queue_disable(so);
+
+		msleep(Q_CORE_GRACE_PERIOD);
 
 		pr_devel("[PFQ|%d] socket disabled.\n", so->id);
 		so->shmem.addr = NULL;
