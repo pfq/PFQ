@@ -42,7 +42,6 @@ __pfq_alloc_skb(unsigned int size, gfp_t priority, int fclone, int node)
         if (atomic_read(&global->pool_enabled)) {
 		struct pfq_percpu_pool *cpu_pool = this_cpu_ptr(global->percpu_pool);
 		struct core_spsc_fifo *pool = pfq_skb_pool_get(&cpu_pool->rx_multi, size);
-
                 return ____pfq_alloc_skb_pool(size, priority, fclone, node, pool);
 	}
 #endif

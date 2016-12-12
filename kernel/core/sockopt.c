@@ -350,7 +350,9 @@ int core_setsockopt(struct socket *sock,
 
 	case Q_SO_DISABLE:
 	{
+		int id = so->id;
 		core_sock_disable(so);
+		printk(KERN_INFO "[PFQ|%d] socket disabled.\n",id);
 		return 0;
 	} break;
 

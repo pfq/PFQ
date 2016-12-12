@@ -156,25 +156,30 @@ pfq_release(struct socket *sock)
         so = pfq_sk(sk);
         id = so->id;
 
+	pr_devel("[PFQ|%d] releasing socket...\n", id);
+
 	/* disable the current socket (if not already) */
 
         mutex_lock(&global->socket_lock);
 
 	/* disable socket... */
 
+	pr_devel("[PFQ|%d] disabling socket...\n", so->id);
 	core_sock_disable(so);
 
 	/* release the socket id */
 
-	pr_devel("[PFQ|%d] releasing socket...\n", so->id);
+	pr_devel("[PFQ|%d] releasing id...\n", so->id);
+	msleep(Q_CORE_GRACE_PERIOD);
 	core_sock_release_id(so->id);
 
+#if 0
 	/* reset the GC at the last socket closed */
-
         if (core_sock_counter() == 0) {
 		pr_devel("[PFQ|%d] resetting GC...\n", id);
                 numb = pfq_percpu_GC_reset();
 	}
+#endif
 
         mutex_unlock(&global->socket_lock);
 

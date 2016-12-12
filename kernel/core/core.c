@@ -123,6 +123,16 @@ int core_process_batch(struct core_percpu_data *data,
 	size_t current_batch_len;
 	struct pfq_lang_monad monad;
 
+#if 0
+	for_each_qbuff(PFQ_QBUFF_QUEUE(&GC_ptr->pool), buff, n)
+	{
+		qbuff_free(buff, &pool->rx_multi);
+	}
+
+	GC_reset(GC_ptr);
+	return 0;
+#endif
+
 	PFQ_BUILD_BUG_ON_MSG(Q_CORE_BUFF_BATCH_LEN > (sizeof(sock_queue[0]) << 3), "qbuff batch overflow");
 
 	current_batch_len = GC_size(GC_ptr);

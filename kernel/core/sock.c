@@ -81,8 +81,12 @@ void core_sock_release_id(pfq_id_t id)
         }
 
         atomic_long_set(global->socket_ptr + (__force int)id, 0);
-        if (atomic_dec_return(&global->socket_count) == 0)
+
+        if (atomic_dec_return(&global->socket_count) == 0) {
+		pr_devel("[PFQ] calling sock_fini_once...\n");
+		msleep(Q_CORE_GRACE_PERIOD);
 		pfq_sock_fini_once();
+	}
 }
 
 
@@ -269,11 +273,7 @@ core_sock_disable(struct core_sock *so)
 
 		pr_devel("[PFQ|%d] disabling shared queue...\n", so->id);
 		core_shared_queue_disable(so);
-
 		msleep(Q_CORE_GRACE_PERIOD);
-
-		pr_devel("[PFQ|%d] socket disabled.\n", so->id);
-		so->shmem.addr = NULL;
 	}
 	else {
 		pr_devel("[PFQ|%d] socket (already) disabled.\n", so->id);

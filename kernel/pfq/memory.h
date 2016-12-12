@@ -105,6 +105,34 @@ static inline bool pfq_skb_is_recycleable(const struct sk_buff *skb, unsigned in
 }
 
 
+static inline void
+pfq_skb_release_head_state(struct sk_buff *skb)
+{
+	skb_dst_drop(skb);
+
+	if (skb->destructor) {
+		WARN_ON(in_irq());
+		skb->destructor(skb);
+	}
+
+#if IS_ENABLED(CONFIG_NF_CONNTRACK)
+	nf_conntrack_put(skb->nfct);
+#endif
+#ifdef NET_SKBUFF_NF_DEFRAG_NEEDED
+	nf_conntrack_put_reasm(skb->nfct_reasm);
+#endif
+#ifdef CONFIG_BRIDGE_NETFILTER
+	nf_bridge_put(skb->nf_bridge);
+#endif
+#ifdef CONFIG_NET_SCHED
+	skb->tc_index = 0;
+#ifdef CONFIG_NET_CLS_ACT
+	skb->tc_verd = 0;
+#endif
+#endif
+
+}
+
 static inline
 struct sk_buff * pfq_skb_recycle(struct sk_buff *skb)
 {
@@ -112,13 +140,9 @@ struct sk_buff * pfq_skb_recycle(struct sk_buff *skb)
 
 	struct skb_shared_info *shinfo;
 
-	if (skb->destructor) {
-		WARN_ON(in_irq());
-		skb->destructor(skb);
-	}
+	pfq_skb_release_head_state(skb);
 
 	memset(skb, 0, offsetof(struct sk_buff, tail));
-	atomic_set(&skb->users, 1);
 
 	shinfo = skb_shinfo(skb);
 	memset(shinfo, 0, offsetof(struct skb_shared_info, dataref));
@@ -126,8 +150,9 @@ struct sk_buff * pfq_skb_recycle(struct sk_buff *skb)
 
 	skb->data = skb->head + NET_SKB_PAD;
 	skb_reset_tail_pointer(skb);
-
 	skb->nf_trace = 1;
+
+	atomic_set(&skb->users, 1);
 	return skb;
 }
 
@@ -166,22 +191,25 @@ ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, 
 #ifdef PFQ_USE_SKB_POOL
 	if (likely(pool)) {
 
-		const int idx = PFQ_SKB_POOL_IDX(size);
+		if (!irqs_disabled())
+		{
+			const int idx = PFQ_SKB_POOL_IDX(size);
 
-		struct sk_buff *skb = core_spsc_peek(pool);
-		if (likely(skb != NULL)) {
+			struct sk_buff *skb = core_spsc_peek(pool);
+			if (likely(skb != NULL)) {
 
-			if(pfq_skb_is_recycleable(skb, size)) {
-				sparse_inc(global->percpu_memory, pool_pop[idx]);
-				core_spsc_consume(pool);
-				return pfq_skb_recycle(skb);
+				if(pfq_skb_is_recycleable(skb, size)) {
+					sparse_inc(global->percpu_memory, pool_pop[idx]);
+					core_spsc_consume(pool);
+					return pfq_skb_recycle(skb);
+				}
+				else {
+					sparse_inc(global->percpu_memory, pool_norecycl[idx]);
+				}
 			}
 			else {
-				sparse_inc(global->percpu_memory, pool_norecycl[idx]);
+				sparse_inc(global->percpu_memory, pool_empty[idx]);
 			}
-		}
-		else {
-			sparse_inc(global->percpu_memory, pool_empty[idx]);
 		}
 	}
 #endif
@@ -197,7 +225,6 @@ struct sk_buff * pfq_alloc_skb(unsigned int size, gfp_t priority)
 
 	if (likely(atomic_read(&global->pool_enabled))) {
 		struct pfq_percpu_pool *cpu_pool = this_cpu_ptr(global->percpu_pool);
-
 		struct core_spsc_fifo *pool = pfq_skb_pool_get(&cpu_pool->rx_multi, size);
 		return ____pfq_alloc_skb_pool(size, priority, 0, NUMA_NO_NODE, pool);
 	}
