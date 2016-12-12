@@ -145,24 +145,19 @@ core_shared_queue_disable(struct core_sock *so)
 {
 	size_t n;
 
-	if (so->shmem.addr) {
+	atomic_long_set(&so->opt.rxq_info.addr, 0);
+	atomic_long_set(&so->opt.txq_info.addr, 0);
 
-		atomic_long_set(&so->opt.rxq_info.addr, 0);
-		atomic_long_set(&so->opt.txq_info.addr, 0);
-
-		for(n = 0; n < Q_MAX_TX_QUEUES; n++)
-		{
-			atomic_long_set(&so->opt.txq_info_async[n].addr, 0);
-		}
-
-		msleep(Q_CORE_GRACE_PERIOD);
-
-		pfq_shared_memory_free(&so->shmem);
-		so->shmem.addr = NULL;
-		so->shmem.size = 0;
-
-		pr_devel("[PFQ|%d] Tx/Rx queues disabled.\n", so->id);
+	for(n = 0; n < Q_MAX_TX_QUEUES; n++)
+	{
+		atomic_long_set(&so->opt.txq_info_async[n].addr, 0);
 	}
 
+	msleep(Q_CORE_GRACE_PERIOD);
+
+	if (so->shmem.addr)
+		pfq_shared_memory_free(&so->shmem);
+
+	pr_devel("[PFQ|%d] Rx/Tx shared queues disabled.\n", so->id);
 	return 0;
 }
