@@ -205,6 +205,7 @@ static int pfq_proc_memory(struct seq_file *m, void *v)
 	seq_printf(m, "  error cloned   : %10ld\n", sparse_read(global->percpu_memory, err_cloned));
 	seq_printf(m, "  error memory   : %10ld\n", sparse_read(global->percpu_memory, err_memory));
 	seq_printf(m, "  error irqdis   : %10ld\n", sparse_read(global->percpu_memory, err_irqdis));
+	seq_printf(m, "  error fclone   : %10ld\n", sparse_read(global->percpu_memory, err_fclone));
 	seq_printf(m, "  error nolinr   : %10ld\n", sparse_read(global->percpu_memory, err_nolinr));
 	return 0;
 }

@@ -76,12 +76,10 @@ static inline bool pfq_skb_is_recycleable(const struct sk_buff *skb, unsigned in
 		return false;
 	}
 
-#if 0
 	if (skb->fclone != SKB_FCLONE_UNAVAILABLE) {
 		sparse_inc(global->percpu_memory, err_fclone);
 		return false;
 	}
-#endif
 
 	/*  check whether the skb is shared with someone else.. */
 
@@ -175,6 +173,7 @@ struct sk_buff * pfq_skb_recycle(struct sk_buff *skb, size_t size)
 
 	pfq_skb_release_head_state(skb);
 
+	//
 	// if (likely(skb->head))
 	// 	pfq_skb_release_data(skb);
 
@@ -232,24 +231,21 @@ ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, 
 {
 #ifdef PFQ_USE_SKB_POOL
 	if (likely(pool)) {
-		if (!irqs_disabled())
-		{
-			struct sk_buff *skb = core_spsc_peek(pool);
-			if (likely(skb != NULL)) {
+		struct sk_buff *skb = core_spsc_peek(pool);
+		if (likely(skb != NULL)) {
 
-				if(pfq_skb_is_recycleable(skb, size)) {
+			if(pfq_skb_is_recycleable(skb, size)) {
 
-					sparse_inc(global->percpu_memory, pool_pop);
-					core_spsc_consume(pool);
-					return pfq_skb_recycle(skb, size);
-				}
-				else {
-					sparse_inc(global->percpu_memory, pool_norecycl);
-				}
+				sparse_inc(global->percpu_memory, pool_pop);
+				core_spsc_consume(pool);
+				return pfq_skb_recycle(skb, size);
 			}
 			else {
-				sparse_inc(global->percpu_memory, pool_empty);
+				sparse_inc(global->percpu_memory, pool_norecycl);
 			}
+		}
+		else {
+			sparse_inc(global->percpu_memory, pool_empty);
 		}
 	}
 #endif
