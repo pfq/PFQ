@@ -739,7 +739,7 @@ pfq_netif_receive_skb(struct sk_buff *skb)
 	if (skb != nskb) {
 		struct pfq_percpu_pool *pool;
 
-		/* if skb belongs to the pool, 
+		/* if skb belongs to the pool,
 		   nskb can be either a new skb or NULL */
 
 		pool = per_cpu_ptr(global->percpu_pool, smp_processor_id());
@@ -771,7 +771,7 @@ pfq_netif_rx(struct sk_buff *skb)
 	if (skb != nskb) {
 		struct pfq_percpu_pool *pool;
 
-		/* if skb belongs to the pool, 
+		/* if skb belongs to the pool,
 		   nskb can be either a new skb or NULL */
 
 		pool = per_cpu_ptr(global->percpu_pool, smp_processor_id());
@@ -803,7 +803,7 @@ pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
 	if (skb != nskb) {
 		struct pfq_percpu_pool *pool;
 
-		/* if skb belongs to the pool, 
+		/* if skb belongs to the pool,
 		   nskb can be either a new skb or NULL */
 
 		pool = per_cpu_ptr(global->percpu_pool, smp_processor_id());

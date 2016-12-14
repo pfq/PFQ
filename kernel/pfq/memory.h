@@ -82,6 +82,7 @@ static inline bool pfq_skb_is_recycleable(const struct sk_buff *skb, unsigned in
 		return false;
 	}
 #endif
+
 	/*  check whether the skb is shared with someone else.. */
 
 	if (unlikely(atomic_read(&skb->users) > 1)) {
@@ -94,9 +95,8 @@ static inline bool pfq_skb_is_recycleable(const struct sk_buff *skb, unsigned in
 		return false;
 	}
 
-	skb_size = SKB_DATA_ALIGN(skb_size + NET_SKB_PAD);
-
-	if (unlikely(pfq_skb_end_offset(skb) < skb_size)) {
+	skb_size = SKB_DATA_ALIGN(skb_size);
+	if (unlikely(pfq_skb_end_offset(skb) <= skb_size)) {
 		sparse_inc(global->percpu_memory, err_memory);
 		return false;
 	}
@@ -110,49 +110,91 @@ pfq_skb_release_head_state(struct sk_buff *skb)
 {
 	skb_dst_drop(skb);
 
+#if 0
+#ifdef CONFIG_XFRM
+	secpath_put(skb->sp);
+#endif
+#endif
 	if (skb->destructor) {
 		WARN_ON(in_irq());
 		skb->destructor(skb);
 	}
 
-#if IS_ENABLED(CONFIG_NF_CONNTRACK)
-	nf_conntrack_put(skb->nfct);
-#endif
-#ifdef NET_SKBUFF_NF_DEFRAG_NEEDED
-	nf_conntrack_put_reasm(skb->nfct_reasm);
-#endif
-#ifdef CONFIG_BRIDGE_NETFILTER
-	nf_bridge_put(skb->nf_bridge);
-#endif
-#ifdef CONFIG_NET_SCHED
-	skb->tc_index = 0;
-#ifdef CONFIG_NET_CLS_ACT
-	skb->tc_verd = 0;
-#endif
-#endif
+// #if IS_ENABLED(CONFIG_NF_CONNTRACK)
+// 	nf_conntrack_put(skb->nfct);
+// #endif
+// #ifdef NET_SKBUFF_NF_DEFRAG_NEEDED
+// 	nf_conntrack_put_reasm(skb->nfct_reasm);
+// #endif
+// #ifdef CONFIG_BRIDGE_NETFILTER
+// 	nf_bridge_put(skb->nf_bridge);
+// #endif
+// #ifdef CONFIG_NET_SCHED
+// 	skb->tc_index = 0;
+// #ifdef CONFIG_NET_CLS_ACT
+// 	skb->tc_verd = 0;
+// #endif
+// #endif
 
 }
 
-static inline
-struct sk_buff * pfq_skb_recycle(struct sk_buff *skb)
-{
-	/*  skb_recycle(skb); removed from kernel 3.7 */
 
+static inline
+void skb_free_head(struct sk_buff *skb)
+{
+	unsigned char *head = skb->head;
+	if (skb->head_frag)
+		skb_free_frag(head);
+       	// else
+	//	kfree(head);
+}
+
+
+static inline void
+pfq_skb_release_data(struct sk_buff *skb)
+{
+	int i;
+	struct skb_shared_info *shinfo = skb_shinfo(skb);
+
+    	for (i = 0; i < shinfo->nr_frags; i++)
+		__skb_frag_unref(&shinfo->frags[i]);
+
+         if (shinfo->frag_list)
+                 kfree_skb_list(shinfo->frag_list);
+
+         skb_free_head(skb);
+}
+
+
+static inline
+struct sk_buff * pfq_skb_recycle(struct sk_buff *skb, size_t size)
+{
 	struct skb_shared_info *shinfo;
+
+	/* cleaup skb as in kfree_skb */
 
 	pfq_skb_release_head_state(skb);
 
+	// if (likely(skb->head))
+	// 	pfq_skb_release_data(skb);
+
+	/* reset skb */
+
+	size = SKB_DATA_ALIGN(size);
+
 	memset(skb, 0, offsetof(struct sk_buff, tail));
+	atomic_set(&skb->users, 1);
+
+	skb->data = skb->head + NET_SKB_PAD;
+	skb_reset_tail_pointer(skb);
+
+	/* data and end are already set */
 
 	shinfo = skb_shinfo(skb);
 	memset(shinfo, 0, offsetof(struct skb_shared_info, dataref));
 	atomic_set(&shinfo->dataref,1);
 
-	skb->data = skb->head + NET_SKB_PAD;
-	skb_reset_tail_pointer(skb);
 	skb->nf_trace = 1;
-
-	atomic_set(&skb->users, 1);
 	return skb;
 }
 
@@ -190,25 +232,23 @@ ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, 
 {
 #ifdef PFQ_USE_SKB_POOL
 	if (likely(pool)) {
-
 		if (!irqs_disabled())
 		{
-			const int idx = PFQ_SKB_POOL_IDX(size);
-
 			struct sk_buff *skb = core_spsc_peek(pool);
 			if (likely(skb != NULL)) {
 
 				if(pfq_skb_is_recycleable(skb, size)) {
-					sparse_inc(global->percpu_memory, pool_pop[idx]);
+
+					sparse_inc(global->percpu_memory, pool_pop);
 					core_spsc_consume(pool);
-					return pfq_skb_recycle(skb);
+					return pfq_skb_recycle(skb, size);
 				}
 				else {
-					sparse_inc(global->percpu_memory, pool_norecycl[idx]);
+					sparse_inc(global->percpu_memory, pool_norecycl);
 				}
 			}
 			else {
-				sparse_inc(global->percpu_memory, pool_empty[idx]);
+				sparse_inc(global->percpu_memory, pool_empty);
 			}
 		}
 	}
@@ -263,22 +303,25 @@ void pfq_kfree_skb_pool(struct sk_buff *skb, struct pfq_skb_pools *pools)
 {
 #ifdef PFQ_USE_SKB_POOL
 	if (skb->nf_trace) {
+
 		if (likely(atomic_read(&global->pool_enabled))) {
 
 			struct core_spsc_fifo *pool = pfq_skb_pool_get(pools, skb->len);
-			const int idx = PFQ_SKB_POOL_IDX(skb->len);
+			if (pool)
+			{
 #ifdef PFQ_DEBUG
-			if (!core_spsc_push(pool, skb)) {
-				printk(KERN_WARNING "[PFQ] BUG: pfq_kfree_skb_pool: internal error!\n");
-				sparse_inc(global->percpu_memory, os_free);
-				kfree_skb(skb);
+				if (!core_spsc_push(pool, skb)) {
+					printk(KERN_WARNING "[PFQ] BUG: pfq_kfree_skb_pool: internal error!\n");
+					sparse_inc(global->percpu_memory, os_free);
+					kfree_skb(skb);
+					return;
+				}
+#else
+				core_spsc_push(pool, skb);
+#endif
+				sparse_inc(global->percpu_memory, pool_push);
 				return;
 			}
-#else
-			core_spsc_push(pool, skb);
-#endif
-			sparse_inc(global->percpu_memory, pool_push[idx]);
-			return;
 		}
 	}
 #endif
