@@ -114,14 +114,13 @@ int core_process_batch(struct core_percpu_data *data,
 		       struct GC_data *GC_ptr,
 		       int cpu)
 {
-	unsigned long long sock_queue[Q_CORE_BUFF_BATCH_LEN];
+	unsigned long long sock_queue[Q_CORE_BUFF_BATCH_LEN] = { 0 };
         unsigned long all_group_mask, socket_mask;
 	struct core_endpoint_info endpoints;
-        struct qbuff *buff;
-
+	struct pfq_lang_monad monad;
         long unsigned n, bit, lb;
 	size_t current_batch_len;
-	struct pfq_lang_monad monad;
+        struct qbuff *buff;
 
 #if 0
 	for_each_qbuff(PFQ_QBUFF_QUEUE(&GC_ptr->pool), buff, n)
@@ -135,14 +134,12 @@ int core_process_batch(struct core_percpu_data *data,
 
 	PFQ_BUILD_BUG_ON_MSG(Q_CORE_BUFF_BATCH_LEN > (sizeof(sock_queue[0]) << 3), "qbuff batch overflow");
 
+	/* setup parameters */
+
 	current_batch_len = GC_size(GC_ptr);
 
-	__sparse_add(global->percpu_stats, recv, current_batch_len, cpu);
-
-	/* cleanup sock_queue... */
-
-        memset(sock_queue, 0, sizeof(sock_queue));
 	all_group_mask = 0;
+
 
         /* setup the qbuff in GC */
 
@@ -159,6 +156,11 @@ int core_process_batch(struct core_percpu_data *data,
 	}
 
 
+	/* update stats */
+
+	__sparse_add(global->percpu_stats, recv, current_batch_len, cpu);
+
+
         /* process all groups enabled for the packets */
 
 	core_bitwise_foreach(all_group_mask, bit,
@@ -166,6 +168,7 @@ int core_process_batch(struct core_percpu_data *data,
 		pfq_gid_t gid = (__force pfq_gid_t)core_ctz(bit);
 
 		struct core_group * this_group = core_group_get(gid);
+
 		bool bf_filt_enabled = atomic_long_read(&this_group->bp_filter);
 		bool vlan_filt_enabled = core_group_vlan_filters_enabled(gid);
 
