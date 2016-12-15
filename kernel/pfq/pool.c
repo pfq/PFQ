@@ -115,10 +115,21 @@ pfq_get_skb_pool_stats(void)
            .os_alloc         = sparse_read(global->percpu_memory, os_alloc)
         ,  .os_free          = sparse_read(global->percpu_memory, os_free)
 
-        ,  .pool_pop	     = sparse_read(global->percpu_memory, pool_pop)
-        ,  .pool_push        = sparse_read(global->percpu_memory, pool_push)
-        ,  .pool_empty	     = sparse_read(global->percpu_memory, pool_empty)
-        ,  .pool_norecycl    = sparse_read(global->percpu_memory, pool_norecycl)
+        ,  .pool_pop[0]   = sparse_read(global->percpu_memory, pool_pop[0])
+        ,  .pool_pop[1]   = sparse_read(global->percpu_memory, pool_pop[1])
+        ,  .pool_pop[2]   = sparse_read(global->percpu_memory, pool_pop[2])
+
+        ,  .pool_push[0]  = sparse_read(global->percpu_memory, pool_push[0])
+        ,  .pool_push[1]  = sparse_read(global->percpu_memory, pool_push[1])
+        ,  .pool_push[2]  = sparse_read(global->percpu_memory, pool_push[2])
+
+        ,  .pool_empty[0]  = sparse_read(global->percpu_memory, pool_empty[0])
+        ,  .pool_empty[1]  = sparse_read(global->percpu_memory, pool_empty[1])
+        ,  .pool_empty[2]  = sparse_read(global->percpu_memory, pool_empty[2])
+
+        ,  .pool_norecycl[0]  = sparse_read(global->percpu_memory, pool_norecycl[0])
+        ,  .pool_norecycl[1]  = sparse_read(global->percpu_memory, pool_norecycl[1])
+        ,  .pool_norecycl[2]  = sparse_read(global->percpu_memory, pool_norecycl[2])
 
         ,  .err_shared       = sparse_read(global->percpu_memory, err_shared)
         ,  .err_cloned       = sparse_read(global->percpu_memory, err_cloned)
@@ -143,10 +154,23 @@ int pfq_skb_pool_init_all(void)
 
 			spin_lock_init(&pool->tx_lock);
 
-			if ((n = pfq_skb_pool_init(&pool->tx_multi.fifo, global->skb_pool_size, PFQ_POOL_SKB_SIZE, cpu)) < 0)
+			if ((n = pfq_skb_pool_init(&pool->tx_multi.fifo_sml, global->skb_pool_size, PFQ_POOL_SKB_SML, cpu)) < 0)
 				return -ENOMEM;
 			total += n;
-			if ((n = pfq_skb_pool_init(&pool->rx_multi.fifo, global->skb_pool_size, PFQ_POOL_SKB_SIZE, cpu)) < 0)
+			if ((n = pfq_skb_pool_init(&pool->tx_multi.fifo_mid, global->skb_pool_size, PFQ_POOL_SKB_MID, cpu)) < 0)
+				return -ENOMEM;
+			total += n;
+			if ((n = pfq_skb_pool_init(&pool->tx_multi.fifo_lrg, global->skb_pool_size, PFQ_POOL_SKB_LRG, cpu)) < 0)
+				return -ENOMEM;
+			total += n;
+
+			if ((n = pfq_skb_pool_init(&pool->rx_multi.fifo_sml, global->skb_pool_size, PFQ_POOL_SKB_SML, cpu)) < 0)
+				return -ENOMEM;
+			total += n;
+			if ((n = pfq_skb_pool_init(&pool->rx_multi.fifo_mid, global->skb_pool_size, PFQ_POOL_SKB_MID, cpu)) < 0)
+				return -ENOMEM;
+			total += n;
+			if ((n = pfq_skb_pool_init(&pool->rx_multi.fifo_lrg, global->skb_pool_size, PFQ_POOL_SKB_LRG, cpu)) < 0)
 				return -ENOMEM;
 			total += n;
 		}
@@ -166,9 +190,13 @@ int pfq_skb_pool_free_all(void)
 	{
 		struct pfq_percpu_pool *pool = per_cpu_ptr(global->percpu_pool, cpu);
 		if (pool) {
-			total += skb_pool_free(&pool->rx_multi.fifo);
+			total += skb_pool_free(&pool->rx_multi.fifo_sml);
+			total += skb_pool_free(&pool->rx_multi.fifo_mid);
+			total += skb_pool_free(&pool->rx_multi.fifo_lrg);
 			spin_lock(&pool->tx_lock);
-			total += skb_pool_free(&pool->tx_multi.fifo);
+			total += skb_pool_free(&pool->tx_multi.fifo_sml);
+			total += skb_pool_free(&pool->tx_multi.fifo_mid);
+			total += skb_pool_free(&pool->tx_multi.fifo_lrg);
 			spin_unlock(&pool->tx_lock);
 		}
 	}

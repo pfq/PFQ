@@ -171,19 +171,30 @@ static int pfq_proc_memory(struct seq_file *m, void *v)
 {
 	int i;
 
-	long int push_0 = sparse_read(global->percpu_memory, pool_push);
-	long int pop_0  = sparse_read(global->percpu_memory, pool_pop);
-	long int empty_0  = sparse_read(global->percpu_memory, pool_empty);
-	long int norecycl_0 = sparse_read(global->percpu_memory, pool_norecycl);
+	long int push_0 = sparse_read(global->percpu_memory, pool_push[0]);
+	long int push_1 = sparse_read(global->percpu_memory, pool_push[1]);
+	long int push_2 = sparse_read(global->percpu_memory, pool_push[2]);
+
+	long int pop_0  = sparse_read(global->percpu_memory, pool_pop[0]);
+	long int pop_1  = sparse_read(global->percpu_memory, pool_pop[1]);
+	long int pop_2  = sparse_read(global->percpu_memory, pool_pop[2]);
+
+	long int empty_0  = sparse_read(global->percpu_memory, pool_empty[0]);
+	long int empty_1  = sparse_read(global->percpu_memory, pool_empty[1]);
+	long int empty_2  = sparse_read(global->percpu_memory, pool_empty[2]);
+
+	long int norecycl_0  = sparse_read(global->percpu_memory, pool_norecycl[0]);
+	long int norecycl_1  = sparse_read(global->percpu_memory, pool_norecycl[1]);
+	long int norecycl_2  = sparse_read(global->percpu_memory, pool_norecycl[2]);
 
 	seq_printf(m, "Kernel\n");
 	seq_printf(m, "  skb_alloc      : %10ld\n", sparse_read(global->percpu_memory, os_alloc));
 	seq_printf(m, "  skb_free       : %10ld\n", sparse_read(global->percpu_memory, os_free));
-	seq_printf(m, "\nSKB POOL (%d)       %10s\n", atomic_read(&global->pool_enabled), "-");
-	seq_printf(m, "  push           : %10ld\n", push_0);
-	seq_printf(m, "  pop            : %10ld\n", pop_0);
-	seq_printf(m, "  empty          : %10ld\n", empty_0);
-	seq_printf(m, "  norecycl       : %10ld\n\n", norecycl_0);
+	seq_printf(m, "\nPFQ POOL           %10s %10s %10s\n", "small", "mid", "large");
+	seq_printf(m, "  push           : %10ld %10ld %10ld\n", push_0, push_1, push_2);
+	seq_printf(m, "  pop            : %10ld %10ld %10ld\n", pop_0, pop_1, pop_2);
+	seq_printf(m, "  empty          : %10ld %10ld %10ld\n", empty_0, empty_1, empty_2);
+	seq_printf(m, "  norecycl       : %10ld %10ld %10ld\n\n", norecycl_0, norecycl_1, norecycl_2);
 
 	for_each_present_cpu(i)
 	{
@@ -192,11 +203,16 @@ static int pfq_proc_memory(struct seq_file *m, void *v)
 		seq_printf(m, "CPU-%d:\n", i);
 		if (pool)
 		{
-			long int rx_0 = core_spsc_len(pool->rx_multi.fifo);
-			long int tx_0 = core_spsc_len(pool->tx_multi.fifo);
+			long int rx_0 = core_spsc_len(pool->rx_multi.fifo_sml);
+			long int rx_1 = core_spsc_len(pool->rx_multi.fifo_mid);
+			long int rx_2 = core_spsc_len(pool->rx_multi.fifo_lrg);
 
-			seq_printf(m, "  Rx pool size   : %10ld\n", rx_0);
-			seq_printf(m, "  Tx pool size   : %10ld\n", tx_0);
+			long int tx_0 = core_spsc_len(pool->tx_multi.fifo_sml);
+			long int tx_1 = core_spsc_len(pool->tx_multi.fifo_mid);
+			long int tx_2 = core_spsc_len(pool->tx_multi.fifo_lrg);
+
+			seq_printf(m, "  Rx pool size   : %10ld %10ld %10ld\n", rx_0, rx_1, rx_2);
+			seq_printf(m, "  Tx pool size   : %10ld %10ld %10ld\n", tx_0, tx_1, tx_2);
 		}
 	}
 

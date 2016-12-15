@@ -94,7 +94,7 @@ static inline bool pfq_skb_is_recycleable(const struct sk_buff *skb, unsigned in
 	}
 
 	skb_size = SKB_DATA_ALIGN(skb_size);
-	if (unlikely(pfq_skb_end_offset(skb) <= skb_size)) {
+	if (unlikely(pfq_skb_end_offset(skb) < skb_size)) {
 		sparse_inc(global->percpu_memory, err_memory);
 		return false;
 	}
@@ -231,21 +231,22 @@ ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, 
 {
 #ifdef PFQ_USE_SKB_POOL
 	if (likely(pool)) {
+		const int idx = PFQ_SKB_POOL_IDX(size);
 		struct sk_buff *skb = core_spsc_peek(pool);
 		if (likely(skb != NULL)) {
 
 			if(pfq_skb_is_recycleable(skb, size)) {
 
-				sparse_inc(global->percpu_memory, pool_pop);
+				sparse_inc(global->percpu_memory, pool_pop[idx]);
 				core_spsc_consume(pool);
 				return pfq_skb_recycle(skb, size);
 			}
 			else {
-				sparse_inc(global->percpu_memory, pool_norecycl);
+				sparse_inc(global->percpu_memory, pool_norecycl[idx]);
 			}
 		}
 		else {
-			sparse_inc(global->percpu_memory, pool_empty);
+			sparse_inc(global->percpu_memory, pool_empty[idx]);
 		}
 	}
 #endif
@@ -305,6 +306,7 @@ void pfq_kfree_skb_pool(struct sk_buff *skb, struct pfq_skb_pools *pools)
 			struct core_spsc_fifo *pool = pfq_skb_pool_get(pools, skb->len);
 			if (pool)
 			{
+				const int idx = PFQ_SKB_POOL_IDX(skb->len);
 #ifdef PFQ_DEBUG
 				if (!core_spsc_push(pool, skb)) {
 					printk(KERN_WARNING "[PFQ] BUG: pfq_kfree_skb_pool: internal error!\n");
@@ -315,7 +317,7 @@ void pfq_kfree_skb_pool(struct sk_buff *skb, struct pfq_skb_pools *pools)
 #else
 				core_spsc_push(pool, skb);
 #endif
-				sparse_inc(global->percpu_memory, pool_push);
+				sparse_inc(global->percpu_memory, pool_push[idx]);
 				return;
 			}
 		}
