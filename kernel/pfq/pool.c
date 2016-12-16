@@ -137,6 +137,7 @@ pfq_get_skb_pool_stats(void)
         ,  .err_irqdis       = sparse_read(global->percpu_memory, err_irqdis)
         ,  .err_fclone 	     = sparse_read(global->percpu_memory, err_fclone)
         ,  .err_nolinr       = sparse_read(global->percpu_memory, err_nolinr)
+        ,  .err_nfound 	     = sparse_read(global->percpu_memory, err_nfound)
 	};
 	return ret;
 }

@@ -251,6 +251,9 @@ ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, 
 			sparse_inc(global->percpu_memory, pool_empty[idx]);
 		}
 	}
+	else {
+		sparse_inc(global->percpu_memory, err_nfound);
+	}
 #endif
 	sparse_inc(global->percpu_memory, os_alloc);
 	return  __alloc_skb(size, priority, fclone, node);

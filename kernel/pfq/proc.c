@@ -190,7 +190,7 @@ static int pfq_proc_memory(struct seq_file *m, void *v)
 	seq_printf(m, "Kernel\n");
 	seq_printf(m, "  skb_alloc      : %10ld\n", sparse_read(global->percpu_memory, os_alloc));
 	seq_printf(m, "  skb_free       : %10ld\n", sparse_read(global->percpu_memory, os_free));
-	seq_printf(m, "\nPFQ POOL           %10s %10s %10s\n", "small", "mid", "large");
+	seq_printf(m, "\nPFQ POOL (%d)        %10s %10s %10s\n", atomic_read(&global->pool_enabled), "small", "mid", "large");
 	seq_printf(m, "  push           : %10ld %10ld %10ld\n", push_0, push_1, push_2);
 	seq_printf(m, "  pop            : %10ld %10ld %10ld\n", pop_0, pop_1, pop_2);
 	seq_printf(m, "  empty          : %10ld %10ld %10ld\n", empty_0, empty_1, empty_2);
@@ -223,6 +223,7 @@ static int pfq_proc_memory(struct seq_file *m, void *v)
 	seq_printf(m, "  error irqdis   : %10ld\n", sparse_read(global->percpu_memory, err_irqdis));
 	seq_printf(m, "  error fclone   : %10ld\n", sparse_read(global->percpu_memory, err_fclone));
 	seq_printf(m, "  error nolinr   : %10ld\n", sparse_read(global->percpu_memory, err_nolinr));
+	seq_printf(m, "  error nfound   : %10ld\n", sparse_read(global->percpu_memory, err_nfound));
 	return 0;
 }
 
