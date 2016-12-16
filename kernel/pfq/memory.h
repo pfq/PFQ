@@ -137,15 +137,15 @@ pfq_skb_release_head_state(struct sk_buff *skb)
 }
 
 
-static inline
-void skb_free_head(struct sk_buff *skb)
-{
-	unsigned char *head = skb->head;
-	if (skb->head_frag)
-		skb_free_frag(head);
-       	// else
-	//	kfree(head);
-}
+// static inline
+// void skb_free_head(struct sk_buff *skb)
+// {
+// 	unsigned char *head = skb->head;
+// 	if (skb->head_frag)
+// 		skb_free_frag(head);
+//      else
+// 		kfree(head);
+// }
 
 
 static inline void
@@ -160,7 +160,9 @@ pfq_skb_release_data(struct sk_buff *skb)
          if (shinfo->frag_list)
                  kfree_skb_list(shinfo->frag_list);
 
-         skb_free_head(skb);
+	 //
+         // skb_free_head(skb);
+         //
 }
 
 
@@ -173,9 +175,9 @@ struct sk_buff * pfq_skb_recycle(struct sk_buff *skb, size_t size)
 
 	pfq_skb_release_head_state(skb);
 
-	//
-	// if (likely(skb->head))
-	// 	pfq_skb_release_data(skb);
+
+	if (likely(skb->head))
+		pfq_skb_release_data(skb);
 
 	/* reset skb */
 
@@ -300,26 +302,18 @@ void pfq_kfree_skb_pool(struct sk_buff *skb, struct pfq_skb_pools *pools)
 {
 #ifdef PFQ_USE_SKB_POOL
 	if (skb->nf_trace) {
-
-		if (likely(atomic_read(&global->pool_enabled))) {
-
-			struct core_spsc_fifo *pool = pfq_skb_pool_get(pools, skb->len);
-			if (pool)
-			{
-				const int idx = PFQ_SKB_POOL_IDX(skb->len);
-#ifdef PFQ_DEBUG
-				if (!core_spsc_push(pool, skb)) {
-					printk(KERN_WARNING "[PFQ] BUG: pfq_kfree_skb_pool: internal error!\n");
-					sparse_inc(global->percpu_memory, os_free);
-					kfree_skb(skb);
-					return;
-				}
-#else
-				core_spsc_push(pool, skb);
-#endif
-				sparse_inc(global->percpu_memory, pool_push[idx]);
+		struct core_spsc_fifo *pool = pfq_skb_pool_get(pools, skb->len - skb->data_len);
+		if (pool)
+		{
+			const int idx = PFQ_SKB_POOL_IDX(skb->len - skb->data_len);
+			if (!core_spsc_push(pool, skb)) {
+				printk(KERN_WARNING "[PFQ] BUG: pfq_kfree_skb_pool: internal error!\n");
+				sparse_inc(global->percpu_memory, os_free);
+				kfree_skb(skb);
 				return;
 			}
+			sparse_inc(global->percpu_memory, pool_push[idx]);
+			return;
 		}
 	}
 #endif

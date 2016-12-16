@@ -48,7 +48,7 @@ static void __copy_skb_header(struct sk_buff *new, const struct sk_buff *old)
         new->sp                 = secpath_get(old->sp);
 #endif
 #endif
-	__nf_copy(new, old, false);
+	// __nf_copy(new, old, false);
 
         /* Note : this field could be in headers_start/headers_end section
          * It is not yet because we do not want to have a 16 bit hole
