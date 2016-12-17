@@ -310,7 +310,8 @@ void pfq_kfree_skb_pool(struct sk_buff *skb, struct pfq_skb_pools *pools)
 		if (pool)
 		{
 			if (!core_spsc_push(pool, skb)) {
-				printk(KERN_WARNING "[PFQ] BUG: pfq_kfree_skb_pool: internal error!\n");
+				printk(KERN_WARNING "[PFQ] BUG: pfq_kfree_skb_pool: internal error (pool=%d, headsize=%d)!\n",
+				       idx, (skb_end_offset(skb)-skb_headroom(skb)));
 				sparse_inc(global->percpu_memory, os_free);
 				kfree_skb(skb);
 				return;
