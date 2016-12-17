@@ -68,4 +68,19 @@ struct core_spsc_fifo *pfq_skb_pool_get(struct pfq_skb_pools *pools, size_t size
 }
 
 
+static inline
+struct core_spsc_fifo *pfq_skb_pool_idx(struct pfq_skb_pools *pools, size_t idx)
+{
+	switch(idx)
+	{
+	case 0: return pools->fifo_sml;
+	case 1: return pools->fifo_mid;
+	case 2: return pools->fifo_lrg;
+	default:return NULL;
+	}
+}
+
+
+
+
 #endif /* PFQ_SKBUFF_POOL_H */

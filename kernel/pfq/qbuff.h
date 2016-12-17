@@ -35,14 +35,13 @@
 
 #include <pfq/vlan.h>
 #include <pfq/types.h>
+#include <pfq/skbuff.h>
 
 
 #define QBUFF_SKB(buff) \
 	__builtin_choose_expr(__builtin_types_compatible_p(typeof(buff),struct qbuff *), (struct sk_buff *)((buff)->addr),\
 	__builtin_choose_expr(__builtin_types_compatible_p(typeof(buff),struct qbuff const *), (struct sk_buff const *)((buff)->addr), (void)0))
 
-
-#define PFQ_CB(addr)    ((struct pfq_cb *)(((struct sk_buff *)(addr))->cb))
 
 #define QBUFF_CB(buff)  (PFQ_CB(buff->addr))
 

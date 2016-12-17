@@ -41,6 +41,7 @@
 #include <pfq/global.h>
 #include <pfq/sparse.h>
 #include <pfq/percpu.h>
+#include <pfq/skbuff.h>
 
 
 

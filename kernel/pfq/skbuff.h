@@ -27,6 +27,16 @@
 #include <linux/skbuff.h>
 
 
+#define PFQ_CB(addr)    ((struct pfq_cb *)(((struct sk_buff *)(addr))->cb))
+
+
+struct pfq_cb
+{
+	bool	direct;
+	u8	pool;
+};
+
+
 /* Make sure a field is enclosed inside headers_start/headers_end section */
 #define CHECK_SKB_FIELD(field) \
         BUILD_BUG_ON(offsetof(struct sk_buff, field) <          \

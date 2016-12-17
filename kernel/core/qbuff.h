@@ -31,12 +31,6 @@
 struct pfq_lang_monad;
 
 
-struct pfq_cb
-{
-	bool	direct;
-};
-
-
 struct qbuff
 {
 	void		       *addr;		/* struct sk_buff * */
