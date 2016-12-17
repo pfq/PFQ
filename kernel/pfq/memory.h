@@ -65,6 +65,22 @@ unsigned int pfq_skb_end_offset(const struct sk_buff *skb)
 #endif
 
 
+static inline
+void pfq_skb_dump(const struct sk_buff *skb)
+{
+	printk(KERN_INFO "[PFQ] skb@%p -> len=%d data_len=%d truesize=%d {head=%p data=%p tail=%u end=%u users=%d}\n"
+			, (void *)skb
+			, skb->len
+			, skb->data_len
+			, skb->truesize
+			, skb->head
+			, skb->data
+			, skb->tail
+			, skb->end
+			, atomic_read(&skb->users));
+}
+
+
 static inline bool pfq_skb_is_recycleable(const struct sk_buff *skb, unsigned int skb_size)
 {
 	if (unlikely(irqs_disabled())) {
