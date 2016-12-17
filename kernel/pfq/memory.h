@@ -306,10 +306,10 @@ void pfq_kfree_skb_pool(struct sk_buff *skb, struct pfq_skb_pools *pools)
 {
 #ifdef PFQ_USE_SKB_POOL
 	if (skb->nf_trace) {
-		struct core_spsc_fifo *pool = pfq_skb_pool_get(pools, skb->len - skb->data_len);
+		const int idx = PFQ_CB(skb)->pool;
+		struct core_spsc_fifo *pool = pfq_skb_pool_idx(pools, idx);
 		if (pool)
 		{
-			const int idx = PFQ_SKB_POOL_IDX(skb->len - skb->data_len);
 			if (!core_spsc_push(pool, skb)) {
 				printk(KERN_WARNING "[PFQ] BUG: pfq_kfree_skb_pool: internal error!\n");
 				sparse_inc(global->percpu_memory, os_free);
