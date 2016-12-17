@@ -155,7 +155,7 @@ static int pfq_proc_stats(struct seq_file *m, void *v)
 	seq_printf(m, "INPUT:\n");
 	seq_printf(m, "  received  : %ld\n", sparse_read(global->percpu_stats, recv));
 	seq_printf(m, "  lost      : %ld\n", sparse_read(global->percpu_stats, lost));
-	seq_printf(m, "  drop	   : %ld\n", sparse_read(global->percpu_stats, drop));
+	seq_printf(m, "  drop      : %ld\n", sparse_read(global->percpu_stats, drop));
 	seq_printf(m, "OUTPUT:\n");
 	seq_printf(m, "  sent      : %ld\n", sparse_read(global->percpu_stats, sent));
 	seq_printf(m, "  discarded : %ld\n", sparse_read(global->percpu_stats, disc));
@@ -169,6 +169,8 @@ static int pfq_proc_stats(struct seq_file *m, void *v)
 
 static int pfq_proc_memory(struct seq_file *m, void *v)
 {
+#ifdef PFQ_USE_SKB_POOL
+
 	int i;
 
 	long int push_0 = sparse_read(global->percpu_memory, pool_push[0]);
@@ -187,9 +189,6 @@ static int pfq_proc_memory(struct seq_file *m, void *v)
 	long int norecycl_1  = sparse_read(global->percpu_memory, pool_norecycl[1]);
 	long int norecycl_2  = sparse_read(global->percpu_memory, pool_norecycl[2]);
 
-	seq_printf(m, "Kernel\n");
-	seq_printf(m, "  skb_alloc      : %10ld\n", sparse_read(global->percpu_memory, os_alloc));
-	seq_printf(m, "  skb_free       : %10ld\n", sparse_read(global->percpu_memory, os_free));
 	seq_printf(m, "\nPFQ POOL (%d)        %10s %10s %10s\n", atomic_read(&global->pool_enabled), "small", "mid", "large");
 	seq_printf(m, "  push           : %10ld %10ld %10ld\n", push_0, push_1, push_2);
 	seq_printf(m, "  pop            : %10ld %10ld %10ld\n", pop_0, pop_1, pop_2);
@@ -224,6 +223,11 @@ static int pfq_proc_memory(struct seq_file *m, void *v)
 	seq_printf(m, "  error fclone   : %10ld\n", sparse_read(global->percpu_memory, err_fclone));
 	seq_printf(m, "  error nolinr   : %10ld\n", sparse_read(global->percpu_memory, err_nolinr));
 	seq_printf(m, "  error nfound   : %10ld\n", sparse_read(global->percpu_memory, err_nfound));
+#endif
+	seq_printf(m, "Kernel\n");
+	seq_printf(m, "  skb_alloc      : %10ld\n", sparse_read(global->percpu_memory, os_alloc));
+	seq_printf(m, "  skb_free       : %10ld\n", sparse_read(global->percpu_memory, os_free));
+
 	return 0;
 }
 
