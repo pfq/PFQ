@@ -125,6 +125,7 @@ pfq_skb_copy(const struct sk_buff *skb, gfp_t gfp_mask)
 	int headerlen = skb_headroom(skb);
 	unsigned int size = skb_end_offset(skb) + skb->data_len;
 	struct sk_buff *nskb = __alloc_skb(size, gfp_mask, skb_alloc_rx_flag(skb), NUMA_NO_NODE);
+
 	if (!nskb)
 		return NULL;
 
@@ -149,8 +150,9 @@ static inline
 struct sk_buff *
 skb_copy_for_kernel(struct sk_buff *skb, gfp_t pri)
 {
-	if (skb->nf_trace)
+	if (skb->nf_trace) {
 		return pfq_skb_copy(skb, pri);
+	}
 	return skb;
 }
 

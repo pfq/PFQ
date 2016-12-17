@@ -112,6 +112,8 @@ static inline bool pfq_skb_is_recycleable(const struct sk_buff *skb, unsigned in
 
 	skb_size = SKB_DATA_ALIGN(skb_size);
 	if (unlikely(pfq_skb_end_offset(skb) < skb_size)) {
+		if (printk_ratelimit())
+			pfq_skb_dump(skb);
 		sparse_inc(global->percpu_memory, err_memory);
 		return false;
 	}
@@ -135,21 +137,23 @@ pfq_skb_release_head_state(struct sk_buff *skb)
 		skb->destructor(skb);
 	}
 
-// #if IS_ENABLED(CONFIG_NF_CONNTRACK)
-// 	nf_conntrack_put(skb->nfct);
-// #endif
-// #ifdef NET_SKBUFF_NF_DEFRAG_NEEDED
-// 	nf_conntrack_put_reasm(skb->nfct_reasm);
-// #endif
-// #ifdef CONFIG_BRIDGE_NETFILTER
-// 	nf_bridge_put(skb->nf_bridge);
-// #endif
-// #ifdef CONFIG_NET_SCHED
-// 	skb->tc_index = 0;
-// #ifdef CONFIG_NET_CLS_ACT
-// 	skb->tc_verd = 0;
-// #endif
-// #endif
+#if 0
+#if IS_ENABLED(CONFIG_NF_CONNTRACK)
+	nf_conntrack_put(skb->nfct);
+#endif
+#ifdef NET_SKBUFF_NF_DEFRAG_NEEDED
+	nf_conntrack_put_reasm(skb->nfct_reasm);
+#endif
+#ifdef CONFIG_BRIDGE_NETFILTER
+	nf_bridge_put(skb->nf_bridge);
+#endif
+#ifdef CONFIG_NET_SCHED
+	skb->tc_index = 0;
+#ifdef CONFIG_NET_CLS_ACT
+	skb->tc_verd = 0;
+#endif
+#endif
+#endif
 
 }
 
@@ -181,19 +185,22 @@ struct sk_buff * pfq_skb_recycle(struct sk_buff *skb, size_t size)
 	/* cleaup skb as in kfree_skb */
 
 	pfq_skb_release_head_state(skb);
-
 	pfq_skb_release_data(skb);
 
-	pfmemalloc = skb->pfmemalloc;
 
 	/* reset skb */
 
-	size = SKB_DATA_ALIGN(size);
+	pfmemalloc = skb->pfmemalloc;
+
+	//
+	// size = SKB_DATA_ALIGN(size);
+        //
 
 	memset(skb, 0, offsetof(struct sk_buff, tail));
 
 	// skb->truesize = SKB_TRUESIZE(size);
 	//
+
 	skb->pfmemalloc = pfmemalloc;
 
 	atomic_set(&skb->users, 1);
@@ -202,7 +209,10 @@ struct sk_buff * pfq_skb_recycle(struct sk_buff *skb, size_t size)
 
 	skb->data = skb->head;
 	skb_reset_tail_pointer(skb);
-        skb->end = skb->tail + size;
+
+	//
+        // skb->end = skb->tail + size;
+        //
 
 	skb->mac_header = (typeof(skb->mac_header))~0U;
 	skb->transport_header = (typeof(skb->transport_header))~0U;
@@ -210,6 +220,7 @@ struct sk_buff * pfq_skb_recycle(struct sk_buff *skb, size_t size)
 	shinfo = skb_shinfo(skb);
 	memset(shinfo, 0, offsetof(struct skb_shared_info, dataref));
 	atomic_set(&shinfo->dataref,1);
+	kmemcheck_annotate_variable(shinfo->destructor_arg);
 
 	skb->nf_trace = 1;
 	return skb;
@@ -254,7 +265,6 @@ ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, 
 		if (likely(skb != NULL)) {
 
 			if(pfq_skb_is_recycleable(skb, size)) {
-
 				sparse_inc(global->percpu_memory, pool_pop[idx]);
 				core_spsc_consume(pool);
 				return pfq_skb_recycle(skb, size);
