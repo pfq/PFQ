@@ -41,9 +41,6 @@ struct pfq_percpu_pool   __percpu;
 
 struct core_global_data
 {
-	int capture_incoming;
-	int capture_outgoing;
-
 	int capt_slot_size;
 	int xmit_slot_size;
 

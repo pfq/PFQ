@@ -28,8 +28,6 @@
 
 struct core_global_data default_global =
 {
-	.capture_incoming	= 1,
-	.capture_outgoing	= 0,
 	.capt_slot_size		= 1514,
 	.xmit_slot_size		= 1514,
 	.xmit_batch_len		= 1,

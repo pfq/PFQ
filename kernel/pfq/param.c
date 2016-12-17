@@ -30,9 +30,6 @@
 extern struct core_global_data default_global;
 
 
-module_param_named(capture_incoming,	 default_global.capture_incoming, int, 0644);
-module_param_named(capture_outgoing,	 default_global.capture_outgoing, int, 0644);
-
 module_param_named(capt_slot_size,	 default_global.capt_slot_size,		int, 0644);
 module_param_named(xmit_slot_size,	 default_global.xmit_slot_size,		int, 0644);
 module_param_named(capt_batch_len,	 default_global.capt_batch_len,		int, 0644);
@@ -44,8 +41,6 @@ module_param_array_named(tx_cpu,	 default_global.tx_cpu,	  int, &default_global.
 module_param_array_named(rx_cpu,	 default_global.rx_cpu,	  int, &default_global.rx_cpu_nr, 0644);
 module_param_array_named(napi_cpu,	 default_global.napi_cpu, int, &default_global.napi_cpu_nr, 0644);
 
-MODULE_PARM_DESC(capture_incoming,	" Capture incoming packets: (1 default)");
-MODULE_PARM_DESC(capture_outgoing,	" Capture outgoing packets: (0 default)");
 MODULE_PARM_DESC(capt_slot_size,	" Maximum capture length (bytes)");
 MODULE_PARM_DESC(xmit_slot_size,	" Maximum transmission length (default=1514 bytes)");
 MODULE_PARM_DESC(capt_batch_len,	" Capture batch queue length");

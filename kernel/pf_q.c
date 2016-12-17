@@ -82,12 +82,11 @@
 #include <pfq/io.h>
 
 
-static struct packet_type       pfq_prot_hook;
-
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Nicola Bonelli <nicola@pfq.io>");
 MODULE_DESCRIPTION("Functional Networking Framework for Multi-core Architectures");
+
 
 #ifdef PFQ_DEBUG
 #pragma message "[PFQ] *** PFQ_DEBUG mode ***"
@@ -95,51 +94,6 @@ MODULE_DESCRIPTION("Functional Networking Framework for Multi-core Architectures
 #ifdef DEBUG
 #pragma message "[PFQ] *** DEBUG mode ***"
 #endif
-
-
-/* simple packet HANDLER */
-
-static int
-pfq_packet_rcv
-(
-    struct sk_buff *skb, struct net_device *dev,
-    struct packet_type *pt
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,16))
-    ,struct net_device *orig_dev
-#endif
-    )
-{
-	if (skb->pkt_type == PACKET_LOOPBACK)
-		goto out;
-
-	if (skb->peeked) {
-		skb->peeked = 0;
-		goto out;
-	}
-
-	skb = skb_share_check(skb, GFP_ATOMIC);
-	if (unlikely(!skb))
-		return 0;
-
-        switch(skb->pkt_type)
-        {
-            case PACKET_OUTGOING: {
-                if (!global->capture_outgoing)
-                        goto out;
-
-                skb->mac_len = ETH_HLEN;
-            } break;
-
-            default:
-		if (!global->capture_incoming)
-			goto out;
-        }
-
-        return pfq_receive(NULL, skb, 0);
-out:
-	kfree_skb(skb);
-	return 0;
-}
 
 
 static int
@@ -319,26 +273,6 @@ static int pfq_netdev_notifier(struct notifier_block *this, unsigned long info,
 	}
 
 	return NOTIFY_DONE;
-}
-
-
-static
-void pfq_register_device_handler(void)
-{
-        if (global->capture_incoming || global->capture_outgoing) {
-                pfq_prot_hook.func = pfq_packet_rcv;
-                pfq_prot_hook.type = __constant_htons(ETH_P_ALL);
-                dev_add_pack(&pfq_prot_hook);
-        }
-}
-
-
-static
-void unregister_device_handler(void)
-{
-        if (global->capture_incoming || global->capture_outgoing) {
-                dev_remove_pack(&pfq_prot_hook); /* Remove protocol hook */
-        }
 }
 
 
@@ -549,9 +483,6 @@ static int __init pfq_init_module(void)
 	/* register pfq-lang default functions */
 	pfq_lang_symtable_init();
 
-        /* finally register the basic device handler */
-        pfq_register_device_handler();
-
 	/* register netdev notifier */
         register_netdevice_notifier(&pfq_netdev_notifier_block);
 
@@ -599,8 +530,6 @@ static int __init pfq_init_module(void)
                PFQ_MINOR(PFQ_VERSION_CODE),
                PFQ_PATCHLEVEL(PFQ_VERSION_CODE));
 
-        printk(KERN_INFO "[PFQ] capture_incoming: %d\n", global->capture_incoming);
-        printk(KERN_INFO "[PFQ] capture_outgoing: %d\n", global->capture_outgoing);
         printk(KERN_INFO "[PFQ] capt_slot_size  : %d\n", global->capt_slot_size);
         printk(KERN_INFO "[PFQ] xmit_slot_size  : %d\n", global->xmit_slot_size);
         printk(KERN_INFO "[PFQ] capt_batch_len  : %d\n", global->capt_batch_len);
@@ -618,8 +547,6 @@ err7:
 	pfq_stop_tx_threads();
 err6:
 	unregister_netdevice_notifier(&pfq_netdev_notifier_block);
-
-	unregister_device_handler();
 
 #ifdef PFQ_USE_SKB_POOL
 	pfq_skb_pool_free_all();
@@ -655,9 +582,6 @@ static void __exit pfq_exit_module(void)
 
 	/* unregister netdevice notifier */
         unregister_netdevice_notifier(&pfq_netdev_notifier_block);
-
-        /* unregister the basic device handler */
-        unregister_device_handler();
 
 #ifdef PFQ_USE_SKB_POOL
 	atomic_set(&global->pool_enabled, 0);

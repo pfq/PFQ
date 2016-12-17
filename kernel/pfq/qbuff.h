@@ -157,7 +157,6 @@ qbuff_copy_to_kernel(struct qbuff *buff, gfp_t pri)
 {
 	struct sk_buff *nskb = skb_copy(QBUFF_SKB(buff), pri);
 	skb_pull(nskb, nskb->mac_len);
-	nskb->peeked = global->capture_incoming;
 	netif_receive_skb(nskb);
 }
 
