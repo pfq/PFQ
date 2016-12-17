@@ -138,32 +138,21 @@ pfq_skb_release_head_state(struct sk_buff *skb)
 }
 
 
-// static inline
-// void skb_free_head(struct sk_buff *skb)
-// {
-// 	unsigned char *head = skb->head;
-// 	if (skb->head_frag)
-// 		skb_free_frag(head);
-//      else
-// 		kfree(head);
-// }
-
-
 static inline void
 pfq_skb_release_data(struct sk_buff *skb)
 {
 	int i;
 	struct skb_shared_info *shinfo = skb_shinfo(skb);
 
-    	for (i = 0; i < shinfo->nr_frags; i++)
+	for (i = 0; i < shinfo->nr_frags; i++)
 		__skb_frag_unref(&shinfo->frags[i]);
 
-         if (shinfo->frag_list)
-                 kfree_skb_list(shinfo->frag_list);
+	if (shinfo->frag_list)
+		kfree_skb_list(shinfo->frag_list);
 
-	 //
-         // skb_free_head(skb);
-         //
+	//
+        // skb_free_head(skb);
+        //
 }
 
 
@@ -171,26 +160,36 @@ static inline
 struct sk_buff * pfq_skb_recycle(struct sk_buff *skb, size_t size)
 {
 	struct skb_shared_info *shinfo;
+	bool pfmemalloc;
 
 	/* cleaup skb as in kfree_skb */
 
 	pfq_skb_release_head_state(skb);
 
+	pfq_skb_release_data(skb);
 
-	if (likely(skb->head))
-		pfq_skb_release_data(skb);
+	pfmemalloc = skb->pfmemalloc;
 
 	/* reset skb */
 
 	size = SKB_DATA_ALIGN(size);
 
 	memset(skb, 0, offsetof(struct sk_buff, tail));
+
+	// skb->truesize = SKB_TRUESIZE(size);
+	//
+	skb->pfmemalloc = pfmemalloc;
+
 	atomic_set(&skb->users, 1);
 
-	skb->data = skb->head + NET_SKB_PAD;
-	skb_reset_tail_pointer(skb);
+	/* head + end are already set */
 
-	/* data and end are already set */
+	skb->data = skb->head;
+	skb_reset_tail_pointer(skb);
+        skb->end = skb->tail + size;
+
+	skb->mac_header = (typeof(skb->mac_header))~0U;
+	skb->transport_header = (typeof(skb->transport_header))~0U;
 
 	shinfo = skb_shinfo(skb);
 	memset(shinfo, 0, offsetof(struct skb_shared_info, dataref));
