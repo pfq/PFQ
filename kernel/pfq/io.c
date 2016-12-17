@@ -799,12 +799,19 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 }
 
 
+
 static inline
-void *pfq_skb_copy_from_linear_data(const struct sk_buff *skb, void *to, size_t len)
+int pfq_copy_bits(const struct sk_buff *skb, int offset, void *to, int len)
 {
-	if (len < 64 && (len + skb_tailroom(skb) >= 64))
-		return memcpy(to, skb->data, 64);
-	return memcpy(to, skb->data, len);
+	int data = skb_headroom(skb);
+	int end = skb_end_offset(skb);
+
+	if (len <= (end - data - offset)) {
+		skb_copy_from_linear_data_offset(skb, offset, to, len);
+		return 0;
+	}
+
+	return skb_copy_bits(skb, offset, to, len);
 }
 
 
@@ -862,23 +869,12 @@ size_t pfq_sk_queue_recv(struct core_sock_opt *opt,
 
 		/* copy bytes of packet */
 
-#ifdef PFQ_USE_SKB_LINEARIZE
-		if (unlikely(skb_is_nonlinear(skb)))
-#else
-		if (skb_is_nonlinear(skb))
-#endif
-		{
-
-		if (skb_copy_bits(skb, 0, pkt, bytes) != 0) {
+		if (pfq_copy_bits(skb, 0, pkt, bytes) != 0) {
 			printk(KERN_WARNING "[PFQ] BUG! skb_copy_bits failed (bytes=%zu, skb_len=%d mac_len=%d)!\n",
 			       bytes, skb->len, skb->mac_len);
 			return copied;
 		}
 
-		}
-		else {
-			pfq_skb_copy_from_linear_data(skb, pkt, bytes);
-		}
 
 		/* fill pkt header */
 

@@ -710,13 +710,6 @@ int pfq_normalize_skb(struct sk_buff *skb)
 {
         skb_reset_network_header(skb);
 	skb_reset_transport_header(skb);
-
-#ifdef PFQ_USE_SKB_LINEARIZE
-	if(skb_linearize(skb) < 0) {
-		__kfree_skb(skb);
-		return -1;
-	}
-#endif
 	return 0;
 }
 
