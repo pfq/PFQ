@@ -64,6 +64,20 @@ struct core_spsc_fifo
 };
 
 
+
+static inline
+void core_spsc_dump(const char *msg, struct core_spsc_fifo const *fifo)
+{
+	printk(KERN_INFO "[PFQ] %s spsc { head:%zu hcache:%zu tail:%zu tcache:%zu size:%zu}\n"
+	     , msg
+	     , __atomic_load_n(&fifo->head, __ATOMIC_RELAXED)
+	     , __atomic_load_n(&fifo->head_cache, __ATOMIC_RELAXED)
+	     , __atomic_load_n(&fifo->tail, __ATOMIC_RELAXED)
+	     , __atomic_load_n(&fifo->tail_cache, __ATOMIC_RELAXED)
+	     , fifo->size);
+}
+
+
 static inline
 size_t core_spsc_next_index(struct core_spsc_fifo *fifo, size_t value)
 {
@@ -102,15 +116,6 @@ size_t core_spsc_distance(struct core_spsc_fifo const *fifo, size_t h, size_t t)
 
 
 static inline
-size_t core_spsc_len(struct core_spsc_fifo const *fifo)
-{
-	size_t h = __atomic_load_n(&fifo->head_cache, __ATOMIC_ACQUIRE);
-	size_t t = __atomic_load_n(&fifo->tail_cache, __ATOMIC_RELAXED);
-	return core_spsc_distance(fifo, h, t);
-}
-
-
-static inline
 void core_spsc_push_sync(struct core_spsc_fifo *fifo)
 {
 	__atomic_store_n(&fifo->head, fifo->head_cache, __ATOMIC_RELEASE);
@@ -121,6 +126,16 @@ static inline
 void core_spsc_pop_sync(struct core_spsc_fifo *fifo)
 {
 	__atomic_store_n(&fifo->tail, fifo->tail_cache, __ATOMIC_RELEASE);
+}
+
+
+static inline
+size_t core_spsc_len(struct core_spsc_fifo *fifo)
+{
+	size_t h, t;
+	h = __atomic_load_n(&fifo->head, __ATOMIC_RELAXED);
+	t = __atomic_load_n(&fifo->tail, __ATOMIC_RELAXED);
+	return core_spsc_distance(fifo, h, t);
 }
 
 
