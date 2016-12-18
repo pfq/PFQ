@@ -630,11 +630,10 @@ bool pfq_capture_enabled(const struct sk_buff *skb)
 
 
 static inline
-int pfq_normalize_skb(struct sk_buff *skb)
+void pfq_normalize_skb(struct sk_buff *skb)
 {
         skb_reset_network_header(skb);
 	skb_reset_transport_header(skb);
-	return 0;
 }
 
 
@@ -645,8 +644,7 @@ pfq_netif_receive_skb(struct sk_buff *skb)
 
         if (likely(pfq_capture_enabled(skb))) {
 
-		if (pfq_normalize_skb(skb) < 0)
-			return NET_RX_DROP;
+		pfq_normalize_skb(skb);
 
 		pfq_receive(NULL, skb, 2);
 		return NET_RX_SUCCESS;
@@ -677,8 +675,7 @@ pfq_netif_rx(struct sk_buff *skb)
 
         if (likely(pfq_capture_enabled(skb))) {
 
-		if (pfq_normalize_skb(skb) < 0)
-			return NET_RX_DROP;
+		pfq_normalize_skb(skb);
 
 		pfq_receive(NULL, skb, 1);
 		return NET_RX_SUCCESS;
@@ -709,14 +706,13 @@ pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
 
         if (likely(pfq_capture_enabled(skb))) {
 
-		if (pfq_normalize_skb(skb) < 0)
-			return GRO_DROP;
+		pfq_normalize_skb(skb);
 
                 pfq_receive(napi, skb, 3);
                 return GRO_NORMAL;
         }
 
-	nskb = skb_copy_for_kernel(skb, GFP_ATOMIC);
+	nskb = skb_copy_for_kernel(skb, GFP_KERNEL);
 	if (skb != nskb) {
 		struct pfq_percpu_pool *pool;
 
@@ -728,7 +724,7 @@ pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
 	}
 
 	if (nskb)
-		return napi_gro_receive(napi,skb);
+		return napi_gro_receive(napi,nskb);
 
 	return 0;
 }
