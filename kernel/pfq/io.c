@@ -757,7 +757,7 @@ pfq_receive_run( int cpu
 
 
 int
-pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
+pfq_receive(struct napi_struct *napi, struct sk_buff * skb)
 {
 	struct core_percpu_data * data;
 	int cpu;
@@ -773,8 +773,6 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 	{
 		if (skb->tstamp.tv64 == 0)
 			__net_timestamp(skb);
-
-		PFQ_CB(skb)->direct = direct;
 
 		if (!core_spsc_push(data->rx_fifo, skb)) {
 			if (skb->nf_trace) {

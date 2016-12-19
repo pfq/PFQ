@@ -646,7 +646,7 @@ pfq_netif_receive_skb(struct sk_buff *skb)
 
 		pfq_normalize_skb(skb);
 
-		pfq_receive(NULL, skb, 2);
+		pfq_receive(NULL, skb);
 		return NET_RX_SUCCESS;
 	}
 
@@ -677,7 +677,7 @@ pfq_netif_rx(struct sk_buff *skb)
 
 		pfq_normalize_skb(skb);
 
-		pfq_receive(NULL, skb, 1);
+		pfq_receive(NULL, skb);
 		return NET_RX_SUCCESS;
 	}
 
@@ -708,7 +708,7 @@ pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
 
 		pfq_normalize_skb(skb);
 
-                pfq_receive(napi, skb, 3);
+                pfq_receive(napi, skb);
                 return GRO_NORMAL;
         }
 

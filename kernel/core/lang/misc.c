@@ -184,10 +184,9 @@ trace(arguments_t args, struct qbuff * buff)
 
 	if (printk_ratelimit())
 	{
-		printk(KERN_INFO "[pfq-lang] TRACE SKB: counter:%u state:%u direct:%d group_mask:%lx (num_devs=%zu kernel:%d)\n"
+		printk(KERN_INFO "[pfq-lang] TRACE SKB: counter:%u state:%u group_mask:%lx (num_devs=%zu kernel:%d)\n"
 					, buff->counter
 					, buff->state
-					, QBUFF_CB(buff)->direct
 					, buff->group_mask
 					, buff->log->num_devs
 					, buff->log->to_kernel

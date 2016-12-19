@@ -31,7 +31,7 @@ static void pfq_timer(unsigned long cpu)
 {
 	struct core_percpu_data *data;
 
-	pfq_receive(NULL, NULL, 0);
+	pfq_receive(NULL, NULL);
 	data = per_cpu_ptr(global->percpu_data, cpu);
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 31) || LINUX_VERSION_CODE >= KERNEL_VERSION(4, 8, 0)
