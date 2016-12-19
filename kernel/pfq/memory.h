@@ -50,46 +50,6 @@ extern struct sk_buff * pfq_dev_alloc_skb(unsigned int length);
 extern struct sk_buff * __pfq_netdev_alloc_skb(struct net_device *dev, unsigned int length, gfp_t gfp);
 
 
-#ifdef NET_SKBUFF_DATA_USES_OFFSET
-static inline
-unsigned int pfq_skb_end_offset(const struct sk_buff *skb)
-{
-	return skb->end;
-}
-#else
-static inline
-unsigned int pfq_skb_end_offset(const struct sk_buff *skb)
-{
-	return skb->end - skb->head;
-}
-#endif
-
-
-static inline
-void pfq_skb_dump(const char *msg, const struct sk_buff *skb)
-{
-	struct skb_shared_info *shinfo =  skb_shinfo(skb);
-	printk(KERN_INFO "[%s] skb@%p -> pool[%d] len=%d data_len=%d truesize=%d {head=%p data=%p tail=%u end=%u users=%d} >> [nfrags=%d tx_flags=%x gso_size=%d data_ref=%d darg=%p]\n"
-			, msg
-			, (void *)skb
-			, skb->nf_trace ? PFQ_CB(skb)->pool : -1
-			, skb->len
-			, skb->data_len
-			, skb->truesize
-			, skb->head
-			, skb->data
-			, skb->tail
-			, skb->end
-			, atomic_read(&skb->users)
-			, shinfo->nr_frags
-			, shinfo->tx_flags
-			, shinfo->gso_size
-			, atomic_read(&shinfo->dataref)
-			, shinfo->destructor_arg
-			);
-}
-
-
 static inline bool pfq_skb_is_recycleable(const struct sk_buff *skb)
 {
 	if (unlikely(irqs_disabled())) {
@@ -189,13 +149,18 @@ pfq_skb_recycle(struct sk_buff *skb)
 {
 	struct skb_shared_info *shinfo;
 	bool pfmemalloc;
-	int  pidx;
+
+	int  pool;
+        uint32_t id;
+        struct sk_buff *addr;
 
 	/* reset skb */
 
 	pfmemalloc = skb->pfmemalloc;
 
-	pidx = PFQ_CB(skb)->pool;
+	pool = PFQ_CB(skb)->pool;
+        id   = PFQ_CB(skb)->id;
+        addr = PFQ_CB(skb)->addr;
 
 	//
 	// size = SKB_DATA_ALIGN(size);
@@ -207,7 +172,10 @@ pfq_skb_recycle(struct sk_buff *skb)
 	//
 
 	skb->pfmemalloc = pfmemalloc;
-	PFQ_CB(skb)->pool = pidx;
+
+	PFQ_CB(skb)->pool = pool;
+	PFQ_CB(skb)->addr = addr;
+	PFQ_CB(skb)->id = id;
 
 	atomic_set(&skb->users, 1);
 

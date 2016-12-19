@@ -32,9 +32,53 @@
 
 struct pfq_cb
 {
-	bool	direct;
-	u8	pool;
+	void *	 addr;
+	uint32_t id;
+	u8	 pool;
 };
+
+
+static inline
+void pfq_skb_dump(const char *msg, const struct sk_buff *skb)
+{
+	struct skb_shared_info *shinfo =  skb_shinfo(skb);
+	printk(KERN_INFO "[%s] skb@%p -> pool[%d] id=%u addr=%p len=%d data_len=%d truesize=%d {head=%p data=%p tail=%u end=%u users=%d} >> [nfrags=%d tx_flags=%x gso_size=%d data_ref=%d darg=%p]\n"
+			, msg
+			, (void *)skb
+			, skb->nf_trace ? PFQ_CB(skb)->pool : -1
+			, PFQ_CB(skb)->id
+			, PFQ_CB(skb)->addr
+			, skb->len
+			, skb->data_len
+			, skb->truesize
+			, skb->head
+			, skb->data
+			, skb->tail
+			, skb->end
+			, atomic_read(&skb->users)
+			, shinfo->nr_frags
+			, shinfo->tx_flags
+			, shinfo->gso_size
+			, atomic_read(&shinfo->dataref)
+			, shinfo->destructor_arg
+			);
+}
+
+
+#ifdef NET_SKBUFF_DATA_USES_OFFSET
+static inline
+unsigned int pfq_skb_end_offset(const struct sk_buff *skb)
+{
+	return skb->end;
+}
+#else
+static inline
+unsigned int pfq_skb_end_offset(const struct sk_buff *skb)
+{
+	return skb->end - skb->head;
+}
+#endif
+
 
 
 static inline
