@@ -184,7 +184,8 @@ pfq_skb_release_data(struct sk_buff *skb)
 
 
 static inline
-void pfq_skb_recycle(struct sk_buff *skb, int idx)
+struct sk_buff *
+pfq_skb_recycle(struct sk_buff *skb)
 {
 	struct skb_shared_info *shinfo;
 	bool pfmemalloc;
@@ -228,6 +229,8 @@ void pfq_skb_recycle(struct sk_buff *skb, int idx)
 	kmemcheck_annotate_variable(shinfo->destructor_arg);
 
 	skb->nf_trace = 1;
+
+	return skb;
 }
 
 
@@ -265,17 +268,24 @@ ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, 
 #ifdef PFQ_USE_SKB_POOL
 	if (likely(pool)) {
 		const int idx = PFQ_SKB_POOL_IDX(size);
-		struct sk_buff *skb = core_spsc_pop(pool);
-		if (likely(skb)) {
-			sparse_inc(global->percpu_memory, pool_pop[idx]);
-			return skb;
+		struct sk_buff *skb = core_spsc_peek(pool);
+		if (likely(skb != NULL)) {
+			if(pfq_skb_is_recycleable(skb)) {
+
+				sparse_inc(global->percpu_memory, pool_pop[idx]);
+				core_spsc_consume(pool);
+
+				pfq_skb_release_head_state(skb);
+				pfq_skb_release_data(skb);
+				return pfq_skb_recycle(skb);
+			}
+			else {
+				sparse_inc(global->percpu_memory, pool_norecycl[idx]);
+			}
 		}
 		else {
 			sparse_inc(global->percpu_memory, pool_empty[idx]);
 		}
-	}
-	else {
-		sparse_inc(global->percpu_memory, err_nfound);
 	}
 #endif
 	sparse_inc(global->percpu_memory, os_alloc);
@@ -290,24 +300,15 @@ void pfq_kfree_skb_pool(struct sk_buff *skb, struct pfq_skb_pools *pools)
 	if (skb->nf_trace) {
 		const int idx = PFQ_CB(skb)->pool;
 		struct core_spsc_fifo *pool = pfq_skb_pool_idx(pools, idx);
-		if (pool && pfq_skb_is_recycleable(skb))
-		{
-			/* cleaup skb as in kfree_skb */
-
-			pfq_skb_release_head_state(skb);
-			pfq_skb_release_data(skb);
-
-			pfq_skb_recycle(skb, idx);
+		if (pool) {
 
 			if (!core_spsc_push(pool, skb)) {
-				printk(KERN_WARNING "[PFQ] BUG: pfq_kfree_skb_pool: internal error (pool=%d)!\n", idx);
-
-				pfq_skb_dump("BUG", skb);
-
+				pfq_skb_dump("[PFQ] BUG [internal error!]", skb);
 				sparse_inc(global->percpu_memory, os_free);
 				kfree_skb(skb);
 				return;
 			}
+
 			sparse_inc(global->percpu_memory, pool_push[idx]);
 			return;
 		}
