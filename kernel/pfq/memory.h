@@ -79,11 +79,13 @@ static inline bool pfq_skb_is_recycleable(const struct sk_buff *skb)
 		return false;
 	}
 
-	// skb_size = SKB_DATA_ALIGN(skb_size);
-	// if (unlikely(pfq_skb_end_offset(skb) < skb_size)) {
-	// 	sparse_inc(global->percpu_memory, err_memory);
-	// 	return false;
-	// }
+#if 0
+	skb_size = SKB_DATA_ALIGN(skb_size);
+	if (unlikely(pfq_skb_end_offset(skb) < skb_size)) {
+		sparse_inc(global->percpu_memory, err_memory);
+		return false;
+	}
+#endif
 
 	return true;
 }
