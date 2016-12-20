@@ -56,20 +56,20 @@ pfq_skb_pool_flush(struct core_spsc_fifo *pool)
 
 
 static
-int pfq_skb_pool_init (struct core_spsc_fifo **pool, size_t size, size_t skb_len, int cpu)
+int pfq_skb_pool_init (struct core_spsc_fifo **pool, size_t pool_size, size_t skb_len, int cpu)
 {
 	int total = 0;
 	if (!*pool) {
 
 		struct sk_buff *skb;
 
-		*pool = core_spsc_init(size, cpu);
+		*pool = core_spsc_init(pool_size, cpu);
 		if (!*pool) {
 			printk(KERN_ERR "[PFQ] pfq_skb_pool_init: out of memory!\n");
 			return -ENOMEM;
 		}
 
-		for(; total < size; total++)
+		for(; total < pool_size; total++)
 		{
 			skb = __alloc_skb(skb_len, GFP_KERNEL, 0, cpu_to_node(cpu));
 			if (!skb)
@@ -79,7 +79,7 @@ int pfq_skb_pool_init (struct core_spsc_fifo **pool, size_t size, size_t skb_len
 
 			PFQ_CB(skb)->id = total;
 			PFQ_CB(skb)->addr = skb;
-			PFQ_CB(skb)->pool = (u8)PFQ_SKB_POOL_IDX(size);
+			PFQ_CB(skb)->pool = (u8)PFQ_SKB_POOL_IDX(skb_len);
 
 			core_spsc_push(*pool, skb);
 			sparse_inc(global->percpu_memory, os_alloc);
@@ -88,7 +88,7 @@ int pfq_skb_pool_init (struct core_spsc_fifo **pool, size_t size, size_t skb_len
 		core_spsc_push_sync(*pool);
 	}
 
-	return size;
+	return pool_size;
 }
 
 
