@@ -51,9 +51,10 @@ extern int	pfq_skb_pool_free_all(void);
 
 extern struct  core_pool_stat pfq_get_skb_pool_stats(void);
 
+
 #define PFQ_SKB_POOL_IDX(size) (size <= PFQ_POOL_SKB_SML ? 0 : \
-				size <= PFQ_POOL_SKB_MID ? 1 : \
-				size <= PFQ_POOL_SKB_LRG ? 2 : (-1))
+			       (size <= PFQ_POOL_SKB_MID ? 1 : \
+			       (size <= PFQ_POOL_SKB_LRG ? 2 : (-1))))
 
 static inline
 struct core_spsc_fifo *pfq_skb_pool_get(struct pfq_skb_pools *pools, size_t size)
