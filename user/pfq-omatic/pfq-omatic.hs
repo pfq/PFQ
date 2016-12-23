@@ -24,6 +24,8 @@ import System.Process
 import System.Directory
 import System.Environment
 import System.FilePath
+import System.Exit
+
 import Control.Monad(void,when,unless,liftM,forM,filterM)
 import Control.Applicative
 import Text.Regex.Posix
@@ -65,7 +67,8 @@ makeFilePatch = unlines
 
 data Option = Option
     {
-        inKernel :: Bool
+        help     :: Bool
+    ,   inKernel :: Bool
 
     } deriving (Eq, Show)
 
@@ -73,15 +76,21 @@ data Option = Option
 getArguments :: IO (Option, [String])
 getArguments = do
     args <- getArgs
-    let xs = deleteFirstsBy (==) args ["-ik", "--ik", "--in-kernel"]
-    let ik = length xs /= length args
-    return (Option ik, xs)
+    let xs = deleteFirstsBy (==) args ["-?", "-ik", "--in-kernel"]
+        ik = "-ik" `elem` args || "--in-kernel" `elem` args 
+        hl = "-?" `elem` args
+    return (Option hl ik, xs)
+
+
+printHelp :: IO ()
+printHelp = putStrLn "pfq-omatic [-?] [-ik|--in-kernel] [Makefile args...]"
 
 
 main :: IO ()
 main = do
     (opt, args) <- getArguments
     putStrLn $ "[PFQ] pfq-omatic: PFQ v" ++ Q.version
+    when (help opt) $ printHelp  >> exitSuccess
     checkPreconditions
     getRecursiveContents "." [".c"] >>= mapM_ tryPatch
     symver <- fromJust <$> getMostRecentFile pfqSymvers
