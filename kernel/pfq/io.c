@@ -802,7 +802,7 @@ static inline
 int pfq_copy_bits(const struct sk_buff *skb, int offset, void *to, int len)
 {
 	int data = skb_headroom(skb);
-	int end = skb_end_offset(skb);
+	int end = pfq_skb_end_offset(skb);
 
 	if (len <= (end - data - offset)) {
 		skb_copy_from_linear_data_offset(skb, offset, to, len);

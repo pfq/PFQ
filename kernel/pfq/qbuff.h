@@ -28,6 +28,7 @@
 #include <linux/kernel.h>
 #include <linux/version.h>
 #include <linux/skbuff.h>
+#include <linux/ip.h>
 #include <pragma/diagnostic_pop>
 
 #include <core/qbuff.h>

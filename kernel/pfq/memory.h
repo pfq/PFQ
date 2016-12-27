@@ -127,6 +127,17 @@ pfq_skb_release_head_state(struct sk_buff *skb)
 }
 
 
+static inline
+void pfq_kfree_skb_list(struct sk_buff *segs)
+{
+	while (segs) {
+		struct sk_buff *next = segs->next;
+		kfree_skb(segs);
+		segs = next;
+	}
+}
+
+
 static inline void
 pfq_skb_release_data(struct sk_buff *skb)
 {
@@ -137,7 +148,7 @@ pfq_skb_release_data(struct sk_buff *skb)
 		__skb_frag_unref(&shinfo->frags[i]);
 
 	if (shinfo->frag_list)
-		kfree_skb_list(shinfo->frag_list);
+		pfq_kfree_skb_list(shinfo->frag_list);
 
 	//
         // skb_free_head(skb);
@@ -150,7 +161,9 @@ struct sk_buff *
 pfq_skb_recycle(struct sk_buff *skb)
 {
 	struct skb_shared_info *shinfo;
+#if (LINUX_VERSION_CODE > KERNEL_VERSION(3,5,0))
 	bool pfmemalloc;
+#endif
 
 	int  pool;
         uint32_t id;
@@ -158,7 +171,9 @@ pfq_skb_recycle(struct sk_buff *skb)
 
 	/* reset skb */
 
+#if (LINUX_VERSION_CODE > KERNEL_VERSION(3,5,0))
 	pfmemalloc = skb->pfmemalloc;
+#endif
 
 	pool = PFQ_CB(skb)->pool;
         id   = PFQ_CB(skb)->id;
@@ -173,7 +188,9 @@ pfq_skb_recycle(struct sk_buff *skb)
 	// skb->truesize = SKB_TRUESIZE(size);
 	//
 
+#if (LINUX_VERSION_CODE > KERNEL_VERSION(3,5,0))
 	skb->pfmemalloc = pfmemalloc;
+#endif
 
 	PFQ_CB(skb)->pool = pool;
 	PFQ_CB(skb)->addr = addr;
