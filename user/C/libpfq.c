@@ -797,6 +797,7 @@ struct CIDR
 	int prefix;
 };
 
+
 int
 pfq_set_group_computation_from_json(pfq_t *q, int gid, const char *input)
 {
@@ -807,7 +808,7 @@ pfq_set_group_computation_from_json(pfq_t *q, int gid, const char *input)
 
 	if (json_value_get_type(root) != JSONArray) {
 		json_value_free(root);
-		return Q_ERROR(q, "PFQ: computation: JSON parse error");
+		return Q_ERROR(q, "PFQ: computation: JSON parse error (JSONArray)");
 	}
 
 	funs = json_value_get_array(root);
