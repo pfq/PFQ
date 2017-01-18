@@ -309,7 +309,7 @@ data Function fun where
 
 -- |Kleisli left-to-right operator
 
-(>->) :: forall a b c m. (Monad m) => Function (a -> m b) -> Function (b -> m c) -> Function (a -> m c)
+(>->) :: NetFunction -> NetFunction -> NetFunction
 f1 >-> f2 = Kleisli f1 f2
 
 
@@ -441,22 +441,19 @@ serializeAll symb n cont a b c d e f g h =
                     cut x = if x == (idx + length xs) then (-1) else x
 
 
-instance
-#if __GLASGOW_HASKELL__ >= 710
- {-# OVERLAPPABLE #-}
-#endif
-  Serializable (Function f) where
-
-    serialize (Function symb a b c d e f g h) n = serializeAll symb n True a b c d e f g h
-
-    serialize (Kleisli a b) n = let (s1, n1) = serialize a n
-                                    (s2, n2) = serialize b n1
-                                in (s1 ++ s2, n2)
-    serialize _ _ = undefined
+-- instance
+-- #if __GLASGOW_HASKELL__ >= 710
+--   {-# OVERLAPPABLE #-}
+-- #endif
+--   Serializable (Function f) where
+--
+--     serialize (Kleisli a b) n = let (s1, n1) = serialize a n
+--                                     (s2, n2) = serialize b n1
+--                                 in (s1 ++ s2, n2)
+--     serialize _ _ = undefined
 
 
 instance Serializable NetPredicate where
-
     serialize (Predicate symb a b c d e f g h) n = serializeAll symb n False a b c d e f g h
 
     serialize (Combinator1 symb p) n = let (s1, n1) = ([FunctionDescr symb [mkArgument p s2] n (-1) ], n+1)
@@ -471,9 +468,18 @@ instance Serializable NetPredicate where
 
 
 instance Serializable NetProperty where
-
     serialize (Property  symb a b c d e f g h) n = serializeAll symb n False a b c d e f g h
     serialize _ _ = undefined
+
+
+instance Serializable NetFunction where
+
+    serialize (Kleisli a b) n = let (s1, n1) = serialize a n
+                                    (s2, n2) = serialize b n1
+                                in (s1 ++ s2, n2)
+
+    serialize (Function symb a b c d e f g h) n = serializeAll symb n True a b c d e f g h
+    -- serialize _ _ = undefined
 
 
 instance
