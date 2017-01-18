@@ -2,7 +2,7 @@
 -- see http://haskell.org/cabal/users-guide/
 
 name:                   pfq-lang
-version:                0.1
+version:                0.2
 
 license-file:           LICENSE
 author:                 Nicola Bonelli
