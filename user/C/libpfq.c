@@ -55,13 +55,6 @@
 #include "parson.h"
 
 
-struct popen2
-{
-    pid_t child_pid;
-    int   from_child, to_child;
-};
-
-
 /* macros */
 
 #define ALIGN(x, a)            ALIGN_MASK(x, (__typeof__(x))(a) - 1)
@@ -770,45 +763,6 @@ pfq_groups_mask(pfq_t const *q, unsigned long *_mask)
 }
 
 
-static int
-popen2(const char *command, struct popen2 *childinfo)
-{
-	int pipe_stdin[2], pipe_stdout[2];
-	pid_t p;
-
-	if(pipe(pipe_stdin))
-		return -1;
-
-	if(pipe(pipe_stdout)) {
-		close(pipe_stdin[0]);
-		close(pipe_stdin[1]);
-		return -1;
-	}
-
-	p = fork();
-	if(p < 0)
-		return p; /* Fork failed */
-
-	if(p == 0) {
-		close(pipe_stdin[1]);
-		dup2(pipe_stdin[0], 0);
-		close(pipe_stdout[0]);
-		dup2(pipe_stdout[1], 1);
-		if (execl("/bin/sh", "sh", "-c", command, NULL) < 0)
-			return -1;
-		exit(1);
-	}
-
-	close(pipe_stdin[0]);
-	close(pipe_stdout[1]);
-
-	childinfo->child_pid = p;
-	childinfo->to_child = pipe_stdin[1];
-	childinfo->from_child = pipe_stdout[0];
-	return 0;
-}
-
-
 int
 pfq_set_group_computation(pfq_t *q, int gid, struct pfq_lang_computation_descr const *comp)
 {
@@ -1324,86 +1278,55 @@ pfq_set_group_computation_from_json(pfq_t *q, int gid, const char *input)
 int
 pfq_set_group_computation_from_string(pfq_t *q, int gid, const char *comp)
 {
-	ssize_t chunk, size = 0, max_size = 4096;
-	struct popen2 p;
-	char *page;
-	int status;
+	char filepath[1024] = "/tmp/pfq-lang.XXXXXX";
+	int fd;
 
-	page = malloc((size_t)max_size);
-	if (!page)
-		return Q_ERROR(q, "PFQ: computation_from_string: memory error");
-
-	if (popen2("pfq-lang --json", &p) < 0) {
-		free(page);
-		return Q_ERROR(q, "PFQ: computation_from_string: popen2 error");
+	fd = mkstemp(filepath);
+	if (fd == -1) {
+		return Q_ERROR(q, "PFQ: set_group_computation_from_string: mkstemp");
 	}
 
-	if (write(p.to_child, comp, strlen(comp)) < 0) {
-		free(page);
-		return Q_ERROR(q, "PFQ: computation_from_string: write error");
-	}
+	if (write(fd, comp, strlen(comp)) < 0)
+		return Q_ERROR(q, "PFQ: set_group_computation_from_string: write");
 
-	close(p.to_child);
+	close(fd);
 
-	if (waitpid(p.child_pid, &status, 0) < 0) {
-		free(page);
-		return Q_ERROR(q, "PFQ: computation_from_string: waitpid error");
-	}
-
-	if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
-		free(page);
-		return Q_ERROR(q, "PFQ: computation_from_string: pfq-lang compiler error!");
-	}
-
-	while((chunk=read(p.from_child, page + size, (size_t)(max_size -size))) > 0)
-	{
-		size += chunk;
-		if (size == max_size) {
-			max_size += 4096;
-			page = realloc(page, (size_t)max_size);
-			if (!page)
-				return Q_ERROR(q, "PFQ: set_group_computation_from_string: realloc");
-		}
-	}
-
-	close(p.from_child);
-	*(page+size) = '\0';
-
-	status = pfq_set_group_computation_from_json(q, gid, page);
-
-	free(page);
-	return status;
+	return pfq_set_group_computation_from_file(q, gid, filepath);
 }
 
 
 int
 pfq_set_group_computation_from_file(pfq_t *q, int gid, const char *filepath)
 {
-	char *buffer;
-	long size;
-        int rc;
+	FILE *fp;
+	char cmd[1024], *page = NULL;
+	size_t size = 0;
+	int ret;
 
-	FILE *f = fopen(filepath, "rb");
-	if (f == NULL)
-		return Q_ERROR(q, "PFQ: set_group_computation_from_file: fopen");
+	if (snprintf(cmd, 1024, "~/.cabal/bin/pfq-lang --json %s", filepath) < 0)
+		return Q_ERROR(q, "PFQ: set_group_computation_from_file: snprintf");
 
-	fseek(f, 0L, SEEK_END);
-	size = ftell(f);
-	rewind(f);
+	fp = popen(cmd, "r");
+	if (fp == NULL)
+		return Q_ERROR(q, "PFQ: set_group_computation_from_file: popen");
 
-	buffer = malloc((size_t)size+1);
-	if (buffer == NULL) {
-		fclose(f);
-		return Q_ERROR(q, "PFQ: set_group_computation_from_file: malloc");
-        }
+	while(!feof(fp)) {
+		if (fgets(cmd, 1024, fp) != NULL) {
+			if (page == NULL) {
+				page = (char *)malloc(1024);
+				page[0] = '\0';
+			}
+			else {
+				page = realloc(page, size + 1024);
+			}
 
-	fread(buffer, (size_t)size, 1, f);
-	buffer[size] = '\0';
-	fclose(f);
+			strcat(page+size, cmd);
+		}
+	}
 
-	rc = pfq_set_group_computation_from_string(q, gid, buffer);
-	free(buffer);
-	return rc;
+	ret = pfq_set_group_computation_from_json(q, gid, page);
+	free(page);
+        return ret;
 }
 
 
