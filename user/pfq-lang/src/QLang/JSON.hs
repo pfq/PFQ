@@ -30,6 +30,7 @@ import Options
 
 
 compile :: (Monad m) => Q.Function (Qbuff -> Action Qbuff) -> OptionT m String
-compile comp = return (C.unpack $ A.encode $ Q.serialize comp 0)
+-- compile comp = return (C.unpack $ A.encode comp)
+compile comp = return (C.unpack $ A.encode $ fst (Q.serialize comp 0))
 
 

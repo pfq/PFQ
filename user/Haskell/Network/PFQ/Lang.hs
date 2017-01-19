@@ -304,7 +304,7 @@ data Function fun where
 
         Combinator1  :: Symbol -> NetPredicate -> NetPredicate
         Combinator2  :: Symbol -> NetPredicate -> NetPredicate -> NetPredicate
-        Kleisli      :: forall f1 f2 f. (Serializable (Function f1), Serializable (Function f2)) => Function f1 -> Function f2 -> Function f
+        Kleisli      :: NetFunction -> NetFunction -> NetFunction
 
 
 -- |Kleisli left-to-right operator
@@ -447,9 +447,7 @@ serializeAll symb n cont a b c d e f g h =
 -- #endif
 --   Serializable (Function f) where
 --
---     serialize (Kleisli a b) n = let (s1, n1) = serialize a n
---                                     (s2, n2) = serialize b n1
---                                 in (s1 ++ s2, n2)
+--
 --     serialize _ _ = undefined
 
 
@@ -464,12 +462,10 @@ instance Serializable NetPredicate where
                                                (s2, n2) = serialize p1 n1
                                                (s3, n3) = serialize p2 n2
                                            in (s1 ++ s2 ++ s3, n3)
-    serialize _ _ = undefined
 
 
 instance Serializable NetProperty where
     serialize (Property  symb a b c d e f g h) n = serializeAll symb n False a b c d e f g h
-    serialize _ _ = undefined
 
 
 instance Serializable NetFunction where
@@ -479,7 +475,6 @@ instance Serializable NetFunction where
                                 in (s1 ++ s2, n2)
 
     serialize (Function symb a b c d e f g h) n = serializeAll symb n True a b c d e f g h
-    -- serialize _ _ = undefined
 
 
 instance
