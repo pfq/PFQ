@@ -56,7 +56,6 @@
 
 #include <core/global.h>
 #include <core/devmap.h>
-#include <core/lang/engine.h>
 #include <core/lang/symtable.h>
 #include <core/percpu.h>
 #include <core/group.h>
