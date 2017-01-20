@@ -26,6 +26,7 @@ import Data.List.Split
 import Data.Maybe
 import Data.Either
 import Data.Char
+import Data.Time.Clock
 
 import Control.Applicative
 import Control.Monad
@@ -36,7 +37,7 @@ import Data.Data
 
 import System.Console.ANSI
 import System.Console.CmdArgs
-import System.Directory (getHomeDirectory, doesFileExist)
+import System.Directory (getHomeDirectory, doesFileExist, getModificationTime)
 import System.IO.Unsafe
 import System.IO.Error
 import System.Process
@@ -52,11 +53,13 @@ proc_modules = "/proc/modules"
 tmp_pfq      = "/tmp/pfq.opt"
 
 bold  = setSGRCode [SetConsoleIntensity BoldIntensity]
+red   = setSGRCode [SetColor Foreground Vivid Red]
+blue  = setSGRCode [SetColor Foreground Vivid Blue]
 reset = setSGRCode []
 
 configFiles = [ "/etc/pfq.conf", "/root/.pfq.conf" ]
 
-defaultDelay = 500000
+defaultDelay = 100000
 
 data YesNo = Yes | No | Unspec
     deriving (Show, Read, Eq)
@@ -167,12 +170,18 @@ main = do
 
 
     -- determine whether pfq load is required...
+    
+    tstamp <- if null (pfq_module conf) 
+                then getCurrentTime 
+                else getModificationTime $ pfq_module conf
+
 
     pfqForceLoad <- or <$> sequence [ return $ force opt
                                     , not <$> isLoaded "pfq"
-                                    , (/= pfqModCmd) <$> possiblyReadFile tmp_pfq]
-
+                                    , (/= (pfqModCmd ++ " " ++ show tstamp)) <$> possiblyReadFile tmp_pfq
+                                    ]
     writeFile tmp_pfq pfqModCmd
+    appendFile tmp_pfq (" " ++ (show tstamp))
 
     -- check queues
     when (maybe False (> core) (queues opt)) $ error "queues number is too big!"
@@ -195,9 +204,12 @@ main = do
         runSystem ("/usr/bin/cpufreq-set -g " ++ cpu_governor conf) ("*** cpufreq-set error! Make sure you have cpufrequtils installed! *** ", True)
 
     -- load PFQ (if required)...
-    when pfqForceLoad $ do
-        putStrBoldLn $ "Loading pfq [" ++ pfqModCmd ++ "]"
-        runSystem pfqModCmd ("insmod pfq.ko error.", True)
+    if pfqForceLoad 
+        then do
+            putStrBoldLn $ blue ++ "Loading pfq [" ++ pfqModCmd ++ "]"
+            runSystem pfqModCmd (red ++ "insmod pfq.ko error.", True)
+
+        else putStrBoldLn $ red ++ "Using pfq.ko module already loaded (use --force to reload it)..."
 
     -- update current loaded proc/modules
     pmod2 <- getProcModules

@@ -23,6 +23,7 @@ Executable pfq-load
                         ansi-terminal,
                         mtl,
                         unix,
+                        time,
                         pfq
     extra-libraries:    pfq
     default-language:   Haskell2010
