@@ -63,16 +63,15 @@ size_t copy_to_user_qbuffs(struct core_sock *so, struct core_qbuff_refs *buffs,
 {
         size_t cpy, len = core_popcount(mask);
 
+	__sparse_add(so->stats, recv, len, cpu);
+
         if (likely(core_sock_get_rx_queue(&so->opt) != NULL)) {
 
 		smp_rmb();
 
                 cpy = pfq_sk_queue_recv(&so->opt, buffs, mask, (int)len, gid);
-
-		__sparse_add(so->stats, recv, cpy, cpu);
-
 		if (len > cpy)
-			__sparse_add(so->stats, drop, len - cpy, cpu);
+			__sparse_add(so->stats, lost, len - cpy, cpu);
 
 		return cpy;
         }

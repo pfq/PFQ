@@ -1533,8 +1533,8 @@ pfq_stats_linux(pcap_t *handle, struct pcap_stat *stat)
 		handle->md.stat.ps_ifdrop += (handle->md.proc_dropped - if_dropped);
 	}
 
-	stat->ps_recv   = handle->md.packets_read;
-	stat->ps_drop   = (u_int) qstats.drop;
+	stat->ps_recv   = (u_int) qstats.recv;
+	stat->ps_drop   = (u_int) qstats.lost;
 	stat->ps_ifdrop = handle->md.stat.ps_ifdrop;
 
 	return 0;
