@@ -63,7 +63,7 @@ static uint16_t __pfq_pick_tx_default(struct net_device *dev, struct sk_buff *sk
 #endif
 
 
-/* select the right tx hw queue, and fix it (-1 means any queue).
+/* select the right Tx hw queue, and fix it (-1 means any queue).
  * unlike the linux netdev_pick_tx, it does *not* set the queue mapping in the skb */
 
 static struct netdev_queue *

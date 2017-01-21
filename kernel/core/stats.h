@@ -37,11 +37,11 @@
 struct core_kernel_stats
 {
         local_t recv;		/* received by the queue/group/computation */
-        local_t lost;		/* packets lost due to socket queue congestion */
+        local_t lost;		/* packets lost due to memory problem: buffer overrun/memory allocation */
         local_t drop;		/* dropped by filters or computation */
         local_t sent;		/* sent by the driver */
         local_t disc;		/* discarded due to driver congestion */
-        local_t fail;		/* tx failed due to driver congestion */
+        local_t fail;		/* Tx failed due to hardware congestion */
         local_t frwd;		/* forwarded to devices */
         local_t kern;		/* passed to kernel */
 };

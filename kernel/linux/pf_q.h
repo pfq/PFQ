@@ -300,7 +300,7 @@ struct pfq_pkthdr
    | pfq_queue_hdr    | pfq_pkthdr | packet | ...              | pfq_pkthdr | packet |...       | pfq_pkthdr | packet | ...
    +------------------+---------------------+                  +---------------------+          +---------------------+
    +                             +                             +                            +
-   | <------+ queue rx  +------> |  <----+ queue rx +------>   |  <----+ queue tx +------>  |  <----+ queue tx +------>
+   | <------+ queue Rx  +------> |  <----+ queue Rx +------>   |  <----+ queue Tx +------>  |  <----+ queue Tx +------>
    +                             +                             +                            +
    */
 
@@ -422,16 +422,16 @@ struct pfq_so_fprog
 
 struct pfq_stats
 {
-        unsigned long int recv;		/* received by the group */
-        unsigned long int lost;		/* queue is full, packet lost... */
-        unsigned long int drop;		/* by filter                     */
+        unsigned long int recv;		/* received by the queue/group/computation */
+        unsigned long int lost;		/* packets lost due to memory problem: buffer overrun/memory allocation */
+        unsigned long int drop;		/* dropped by filters or computation */
 
         unsigned long int sent;		/* sent by the driver */
-        unsigned long int disc;		/* discarded by the driver */
-        unsigned long int fail;		/* tx fail due to driver congestion */
+        unsigned long int disc;		/* discarded due to driver congestion */
+        unsigned long int fail;		/* Tx failed due to hardware congestion */
 
-	unsigned long int frwd;		/* forwarded to devices */
-	unsigned long int kern;		/* forwarded to kernel  */
+        unsigned long int frwd;		/* forwarded to devices */
+        unsigned long int kern;		/* passed to kernel */
 };
 
 

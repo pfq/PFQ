@@ -61,7 +61,7 @@ struct pfq_thread_tx_data
 	int			cpu;
 	struct task_struct *	task;
 
-	/* specific for tx data */
+	/* specific for Tx data */
 
 	struct core_sock *	sock[Q_MAX_TX_QUEUES];
 	atomic_t		sock_queue[Q_MAX_TX_QUEUES];
@@ -76,7 +76,7 @@ struct pfq_thread_rx_data
 	int			cpu;
 	struct task_struct *	task;
 
-	/* specific for rx data */
+	/* specific for Rx data */
 
 	int			napi[Q_MAX_RX_NAPI];
 	int			napi_nr;
