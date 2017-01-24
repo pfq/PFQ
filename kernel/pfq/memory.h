@@ -160,9 +160,7 @@ static inline
 struct sk_buff *
 pfq_skb_recycle(struct sk_buff *skb)
 {
-#ifndef PFQ_USE_SKB_POOL_EXPERIMENTAL 
 	struct skb_shared_info *shinfo;
-#endif
 
 #if (LINUX_VERSION_CODE > KERNEL_VERSION(3,5,0))
 	bool pfmemalloc;
@@ -213,12 +211,12 @@ pfq_skb_recycle(struct sk_buff *skb)
 	skb->mac_header = (typeof(skb->mac_header))~0U;
 	skb->transport_header = (typeof(skb->transport_header))~0U;
 
-#ifndef PFQ_USE_SKB_POOL_EXPERIMENTAL 
 	shinfo = skb_shinfo(skb);
+#ifndef PFQ_USE_SKB_POOL_EXPERIMENTAL 
 	memset(shinfo, 0, offsetof(struct skb_shared_info, dataref));
-	atomic_set(&shinfo->dataref,1);
 	kmemcheck_annotate_variable(shinfo->destructor_arg);
 #endif
+	atomic_set(&shinfo->dataref,1);
 
 	skb->nf_trace = 1;
 	return skb;
