@@ -57,10 +57,12 @@ static inline bool pfq_skb_is_recycleable(const struct sk_buff *skb)
 		return false;
 	}
 
+#if 0
 	if (unlikely(skb_is_nonlinear(skb))) {
 		sparse_inc(global->percpu_memory, err_nolinr);
 		return false;
 	}
+#endif
 
 	if (skb->fclone != SKB_FCLONE_UNAVAILABLE) {
 		sparse_inc(global->percpu_memory, err_fclone);
