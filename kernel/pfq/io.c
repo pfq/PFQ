@@ -737,7 +737,7 @@ pfq_receive_run( int cpu
 			continue;
 		}
 
-		/* push another skb to GC? */
+		/* push or process the batch ? */
 
 		if ((GC_size(data->GC) < (size_t)global->capt_batch_len))
 			continue;
@@ -750,6 +750,8 @@ pfq_receive_run( int cpu
 
 	while ((skb = core_spsc_pop(data->rx_free)))
 		pfq_kfree_skb_pool(skb, &pool->rx_multi);
+
+	core_spsc_consumer_sync(data->rx_fifo);
 
 	return work;
 }
@@ -771,13 +773,14 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb)
 
 	if (likely(skb))
 	{
+		size_t len;
+
 		if (skb->tstamp.tv64 == 0)
 			__net_timestamp(skb);
 
-		if (!core_spsc_push(data->rx_fifo, skb)) {
+		if (unlikely(!(len = core_spsc_push(data->rx_fifo, skb)))) {
 			if (skb->nf_trace) {
 				core_spsc_push(data->rx_free, skb);
-				core_spsc_push_sync(data->rx_free);
 			} else {
 				sparse_inc(global->percpu_memory, os_free);
 				kfree_skb(skb);
@@ -785,13 +788,15 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb)
 			return 0;
 		}
 
-		if (likely(core_spsc_len(data->rx_fifo) < (size_t)global->capt_batch_len)) {
+		if (len < (size_t)global->capt_batch_len) {
 			return 0;
 		}
 	}
 
-	if (data->rx_napi)
+	if (data->rx_napi) {
 		pfq_receive_run(cpu, global->capt_batch_len, data, per_cpu_ptr(global->percpu_pool, cpu));
+		core_spsc_producer_sync(data->rx_fifo);
+	}
 
 	return 0;
 }
