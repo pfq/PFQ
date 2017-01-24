@@ -84,8 +84,6 @@ int pfq_skb_pool_init (struct core_spsc_fifo **pool, size_t pool_size, size_t sk
 			core_spsc_push(*pool, skb);
 			sparse_inc(global->percpu_memory, os_alloc);
 		}
-
-		core_spsc_push_sync(*pool);
 	}
 
 	return pool_size;
