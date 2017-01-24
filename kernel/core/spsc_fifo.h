@@ -45,13 +45,11 @@ struct core_spsc_fifo
 	struct
 	{
 		size_t head_cache;
-		size_t tail_cache;
 
 	} consumer ____pfq_cacheline_aligned;
 
 	struct
 	{
-		size_t head_cache;
 		size_t tail_cache;
 
 	} producer ____pfq_cacheline_aligned;
@@ -80,15 +78,13 @@ static inline
 void core_spsc_dump(const char *msg, struct core_spsc_fifo const *fifo)
 {
 #ifdef __KERNEL__
-	printk(KERN_INFO "[PFQ] %s[%zu] SPSC { head:%zu tail:%zu producer:{ head:%zu tail:%zu } consumer:{ head:%zu tail:%zu }}\n"
+	printk(KERN_INFO "[PFQ] %s[%zu] SPSC { head:%zu tail:%zu producer:{ tail:%zu } consumer:{ head:%zu }}\n"
 	     , msg
 	     , fifo->size
 	     , __atomic_load_n(&fifo->head, __ATOMIC_RELAXED)
 	     , __atomic_load_n(&fifo->tail, __ATOMIC_RELAXED)
-	     , __atomic_load_n(&fifo->producer.head_cache, __ATOMIC_RELAXED)
 	     , __atomic_load_n(&fifo->producer.tail_cache, __ATOMIC_RELAXED)
 	     , __atomic_load_n(&fifo->consumer.head_cache, __ATOMIC_RELAXED)
-	     , __atomic_load_n(&fifo->consumer.tail_cache, __ATOMIC_RELAXED)
 	     );
 #endif
 }
@@ -132,16 +128,16 @@ size_t core_spsc_distance(struct core_spsc_fifo const *fifo, size_t h, size_t t)
 
 
 static inline
-void core_spsc_push_sync(struct core_spsc_fifo *fifo)
+void core_spsc_consumer_sync(struct core_spsc_fifo *fifo)
 {
-	__atomic_store_n(&fifo->head, fifo->producer.head_cache, __ATOMIC_RELEASE);
+	fifo->consumer.head_cache = __atomic_load_n(&fifo->head, __ATOMIC_ACQUIRE);
 }
 
 
 static inline
-void core_spsc_pop_sync(struct core_spsc_fifo *fifo)
+void core_spsc_producer_sync(struct core_spsc_fifo *fifo)
 {
-	__atomic_store_n(&fifo->tail, fifo->consumer.tail_cache, __ATOMIC_RELEASE);
+	fifo->producer.tail_cache = __atomic_load_n(&fifo->tail, __ATOMIC_ACQUIRE);
 }
 
 
@@ -155,10 +151,11 @@ size_t core_spsc_len(struct core_spsc_fifo *fifo)
 }
 
 
+
 static inline
-bool core_spsc_push(struct core_spsc_fifo *fifo, void *ptr)
+size_t core_spsc_push(struct core_spsc_fifo *fifo, void *ptr)
 {
-        size_t w = fifo->producer.head_cache;
+        size_t w = __atomic_load_n(&fifo->head, __ATOMIC_RELAXED);
         size_t r = fifo->producer.tail_cache;
 
         size_t next = core_spsc_next_index(fifo, w);
@@ -166,14 +163,13 @@ bool core_spsc_push(struct core_spsc_fifo *fifo, void *ptr)
 	if (next == r) {
 		r = fifo->producer.tail_cache = __atomic_load_n(&fifo->tail, __ATOMIC_ACQUIRE);
 		if (next == r) {
-			return false;
+			return 0;
 		}
 	}
 
 	fifo->ring[w] = ptr;
-	fifo->producer.head_cache = next;
 	__atomic_store_n(&fifo->head, next, __ATOMIC_RELEASE);
-        return true;
+        return core_spsc_distance(fifo, next, r);
 }
 
 
@@ -181,7 +177,7 @@ static inline
 void *core_spsc_pop(struct core_spsc_fifo *fifo)
 {
         size_t w = fifo->consumer.head_cache;
-        size_t r = fifo->consumer.tail_cache;
+        size_t r = __atomic_load_n(&fifo->tail, __ATOMIC_RELAXED);
         size_t next;
         void *ret;
 
@@ -193,7 +189,6 @@ void *core_spsc_pop(struct core_spsc_fifo *fifo)
 
 	ret = fifo->ring[r];
 	next = core_spsc_next_index(fifo, r);
-	fifo->consumer.tail_cache = next;
         __atomic_store_n(&fifo->tail, next, __ATOMIC_RELEASE);
 	return ret;
 }
@@ -203,7 +198,7 @@ static inline
 void *core_spsc_peek(struct core_spsc_fifo *fifo)
 {
         size_t w = fifo->consumer.head_cache;
-        size_t r = fifo->consumer.tail_cache;
+        size_t r = __atomic_load_n(&fifo->tail, __ATOMIC_RELAXED);
 
 	if (w == r) {
 		w = fifo->consumer.head_cache = __atomic_load_n(&fifo->head, __ATOMIC_ACQUIRE);
@@ -218,8 +213,7 @@ void *core_spsc_peek(struct core_spsc_fifo *fifo)
 static inline
 void core_spsc_consume(struct core_spsc_fifo *fifo)
 {
-	size_t next = core_spsc_next_index(fifo, fifo->consumer.tail_cache);
-	fifo->consumer.tail_cache = next;
+	size_t next = core_spsc_next_index(fifo, fifo->tail);
 	__atomic_store_n(&fifo->tail, next, __ATOMIC_RELEASE);
 }
 
@@ -236,10 +230,8 @@ core_spsc_init(size_t size, int cpu)
 		fifo->size = size+1;
 		fifo->head = 0;
 		fifo->tail = 0;
-		fifo->producer.head_cache = 0;
 		fifo->producer.tail_cache = 0;
 		fifo->consumer.head_cache = 0;
-		fifo->consumer.tail_cache = 0;
 	}
 	return fifo;
 }
