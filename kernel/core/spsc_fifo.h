@@ -98,7 +98,7 @@ static inline
 size_t core_spsc_next_index(struct core_spsc_fifo *fifo, size_t value)
 {
 	size_t ret = value + 1;
-	while (ret >= fifo->size) {
+	while (unlikely(ret >= fifo->size)) {
 		ret -= fifo->size;
 	}
 	return ret;
@@ -163,7 +163,7 @@ bool core_spsc_push(struct core_spsc_fifo *fifo, void *ptr)
 
         size_t next = core_spsc_next_index(fifo, w);
 
-	if (unlikely(next == r)) {
+	if (next == r) {
 		r = fifo->producer.tail_cache = __atomic_load_n(&fifo->tail, __ATOMIC_ACQUIRE);
 		if (next == r) {
 			return false;
@@ -172,12 +172,7 @@ bool core_spsc_push(struct core_spsc_fifo *fifo, void *ptr)
 
 	fifo->ring[w] = ptr;
 	fifo->producer.head_cache = next;
-
-	if (core_spsc_distance(fifo, fifo->producer.head_cache, __atomic_load_n(&fifo->head, __ATOMIC_RELAXED))
-	    > SPSC_FIFO_BATCH) {
-		core_spsc_push_sync(fifo);
-	}
-
+	__atomic_store_n(&fifo->head, next, __ATOMIC_RELEASE);
         return true;
 }
 
@@ -198,14 +193,8 @@ void *core_spsc_pop(struct core_spsc_fifo *fifo)
 
 	ret = fifo->ring[r];
 	next = core_spsc_next_index(fifo, r);
-
 	fifo->consumer.tail_cache = next;
-
-	if (core_spsc_distance(fifo, fifo->consumer.tail_cache, __atomic_load_n(&fifo->tail, __ATOMIC_RELAXED))
-	    > SPSC_FIFO_BATCH) {
-		core_spsc_pop_sync(fifo);
-	}
-
+        __atomic_store_n(&fifo->tail, next, __ATOMIC_RELEASE);
 	return ret;
 }
 
@@ -230,12 +219,8 @@ static inline
 void core_spsc_consume(struct core_spsc_fifo *fifo)
 {
 	size_t next = core_spsc_next_index(fifo, fifo->consumer.tail_cache);
-
 	fifo->consumer.tail_cache = next;
-	if (core_spsc_distance(fifo, fifo->consumer.tail_cache, __atomic_load_n(&fifo->tail, __ATOMIC_RELAXED))
-	    > SPSC_FIFO_BATCH) {
-		core_spsc_pop_sync(fifo);
-	}
+	__atomic_store_n(&fifo->tail, next, __ATOMIC_RELEASE);
 }
 
 
