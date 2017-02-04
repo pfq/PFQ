@@ -79,15 +79,6 @@ script = do
     DistClean "pfq-hcounters"   *>>  into "user/pfq-hcounters/" $ cabalDistClean
 
 
-    -- PFQ htest (misc tests)
-
-    Configure "pfq-htest"       *>>  into "user/pfq-htest/"     $ cabalConfigure    `requires` [Install   "pfq-haskell-lib"]
-    Build     "pfq-htest"       *>>  into "user/pfq-htest/"     $ cabalBuild        `requires` [Configure "pfq-htest"      ]
-    Install   "pfq-htest"       *>>  into "user/pfq-htest/"     $ empty             `requires` [Build     "pfq-htest"      ]
-    Clean     "pfq-htest"       *>>  into "user/pfq-htest/"     $ cabalClean
-    DistClean "pfq-htest"       *>>  into "user/pfq-htest/"     $ cabalDistClean
-
-
     -- pfq-lang compiler:
 
     Configure "pfq-lang"   *>>  into "user/pfq-lang/" $ cabalConfigure    `requires`  [Install   "pfq-haskell-lib"]
@@ -129,11 +120,20 @@ script = do
     Clean     "pfqd"            *>>  into "user/pfqd/"          $ cabalClean
     DistClean "pfqd"            *>>  into "user/pfqd/"          $ cabalDistClean
 
-    Configure "tests"           *>>  into "user/test/"          $ cmake
-    Build     "tests"           *>>  into "user/test/"          $ make              `requires` [Install "pfq-clib", Install "pfq-cpplib", Configure "tests"]
-    Install   "tests"           *>>  into "user/test/"          $ empty             `requires` [Build   "tests"]
-    Clean     "tests"           *>>  into "user/test/"          $ make_clean
-    DistClean "tests"           *>>  into "user/test/"          $ cmake_distclean
+    Configure "regression"      *>>  into "user/regression/C/"  $ cmake
+    Build     "regression"      *>>  into "user/regression/C/"  $ make              `requires` [Install "pfq-clib", Install "pfq-cpplib", Configure "regression"]
+    Install   "regression"      *>>  into "user/regression/C/"  $ empty             `requires` [Build   "regression"]
+    Clean     "regression"      *>>  into "user/regression/C/"  $ make_clean
+    DistClean "regression"      *>>  into "user/regression/C/"  $ cmake_distclean
+
+    -- PFQ htest (misc tests)
+
+    Configure "h-regression"    *>>  into "user/regression/Haskell/"  $ cabalConfigure    `requires` [Install   "pfq-haskell-lib"]
+    Build     "h-regression"    *>>  into "user/regression/Haskell/"  $ cabalBuild        `requires` [Configure "h-regression"      ]
+    Install   "h-regression"    *>>  into "user/regression/Haskell/"  $ empty             `requires` [Build     "h-regression"      ]
+    Clean     "h-regression"    *>>  into "user/regression/Haskell/"  $ cabalClean
+    DistClean "h-regression"    *>>  into "user/regression/Haskell/"  $ cabalDistClean
+
 
     Configure "tools"           *>>  into "user/tool/"          $ cmake
     Build     "tools"           *>>  into "user/tool/"          $ make              `requires` [Install "pfq-clib", Configure "tools"]

@@ -5,15 +5,15 @@ project(pfq-test)
 include(CheckIncludeFile)
 check_include_file(pcap/pcap.h PCAP_HEADER_FOUND)
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/../common/CMakeLists.txt)
+include(${CMAKE_CURRENT_SOURCE_DIR}/../../common/CMakeLists.txt)
 
-include_directories(../../kernel)
+include_directories(../../../kernel)
 
-include_directories(../C++)
-include_directories(../C)
-include_directories(../common/lib)
+include_directories(../../C++)
+include_directories(../../C)
+include_directories(../../common/lib)
 
-link_directories(../C)
+link_directories(../../C)
 
 # C++11 tests
 
