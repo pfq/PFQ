@@ -209,14 +209,14 @@ instance
 #if __GLASGOW_HASKELL__ >= 710
  {-# OVERLAPPABLE #-}
 #endif
-  (Show a, Pretty a, Storable a, Typeable a, ToJSON a, FromJSON a) => ArgumentClass a where
+  (Show a, Pretty a, Storable a, Typeable a, ToJSON a, FromJSON a, Serializable a) => ArgumentClass a where
     argument = ArgData
 
 instance
 #if __GLASGOW_HASKELL__ >= 710
  {-# OVERLAPPABLE #-}
 #endif
-  (Show a, Pretty [a], Storable a, Typeable a, ToJSON a, FromJSON a) => ArgumentClass [a] where
+  (Show a, Pretty [a], Storable a, Typeable a, ToJSON a, FromJSON a, Serializable [a]) => ArgumentClass [a] where
     argument = ArgVector
 
 instance ArgumentClass FunPtr where
@@ -396,11 +396,11 @@ instance Pretty (Function f) where
 -- | Serializable class, a typeclass used to serialize computations.
 -- Transform a Function into a list of FunctionDescr.
 
-class Serializable a where
+class (Show a) => Serializable a where
     serialize :: a -> Int -> ([FunctionDescr], Int)
 
 
-serializeAll :: ( ArgumentClass a
+serializeFun :: ( ArgumentClass a
                 , ArgumentClass b
                 , ArgumentClass c
                 , ArgumentClass d
@@ -408,7 +408,7 @@ serializeAll :: ( ArgumentClass a
                 , ArgumentClass f
                 , ArgumentClass g
                 , ArgumentClass h) => String -> Int -> Bool -> a -> b -> c -> d -> e -> f -> g -> h -> ([FunctionDescr], Int)
-serializeAll symb n cont a b c d e f g h =
+serializeFun symb n cont a b c d e f g h =
     let (s1, n1) = ([FunctionDescr symb [mkArgument a s2,
                                          mkArgument b s3,
                                          mkArgument c s4,
@@ -417,14 +417,14 @@ serializeAll symb n cont a b c d e f g h =
                                          mkArgument f s7,
                                          mkArgument g s8,
                                          mkArgument h s9] n (if cont then n9 else (-1)) ], n+1)
-        (s2, n2) = serialize a n1
-        (s3, n3) = serialize b n2
-        (s4, n4) = serialize c n3
-        (s5, n5) = serialize d n4
-        (s6, n6) = serialize e n5
-        (s7, n7) = serialize f n6
-        (s8, n8) = serialize g n7
-        (s9, n9) = serialize h n8
+        (s2, n2) = (serialize a n1)
+        (s3, n3) = (serialize b n2)
+        (s4, n4) = (serialize c n3)
+        (s5, n5) = (serialize d n4)
+        (s6, n6) = (serialize e n5)
+        (s7, n7) = (serialize f n6)
+        (s8, n8) = (serialize g n7)
+        (s9, n9) = (serialize h n8)
 
     in (s1 ++ fixDescrList n1 s2 ++
               fixDescrList n2 s3 ++
@@ -441,18 +441,17 @@ serializeAll symb n cont a b c d e f g h =
                     cut x = if x == (idx + length xs) then (-1) else x
 
 
--- instance
--- #if __GLASGOW_HASKELL__ >= 710
---   {-# OVERLAPPABLE #-}
--- #endif
---   Serializable (Function f) where
---
---
---     serialize _ _ = undefined
+instance
+#if __GLASGOW_HASKELL__ >= 710
+  {-# OVERLAPPING #-}
+#endif
+  Serializable (Function f) where
 
+    serialize (Function symb a b c d e f g h) n = serializeFun symb n True a b c d e f g h
 
-instance Serializable NetPredicate where
-    serialize (Predicate symb a b c d e f g h) n = serializeAll symb n False a b c d e f g h
+    serialize (Kleisli a b) n = let (s1, n1) = serialize a n
+                                    (s2, n2) = serialize b n1
+                                in (s1 ++ s2, n2)
 
     serialize (Combinator1 symb p) n = let (s1, n1) = ([FunctionDescr symb [mkArgument p s2] n (-1) ], n+1)
                                            (s2, n2) = serialize p n1
@@ -463,29 +462,25 @@ instance Serializable NetPredicate where
                                                (s3, n3) = serialize p2 n2
                                            in (s1 ++ s2 ++ s3, n3)
 
+    serialize (Predicate symb a b c d e f g h) n = serializeFun symb n False a b c d e f g h
 
-instance Serializable NetProperty where
-    serialize (Property  symb a b c d e f g h) n = serializeAll symb n False a b c d e f g h
+    serialize (Property symb a b c d e f g h) n = serializeFun symb n False a b c d e f g h
 
 
-instance Serializable NetFunction where
-
-    serialize (Kleisli a b) n = let (s1, n1) = serialize a n
-                                    (s2, n2) = serialize b n1
-                                in (s1 ++ s2, n2)
-
-    serialize (Function symb a b c d e f g h) n = serializeAll symb n True a b c d e f g h
+instance
+#if __GLASGOW_HASKELL__ >= 710
+ {-# OVERLAPPING #-}
+#endif
+  Serializable () where
+      serialize _ n = ([], n)
 
 
 instance
 #if __GLASGOW_HASKELL__ >= 710
  {-# OVERLAPPABLE #-}
 #endif
-  Serializable a where
-    serialize _ n = ([], n)
-
-instance Serializable () where
-    serialize _ n = ([], n)
+  (Show a) => Serializable a where
+      serialize _ n = ([], n)
 
 
 showFunction :: (Show a, Show b, Show c, Show d, Show e, Show f, Show g, Show h) => String -> String -> a -> b -> c -> d -> e -> f -> g -> h -> String
