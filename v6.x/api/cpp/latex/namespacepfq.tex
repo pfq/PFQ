@@ -32,12 +32,12 @@ enum \hyperlink{namespacepfq_ac41249c8510558905b01fa4d866a38d7}{group\+\_\+polic
 \hyperlink{namespacepfq_ac41249c8510558905b01fa4d866a38d7a9e81e7b963c71363e2fb3eefcfecfc0e}{group\+\_\+policy\+::shared} = Q\+\_\+\+P\+O\+L\+I\+C\+Y\+\_\+\+G\+R\+O\+U\+P\+\_\+\+S\+H\+A\+R\+ED
  \}\begin{DoxyCompactList}\small\item\em group policies. \end{DoxyCompactList}
 \item 
-enum \hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbb}{class\+\_\+mask} \+: unsigned long \{ \\*
+enum \hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbb}{class\+\_\+mask} \+: unsigned long \{ \newline
 \hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbba172b03053216c6158fe380805998ad6c}{class\+\_\+mask\+::default\+\_\+} = Q\+\_\+\+C\+L\+A\+S\+S\+\_\+\+D\+E\+F\+A\+U\+LT, 
 \hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbba539d70f37267eda88597177e215a6d2a}{class\+\_\+mask\+::user\+\_\+plane} = Q\+\_\+\+C\+L\+A\+S\+S\+\_\+\+U\+S\+E\+R\+\_\+\+P\+L\+A\+NE, 
 \hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbba1ed75f78f4a1cf2529490db57b294978}{class\+\_\+mask\+::control\+\_\+plane} = Q\+\_\+\+C\+L\+A\+S\+S\+\_\+\+C\+O\+N\+T\+R\+O\+L\+\_\+\+P\+L\+A\+NE, 
 \hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbbafc5364bf9dbfa34954526becad136d4b}{class\+\_\+mask\+::control} = Q\+\_\+\+C\+L\+A\+S\+S\+\_\+\+C\+O\+N\+T\+R\+OL, 
-\\*
+\newline
 \hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbba100b8cad7cf2a56f6df78f171f97a1ec}{class\+\_\+mask\+::any} = Q\+\_\+\+C\+L\+A\+S\+S\+\_\+\+A\+NY
  \}\begin{DoxyCompactList}\small\item\em class mask. \end{DoxyCompactList}
 \end{DoxyCompactItemize}
@@ -68,7 +68,7 @@ std\+::string \hyperlink{namespacepfq_a02a1861a64cc518394d3cc4361799c9f}{trim} (
 \begin{DoxyCompactList}\small\item\em Trim pending and trailing whitespaces from a string. \end{DoxyCompactList}\item 
 std\+::vector$<$ std\+::string $>$ \hyperlink{namespacepfq_a0c3aeb61dfd544cb08cb240202caf213}{split} (std\+::string str, const char $\ast$sep)
 \begin{DoxyCompactList}\small\item\em Split a string by means of the given separator. \end{DoxyCompactList}\item 
-{\footnotesize template$<$typename F , template$<$ typename... $>$ class Fun, typename V $>$ }\\auto \hyperlink{namespacepfq_a75e00e20d4294c941fce79c9e884201a}{fmap} (F f, Fun$<$ V $>$ const \&xs) -\/$>$ Fun$<$ decltype(f(std\+::declval$<$ V $>$()))$>$
+{\footnotesize template$<$typename F , template$<$ typename ... $>$ class Fun, typename V $>$ }\\auto \hyperlink{namespacepfq_a75e00e20d4294c941fce79c9e884201a}{fmap} (F f, Fun$<$ V $>$ const \&xs) -\/$>$ Fun$<$ decltype(f(std\+::declval$<$ V $>$()))$>$
 \begin{DoxyCompactList}\small\item\em Useful functor map. \end{DoxyCompactList}\item 
 unsigned int \hyperlink{namespacepfq_a9a9e9be8b77976ed45483448f54de1f9}{hardware\+\_\+concurrency} ()
 \begin{DoxyCompactList}\small\item\em Hardware concurrency. \end{DoxyCompactList}\item 
@@ -102,275 +102,266 @@ constexpr const char $\ast$ \hyperlink{namespacepfq_a30c944a281046dafc6e1cd2629c
 
 
 \subsection{Typedef Documentation}
+\mbox{\Hypertarget{namespacepfq_ac835a1bd09b4cbaba61c100b50d0a99f}\label{namespacepfq_ac835a1bd09b4cbaba61c100b50d0a99f}} 
 \index{pfq@{pfq}!const\+\_\+buffer@{const\+\_\+buffer}}
 \index{const\+\_\+buffer@{const\+\_\+buffer}!pfq@{pfq}}
-\subsubsection[{\texorpdfstring{const\+\_\+buffer}{const_buffer}}]{\setlength{\rightskip}{0pt plus 5cm}using {\bf pfq\+::const\+\_\+buffer} = typedef std\+::pair$<$const char $\ast$, const size\+\_\+t$>$}\hypertarget{namespacepfq_ac835a1bd09b4cbaba61c100b50d0a99f}{}\label{namespacepfq_ac835a1bd09b4cbaba61c100b50d0a99f}
+\subsubsection{\texorpdfstring{const\+\_\+buffer}{const\_buffer}}
+{\footnotesize\ttfamily using \hyperlink{namespacepfq_ac835a1bd09b4cbaba61c100b50d0a99f}{pfq\+::const\+\_\+buffer} = typedef std\+::pair$<$const char $\ast$, const size\+\_\+t$>$}
+
+\mbox{\Hypertarget{namespacepfq_ad7b88920eaf729154354741132483ea8}\label{namespacepfq_ad7b88920eaf729154354741132483ea8}} 
 \index{pfq@{pfq}!mutable\+\_\+buffer@{mutable\+\_\+buffer}}
 \index{mutable\+\_\+buffer@{mutable\+\_\+buffer}!pfq@{pfq}}
-\subsubsection[{\texorpdfstring{mutable\+\_\+buffer}{mutable_buffer}}]{\setlength{\rightskip}{0pt plus 5cm}using {\bf pfq\+::mutable\+\_\+buffer} = typedef std\+::pair$<$char $\ast$, size\+\_\+t$>$}\hypertarget{namespacepfq_ad7b88920eaf729154354741132483ea8}{}\label{namespacepfq_ad7b88920eaf729154354741132483ea8}
+\subsubsection{\texorpdfstring{mutable\+\_\+buffer}{mutable\_buffer}}
+{\footnotesize\ttfamily using \hyperlink{namespacepfq_ad7b88920eaf729154354741132483ea8}{pfq\+::mutable\+\_\+buffer} = typedef std\+::pair$<$char $\ast$, size\+\_\+t$>$}
+
 
 
 \subsection{Enumeration Type Documentation}
+\mbox{\Hypertarget{namespacepfq_a96af1f5ed530eff563eb917516758fbb}\label{namespacepfq_a96af1f5ed530eff563eb917516758fbb}} 
 \index{pfq@{pfq}!class\+\_\+mask@{class\+\_\+mask}}
 \index{class\+\_\+mask@{class\+\_\+mask}!pfq@{pfq}}
-\subsubsection[{\texorpdfstring{class\+\_\+mask}{class_mask}}]{\setlength{\rightskip}{0pt plus 5cm}enum {\bf pfq\+::class\+\_\+mask} \+: unsigned long\hspace{0.3cm}{\ttfamily [strong]}}\hypertarget{namespacepfq_a96af1f5ed530eff563eb917516758fbb}{}\label{namespacepfq_a96af1f5ed530eff563eb917516758fbb}
+\subsubsection{\texorpdfstring{class\+\_\+mask}{class\_mask}}
+{\footnotesize\ttfamily enum \hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbb}{pfq\+::class\+\_\+mask} \+: unsigned long\hspace{0.3cm}{\ttfamily [strong]}}
+
 
 
 class mask. 
 
-The default classes are \hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbba172b03053216c6158fe380805998ad6c}{class\+::default\+\_\+} and \hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbba100b8cad7cf2a56f6df78f171f97a1ec}{class\+::any}. \begin{Desc}
-\item[Enumerator]\par
-\begin{description}
-\index{default\+\_\+@{default\+\_\+}!pfq@{pfq}}\index{pfq@{pfq}!default\+\_\+@{default\+\_\+}}\item[{\em 
-default\+\_\+\hypertarget{namespacepfq_a96af1f5ed530eff563eb917516758fbba172b03053216c6158fe380805998ad6c}{}\label{namespacepfq_a96af1f5ed530eff563eb917516758fbba172b03053216c6158fe380805998ad6c}
-}]\index{user\+\_\+plane@{user\+\_\+plane}!pfq@{pfq}}\index{pfq@{pfq}!user\+\_\+plane@{user\+\_\+plane}}\item[{\em 
-user\+\_\+plane\hypertarget{namespacepfq_a96af1f5ed530eff563eb917516758fbba539d70f37267eda88597177e215a6d2a}{}\label{namespacepfq_a96af1f5ed530eff563eb917516758fbba539d70f37267eda88597177e215a6d2a}
-}]\index{control\+\_\+plane@{control\+\_\+plane}!pfq@{pfq}}\index{pfq@{pfq}!control\+\_\+plane@{control\+\_\+plane}}\item[{\em 
-control\+\_\+plane\hypertarget{namespacepfq_a96af1f5ed530eff563eb917516758fbba1ed75f78f4a1cf2529490db57b294978}{}\label{namespacepfq_a96af1f5ed530eff563eb917516758fbba1ed75f78f4a1cf2529490db57b294978}
-}]\index{control@{control}!pfq@{pfq}}\index{pfq@{pfq}!control@{control}}\item[{\em 
-control\hypertarget{namespacepfq_a96af1f5ed530eff563eb917516758fbbafc5364bf9dbfa34954526becad136d4b}{}\label{namespacepfq_a96af1f5ed530eff563eb917516758fbbafc5364bf9dbfa34954526becad136d4b}
-}]\index{any@{any}!pfq@{pfq}}\index{pfq@{pfq}!any@{any}}\item[{\em 
-any\hypertarget{namespacepfq_a96af1f5ed530eff563eb917516758fbba100b8cad7cf2a56f6df78f171f97a1ec}{}\label{namespacepfq_a96af1f5ed530eff563eb917516758fbba100b8cad7cf2a56f6df78f171f97a1ec}
-}]\end{description}
-\end{Desc}
+The default classes are \hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbba172b03053216c6158fe380805998ad6c}{class\+::default\+\_\+} and \hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbba100b8cad7cf2a56f6df78f171f97a1ec}{class\+::any}. \begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{default\+\_\+@{default\+\_\+}!pfq@{pfq}}\index{pfq@{pfq}!default\+\_\+@{default\+\_\+}}}\mbox{\Hypertarget{namespacepfq_a96af1f5ed530eff563eb917516758fbba172b03053216c6158fe380805998ad6c}\label{namespacepfq_a96af1f5ed530eff563eb917516758fbba172b03053216c6158fe380805998ad6c}} 
+default\+\_\+&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{user\+\_\+plane@{user\+\_\+plane}!pfq@{pfq}}\index{pfq@{pfq}!user\+\_\+plane@{user\+\_\+plane}}}\mbox{\Hypertarget{namespacepfq_a96af1f5ed530eff563eb917516758fbba539d70f37267eda88597177e215a6d2a}\label{namespacepfq_a96af1f5ed530eff563eb917516758fbba539d70f37267eda88597177e215a6d2a}} 
+user\+\_\+plane&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{control\+\_\+plane@{control\+\_\+plane}!pfq@{pfq}}\index{pfq@{pfq}!control\+\_\+plane@{control\+\_\+plane}}}\mbox{\Hypertarget{namespacepfq_a96af1f5ed530eff563eb917516758fbba1ed75f78f4a1cf2529490db57b294978}\label{namespacepfq_a96af1f5ed530eff563eb917516758fbba1ed75f78f4a1cf2529490db57b294978}} 
+control\+\_\+plane&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{control@{control}!pfq@{pfq}}\index{pfq@{pfq}!control@{control}}}\mbox{\Hypertarget{namespacepfq_a96af1f5ed530eff563eb917516758fbbafc5364bf9dbfa34954526becad136d4b}\label{namespacepfq_a96af1f5ed530eff563eb917516758fbbafc5364bf9dbfa34954526becad136d4b}} 
+control&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{any@{any}!pfq@{pfq}}\index{pfq@{pfq}!any@{any}}}\mbox{\Hypertarget{namespacepfq_a96af1f5ed530eff563eb917516758fbba100b8cad7cf2a56f6df78f171f97a1ec}\label{namespacepfq_a96af1f5ed530eff563eb917516758fbba100b8cad7cf2a56f6df78f171f97a1ec}} 
+any&\\
+\hline
+
+\end{DoxyEnumFields}
+\mbox{\Hypertarget{namespacepfq_ac41249c8510558905b01fa4d866a38d7}\label{namespacepfq_ac41249c8510558905b01fa4d866a38d7}} 
 \index{pfq@{pfq}!group\+\_\+policy@{group\+\_\+policy}}
 \index{group\+\_\+policy@{group\+\_\+policy}!pfq@{pfq}}
-\subsubsection[{\texorpdfstring{group\+\_\+policy}{group_policy}}]{\setlength{\rightskip}{0pt plus 5cm}enum {\bf pfq\+::group\+\_\+policy} \+: int16\+\_\+t\hspace{0.3cm}{\ttfamily [strong]}}\hypertarget{namespacepfq_ac41249c8510558905b01fa4d866a38d7}{}\label{namespacepfq_ac41249c8510558905b01fa4d866a38d7}
+\subsubsection{\texorpdfstring{group\+\_\+policy}{group\_policy}}
+{\footnotesize\ttfamily enum \hyperlink{namespacepfq_ac41249c8510558905b01fa4d866a38d7}{pfq\+::group\+\_\+policy} \+: int16\+\_\+t\hspace{0.3cm}{\ttfamily [strong]}}
+
 
 
 group policies. 
 
-Each group can be specified with the following policies\+: undefined (not specified), priv (private group), restricted (group shared among threads), shared (shared among threads/processes). \begin{Desc}
-\item[Enumerator]\par
-\begin{description}
-\index{undefined@{undefined}!pfq@{pfq}}\index{pfq@{pfq}!undefined@{undefined}}\item[{\em 
-undefined\hypertarget{namespacepfq_ac41249c8510558905b01fa4d866a38d7a5e543256c480ac577d30f76f9120eb74}{}\label{namespacepfq_ac41249c8510558905b01fa4d866a38d7a5e543256c480ac577d30f76f9120eb74}
-}]\index{priv@{priv}!pfq@{pfq}}\index{pfq@{pfq}!priv@{priv}}\item[{\em 
-priv\hypertarget{namespacepfq_ac41249c8510558905b01fa4d866a38d7a908b453051b556e053731714a5193921}{}\label{namespacepfq_ac41249c8510558905b01fa4d866a38d7a908b453051b556e053731714a5193921}
-}]\index{restricted@{restricted}!pfq@{pfq}}\index{pfq@{pfq}!restricted@{restricted}}\item[{\em 
-restricted\hypertarget{namespacepfq_ac41249c8510558905b01fa4d866a38d7ac89b33f8b3f6f452ef6f07d397b5dcdf}{}\label{namespacepfq_ac41249c8510558905b01fa4d866a38d7ac89b33f8b3f6f452ef6f07d397b5dcdf}
-}]\index{shared@{shared}!pfq@{pfq}}\index{pfq@{pfq}!shared@{shared}}\item[{\em 
-shared\hypertarget{namespacepfq_ac41249c8510558905b01fa4d866a38d7a9e81e7b963c71363e2fb3eefcfecfc0e}{}\label{namespacepfq_ac41249c8510558905b01fa4d866a38d7a9e81e7b963c71363e2fb3eefcfecfc0e}
-}]\end{description}
-\end{Desc}
+Each group can be specified with the following policies\+: undefined (not specified), priv (private group), restricted (group shared among threads), shared (shared among threads/processes). \begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{undefined@{undefined}!pfq@{pfq}}\index{pfq@{pfq}!undefined@{undefined}}}\mbox{\Hypertarget{namespacepfq_ac41249c8510558905b01fa4d866a38d7a5e543256c480ac577d30f76f9120eb74}\label{namespacepfq_ac41249c8510558905b01fa4d866a38d7a5e543256c480ac577d30f76f9120eb74}} 
+undefined&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{priv@{priv}!pfq@{pfq}}\index{pfq@{pfq}!priv@{priv}}}\mbox{\Hypertarget{namespacepfq_ac41249c8510558905b01fa4d866a38d7a908b453051b556e053731714a5193921}\label{namespacepfq_ac41249c8510558905b01fa4d866a38d7a908b453051b556e053731714a5193921}} 
+priv&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{restricted@{restricted}!pfq@{pfq}}\index{pfq@{pfq}!restricted@{restricted}}}\mbox{\Hypertarget{namespacepfq_ac41249c8510558905b01fa4d866a38d7ac89b33f8b3f6f452ef6f07d397b5dcdf}\label{namespacepfq_ac41249c8510558905b01fa4d866a38d7ac89b33f8b3f6f452ef6f07d397b5dcdf}} 
+restricted&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{shared@{shared}!pfq@{pfq}}\index{pfq@{pfq}!shared@{shared}}}\mbox{\Hypertarget{namespacepfq_ac41249c8510558905b01fa4d866a38d7a9e81e7b963c71363e2fb3eefcfecfc0e}\label{namespacepfq_ac41249c8510558905b01fa4d866a38d7a9e81e7b963c71363e2fb3eefcfecfc0e}} 
+shared&\\
+\hline
+
+\end{DoxyEnumFields}
 
 
 \subsection{Function Documentation}
+\mbox{\Hypertarget{namespacepfq_a9db75e7163c5f764248401d10a2a3f9b}\label{namespacepfq_a9db75e7163c5f764248401d10a2a3f9b}} 
 \index{pfq@{pfq}!align@{align}}
 \index{align@{align}!pfq@{pfq}}
-\subsubsection[{\texorpdfstring{align(\+T value)}{align(T value)}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$size\+\_\+t N, typename T $>$ T pfq\+::align (
-\begin{DoxyParamCaption}
-\item[{T}]{value}
-\end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_a9db75e7163c5f764248401d10a2a3f9b}{}\label{namespacepfq_a9db75e7163c5f764248401d10a2a3f9b}
+\subsubsection{\texorpdfstring{align()}{align()}}
+{\footnotesize\ttfamily template$<$size\+\_\+t N, typename T $>$ \\
+T pfq\+::align (\begin{DoxyParamCaption}\item[{T}]{value }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
 
 
 Return the value aligned to the next power of two. 
 
+\mbox{\Hypertarget{namespacepfq_aa380c5b13ef3af69ccd6e1090b388891}\label{namespacepfq_aa380c5b13ef3af69ccd6e1090b388891}} 
 \index{pfq@{pfq}!data\+\_\+ready@{data\+\_\+ready}}
 \index{data\+\_\+ready@{data\+\_\+ready}!pfq@{pfq}}
-\subsubsection[{\texorpdfstring{data\+\_\+ready(pfq\+\_\+pkthdr \&h, uint16\+\_\+t current\+\_\+commit)}{data_ready(pfq_pkthdr &h, uint16_t current_commit)}}]{\setlength{\rightskip}{0pt plus 5cm}void$\ast$ pfq\+::data\+\_\+ready (
-\begin{DoxyParamCaption}
-\item[{pfq\+\_\+pkthdr \&}]{h, }
-\item[{uint16\+\_\+t}]{current\+\_\+commit}
-\end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_aa380c5b13ef3af69ccd6e1090b388891}{}\label{namespacepfq_aa380c5b13ef3af69ccd6e1090b388891}
+\subsubsection{\texorpdfstring{data\+\_\+ready()}{data\_ready()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily void$\ast$ pfq\+::data\+\_\+ready (\begin{DoxyParamCaption}\item[{pfq\+\_\+pkthdr \&}]{h,  }\item[{uint16\+\_\+t}]{current\+\_\+commit }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
 
 
 Return the pointer to the packet. 
 
-Return the pointer to the packet, if the data is available to read; return a nullptr otherwise. \index{pfq@{pfq}!data\+\_\+ready@{data\+\_\+ready}}
+Return the pointer to the packet, if the data is available to read; return a nullptr otherwise. \mbox{\Hypertarget{namespacepfq_a992de53ff3615a0e00640bde94726b24}\label{namespacepfq_a992de53ff3615a0e00640bde94726b24}} 
+\index{pfq@{pfq}!data\+\_\+ready@{data\+\_\+ready}}
 \index{data\+\_\+ready@{data\+\_\+ready}!pfq@{pfq}}
-\subsubsection[{\texorpdfstring{data\+\_\+ready(pfq\+\_\+pkthdr const \&h, uint16\+\_\+t current\+\_\+commit)}{data_ready(pfq_pkthdr const &h, uint16_t current_commit)}}]{\setlength{\rightskip}{0pt plus 5cm}const void$\ast$ pfq\+::data\+\_\+ready (
-\begin{DoxyParamCaption}
-\item[{pfq\+\_\+pkthdr const \&}]{h, }
-\item[{uint16\+\_\+t}]{current\+\_\+commit}
-\end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_a992de53ff3615a0e00640bde94726b24}{}\label{namespacepfq_a992de53ff3615a0e00640bde94726b24}
+\subsubsection{\texorpdfstring{data\+\_\+ready()}{data\_ready()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily const void$\ast$ pfq\+::data\+\_\+ready (\begin{DoxyParamCaption}\item[{pfq\+\_\+pkthdr const \&}]{h,  }\item[{uint16\+\_\+t}]{current\+\_\+commit }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
 
 
 Return a constant pointer to the packet. 
 
-Return a constant pointer to the packet, if the data is available to read; return a nullptr otherwise. \index{pfq@{pfq}!fmap@{fmap}}
+Return a constant pointer to the packet, if the data is available to read; return a nullptr otherwise. \mbox{\Hypertarget{namespacepfq_a75e00e20d4294c941fce79c9e884201a}\label{namespacepfq_a75e00e20d4294c941fce79c9e884201a}} 
+\index{pfq@{pfq}!fmap@{fmap}}
 \index{fmap@{fmap}!pfq@{pfq}}
-\subsubsection[{\texorpdfstring{fmap(\+F f, Fun$<$ V $>$ const \&xs) -\/$>$ Fun$<$ decltype(f(std\+::declval$<$ V $>$()))$>$}{fmap(F f, Fun< V > const &xs) -> Fun< decltype(f(std::declval< V >()))>}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename F , template$<$ typename... $>$ class Fun, typename V $>$ auto pfq\+::fmap (
-\begin{DoxyParamCaption}
-\item[{F}]{f, }
-\item[{Fun$<$ V $>$ const \&}]{xs}
-\end{DoxyParamCaption}
-) -\/$>$ Fun$<$decltype(f(std\+::declval$<$V$>$()))$>$
-    \hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_a75e00e20d4294c941fce79c9e884201a}{}\label{namespacepfq_a75e00e20d4294c941fce79c9e884201a}
+\subsubsection{\texorpdfstring{fmap()}{fmap()}}
+{\footnotesize\ttfamily template$<$typename F , template$<$ typename ... $>$ class Fun, typename V $>$ \\
+auto pfq\+::fmap (\begin{DoxyParamCaption}\item[{F}]{f,  }\item[{Fun$<$ V $>$ const \&}]{xs }\end{DoxyParamCaption}) -\/$>$ Fun$<$decltype(f(std\+::declval$<$V$>$()))$>$
+    \hspace{0.3cm}{\ttfamily [inline]}}
+
 
 
 Useful functor map. 
 
+\mbox{\Hypertarget{namespacepfq_a881bd432d152026217ddbf0ae5d72833}\label{namespacepfq_a881bd432d152026217ddbf0ae5d72833}} 
 \index{pfq@{pfq}!fold@{fold}}
 \index{fold@{fold}!pfq@{pfq}}
-\subsubsection[{\texorpdfstring{fold(uint32\+\_\+t hash, uint32\+\_\+t n) noexcept}{fold(uint32_t hash, uint32_t n) noexcept}}]{\setlength{\rightskip}{0pt plus 5cm}uint32\+\_\+t pfq\+::fold (
-\begin{DoxyParamCaption}
-\item[{uint32\+\_\+t}]{hash, }
-\item[{uint32\+\_\+t}]{n}
-\end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [noexcept]}}\hypertarget{namespacepfq_a881bd432d152026217ddbf0ae5d72833}{}\label{namespacepfq_a881bd432d152026217ddbf0ae5d72833}
+\subsubsection{\texorpdfstring{fold()}{fold()}}
+{\footnotesize\ttfamily uint32\+\_\+t pfq\+::fold (\begin{DoxyParamCaption}\item[{uint32\+\_\+t}]{hash,  }\item[{uint32\+\_\+t}]{n }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [noexcept]}}
+
+\mbox{\Hypertarget{namespacepfq_ad3359e328bf6619dc4595eadb0d354ba}\label{namespacepfq_ad3359e328bf6619dc4595eadb0d354ba}} 
 \index{pfq@{pfq}!get\+\_\+irq\+\_\+by\+\_\+device@{get\+\_\+irq\+\_\+by\+\_\+device}}
 \index{get\+\_\+irq\+\_\+by\+\_\+device@{get\+\_\+irq\+\_\+by\+\_\+device}!pfq@{pfq}}
-\subsubsection[{\texorpdfstring{get\+\_\+irq\+\_\+by\+\_\+device(const char $\ast$dev, const char $\ast$kind=""Tx\+Rx"")}{get_irq_by_device(const char *dev, const char *kind="TxRx")}}]{\setlength{\rightskip}{0pt plus 5cm}std\+::vector$<$int$>$ pfq\+::get\+\_\+irq\+\_\+by\+\_\+device (
-\begin{DoxyParamCaption}
-\item[{const char $\ast$}]{dev, }
-\item[{const char $\ast$}]{kind = {\ttfamily \char`\"{}TxRx\char`\"{}}}
-\end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_ad3359e328bf6619dc4595eadb0d354ba}{}\label{namespacepfq_ad3359e328bf6619dc4595eadb0d354ba}
+\subsubsection{\texorpdfstring{get\+\_\+irq\+\_\+by\+\_\+device()}{get\_irq\_by\_device()}}
+{\footnotesize\ttfamily std\+::vector$<$int$>$ pfq\+::get\+\_\+irq\+\_\+by\+\_\+device (\begin{DoxyParamCaption}\item[{const char $\ast$}]{dev,  }\item[{const char $\ast$}]{kind = {\ttfamily \char`\"{}TxRx\char`\"{}} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
 
 
 I\+RQ. 
 
+\mbox{\Hypertarget{namespacepfq_a35dc28fdd850e9c82f1f3861cce2f9cb}\label{namespacepfq_a35dc28fdd850e9c82f1f3861cce2f9cb}} 
 \index{pfq@{pfq}!get\+\_\+num\+\_\+queues@{get\+\_\+num\+\_\+queues}}
 \index{get\+\_\+num\+\_\+queues@{get\+\_\+num\+\_\+queues}!pfq@{pfq}}
-\subsubsection[{\texorpdfstring{get\+\_\+num\+\_\+queues(const char $\ast$dev, const char $\ast$kind=""Tx\+Rx"")}{get_num_queues(const char *dev, const char *kind="TxRx")}}]{\setlength{\rightskip}{0pt plus 5cm}size\+\_\+t pfq\+::get\+\_\+num\+\_\+queues (
-\begin{DoxyParamCaption}
-\item[{const char $\ast$}]{dev, }
-\item[{const char $\ast$}]{kind = {\ttfamily \char`\"{}TxRx\char`\"{}}}
-\end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_a35dc28fdd850e9c82f1f3861cce2f9cb}{}\label{namespacepfq_a35dc28fdd850e9c82f1f3861cce2f9cb}
+\subsubsection{\texorpdfstring{get\+\_\+num\+\_\+queues()}{get\_num\_queues()}}
+{\footnotesize\ttfamily size\+\_\+t pfq\+::get\+\_\+num\+\_\+queues (\begin{DoxyParamCaption}\item[{const char $\ast$}]{dev,  }\item[{const char $\ast$}]{kind = {\ttfamily \char`\"{}TxRx\char`\"{}} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\mbox{\Hypertarget{namespacepfq_a9a9e9be8b77976ed45483448f54de1f9}\label{namespacepfq_a9a9e9be8b77976ed45483448f54de1f9}} 
 \index{pfq@{pfq}!hardware\+\_\+concurrency@{hardware\+\_\+concurrency}}
 \index{hardware\+\_\+concurrency@{hardware\+\_\+concurrency}!pfq@{pfq}}
-\subsubsection[{\texorpdfstring{hardware\+\_\+concurrency()}{hardware_concurrency()}}]{\setlength{\rightskip}{0pt plus 5cm}unsigned int pfq\+::hardware\+\_\+concurrency (
-\begin{DoxyParamCaption}
-{}
-\end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_a9a9e9be8b77976ed45483448f54de1f9}{}\label{namespacepfq_a9a9e9be8b77976ed45483448f54de1f9}
+\subsubsection{\texorpdfstring{hardware\+\_\+concurrency()}{hardware\_concurrency()}}
+{\footnotesize\ttfamily unsigned int pfq\+::hardware\+\_\+concurrency (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
 
 
 Hardware concurrency. 
 
+\mbox{\Hypertarget{namespacepfq_a46be800e747d99af1db9b92a8f296930}\label{namespacepfq_a46be800e747d99af1db9b92a8f296930}} 
 \index{pfq@{pfq}!hugepages\+\_\+mountpoint@{hugepages\+\_\+mountpoint}}
 \index{hugepages\+\_\+mountpoint@{hugepages\+\_\+mountpoint}!pfq@{pfq}}
-\subsubsection[{\texorpdfstring{hugepages\+\_\+mountpoint()}{hugepages_mountpoint()}}]{\setlength{\rightskip}{0pt plus 5cm}std\+::string pfq\+::hugepages\+\_\+mountpoint (
-\begin{DoxyParamCaption}
-{}
-\end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_a46be800e747d99af1db9b92a8f296930}{}\label{namespacepfq_a46be800e747d99af1db9b92a8f296930}
+\subsubsection{\texorpdfstring{hugepages\+\_\+mountpoint()}{hugepages\_mountpoint()}}
+{\footnotesize\ttfamily std\+::string pfq\+::hugepages\+\_\+mountpoint (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
 
 
 Huge\+Pages. 
 
+\mbox{\Hypertarget{namespacepfq_a251ac5cc269aa123009754edf62ab8b4}\label{namespacepfq_a251ac5cc269aa123009754edf62ab8b4}} 
 \index{pfq@{pfq}!ifindex@{ifindex}}
 \index{ifindex@{ifindex}!pfq@{pfq}}
-\subsubsection[{\texorpdfstring{ifindex(int fd, const char $\ast$dev)}{ifindex(int fd, const char *dev)}}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+::ifindex (
-\begin{DoxyParamCaption}
-\item[{int}]{fd, }
-\item[{const char $\ast$}]{dev}
-\end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_a251ac5cc269aa123009754edf62ab8b4}{}\label{namespacepfq_a251ac5cc269aa123009754edf62ab8b4}
+\subsubsection{\texorpdfstring{ifindex()}{ifindex()}}
+{\footnotesize\ttfamily int pfq\+::ifindex (\begin{DoxyParamCaption}\item[{int}]{fd,  }\item[{const char $\ast$}]{dev }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
 
 
 Given a device name, return the interface index. 
 
+\mbox{\Hypertarget{namespacepfq_a7bf753b90ae15e20c86f40ba59c87c36}\label{namespacepfq_a7bf753b90ae15e20c86f40ba59c87c36}} 
 \index{pfq@{pfq}!indextoname@{indextoname}}
 \index{indextoname@{indextoname}!pfq@{pfq}}
-\subsubsection[{\texorpdfstring{indextoname(unsigned int i)}{indextoname(unsigned int i)}}]{\setlength{\rightskip}{0pt plus 5cm}std\+::string pfq\+::indextoname (
-\begin{DoxyParamCaption}
-\item[{unsigned int}]{i}
-\end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_a7bf753b90ae15e20c86f40ba59c87c36}{}\label{namespacepfq_a7bf753b90ae15e20c86f40ba59c87c36}
+\subsubsection{\texorpdfstring{indextoname()}{indextoname()}}
+{\footnotesize\ttfamily std\+::string pfq\+::indextoname (\begin{DoxyParamCaption}\item[{unsigned int}]{i }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
 
 
 Given the index return the related device name. 
 
+\mbox{\Hypertarget{namespacepfq_aa68a4c07117073eeb820b32f955dda00}\label{namespacepfq_aa68a4c07117073eeb820b32f955dda00}} 
 \index{pfq@{pfq}!nametoindex@{nametoindex}}
 \index{nametoindex@{nametoindex}!pfq@{pfq}}
-\subsubsection[{\texorpdfstring{nametoindex(const char $\ast$dev)}{nametoindex(const char *dev)}}]{\setlength{\rightskip}{0pt plus 5cm}size\+\_\+t pfq\+::nametoindex (
-\begin{DoxyParamCaption}
-\item[{const char $\ast$}]{dev}
-\end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_aa68a4c07117073eeb820b32f955dda00}{}\label{namespacepfq_aa68a4c07117073eeb820b32f955dda00}
+\subsubsection{\texorpdfstring{nametoindex()}{nametoindex()}}
+{\footnotesize\ttfamily size\+\_\+t pfq\+::nametoindex (\begin{DoxyParamCaption}\item[{const char $\ast$}]{dev }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
 
 
 Given the device name return the related index. 
 
+\mbox{\Hypertarget{namespacepfq_a1db1dc5635be457a7ca4cd9148ceae19}\label{namespacepfq_a1db1dc5635be457a7ca4cd9148ceae19}} 
 \index{pfq@{pfq}!operator+@{operator+}}
 \index{operator+@{operator+}!pfq@{pfq}}
-\subsubsection[{\texorpdfstring{operator+(pfq\+\_\+stats lhs, const pfq\+\_\+stats \&rhs)}{operator+(pfq_stats lhs, const pfq_stats &rhs)}}]{\setlength{\rightskip}{0pt plus 5cm}pfq\+\_\+stats pfq\+::operator+ (
-\begin{DoxyParamCaption}
-\item[{pfq\+\_\+stats}]{lhs, }
-\item[{const pfq\+\_\+stats \&}]{rhs}
-\end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_a1db1dc5635be457a7ca4cd9148ceae19}{}\label{namespacepfq_a1db1dc5635be457a7ca4cd9148ceae19}
+\subsubsection{\texorpdfstring{operator+()}{operator+()}}
+{\footnotesize\ttfamily pfq\+\_\+stats pfq\+::operator+ (\begin{DoxyParamCaption}\item[{pfq\+\_\+stats}]{lhs,  }\item[{const pfq\+\_\+stats \&}]{rhs }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\mbox{\Hypertarget{namespacepfq_ae140b453ea425ae677dfbc69a51370f8}\label{namespacepfq_ae140b453ea425ae677dfbc69a51370f8}} 
 \index{pfq@{pfq}!operator+=@{operator+=}}
 \index{operator+=@{operator+=}!pfq@{pfq}}
-\subsubsection[{\texorpdfstring{operator+=(pfq\+\_\+stats \&lhs, const pfq\+\_\+stats \&rhs)}{operator+=(pfq_stats &lhs, const pfq_stats &rhs)}}]{\setlength{\rightskip}{0pt plus 5cm}pfq\+\_\+stats\& pfq\+::operator+= (
-\begin{DoxyParamCaption}
-\item[{pfq\+\_\+stats \&}]{lhs, }
-\item[{const pfq\+\_\+stats \&}]{rhs}
-\end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_ae140b453ea425ae677dfbc69a51370f8}{}\label{namespacepfq_ae140b453ea425ae677dfbc69a51370f8}
+\subsubsection{\texorpdfstring{operator+=()}{operator+=()}}
+{\footnotesize\ttfamily pfq\+\_\+stats\& pfq\+::operator+= (\begin{DoxyParamCaption}\item[{pfq\+\_\+stats \&}]{lhs,  }\item[{const pfq\+\_\+stats \&}]{rhs }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\mbox{\Hypertarget{namespacepfq_ad01713142f8fa670ff8614b9f2bab3b8}\label{namespacepfq_ad01713142f8fa670ff8614b9f2bab3b8}} 
 \index{pfq@{pfq}!operator-\/@{operator-\/}}
 \index{operator-\/@{operator-\/}!pfq@{pfq}}
-\subsubsection[{\texorpdfstring{operator-\/(pfq\+\_\+stats lhs, const pfq\+\_\+stats \&rhs)}{operator-(pfq_stats lhs, const pfq_stats &rhs)}}]{\setlength{\rightskip}{0pt plus 5cm}pfq\+\_\+stats pfq\+::operator-\/ (
-\begin{DoxyParamCaption}
-\item[{pfq\+\_\+stats}]{lhs, }
-\item[{const pfq\+\_\+stats \&}]{rhs}
-\end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_ad01713142f8fa670ff8614b9f2bab3b8}{}\label{namespacepfq_ad01713142f8fa670ff8614b9f2bab3b8}
+\subsubsection{\texorpdfstring{operator-\/()}{operator-()}}
+{\footnotesize\ttfamily pfq\+\_\+stats pfq\+::operator-\/ (\begin{DoxyParamCaption}\item[{pfq\+\_\+stats}]{lhs,  }\item[{const pfq\+\_\+stats \&}]{rhs }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\mbox{\Hypertarget{namespacepfq_aa7874ca8c38d2bb9b66a33a6c2bb0fc1}\label{namespacepfq_aa7874ca8c38d2bb9b66a33a6c2bb0fc1}} 
 \index{pfq@{pfq}!operator-\/=@{operator-\/=}}
 \index{operator-\/=@{operator-\/=}!pfq@{pfq}}
-\subsubsection[{\texorpdfstring{operator-\/=(pfq\+\_\+stats \&lhs, const pfq\+\_\+stats \&rhs)}{operator-=(pfq_stats &lhs, const pfq_stats &rhs)}}]{\setlength{\rightskip}{0pt plus 5cm}pfq\+\_\+stats\& pfq\+::operator-\/= (
-\begin{DoxyParamCaption}
-\item[{pfq\+\_\+stats \&}]{lhs, }
-\item[{const pfq\+\_\+stats \&}]{rhs}
-\end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_aa7874ca8c38d2bb9b66a33a6c2bb0fc1}{}\label{namespacepfq_aa7874ca8c38d2bb9b66a33a6c2bb0fc1}
+\subsubsection{\texorpdfstring{operator-\/=()}{operator-=()}}
+{\footnotesize\ttfamily pfq\+\_\+stats\& pfq\+::operator-\/= (\begin{DoxyParamCaption}\item[{pfq\+\_\+stats \&}]{lhs,  }\item[{const pfq\+\_\+stats \&}]{rhs }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+\mbox{\Hypertarget{namespacepfq_a1c2bda68e2e2c718ebd80519034002a3}\label{namespacepfq_a1c2bda68e2e2c718ebd80519034002a3}} 
 \index{pfq@{pfq}!operator$<$$<$@{operator$<$$<$}}
 \index{operator$<$$<$@{operator$<$$<$}!pfq@{pfq}}
-\subsubsection[{\texorpdfstring{operator$<$$<$(std\+::basic\+\_\+ostream$<$ Char\+T, Traits $>$ \&out, const pfq\+\_\+stats \&rhs)}{operator<<(std::basic_ostream< CharT, Traits > &out, const pfq_stats &rhs)}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename CharT , typename Traits $>$ std\+::basic\+\_\+ostream$<$CharT, Traits$>$\& pfq\+::operator$<$$<$ (
-\begin{DoxyParamCaption}
-\item[{std\+::basic\+\_\+ostream$<$ CharT, Traits $>$ \&}]{out, }
-\item[{const pfq\+\_\+stats \&}]{rhs}
-\end{DoxyParamCaption}
-)}\hypertarget{namespacepfq_a1c2bda68e2e2c718ebd80519034002a3}{}\label{namespacepfq_a1c2bda68e2e2c718ebd80519034002a3}
+\subsubsection{\texorpdfstring{operator$<$$<$()}{operator<<()}}
+{\footnotesize\ttfamily template$<$typename CharT , typename Traits $>$ \\
+std\+::basic\+\_\+ostream$<$CharT, Traits$>$\& pfq\+::operator$<$$<$ (\begin{DoxyParamCaption}\item[{std\+::basic\+\_\+ostream$<$ CharT, Traits $>$ \&}]{out,  }\item[{const pfq\+\_\+stats \&}]{rhs }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{namespacepfq_a62b9f1831dc714353f6edcb66a4fad4d}\label{namespacepfq_a62b9f1831dc714353f6edcb66a4fad4d}} 
 \index{pfq@{pfq}!set\+\_\+promisc@{set\+\_\+promisc}}
 \index{set\+\_\+promisc@{set\+\_\+promisc}!pfq@{pfq}}
-\subsubsection[{\texorpdfstring{set\+\_\+promisc(int fd, const char $\ast$dev, bool value)}{set_promisc(int fd, const char *dev, bool value)}}]{\setlength{\rightskip}{0pt plus 5cm}void pfq\+::set\+\_\+promisc (
-\begin{DoxyParamCaption}
-\item[{int}]{fd, }
-\item[{const char $\ast$}]{dev, }
-\item[{bool}]{value}
-\end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_a62b9f1831dc714353f6edcb66a4fad4d}{}\label{namespacepfq_a62b9f1831dc714353f6edcb66a4fad4d}
+\subsubsection{\texorpdfstring{set\+\_\+promisc()}{set\_promisc()}}
+{\footnotesize\ttfamily void pfq\+::set\+\_\+promisc (\begin{DoxyParamCaption}\item[{int}]{fd,  }\item[{const char $\ast$}]{dev,  }\item[{bool}]{value }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
 
 
 Set/unset the promiscuous mode for the given device. 
 
+\mbox{\Hypertarget{namespacepfq_a0c3aeb61dfd544cb08cb240202caf213}\label{namespacepfq_a0c3aeb61dfd544cb08cb240202caf213}} 
 \index{pfq@{pfq}!split@{split}}
 \index{split@{split}!pfq@{pfq}}
-\subsubsection[{\texorpdfstring{split(std\+::string str, const char $\ast$sep)}{split(std::string str, const char *sep)}}]{\setlength{\rightskip}{0pt plus 5cm}std\+::vector$<$std\+::string$>$ pfq\+::split (
-\begin{DoxyParamCaption}
-\item[{std\+::string}]{str, }
-\item[{const char $\ast$}]{sep}
-\end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_a0c3aeb61dfd544cb08cb240202caf213}{}\label{namespacepfq_a0c3aeb61dfd544cb08cb240202caf213}
+\subsubsection{\texorpdfstring{split()}{split()}}
+{\footnotesize\ttfamily std\+::vector$<$std\+::string$>$ pfq\+::split (\begin{DoxyParamCaption}\item[{std\+::string}]{str,  }\item[{const char $\ast$}]{sep }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
 
 
 Split a string by means of the given separator. 
 
+\mbox{\Hypertarget{namespacepfq_acd3646943e133a2651876f9ca0bd154c}\label{namespacepfq_acd3646943e133a2651876f9ca0bd154c}} 
 \index{pfq@{pfq}!symmetric\+\_\+hash@{symmetric\+\_\+hash}}
 \index{symmetric\+\_\+hash@{symmetric\+\_\+hash}!pfq@{pfq}}
-\subsubsection[{\texorpdfstring{symmetric\+\_\+hash(const char $\ast$buf) noexcept}{symmetric_hash(const char *buf) noexcept}}]{\setlength{\rightskip}{0pt plus 5cm}uint32\+\_\+t pfq\+::symmetric\+\_\+hash (
-\begin{DoxyParamCaption}
-\item[{const char $\ast$}]{buf}
-\end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [noexcept]}}\hypertarget{namespacepfq_acd3646943e133a2651876f9ca0bd154c}{}\label{namespacepfq_acd3646943e133a2651876f9ca0bd154c}
+\subsubsection{\texorpdfstring{symmetric\+\_\+hash()}{symmetric\_hash()}}
+{\footnotesize\ttfamily uint32\+\_\+t pfq\+::symmetric\+\_\+hash (\begin{DoxyParamCaption}\item[{const char $\ast$}]{buf }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [noexcept]}}
+
 
 
 symmetric hash (T\+SS). 
 
+\mbox{\Hypertarget{namespacepfq_a02a1861a64cc518394d3cc4361799c9f}\label{namespacepfq_a02a1861a64cc518394d3cc4361799c9f}} 
 \index{pfq@{pfq}!trim@{trim}}
 \index{trim@{trim}!pfq@{pfq}}
-\subsubsection[{\texorpdfstring{trim(std\+::string str)}{trim(std::string str)}}]{\setlength{\rightskip}{0pt plus 5cm}std\+::string pfq\+::trim (
-\begin{DoxyParamCaption}
-\item[{std\+::string}]{str}
-\end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_a02a1861a64cc518394d3cc4361799c9f}{}\label{namespacepfq_a02a1861a64cc518394d3cc4361799c9f}
+\subsubsection{\texorpdfstring{trim()}{trim()}}
+{\footnotesize\ttfamily std\+::string pfq\+::trim (\begin{DoxyParamCaption}\item[{std\+::string}]{str }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
 
 
 Trim pending and trailing whitespaces from a string. 
@@ -378,18 +369,33 @@ Trim pending and trailing whitespaces from a string.
 
 
 \subsection{Variable Documentation}
+\mbox{\Hypertarget{namespacepfq_a5edeb73b0430a772b181d778b1c90bbc}\label{namespacepfq_a5edeb73b0430a772b181d778b1c90bbc}} 
 \index{pfq@{pfq}!major\+\_\+version@{major\+\_\+version}}
 \index{major\+\_\+version@{major\+\_\+version}!pfq@{pfq}}
-\subsubsection[{\texorpdfstring{major\+\_\+version}{major_version}}]{\setlength{\rightskip}{0pt plus 5cm}constexpr const int pfq\+::major\+\_\+version = P\+F\+Q\+\_\+\+M\+A\+J\+OR(P\+F\+Q\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+C\+O\+DE)}\hypertarget{namespacepfq_a5edeb73b0430a772b181d778b1c90bbc}{}\label{namespacepfq_a5edeb73b0430a772b181d778b1c90bbc}
+\subsubsection{\texorpdfstring{major\+\_\+version}{major\_version}}
+{\footnotesize\ttfamily constexpr const int pfq\+::major\+\_\+version = P\+F\+Q\+\_\+\+M\+A\+J\+OR(P\+F\+Q\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+C\+O\+DE)}
+
+\mbox{\Hypertarget{namespacepfq_a7f444700f822d8632dee37560ab76a7b}\label{namespacepfq_a7f444700f822d8632dee37560ab76a7b}} 
 \index{pfq@{pfq}!minor\+\_\+version@{minor\+\_\+version}}
 \index{minor\+\_\+version@{minor\+\_\+version}!pfq@{pfq}}
-\subsubsection[{\texorpdfstring{minor\+\_\+version}{minor_version}}]{\setlength{\rightskip}{0pt plus 5cm}constexpr const int pfq\+::minor\+\_\+version = P\+F\+Q\+\_\+\+M\+I\+N\+OR(P\+F\+Q\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+C\+O\+DE)}\hypertarget{namespacepfq_a7f444700f822d8632dee37560ab76a7b}{}\label{namespacepfq_a7f444700f822d8632dee37560ab76a7b}
+\subsubsection{\texorpdfstring{minor\+\_\+version}{minor\_version}}
+{\footnotesize\ttfamily constexpr const int pfq\+::minor\+\_\+version = P\+F\+Q\+\_\+\+M\+I\+N\+OR(P\+F\+Q\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+C\+O\+DE)}
+
+\mbox{\Hypertarget{namespacepfq_aa1b1daa6a96155899c26c206325e97a9}\label{namespacepfq_aa1b1daa6a96155899c26c206325e97a9}} 
 \index{pfq@{pfq}!patchlevel\+\_\+version@{patchlevel\+\_\+version}}
 \index{patchlevel\+\_\+version@{patchlevel\+\_\+version}!pfq@{pfq}}
-\subsubsection[{\texorpdfstring{patchlevel\+\_\+version}{patchlevel_version}}]{\setlength{\rightskip}{0pt plus 5cm}constexpr const int pfq\+::patchlevel\+\_\+version = P\+F\+Q\+\_\+\+P\+A\+T\+C\+H\+L\+E\+V\+EL(P\+F\+Q\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+C\+O\+DE)}\hypertarget{namespacepfq_aa1b1daa6a96155899c26c206325e97a9}{}\label{namespacepfq_aa1b1daa6a96155899c26c206325e97a9}
+\subsubsection{\texorpdfstring{patchlevel\+\_\+version}{patchlevel\_version}}
+{\footnotesize\ttfamily constexpr const int pfq\+::patchlevel\+\_\+version = P\+F\+Q\+\_\+\+P\+A\+T\+C\+H\+L\+E\+V\+EL(P\+F\+Q\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+C\+O\+DE)}
+
+\mbox{\Hypertarget{namespacepfq_a30c944a281046dafc6e1cd2629cc6e15}\label{namespacepfq_a30c944a281046dafc6e1cd2629cc6e15}} 
 \index{pfq@{pfq}!string\+\_\+version@{string\+\_\+version}}
 \index{string\+\_\+version@{string\+\_\+version}!pfq@{pfq}}
-\subsubsection[{\texorpdfstring{string\+\_\+version}{string_version}}]{\setlength{\rightskip}{0pt plus 5cm}constexpr const char$\ast$ pfq\+::string\+\_\+version = P\+F\+Q\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+S\+T\+R\+I\+NG}\hypertarget{namespacepfq_a30c944a281046dafc6e1cd2629cc6e15}{}\label{namespacepfq_a30c944a281046dafc6e1cd2629cc6e15}
+\subsubsection{\texorpdfstring{string\+\_\+version}{string\_version}}
+{\footnotesize\ttfamily constexpr const char$\ast$ pfq\+::string\+\_\+version = P\+F\+Q\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+S\+T\+R\+I\+NG}
+
+\mbox{\Hypertarget{namespacepfq_a7a40dd66aee22cafaf240382a6d965ab}\label{namespacepfq_a7a40dd66aee22cafaf240382a6d965ab}} 
 \index{pfq@{pfq}!version\+\_\+code@{version\+\_\+code}}
 \index{version\+\_\+code@{version\+\_\+code}!pfq@{pfq}}
-\subsubsection[{\texorpdfstring{version\+\_\+code}{version_code}}]{\setlength{\rightskip}{0pt plus 5cm}constexpr const int pfq\+::version\+\_\+code = P\+F\+Q\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+C\+O\+DE}\hypertarget{namespacepfq_a7a40dd66aee22cafaf240382a6d965ab}{}\label{namespacepfq_a7a40dd66aee22cafaf240382a6d965ab}
+\subsubsection{\texorpdfstring{version\+\_\+code}{version\_code}}
+{\footnotesize\ttfamily constexpr const int pfq\+::version\+\_\+code = P\+F\+Q\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+C\+O\+DE}
+

@@ -1,18 +1,18 @@
 \hypertarget{lang_8hpp}{}\section{C++/pfq/lang/lang.hpp File Reference}
 \label{lang_8hpp}\index{C++/pfq/lang/lang.\+hpp@{C++/pfq/lang/lang.\+hpp}}
-{\ttfamily \#include $<$iostream$>$}\\*
-{\ttfamily \#include $<$sstream$>$}\\*
-{\ttfamily \#include $<$string$>$}\\*
-{\ttfamily \#include $<$cstring$>$}\\*
-{\ttfamily \#include $<$cstddef$>$}\\*
-{\ttfamily \#include $<$vector$>$}\\*
-{\ttfamily \#include $<$memory$>$}\\*
-{\ttfamily \#include $<$array$>$}\\*
-{\ttfamily \#include $<$tuple$>$}\\*
-{\ttfamily \#include $<$type\+\_\+traits$>$}\\*
-{\ttfamily \#include $<$linux/pf\+\_\+q.\+h$>$}\\*
-{\ttfamily \#include $<$arpa/inet.\+h$>$}\\*
-{\ttfamily \#include $<$pfq/lang/util.\+hpp$>$}\\*
+{\ttfamily \#include $<$iostream$>$}\newline
+{\ttfamily \#include $<$sstream$>$}\newline
+{\ttfamily \#include $<$string$>$}\newline
+{\ttfamily \#include $<$cstring$>$}\newline
+{\ttfamily \#include $<$cstddef$>$}\newline
+{\ttfamily \#include $<$vector$>$}\newline
+{\ttfamily \#include $<$memory$>$}\newline
+{\ttfamily \#include $<$array$>$}\newline
+{\ttfamily \#include $<$tuple$>$}\newline
+{\ttfamily \#include $<$type\+\_\+traits$>$}\newline
+{\ttfamily \#include $<$linux/pf\+\_\+q.\+h$>$}\newline
+{\ttfamily \#include $<$arpa/inet.\+h$>$}\newline
+{\ttfamily \#include $<$pfq/lang/util.\+hpp$>$}\newline
 \subsection*{Classes}
 \begin{DoxyCompactItemize}
 \item 
@@ -99,35 +99,35 @@ std\+::string \hyperlink{namespacepfq_1_1lang_a7e9458d3c3b90f405ee6df6cbfc43c58}
 \item 
 {\footnotesize template$<$typename T $>$ }\\argument\+\_\+type \hyperlink{namespacepfq_1_1lang_ac28f404ec59b7aea311721e0f26b5577}{pfq\+::lang\+::make\+\_\+argument} (T const \&x, std\+::vector$<$ Function\+Descr $>$ const \&ser)
 \item 
-{\footnotesize template$<$typename... Ts, typename... Ti$>$ }\\std\+::array$<$ argument\+\_\+type, 8 $>$ \hyperlink{namespacepfq_1_1lang_aacc9139aafd72e1f19af3a74c1fdc6dc}{pfq\+::lang\+::make\+\_\+arguments} (std\+::tuple$<$ Ts... $>$ const \&args, std\+::tuple$<$ Ti... $>$ const \&ref)
+{\footnotesize template$<$typename ... Ts, typename ... Ti$>$ }\\std\+::array$<$ argument\+\_\+type, 8 $>$ \hyperlink{namespacepfq_1_1lang_aacc9139aafd72e1f19af3a74c1fdc6dc}{pfq\+::lang\+::make\+\_\+arguments} (std\+::tuple$<$ Ts... $>$ const \&args, std\+::tuple$<$ Ti... $>$ const \&ref)
 \item 
 {\footnotesize template$<$typename Ts , typename std\+::enable\+\_\+if$<$!is\+\_\+monadic\+\_\+function$<$ Ts $>$\+::value $>$\+::type $\ast$  = nullptr$>$ }\\std\+::pair$<$ std\+::vector$<$ Function\+Descr $>$, std\+::ptrdiff\+\_\+t $>$ \hyperlink{namespacepfq_1_1lang_ae121f9fc8e23fbd6873d45d02e9adb81}{pfq\+::lang\+::serialize} (Ts const \&, std\+::ptrdiff\+\_\+t n)
 \item 
-{\footnotesize template$<$typename... Ts$>$ }\\std\+::pair$<$ std\+::vector$<$ Function\+Descr $>$, std\+::ptrdiff\+\_\+t $>$ \hyperlink{namespacepfq_1_1lang_acd7f9c34960d4f3511228a5568628acf}{pfq\+::lang\+::serialize\+\_\+all} (std\+::string symb, std\+::ptrdiff\+\_\+t n, bool cont, std\+::tuple$<$ Ts... $>$ const \&args\+\_\+)
+{\footnotesize template$<$typename ... Ts$>$ }\\std\+::pair$<$ std\+::vector$<$ Function\+Descr $>$, std\+::ptrdiff\+\_\+t $>$ \hyperlink{namespacepfq_1_1lang_acd7f9c34960d4f3511228a5568628acf}{pfq\+::lang\+::serialize\+\_\+all} (std\+::string symb, std\+::ptrdiff\+\_\+t n, bool cont, std\+::tuple$<$ Ts... $>$ const \&args\+\_\+)
 \item 
-{\footnotesize template$<$typename... Ts$>$ }\\Property$<$ typename std\+::decay$<$ Ts $>$\+::type... $>$ \hyperlink{namespacepfq_1_1lang_a1249450e72229273b0db707a286aea91}{pfq\+::lang\+::property} (std\+::string symbol, Ts \&\&...args)
+{\footnotesize template$<$typename ... Ts$>$ }\\Property$<$ typename std\+::decay$<$ Ts $>$\+::type... $>$ \hyperlink{namespacepfq_1_1lang_a1249450e72229273b0db707a286aea91}{pfq\+::lang\+::property} (std\+::string symbol, Ts \&\&...args)
 \item 
-{\footnotesize template$<$typename... Ts$>$ }\\std\+::string \hyperlink{namespacepfq_1_1lang_ad72cdee2fca49246a75620232dfe061a}{pfq\+::lang\+::pretty} (Property$<$ Ts... $>$ const \&p)
+{\footnotesize template$<$typename ... Ts$>$ }\\std\+::string \hyperlink{namespacepfq_1_1lang_ad72cdee2fca49246a75620232dfe061a}{pfq\+::lang\+::pretty} (Property$<$ Ts... $>$ const \&p)
 \item 
-{\footnotesize template$<$typename... Ts$>$ }\\std\+::string \hyperlink{namespacepfq_1_1lang_a94bf1496c888adfd3d99e25895ed6df8}{pfq\+::lang\+::show} (Property$<$ Ts... $>$ const \&p)
+{\footnotesize template$<$typename ... Ts$>$ }\\std\+::string \hyperlink{namespacepfq_1_1lang_a94bf1496c888adfd3d99e25895ed6df8}{pfq\+::lang\+::show} (Property$<$ Ts... $>$ const \&p)
 \item 
-{\footnotesize template$<$typename... Ts$>$ }\\std\+::pair$<$ std\+::vector$<$ Function\+Descr $>$, std\+::ptrdiff\+\_\+t $>$ \hyperlink{namespacepfq_1_1lang_ac9dfedf649f03709f23fc7ca4afc1679}{pfq\+::lang\+::serialize} (Property$<$ Ts... $>$ const \&p, std\+::ptrdiff\+\_\+t n)
+{\footnotesize template$<$typename ... Ts$>$ }\\std\+::pair$<$ std\+::vector$<$ Function\+Descr $>$, std\+::ptrdiff\+\_\+t $>$ \hyperlink{namespacepfq_1_1lang_ac9dfedf649f03709f23fc7ca4afc1679}{pfq\+::lang\+::serialize} (Property$<$ Ts... $>$ const \&p, std\+::ptrdiff\+\_\+t n)
 \item 
-{\footnotesize template$<$typename... Ts$>$ }\\Predicate$<$ typename std\+::decay$<$ Ts $>$\+::type... $>$ \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{pfq\+::lang\+::predicate} (std\+::string symbol, Ts \&\&...args)
+{\footnotesize template$<$typename ... Ts$>$ }\\Predicate$<$ typename std\+::decay$<$ Ts $>$\+::type... $>$ \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{pfq\+::lang\+::predicate} (std\+::string symbol, Ts \&\&...args)
 \item 
-{\footnotesize template$<$typename... Ts$>$ }\\std\+::string \hyperlink{namespacepfq_1_1lang_a365497365bebd1ef44492e8027a6b3c0}{pfq\+::lang\+::pretty} (Predicate$<$ Ts... $>$ const \&p)
+{\footnotesize template$<$typename ... Ts$>$ }\\std\+::string \hyperlink{namespacepfq_1_1lang_a365497365bebd1ef44492e8027a6b3c0}{pfq\+::lang\+::pretty} (Predicate$<$ Ts... $>$ const \&p)
 \item 
-{\footnotesize template$<$typename... Ts$>$ }\\std\+::string \hyperlink{namespacepfq_1_1lang_a42c749f45910e4c14d412cc3db5791e5}{pfq\+::lang\+::show} (Predicate$<$ Ts... $>$ const \&p)
+{\footnotesize template$<$typename ... Ts$>$ }\\std\+::string \hyperlink{namespacepfq_1_1lang_a42c749f45910e4c14d412cc3db5791e5}{pfq\+::lang\+::show} (Predicate$<$ Ts... $>$ const \&p)
 \item 
-{\footnotesize template$<$typename... Ts$>$ }\\std\+::pair$<$ std\+::vector$<$ Function\+Descr $>$, std\+::ptrdiff\+\_\+t $>$ \hyperlink{namespacepfq_1_1lang_ad631d8e32cf8613ad1f3f19f1b02cab6}{pfq\+::lang\+::serialize} (Predicate$<$ Ts... $>$ const \&p, std\+::ptrdiff\+\_\+t n)
+{\footnotesize template$<$typename ... Ts$>$ }\\std\+::pair$<$ std\+::vector$<$ Function\+Descr $>$, std\+::ptrdiff\+\_\+t $>$ \hyperlink{namespacepfq_1_1lang_ad631d8e32cf8613ad1f3f19f1b02cab6}{pfq\+::lang\+::serialize} (Predicate$<$ Ts... $>$ const \&p, std\+::ptrdiff\+\_\+t n)
 \item 
-{\footnotesize template$<$typename... Ts$>$ }\\Function$<$ typename std\+::decay$<$ Ts $>$\+::type... $>$ \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{pfq\+::lang\+::function} (std\+::string symbol, Ts \&\&...args)
+{\footnotesize template$<$typename ... Ts$>$ }\\Function$<$ typename std\+::decay$<$ Ts $>$\+::type... $>$ \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{pfq\+::lang\+::function} (std\+::string symbol, Ts \&\&...args)
 \item 
-{\footnotesize template$<$typename... Ts$>$ }\\std\+::string \hyperlink{namespacepfq_1_1lang_ae99e641e0f2d5461ed2c09ce92a82156}{pfq\+::lang\+::pretty} (Function$<$ Ts... $>$ const \&f)
+{\footnotesize template$<$typename ... Ts$>$ }\\std\+::string \hyperlink{namespacepfq_1_1lang_ae99e641e0f2d5461ed2c09ce92a82156}{pfq\+::lang\+::pretty} (Function$<$ Ts... $>$ const \&f)
 \item 
-{\footnotesize template$<$typename... Ts$>$ }\\std\+::string \hyperlink{namespacepfq_1_1lang_adb5a6dd5a3af8c170720c866a7839daa}{pfq\+::lang\+::show} (Function$<$ Ts... $>$ const \&f)
+{\footnotesize template$<$typename ... Ts$>$ }\\std\+::string \hyperlink{namespacepfq_1_1lang_adb5a6dd5a3af8c170720c866a7839daa}{pfq\+::lang\+::show} (Function$<$ Ts... $>$ const \&f)
 \item 
-{\footnotesize template$<$typename... Ts$>$ }\\std\+::pair$<$ std\+::vector$<$ Function\+Descr $>$, std\+::ptrdiff\+\_\+t $>$ \hyperlink{namespacepfq_1_1lang_a91564354df60bcd58020fbe47e1a7b2a}{pfq\+::lang\+::serialize} (Function$<$ Ts... $>$ const \&p, std\+::ptrdiff\+\_\+t n)
+{\footnotesize template$<$typename ... Ts$>$ }\\std\+::pair$<$ std\+::vector$<$ Function\+Descr $>$, std\+::ptrdiff\+\_\+t $>$ \hyperlink{namespacepfq_1_1lang_a91564354df60bcd58020fbe47e1a7b2a}{pfq\+::lang\+::serialize} (Function$<$ Ts... $>$ const \&p, std\+::ptrdiff\+\_\+t n)
 \item 
 std\+::pair$<$ std\+::vector$<$ Function\+Descr $>$, std\+::ptrdiff\+\_\+t $>$ \hyperlink{namespacepfq_1_1lang_aa88658cb028dffc2e03a0fe2e8304bec}{pfq\+::lang\+::serialize} (std\+::vector$<$ Function$<$$>$$>$ const \&cont, std\+::ptrdiff\+\_\+t n)
 \item 

@@ -33,9 +33,9 @@ using \hyperlink{namespacepfq_1_1param_a287394f9fea16ebb76e770334aedd2d5}{types}
 \item 
 \hyperlink{namespacepfq_1_1param_a287394f9fea16ebb76e770334aedd2d5}{types} \hyperlink{namespacepfq_1_1param_af1fd1aeb980688527db587b35f55abf2}{make\+\_\+default} ()
 \item 
-{\footnotesize template$<$typename T , typename... Ts$>$ }\\auto \hyperlink{namespacepfq_1_1param_a26825d94a20bcf1cc8353307ea00f5b7}{get} (std\+::tuple$<$ Ts... $>$ \&tup) -\/$>$ decltype(std\+::get$<$ \hyperlink{structpfq_1_1param_1_1details_1_1type__index}{details\+::type\+\_\+index}$<$ T, Ts... $>$\+::value $>$(tup))
+{\footnotesize template$<$typename T , typename ... Ts$>$ }\\auto \hyperlink{namespacepfq_1_1param_a26825d94a20bcf1cc8353307ea00f5b7}{get} (std\+::tuple$<$ Ts... $>$ \&tup) -\/$>$ decltype(std\+::get$<$ \hyperlink{structpfq_1_1param_1_1details_1_1type__index}{details\+::type\+\_\+index}$<$ T, Ts... $>$\+::value $>$(tup))
 \item 
-{\footnotesize template$<$typename Tup , typename... Ts$>$ }\\void \hyperlink{namespacepfq_1_1param_aeabbdcec021e01a0a9321678fea99d8f}{load} (Tup \&tup, Ts \&\&...arg)
+{\footnotesize template$<$typename Tup , typename ... Ts$>$ }\\void \hyperlink{namespacepfq_1_1param_a471f17aaae9cec51e821654d80d825cd}{load} (Tup \&tup, Ts \&\&... arg)
 \end{DoxyCompactItemize}
 
 
@@ -43,32 +43,33 @@ using \hyperlink{namespacepfq_1_1param_a287394f9fea16ebb76e770334aedd2d5}{types}
 open parameters. 
 
 \subsection{Typedef Documentation}
+\mbox{\Hypertarget{namespacepfq_1_1param_a287394f9fea16ebb76e770334aedd2d5}\label{namespacepfq_1_1param_a287394f9fea16ebb76e770334aedd2d5}} 
 \index{pfq\+::param@{pfq\+::param}!types@{types}}
 \index{types@{types}!pfq\+::param@{pfq\+::param}}
-\subsubsection[{\texorpdfstring{types}{types}}]{\setlength{\rightskip}{0pt plus 5cm}using {\bf pfq\+::param\+::types} = typedef std\+::tuple$<${\bf caplen}, {\bf rx\+\_\+slots}, {\bf tx\+\_\+slots}, {\bf policy}, {\bf class\+\_\+}$>$}\hypertarget{namespacepfq_1_1param_a287394f9fea16ebb76e770334aedd2d5}{}\label{namespacepfq_1_1param_a287394f9fea16ebb76e770334aedd2d5}
+\subsubsection{\texorpdfstring{types}{types}}
+{\footnotesize\ttfamily using \hyperlink{namespacepfq_1_1param_a287394f9fea16ebb76e770334aedd2d5}{pfq\+::param\+::types} = typedef std\+::tuple$<$\hyperlink{structpfq_1_1param_1_1caplen}{caplen}, \hyperlink{structpfq_1_1param_1_1rx__slots}{rx\+\_\+slots}, \hyperlink{structpfq_1_1param_1_1tx__slots}{tx\+\_\+slots}, \hyperlink{structpfq_1_1param_1_1policy}{policy}, \hyperlink{structpfq_1_1param_1_1class__}{class\+\_\+}$>$}
+
 
 
 \subsection{Function Documentation}
+\mbox{\Hypertarget{namespacepfq_1_1param_a26825d94a20bcf1cc8353307ea00f5b7}\label{namespacepfq_1_1param_a26825d94a20bcf1cc8353307ea00f5b7}} 
 \index{pfq\+::param@{pfq\+::param}!get@{get}}
 \index{get@{get}!pfq\+::param@{pfq\+::param}}
-\subsubsection[{\texorpdfstring{get(std\+::tuple$<$ Ts... $>$ \&tup) -\/$>$ decltype(std\+::get$<$ details\+::type\+\_\+index$<$ T, Ts... $>$\+::value $>$(tup))}{get(std::tuple< Ts... > &tup) -> decltype(std::get< details::type_index< T, Ts... >::value >(tup))}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename T , typename... Ts$>$ auto pfq\+::param\+::get (
-\begin{DoxyParamCaption}
-\item[{std\+::tuple$<$ Ts... $>$ \&}]{tup}
-\end{DoxyParamCaption}
-) -\/$>$ decltype (std\+::get$<${\bf details\+::type\+\_\+index}$<$T, Ts...$>$\+::value$>$(tup))
-        }\hypertarget{namespacepfq_1_1param_a26825d94a20bcf1cc8353307ea00f5b7}{}\label{namespacepfq_1_1param_a26825d94a20bcf1cc8353307ea00f5b7}
+\subsubsection{\texorpdfstring{get()}{get()}}
+{\footnotesize\ttfamily template$<$typename T , typename ... Ts$>$ \\
+auto pfq\+::param\+::get (\begin{DoxyParamCaption}\item[{std\+::tuple$<$ Ts... $>$ \&}]{tup }\end{DoxyParamCaption}) -\/$>$ decltype (std\+::get$<$\hyperlink{structpfq_1_1param_1_1details_1_1type__index}{details\+::type\+\_\+index}$<$T, Ts...$>$\+::value$>$(tup))
+        }
+
+\mbox{\Hypertarget{namespacepfq_1_1param_a471f17aaae9cec51e821654d80d825cd}\label{namespacepfq_1_1param_a471f17aaae9cec51e821654d80d825cd}} 
 \index{pfq\+::param@{pfq\+::param}!load@{load}}
 \index{load@{load}!pfq\+::param@{pfq\+::param}}
-\subsubsection[{\texorpdfstring{load(\+Tup \&tup, Ts \&\&...\+arg)}{load(Tup &tup, Ts &&...arg)}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename Tup , typename... Ts$>$ void pfq\+::param\+::load (
-\begin{DoxyParamCaption}
-\item[{Tup \&}]{tup, }
-\item[{Ts \&\&...}]{arg}
-\end{DoxyParamCaption}
-)}\hypertarget{namespacepfq_1_1param_aeabbdcec021e01a0a9321678fea99d8f}{}\label{namespacepfq_1_1param_aeabbdcec021e01a0a9321678fea99d8f}
+\subsubsection{\texorpdfstring{load()}{load()}}
+{\footnotesize\ttfamily template$<$typename Tup , typename ... Ts$>$ \\
+void pfq\+::param\+::load (\begin{DoxyParamCaption}\item[{Tup \&}]{tup,  }\item[{Ts \&\&...}]{arg }\end{DoxyParamCaption})}
+
+\mbox{\Hypertarget{namespacepfq_1_1param_af1fd1aeb980688527db587b35f55abf2}\label{namespacepfq_1_1param_af1fd1aeb980688527db587b35f55abf2}} 
 \index{pfq\+::param@{pfq\+::param}!make\+\_\+default@{make\+\_\+default}}
 \index{make\+\_\+default@{make\+\_\+default}!pfq\+::param@{pfq\+::param}}
-\subsubsection[{\texorpdfstring{make\+\_\+default()}{make_default()}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf types} pfq\+::param\+::make\+\_\+default (
-\begin{DoxyParamCaption}
-{}
-\end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_1_1param_af1fd1aeb980688527db587b35f55abf2}{}\label{namespacepfq_1_1param_af1fd1aeb980688527db587b35f55abf2}
+\subsubsection{\texorpdfstring{make\+\_\+default()}{make\_default()}}
+{\footnotesize\ttfamily \hyperlink{namespacepfq_1_1param_a287394f9fea16ebb76e770334aedd2d5}{types} pfq\+::param\+::make\+\_\+default (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+

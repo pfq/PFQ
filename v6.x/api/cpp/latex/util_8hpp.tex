@@ -1,23 +1,23 @@
 \hypertarget{util_8hpp}{}\section{C++/pfq/util.hpp File Reference}
 \label{util_8hpp}\index{C++/pfq/util.\+hpp@{C++/pfq/util.\+hpp}}
-{\ttfamily \#include $<$vector$>$}\\*
-{\ttfamily \#include $<$tuple$>$}\\*
-{\ttfamily \#include $<$string$>$}\\*
-{\ttfamily \#include $<$cstring$>$}\\*
-{\ttfamily \#include $<$stdexcept$>$}\\*
-{\ttfamily \#include $<$system\+\_\+error$>$}\\*
-{\ttfamily \#include $<$fstream$>$}\\*
-{\ttfamily \#include $<$iterator$>$}\\*
-{\ttfamily \#include $<$thread$>$}\\*
-{\ttfamily \#include $<$algorithm$>$}\\*
-{\ttfamily \#include $<$linux/pf\+\_\+q.\+h$>$}\\*
-{\ttfamily \#include $<$linux/if\+\_\+ether.\+h$>$}\\*
-{\ttfamily \#include $<$linux/ip.\+h$>$}\\*
-{\ttfamily \#include $<$linux/udp.\+h$>$}\\*
-{\ttfamily \#include $<$arpa/inet.\+h$>$}\\*
-{\ttfamily \#include $<$sys/ioctl.\+h$>$}\\*
-{\ttfamily \#include $<$net/if.\+h$>$}\\*
-{\ttfamily \#include $<$pfq/exception.\+hpp$>$}\\*
+{\ttfamily \#include $<$vector$>$}\newline
+{\ttfamily \#include $<$tuple$>$}\newline
+{\ttfamily \#include $<$string$>$}\newline
+{\ttfamily \#include $<$cstring$>$}\newline
+{\ttfamily \#include $<$stdexcept$>$}\newline
+{\ttfamily \#include $<$system\+\_\+error$>$}\newline
+{\ttfamily \#include $<$fstream$>$}\newline
+{\ttfamily \#include $<$iterator$>$}\newline
+{\ttfamily \#include $<$thread$>$}\newline
+{\ttfamily \#include $<$algorithm$>$}\newline
+{\ttfamily \#include $<$linux/pf\+\_\+q.\+h$>$}\newline
+{\ttfamily \#include $<$linux/if\+\_\+ether.\+h$>$}\newline
+{\ttfamily \#include $<$linux/ip.\+h$>$}\newline
+{\ttfamily \#include $<$linux/udp.\+h$>$}\newline
+{\ttfamily \#include $<$arpa/inet.\+h$>$}\newline
+{\ttfamily \#include $<$sys/ioctl.\+h$>$}\newline
+{\ttfamily \#include $<$net/if.\+h$>$}\newline
+{\ttfamily \#include $<$pfq/exception.\+hpp$>$}\newline
 \subsection*{Classes}
 \begin{DoxyCompactItemize}
 \item 
@@ -62,7 +62,7 @@ std\+::string \hyperlink{namespacepfq_a02a1861a64cc518394d3cc4361799c9f}{pfq\+::
 \begin{DoxyCompactList}\small\item\em Trim pending and trailing whitespaces from a string. \end{DoxyCompactList}\item 
 std\+::vector$<$ std\+::string $>$ \hyperlink{namespacepfq_a0c3aeb61dfd544cb08cb240202caf213}{pfq\+::split} (std\+::string str, const char $\ast$sep)
 \begin{DoxyCompactList}\small\item\em Split a string by means of the given separator. \end{DoxyCompactList}\item 
-{\footnotesize template$<$typename F , template$<$ typename... $>$ class Fun, typename V $>$ }\\auto \hyperlink{namespacepfq_a75e00e20d4294c941fce79c9e884201a}{pfq\+::fmap} (F f, Fun$<$ V $>$ const \&xs) -\/$>$ Fun$<$ decltype(f(std\+::declval$<$ V $>$()))$>$
+{\footnotesize template$<$typename F , template$<$ typename ... $>$ class Fun, typename V $>$ }\\auto \hyperlink{namespacepfq_a75e00e20d4294c941fce79c9e884201a}{pfq\+::fmap} (F f, Fun$<$ V $>$ const \&xs) -\/$>$ Fun$<$ decltype(f(std\+::declval$<$ V $>$()))$>$
 \begin{DoxyCompactList}\small\item\em Useful functor map. \end{DoxyCompactList}\item 
 unsigned int \hyperlink{namespacepfq_a9a9e9be8b77976ed45483448f54de1f9}{pfq\+::hardware\+\_\+concurrency} ()
 \begin{DoxyCompactList}\small\item\em Hardware concurrency. \end{DoxyCompactList}\item 
@@ -76,7 +76,7 @@ uint32\+\_\+t \hyperlink{namespacepfq_acd3646943e133a2651876f9ca0bd154c}{pfq\+::
 \begin{DoxyCompactList}\small\item\em symmetric hash (T\+SS). \end{DoxyCompactList}\item 
 uint32\+\_\+t \hyperlink{namespacepfq_a881bd432d152026217ddbf0ae5d72833}{pfq\+::fold} (uint32\+\_\+t hash, uint32\+\_\+t n) noexcept
 \item 
-{\footnotesize template$<$typename T , typename... Ts$>$ }\\auto \hyperlink{namespacepfq_1_1param_a26825d94a20bcf1cc8353307ea00f5b7}{pfq\+::param\+::get} (std\+::tuple$<$ Ts... $>$ \&tup) -\/$>$ decltype(std\+::get$<$ details\+::type\+\_\+index$<$ T, Ts... $>$\+::value $>$(tup))
+{\footnotesize template$<$typename T , typename ... Ts$>$ }\\auto \hyperlink{namespacepfq_1_1param_a26825d94a20bcf1cc8353307ea00f5b7}{pfq\+::param\+::get} (std\+::tuple$<$ Ts... $>$ \&tup) -\/$>$ decltype(std\+::get$<$ details\+::type\+\_\+index$<$ T, Ts... $>$\+::value $>$(tup))
 \item 
-{\footnotesize template$<$typename Tup , typename... Ts$>$ }\\void \hyperlink{namespacepfq_1_1param_aeabbdcec021e01a0a9321678fea99d8f}{pfq\+::param\+::load} (Tup \&tup, Ts \&\&...arg)
+{\footnotesize template$<$typename Tup , typename ... Ts$>$ }\\void \hyperlink{namespacepfq_1_1param_a471f17aaae9cec51e821654d80d825cd}{pfq\+::param\+::load} (Tup \&tup, Ts \&\&... arg)
 \end{DoxyCompactItemize}

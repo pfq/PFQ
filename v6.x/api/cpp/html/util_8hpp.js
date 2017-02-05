@@ -16,7 +16,7 @@ var util_8hpp =
     [ "hugepages_mountpoint", "util_8hpp.html#a46be800e747d99af1db9b92a8f296930", null ],
     [ "ifindex", "util_8hpp.html#a251ac5cc269aa123009754edf62ab8b4", null ],
     [ "indextoname", "util_8hpp.html#a7bf753b90ae15e20c86f40ba59c87c36", null ],
-    [ "load", "util_8hpp.html#aeabbdcec021e01a0a9321678fea99d8f", null ],
+    [ "load", "util_8hpp.html#a471f17aaae9cec51e821654d80d825cd", null ],
     [ "nametoindex", "util_8hpp.html#aa68a4c07117073eeb820b32f955dda00", null ],
     [ "set_promisc", "util_8hpp.html#a62b9f1831dc714353f6edcb66a4fad4d", null ],
     [ "split", "util_8hpp.html#a0c3aeb61dfd544cb08cb240202caf213", null ],

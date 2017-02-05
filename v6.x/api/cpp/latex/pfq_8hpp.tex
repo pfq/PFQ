@@ -1,30 +1,30 @@
 \hypertarget{pfq_8hpp}{}\section{C++/pfq/pfq.hpp File Reference}
 \label{pfq_8hpp}\index{C++/pfq/pfq.\+hpp@{C++/pfq/pfq.\+hpp}}
-{\ttfamily \#include $<$cstddef$>$}\\*
-{\ttfamily \#include $<$tuple$>$}\\*
-{\ttfamily \#include $<$memory$>$}\\*
-{\ttfamily \#include $<$vector$>$}\\*
-{\ttfamily \#include $<$type\+\_\+traits$>$}\\*
-{\ttfamily \#include $<$algorithm$>$}\\*
-{\ttfamily \#include $<$thread$>$}\\*
-{\ttfamily \#include $<$chrono$>$}\\*
-{\ttfamily \#include $<$pfq/util.\+hpp$>$}\\*
-{\ttfamily \#include $<$pfq/queue.\+hpp$>$}\\*
-{\ttfamily \#include $<$pfq/lang/lang.\+hpp$>$}\\*
-{\ttfamily \#include $<$linux/if\+\_\+ether.\+h$>$}\\*
-{\ttfamily \#include $<$linux/ip.\+h$>$}\\*
-{\ttfamily \#include $<$linux/pf\+\_\+q.\+h$>$}\\*
-{\ttfamily \#include $<$sys/types.\+h$>$}\\*
-{\ttfamily \#include $<$sys/stat.\+h$>$}\\*
-{\ttfamily \#include $<$sys/socket.\+h$>$}\\*
-{\ttfamily \#include $<$sys/ioctl.\+h$>$}\\*
-{\ttfamily \#include $<$arpa/inet.\+h$>$}\\*
-{\ttfamily \#include $<$net/if.\+h$>$}\\*
-{\ttfamily \#include $<$sys/mman.\+h$>$}\\*
-{\ttfamily \#include $<$fcntl.\+h$>$}\\*
-{\ttfamily \#include $<$poll.\+h$>$}\\*
-{\ttfamily \#include $<$pfq/pfq-\/int.\+h$>$}\\*
-{\ttfamily \#include $<$pfq/pfq.\+h$>$}\\*
+{\ttfamily \#include $<$cstddef$>$}\newline
+{\ttfamily \#include $<$tuple$>$}\newline
+{\ttfamily \#include $<$memory$>$}\newline
+{\ttfamily \#include $<$vector$>$}\newline
+{\ttfamily \#include $<$type\+\_\+traits$>$}\newline
+{\ttfamily \#include $<$algorithm$>$}\newline
+{\ttfamily \#include $<$thread$>$}\newline
+{\ttfamily \#include $<$chrono$>$}\newline
+{\ttfamily \#include $<$pfq/util.\+hpp$>$}\newline
+{\ttfamily \#include $<$pfq/queue.\+hpp$>$}\newline
+{\ttfamily \#include $<$pfq/lang/lang.\+hpp$>$}\newline
+{\ttfamily \#include $<$linux/if\+\_\+ether.\+h$>$}\newline
+{\ttfamily \#include $<$linux/ip.\+h$>$}\newline
+{\ttfamily \#include $<$linux/pf\+\_\+q.\+h$>$}\newline
+{\ttfamily \#include $<$sys/types.\+h$>$}\newline
+{\ttfamily \#include $<$sys/stat.\+h$>$}\newline
+{\ttfamily \#include $<$sys/socket.\+h$>$}\newline
+{\ttfamily \#include $<$sys/ioctl.\+h$>$}\newline
+{\ttfamily \#include $<$arpa/inet.\+h$>$}\newline
+{\ttfamily \#include $<$net/if.\+h$>$}\newline
+{\ttfamily \#include $<$sys/mman.\+h$>$}\newline
+{\ttfamily \#include $<$fcntl.\+h$>$}\newline
+{\ttfamily \#include $<$poll.\+h$>$}\newline
+{\ttfamily \#include $<$pfq/pfq-\/int.\+h$>$}\newline
+{\ttfamily \#include $<$pfq/pfq.\+h$>$}\newline
 \subsection*{Classes}
 \begin{DoxyCompactItemize}
 \item 
@@ -63,12 +63,12 @@ enum \hyperlink{namespacepfq_ac41249c8510558905b01fa4d866a38d7}{pfq\+::group\+\_
 \hyperlink{namespacepfq_ac41249c8510558905b01fa4d866a38d7a9e81e7b963c71363e2fb3eefcfecfc0e}{pfq\+::group\+\_\+policy\+::shared} = Q\+\_\+\+P\+O\+L\+I\+C\+Y\+\_\+\+G\+R\+O\+U\+P\+\_\+\+S\+H\+A\+R\+ED
  \}\begin{DoxyCompactList}\small\item\em group policies. \end{DoxyCompactList}
 \item 
-enum \hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbb}{pfq\+::class\+\_\+mask} \+: unsigned long \{ \\*
+enum \hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbb}{pfq\+::class\+\_\+mask} \+: unsigned long \{ \newline
 \hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbba172b03053216c6158fe380805998ad6c}{pfq\+::class\+\_\+mask\+::default\+\_\+} = Q\+\_\+\+C\+L\+A\+S\+S\+\_\+\+D\+E\+F\+A\+U\+LT, 
 \hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbba539d70f37267eda88597177e215a6d2a}{pfq\+::class\+\_\+mask\+::user\+\_\+plane} = Q\+\_\+\+C\+L\+A\+S\+S\+\_\+\+U\+S\+E\+R\+\_\+\+P\+L\+A\+NE, 
 \hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbba1ed75f78f4a1cf2529490db57b294978}{pfq\+::class\+\_\+mask\+::control\+\_\+plane} = Q\+\_\+\+C\+L\+A\+S\+S\+\_\+\+C\+O\+N\+T\+R\+O\+L\+\_\+\+P\+L\+A\+NE, 
 \hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbbafc5364bf9dbfa34954526becad136d4b}{pfq\+::class\+\_\+mask\+::control} = Q\+\_\+\+C\+L\+A\+S\+S\+\_\+\+C\+O\+N\+T\+R\+OL, 
-\\*
+\newline
 \hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbba100b8cad7cf2a56f6df78f171f97a1ec}{pfq\+::class\+\_\+mask\+::any} = Q\+\_\+\+C\+L\+A\+S\+S\+\_\+\+A\+NY
  \}\begin{DoxyCompactList}\small\item\em class mask. \end{DoxyCompactList}
 \end{DoxyCompactItemize}

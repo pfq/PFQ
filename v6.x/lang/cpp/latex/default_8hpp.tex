@@ -5,15 +5,15 @@
 This header contains the pfq-\/lang e\+D\+SL functions.  
 
 
-{\ttfamily \#include $<$pfq/lang/lang.\+hpp$>$}\\*
-{\ttfamily \#include $<$pfq/lang/util.\+hpp$>$}\\*
-{\ttfamily \#include $<$pfq/util.\+hpp$>$}\\*
-{\ttfamily \#include $<$functional$>$}\\*
-{\ttfamily \#include $<$type\+\_\+traits$>$}\\*
-{\ttfamily \#include $<$vector$>$}\\*
-{\ttfamily \#include $<$string$>$}\\*
-{\ttfamily \#include $<$cmath$>$}\\*
-{\ttfamily \#include $<$arpa/inet.\+h$>$}\\*
+{\ttfamily \#include $<$pfq/lang/lang.\+hpp$>$}\newline
+{\ttfamily \#include $<$pfq/lang/util.\+hpp$>$}\newline
+{\ttfamily \#include $<$pfq/util.\+hpp$>$}\newline
+{\ttfamily \#include $<$functional$>$}\newline
+{\ttfamily \#include $<$type\+\_\+traits$>$}\newline
+{\ttfamily \#include $<$vector$>$}\newline
+{\ttfamily \#include $<$string$>$}\newline
+{\ttfamily \#include $<$cmath$>$}\newline
+{\ttfamily \#include $<$arpa/inet.\+h$>$}\newline
 \subsection*{Namespaces}
 \begin{DoxyCompactItemize}
 \item 
@@ -26,7 +26,7 @@ This header contains the pfq-\/lang e\+D\+SL functions.
 \subsection*{Functions}
 \begin{DoxyCompactItemize}
 \item 
-{\footnotesize template$<$typename P1 , typename P2 , typename std\+::enable\+\_\+if$<$ is\+\_\+predicate$<$ P1 $>$\+::value \&\&is\+\_\+predicate$<$ P2 $>$\+::value $>$\+::type $\ast$  = nullptr$>$ }\\auto \hyperlink{namespacepfq_1_1lang_af24d9c3092f064b0732a4b601dde2c64}{pfq\+::lang\+::operator\&} (P1 const \&p1, P2 const \&p2) -\/$>$ decltype(predicate(nullptr, p1, p2))
+{\footnotesize template$<$typename P1 , typename P2 , typename std\+::enable\+\_\+if$<$ is\+\_\+predicate$<$ P1 $>$\+::value \&\&is\+\_\+predicate$<$ P2 $>$\+::value $>$\+::type $\ast$  = nullptr$>$ }\\auto \hyperlink{namespacepfq_1_1lang_a0697233877c06151b1ea7247ed24a9cb}{pfq\+::lang\+::operator \&} (P1 const \&p1, P2 const \&p2) -\/$>$ decltype(predicate(nullptr, p1, p2))
 \begin{DoxyCompactList}\small\item\em Combine two predicate expressions with a specific boolean \textquotesingle{}and\textquotesingle{} operation. \end{DoxyCompactList}\item 
 {\footnotesize template$<$typename P1 , typename P2 , typename std\+::enable\+\_\+if$<$ is\+\_\+predicate$<$ P1 $>$\+::value \&\&is\+\_\+predicate$<$ P2 $>$\+::value $>$\+::type $\ast$  = nullptr$>$ }\\auto \hyperlink{namespacepfq_1_1lang_a425bb535884185450da7addcdb47f35b}{pfq\+::lang\+::operator$\vert$} (P1 const \&p1, P2 const \&p2) -\/$>$ decltype(predicate(nullptr, p1, p2))
 \begin{DoxyCompactList}\small\item\em Combine two predicate expressions with a specific boolean \textquotesingle{}or\textquotesingle{} operation. \end{DoxyCompactList}\item 
