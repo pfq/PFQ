@@ -164,7 +164,7 @@ core_group_access(pfq_gid_t gid, pfq_id_t id)
 
 
 static void
-__core_group_init(struct core_group *group)
+__core_group_init(struct core_group *group, pfq_gid_t gid)
 {
         size_t i;
 
@@ -193,6 +193,7 @@ __core_group_init(struct core_group *group)
 	}
 
 	group->enabled = true;
+        printk(KERN_INFO "[PFQ] Group (%d) enabled.\n", gid);
 }
 
 
@@ -222,8 +223,9 @@ __core_group_free(struct core_group *group, pfq_gid_t gid)
 
 	/* finalize old computation */
 
-	if (old_comp)
+	if (old_comp) {
 		pfq_lang_computation_destruct(old_comp);
+	}
 
 	kfree(old_comp);
 	kfree(old_ctx);
@@ -236,7 +238,7 @@ __core_group_free(struct core_group *group, pfq_gid_t gid)
 		group->vid_filters[i] = 0;
 	}
 
-        pr_devel("[PFQ] group gid=%d freed.\n", gid);
+        printk(KERN_INFO "[PFQ] Group (%d) disabled.\n", gid);
 }
 
 
@@ -254,7 +256,7 @@ __core_group_join(pfq_gid_t gid, pfq_id_t id, unsigned long class_mask, int poli
 	/* if this group is unused, initializes it */
 
         if (!group->enabled) {
-                __core_group_init(group);
+                __core_group_init(group, gid);
 	}
 	else {
 		if (!core_group_policy_access(gid, id, policy)) {
