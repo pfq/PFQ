@@ -48,134 +48,132 @@
 {-# OPTIONS_GHC -fno-warn-unused-binds #-}
 
 module Network.PFQ
-    (
-        -- * Types
+    (  -- * Handle and pointers
 
-        PFqTag,
-        Statistics(..),
-        NetQueue(..),
-        Packet(..),
-        PktHdr(..),
-        Callback,
+       PFqTag
+    ,  PFqHandle
+    ,  PFqHandlePtr
+    ,  withPFq
 
-        ClassMask(..),
-        class_default       ,
-        class_user_plane    ,
-        class_control_plane ,
-        class_control       ,
-        class_any           ,
+       -- * Types
 
-        GroupPolicy(..),
-        policy_undefined,
-        policy_priv,
-        policy_restricted,
-        policy_shared,
+    ,  Statistics(..)
+    ,  NetQueue(..)
+    ,  Packet(..)
+    ,  PktHdr(..)
+    ,  Callback
+    ,  ClassMask(..)
+    ,  class_default
+    ,  class_user_plane
+    ,  class_control_plane
+    ,  class_control
+    ,  class_any
+    ,  GroupPolicy(..)
+    ,  policy_undefined
+    ,  policy_priv
+    ,  policy_restricted
+    ,  policy_shared
+    ,  PFqConstant(..)
+    ,  any_device
+    ,  any_queue
+    ,  any_group
+    ,  version_code
+    ,  major_version
+    ,  minor_version
+    ,  patchlevel_version
+    ,  version
+    ,  SocketParams(..)
+    ,  defaultSocketParams
 
-        PFqConstant(..),
-        any_device,
-        any_queue,
-        any_group,
-        version_code,
-        major_version,
-        minor_version,
-        patchlevel_version,
-        version,
+       -- * Socket and Groups
 
-        SocketParams(..),
-        defaultSocketParams,
+    ,  open
+    ,  openNoGroup
+    ,  openGroup
+    ,  openParam
+    ,  close
 
-        -- * Socket and Groups
+    ,  enable
+    ,  disable
+    ,  getId
+    ,  getGroupId
+    ,  isEnabled
 
-        open,
-        openNoGroup,
-        openGroup,
-        openParam,
-        close,
+       -- * Socket control
 
-        enable,
-        disable,
-        getId,
-        getGroupId,
-        isEnabled,
+    ,  joinGroup
+    ,  leaveGroup
 
-        -- * Socket control
+    ,  bind
+    ,  bindGroup
+    ,  unbind
+    ,  unbindGroup
+    ,  egressBind
+    ,  egressUnbind
 
-        joinGroup,
-        leaveGroup,
+       -- * Socket parameters
 
-        bind,
-        bindGroup,
-        unbind,
-        unbindGroup,
-        egressBind,
-        egressUnbind,
+    ,  timestampingEnable
+    ,  isTimestampingEnabled
 
-        -- * Socket parameters
+    ,  setWeight
+    ,  getWeight
 
-        timestampingEnable,
-        isTimestampingEnabled,
+    ,  setPromisc
 
-        setWeight,
-        getWeight,
+    ,  getCaplen
+    ,  setCaplen
 
-        setPromisc,
+    ,  getRxSlots
+    ,  setRxSlots
+    ,  getRxSlotSize
 
-        getCaplen,
-        setCaplen,
+    ,  getTxSlots
+    ,  setTxSlots
+    ,  getMaxlen
 
-        getRxSlots,
-        setRxSlots,
-        getRxSlotSize,
+       -- * Packet capture
 
-        getTxSlots,
-        setTxSlots,
+    ,  Network.PFQ.read
+    ,  dispatch
 
-        getMaxlen,
+    ,  getPackets
+    ,  getPacketHeader
+    ,  isPacketReady
+    ,  waitForPacket
 
-        -- * Packet capture
+    ,  VlanTag(..)
+    ,  vlan_untag
+    ,  vlan_anytag
+    ,  vlanFiltersEnable
+    ,  vlanSetFilter
+    ,  vlanResetFilter
 
-        Network.PFQ.read,
-        dispatch,
+       -- * Packet transmission
 
-        getPackets,
-        getPacketHeader,
-        isPacketReady,
-        waitForPacket,
+    ,  send
+    ,  sendTo
+    ,  sendAsync
+    ,  sendAt
 
-        VlanTag(..),
+    ,  syncQueue
 
-        vlan_untag,
-        vlan_anytag,
+    ,  bindTx
+    ,  unbindTx
 
-        vlanFiltersEnable,
-        vlanSetFilter,
-        vlanResetFilter,
+       -- * pfq-lang
 
-        -- * Packet transmission
+    ,  setGroupComputation
+    ,  setGroupComputationFromString
+    ,  setGroupComputationFromFile
+    ,  setGroupComputationFromDescr
+    ,  setGroupComputationFromJSON
 
-        send,
-        sendTo,
-        sendAsync,
-        sendAt,
+       -- * Statistics and counters
 
-        syncQueue,
-
-        bindTx,
-        unbindTx,
-
-        -- * pfq-lang
-
-        setGroupComputation,
-        setGroupComputationFromString,
-        setGroupComputationFromFile,
-        setGroupComputationFromDescr,
-        setGroupComputationFromJSON,
-
-        -- * Statistics and counters
-
-        getStats,
-        getGroupStats,
-        getGroupCounters,
+    ,  getStats
+    ,  getGroupStats
+    ,  getGroupCounters
 
     ) where
 
@@ -208,7 +206,7 @@ import Foreign.C.Types
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Utils
 import Foreign.Concurrent as C (newForeignPtr)
-import Foreign.ForeignPtr (ForeignPtr)
+import Foreign.ForeignPtr (ForeignPtr, withForeignPtr)
 
 import Network.PFQ.Lang
 
@@ -216,7 +214,12 @@ import System.Clock
 import System.Process(readProcess)
 
 -- |Packet capture handle.
-newtype PFqTag = PFqTag ()
+
+newtype PFqTag    = PFqTag ()
+
+type PFqHandle    = ForeignPtr PFqTag
+type PFqHandlePtr = Ptr PFqTag
+
 
 #include <pfq/pfq.h>
 
@@ -392,15 +395,23 @@ toPktHdr hdr = do
                   }
 
 -- | The type of the callback function passed to 'dispatch'.
+
 type Callback = PktHdr -> Ptr Word8  -> IO ()
 
-
 type CPFqCallback = Ptr Word8 -> Ptr PktHdr -> Ptr Word8 -> IO ()
+
+-- Handle
+--
+
+{-# INLINE withPFq #-}
+withPFq :: PFqHandle -> (PFqHandlePtr -> IO a) -> IO a
+withPFq = withForeignPtr
+
 
 -- Error handling
 --
 
-throwPFqIf :: Ptr PFqTag
+throwPFqIf :: PFqHandlePtr
            -> (a -> Bool)
            -> a
            -> IO a
@@ -409,7 +420,7 @@ throwPFqIf hdl p v = if p v
     else return v
 
 
-throwPFqIf_ :: Ptr PFqTag
+throwPFqIf_ :: PFqHandlePtr
             -> (a -> Bool)
             -> a
             -> IO ()
@@ -474,7 +485,7 @@ getPacketHeader p = waitForPacket p >> toPktHdr (pHdr p)
 open  :: Int  -- ^ caplen
       -> Int  -- ^ number of Rx slots
       -> Int  -- ^ number of Tx slots
-      -> IO (ForeignPtr PFqTag)
+      -> IO PFqHandle
 open  caplen rx_slots tx_slots =
         pfq_open (fromIntegral caplen) (fromIntegral rx_slots) (fromIntegral tx_slots) >>=
             throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
@@ -488,7 +499,7 @@ open  caplen rx_slots tx_slots =
 openNoGroup  :: Int  -- ^ caplen
              -> Int  -- ^ number of Rx slots
              -> Int  -- ^ number of Tx slots
-             -> IO (ForeignPtr PFqTag)
+             -> IO PFqHandle
 openNoGroup  caplen rx_slots tx_slots =
         pfq_open_nogroup (fromIntegral caplen) (fromIntegral rx_slots) (fromIntegral tx_slots) >>=
             throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
@@ -504,7 +515,7 @@ openGroup :: ClassMask    -- ^ ClassMask (e.g., class_default `mappend` class_co
           -> Int          -- ^ caplen
           -> Int          -- ^ number of Rx slots
           -> Int          -- ^ number of Tx slots
-          -> IO (ForeignPtr PFqTag)
+          -> IO PFqHandle
 openGroup ms policy caplen rx_slots tx_slots =
         pfq_open_group (getClassMask ms) (getGroupPolicy policy)
             (fromIntegral caplen) (fromIntegral rx_slots)
@@ -518,7 +529,7 @@ openGroup ms policy caplen rx_slots tx_slots =
 -- Default values are defined as 'defaultSocketParams'.
 
 openParam :: SocketParams  -- ^ parameters
-          -> IO (ForeignPtr PFqTag)
+          -> IO PFqHandle
 openParam  SocketParams
           {   parCaplen     = caplen
           ,   parRxSlots    = rx_slots
@@ -534,7 +545,7 @@ openParam  SocketParams
 --
 -- Release the shared memory, stop kernel threads.
 
-close :: Ptr PFqTag
+close :: PFqHandlePtr
       -> IO ()
 close hdl =
     pfq_close hdl >>= throwPFqIf_ hdl (== -1)
@@ -542,7 +553,7 @@ close hdl =
 
 -- |Return the id of the socket.
 
-getId :: Ptr PFqTag
+getId :: PFqHandlePtr
       -> IO Int
 getId hdl =
     liftM fromIntegral (pfq_id hdl >>= throwPFqIf hdl (== -1))
@@ -550,7 +561,7 @@ getId hdl =
 
 -- |Return the group-id of the socket.
 
-getGroupId :: Ptr PFqTag
+getGroupId :: PFqHandlePtr
            -> IO Int
 getGroupId hdl =
     liftM fromIntegral (pfq_group_id hdl >>= throwPFqIf hdl (== -1))
@@ -563,7 +574,7 @@ getGroupId hdl =
 -- If the enviroment variable PFQ_HUGEPAGES is set to 0 (or
 -- PFQ_NO_HUGEPAGES is defined) standard 4K pages are used.
 
-enable :: Ptr PFqTag
+enable :: PFqHandlePtr
        -> IO ()
 enable hdl =
     pfq_enable hdl >>= throwPFqIf_ hdl (== -1)
@@ -573,14 +584,14 @@ enable hdl =
 --
 -- Release the shared memory, stop kernel threads.
 
-disable :: Ptr PFqTag
+disable :: PFqHandlePtr
         -> IO ()
 disable hdl = pfq_disable hdl >>= throwPFqIf_ hdl (== -1)
 
 
 -- |Check whether the socket is enabled.
 
-isEnabled :: Ptr PFqTag
+isEnabled :: PFqHandlePtr
           -> IO Bool
 isEnabled hdl =
     pfq_is_enabled hdl >>= throwPFqIf hdl (== -1) >>= \v ->
@@ -589,7 +600,7 @@ isEnabled hdl =
 
 -- |Enable/disable timestamping for packets.
 
-timestampingEnable :: Ptr PFqTag
+timestampingEnable :: PFqHandlePtr
                    -> Bool        -- ^ toggle: True is on, False off.
                    -> IO ()
 timestampingEnable hdl toggle = do
@@ -598,7 +609,7 @@ timestampingEnable hdl toggle = do
 
 -- |Check whether timestamping for packets is enabled.
 
-isTimestampingEnabled :: Ptr PFqTag
+isTimestampingEnabled :: PFqHandlePtr
                       -> IO Bool
 isTimestampingEnabled hdl =
     pfq_is_timestamping_enabled hdl >>= throwPFqIf hdl (== -1) >>= \v ->
@@ -607,7 +618,7 @@ isTimestampingEnabled hdl =
 
 -- |Set the weight of the socket for the steering phase.
 
-setWeight :: Ptr PFqTag
+setWeight :: PFqHandlePtr
           -> Int    -- ^ weight of socket (valid range is [1,16))
           -> IO ()
 setWeight hdl value =
@@ -616,7 +627,7 @@ setWeight hdl value =
 
 -- |Return the weight of the socket.
 
-getWeight :: Ptr PFqTag
+getWeight :: PFqHandlePtr
           -> IO Int
 getWeight hdl =
     liftM fromIntegral (pfq_get_weight hdl >>= throwPFqIf hdl (== -1))
@@ -626,7 +637,7 @@ getWeight hdl =
 --
 -- Capture length must be set before the socket is enabled.
 
-setCaplen :: Ptr PFqTag
+setCaplen :: PFqHandlePtr
           -> Int        -- ^ caplen (bytes)
           -> IO ()
 setCaplen hdl value =
@@ -636,7 +647,7 @@ setCaplen hdl value =
 
 -- |Return the capture length of packets, in bytes.
 
-getCaplen :: Ptr PFqTag
+getCaplen :: PFqHandlePtr
           -> IO Int
 getCaplen hdl =
     liftM fromIntegral (pfq_get_caplen hdl >>= throwPFqIf hdl (== -1))
@@ -644,7 +655,7 @@ getCaplen hdl =
 
 -- |Return the max transmission length of packets, in bytes.
 
-getMaxlen :: Ptr PFqTag
+getMaxlen :: PFqHandlePtr
           -> IO Int
 getMaxlen hdl =
     liftM fromIntegral (pfq_get_maxlen hdl >>= throwPFqIf hdl (== -1))
@@ -652,7 +663,7 @@ getMaxlen hdl =
 
 -- |Specify the length of the Rx queue, in number of packets.
 
-setRxSlots :: Ptr PFqTag
+setRxSlots :: PFqHandlePtr
            -> Int   -- ^ number of Rx slots
            -> IO ()
 setRxSlots hdl value =
@@ -662,7 +673,7 @@ setRxSlots hdl value =
 
 -- |Return the length of the Rx queue, in number of packets.
 
-getRxSlots :: Ptr PFqTag
+getRxSlots :: PFqHandlePtr
            -> IO Int
 getRxSlots hdl =
     liftM fromIntegral (pfq_get_rx_slots hdl >>= throwPFqIf hdl (== -1))
@@ -670,7 +681,7 @@ getRxSlots hdl =
 
 -- |Return the length of a Rx slot, in bytes.
 
-getRxSlotSize :: Ptr PFqTag
+getRxSlotSize :: PFqHandlePtr
               -> IO Int
 getRxSlotSize hdl =
     liftM fromIntegral (pfq_get_rx_slot_size hdl >>= throwPFqIf hdl (== -1))
@@ -678,7 +689,7 @@ getRxSlotSize hdl =
 
 -- |Specify the length of the Tx queue, in number of packets.
 
-setTxSlots :: Ptr PFqTag
+setTxSlots :: PFqHandlePtr
            -> Int       -- ^ number of Tx slots
            -> IO ()
 setTxSlots hdl value =
@@ -688,7 +699,7 @@ setTxSlots hdl value =
 
 -- |Return the length of the Tx queue, in number of packets.
 
-getTxSlots :: Ptr PFqTag
+getTxSlots :: PFqHandlePtr
            -> IO Int
 getTxSlots hdl =
     liftM fromIntegral (pfq_get_tx_slots hdl >>= throwPFqIf hdl (== -1))
@@ -696,7 +707,7 @@ getTxSlots hdl =
 
 -- |Bind the main group of the socket to the given device/queue.
 
-bind :: Ptr PFqTag
+bind :: PFqHandlePtr
      -> String      -- ^ device name
      -> Int         -- ^ queue index (or any_queue constant)
      -> IO ()
@@ -707,7 +718,7 @@ bind hdl name queue =
 
 -- |Unbind the main group of the socket from the given device/queue.
 
-unbind :: Ptr PFqTag
+unbind :: PFqHandlePtr
        -> String      -- ^ device name
        -> Int         -- ^ queue index (or any_queue constant)
        -> IO ()
@@ -718,7 +729,7 @@ unbind hdl name queue =
 
 -- |Bind the group to the given device/queue.
 
-bindGroup :: Ptr PFqTag
+bindGroup :: PFqHandlePtr
           -> Int         -- ^ group id
           -> String      -- ^ device name
           -> Int         -- ^ queue index (or any_queue constant)
@@ -730,7 +741,7 @@ bindGroup hdl gid name queue =
 
 -- |Unbind the group from the given device/queue.
 
-unbindGroup :: Ptr PFqTag
+unbindGroup :: PFqHandlePtr
             -> Int         -- ^ group id
             -> String      -- ^ device name
             -> Int         -- ^ queue index
@@ -744,7 +755,7 @@ unbindGroup hdl gid name queue =
 --
 -- The egress socket is be used by groups as network forwarder.
 
-egressBind :: Ptr PFqTag
+egressBind :: PFqHandlePtr
            -> String      -- ^ device name
            -> Int         -- ^ queue index
            -> IO ()
@@ -755,7 +766,7 @@ egressBind hdl name queue =
 
 -- | Unset the socket as egress.
 
-egressUnbind :: Ptr PFqTag
+egressUnbind :: PFqHandlePtr
              -> IO ()
 egressUnbind hdl =
     pfq_egress_unbind hdl >>= throwPFqIf_ hdl (== -1)
@@ -764,7 +775,7 @@ egressUnbind hdl =
 -- |Bind the socket for transmission to the given device name and queue.
 --
 
-bindTx :: Ptr PFqTag
+bindTx :: PFqHandlePtr
        -> String      -- ^ device name
        -> Int         -- ^ hw queue index
        -> Int         -- ^ PFQ thread id (number)
@@ -778,7 +789,7 @@ bindTx hdl name queue kthread =
 --
 -- Unbind the socket for transmission from any device/queue.
 
-unbindTx :: Ptr PFqTag
+unbindTx :: PFqHandlePtr
          -> IO ()
 unbindTx hdl =
     pfq_unbind_tx hdl >>= throwPFqIf_ hdl (== -1)
@@ -786,7 +797,7 @@ unbindTx hdl =
 
 -- |Join the group with the given class mask and group policy.
 
-joinGroup :: Ptr PFqTag
+joinGroup :: PFqHandlePtr
           -> Int            -- ^ group id
           -> ClassMask      -- ^ class mask
           -> GroupPolicy    -- ^ group policy
@@ -798,7 +809,7 @@ joinGroup hdl gid ms pol =
 
 -- |Leave the group specified by the group id.
 
-leaveGroup :: Ptr PFqTag
+leaveGroup :: PFqHandlePtr
            -> Int        -- ^ group id
            -> IO ()
 leaveGroup hdl gid =
@@ -809,7 +820,7 @@ leaveGroup hdl gid =
 -- |Set the promiscuous mode for the given interface.
 --
 
-setPromisc :: Ptr PFqTag
+setPromisc :: PFqHandlePtr
            -> String    -- ^ device name
            -> Bool      -- ^ toggle: True is on, False off.
            -> IO ()
@@ -825,7 +836,7 @@ setPromisc hdl name value =
 -- The memory of the socket queue is reset at the next read.
 -- A timeout is specified in microseconds.
 
-read :: Ptr PFqTag
+read :: PFqHandlePtr
      -> Int         -- ^ timeout (msec)
      -> IO NetQueue
 read hdl msec =
@@ -845,7 +856,7 @@ read hdl msec =
 --
 -- This function is passed a function 'Callback' which is called on each packet.
 
-dispatch :: Ptr PFqTag
+dispatch :: PFqHandlePtr
          -> Callback    -- ^ packet processing function
          -> Int         -- ^ timeout (msec)
          -> IO ()       --
@@ -863,7 +874,7 @@ makeCallback fun = make_callback $ \_ hdr ptr -> toPktHdr hdr >>= flip fun ptr
 
 -- |Enable/disable vlan filtering for the given group.
 
-vlanFiltersEnable :: Ptr PFqTag
+vlanFiltersEnable :: PFqHandlePtr
                   -> Int        -- ^ group id
                   -> Bool       -- ^ toggle: True is on, False off.
                   -> IO ()
@@ -876,7 +887,7 @@ vlanFiltersEnable hdl gid value =
 --
 -- In addition to standard vlan ids, valid ids are also 'vlan_untag' and 'vlan_anytag'.
 
-vlanSetFilter :: Ptr PFqTag
+vlanSetFilter :: PFqHandlePtr
               -> Int        -- ^ group id
               -> VlanTag    -- ^ vlan id
               -> IO ()
@@ -887,7 +898,7 @@ vlanSetFilter hdl gid vid =
 
 -- |Reset the vlan filter for the given group.
 
-vlanResetFilter :: Ptr PFqTag
+vlanResetFilter :: PFqHandlePtr
                 -> Int        -- ^ group id
                 -> VlanTag    -- ^ vlan id
                 -> IO ()
@@ -898,7 +909,7 @@ vlanResetFilter hdl gid vid =
 
 -- |Return the socket statistics.
 
-getStats :: Ptr PFqTag
+getStats :: PFqHandlePtr
          -> IO Statistics
 getStats hdl =
     allocaBytes #{size struct pfq_stats} $ \sp -> do
@@ -908,7 +919,7 @@ getStats hdl =
 
 -- |Return the statistics of the given group.
 
-getGroupStats :: Ptr PFqTag
+getGroupStats :: PFqHandlePtr
               -> Int            -- ^ group id
               -> IO Statistics
 getGroupStats hdl gid =
@@ -941,7 +952,7 @@ makeStats p = do
 
 -- |Return the set of counters of the given group.
 
-getGroupCounters :: Ptr PFqTag
+getGroupCounters :: PFqHandlePtr
                  -> Int            -- ^ group id
                  -> IO Counters
 getGroupCounters hdl gid =
@@ -1011,7 +1022,7 @@ instance Storable StorableFunDescr where
 -- The functional computation is specified as a pfq-lang expression.
 --
 
-setGroupComputation :: Ptr PFqTag
+setGroupComputation :: PFqHandlePtr
                     -> Int                                     -- ^ group id
                     -> Function (Qbuff -> Action Qbuff)      -- ^ expression (pfq-Lang)
                     -> IO ()
@@ -1023,7 +1034,7 @@ setGroupComputation hdl gid comp =
 -- |Specify a functional computation for the given group, as pfq-lang program from file.
 --
 
-setGroupComputationFromFile :: Ptr PFqTag
+setGroupComputationFromFile :: PFqHandlePtr
                               -> Int       -- ^ group id
                               -> FilePath  -- ^ pfq-lang file
                               -> IO ()
@@ -1034,7 +1045,7 @@ setGroupComputationFromFile hdl gid file =
 -- |Specify a functional computation for the given group, as pfq-lang program from string.
 --
 
-setGroupComputationFromString :: Ptr PFqTag
+setGroupComputationFromString :: PFqHandlePtr
                               -> Int       -- ^ group id
                               -> String    -- ^ pfq-lang expression
                               -> IO ()
@@ -1047,7 +1058,7 @@ setGroupComputationFromString hdl gid comp =
 -- |Specify a functional computation for the given group, from JSON description.
 --
 
-setGroupComputationFromJSON :: Ptr PFqTag
+setGroupComputationFromJSON :: PFqHandlePtr
                             -> Int       -- ^ group id
                             -> String    -- ^ decode (json) :: [FunctionDesc]
                             -> IO ()
@@ -1062,7 +1073,7 @@ setGroupComputationFromJSON hdl gid comp =
 --
 
 
-setGroupComputationFromDescr :: Ptr PFqTag
+setGroupComputationFromDescr :: PFqHandlePtr
                              -> Int                  -- ^ group id
                              -> [FunctionDescr]      -- ^ expression (pfq-lang)
                              -> IO ()
@@ -1082,7 +1093,7 @@ setGroupComputationFromDescr hdl gid descr =
 --
 -- Transmit the packets in the Tx queues of the socket.
 
-syncQueue :: Ptr PFqTag
+syncQueue :: PFqHandlePtr
           -> Int     -- ^ queue index (0 is sync tx queue)
           -> IO ()
 syncQueue hdl queue =
@@ -1095,7 +1106,7 @@ syncQueue hdl queue =
 -- Requires the socket is bound for transmission to a net device and queue.
 -- See 'bindTx'.
 
-send :: Ptr PFqTag
+send :: PFqHandlePtr
      -> C.ByteString  -- ^ bytes of packet
      -> Int           -- ^ copies
      -> Int           -- ^ fhint
@@ -1113,7 +1124,7 @@ send hdl xs copies fhint =
 --
 -- The queue is flushed every fhint packets.
 
-sendTo :: Ptr PFqTag
+sendTo :: PFqHandlePtr
        -> C.ByteString  -- ^ bytes of packet
        -> Int           -- ^ ifindex
        -> Int           -- ^ qindex
@@ -1137,7 +1148,7 @@ sendTo hdl xs ifindex qindex copies fhint =
 -- Requires the socket is bound for transmission to one (or multiple) PFQ kernel threads.
 -- See 'bindTx'.
 
-sendAsync :: Ptr PFqTag
+sendAsync :: PFqHandlePtr
           -> C.ByteString  -- ^ bytes of packet
           -> Int           -- ^ copies
           -> IO Bool
@@ -1160,7 +1171,7 @@ sendAsync hdl xs copies =
 -- Requires the socket is bound for transmission to one (or multiple) PFQ kernel threads.
 -- See 'bindTx'.
 
-sendAt :: Ptr PFqTag
+sendAt :: PFqHandlePtr
        -> C.ByteString  -- ^ bytes of packet
        -> TimeSpec      -- ^ active timestamp
        -> Int           -- ^ copies
@@ -1181,74 +1192,74 @@ sendAt hdl xs ts copies =
 -- C functions from libpfq
 --
 
-foreign import ccall unsafe pfq_open                :: CSize -> CSize -> CSize -> IO (Ptr PFqTag)
-foreign import ccall unsafe pfq_open_nogroup        :: CSize -> CSize -> CSize -> IO (Ptr PFqTag)
-foreign import ccall unsafe pfq_open_group          :: CULong -> CInt  -> CSize -> CSize -> CSize -> IO (Ptr PFqTag)
+foreign import ccall unsafe pfq_open                :: CSize -> CSize -> CSize -> IO (PFqHandlePtr)
+foreign import ccall unsafe pfq_open_nogroup        :: CSize -> CSize -> CSize -> IO (PFqHandlePtr)
+foreign import ccall unsafe pfq_open_group          :: CULong -> CInt  -> CSize -> CSize -> CSize -> IO (PFqHandlePtr)
 
-foreign import ccall unsafe pfq_close               :: Ptr PFqTag -> IO CInt
-foreign import ccall unsafe pfq_error               :: Ptr PFqTag -> IO CString
+foreign import ccall unsafe pfq_close               :: PFqHandlePtr -> IO CInt
+foreign import ccall unsafe pfq_error               :: PFqHandlePtr -> IO CString
 
-foreign import ccall unsafe pfq_id                  :: Ptr PFqTag -> IO CInt
-foreign import ccall unsafe pfq_group_id            :: Ptr PFqTag -> IO CInt
+foreign import ccall unsafe pfq_id                  :: PFqHandlePtr -> IO CInt
+foreign import ccall unsafe pfq_group_id            :: PFqHandlePtr -> IO CInt
 
-foreign import ccall unsafe pfq_enable              :: Ptr PFqTag -> IO CInt
-foreign import ccall unsafe pfq_disable             :: Ptr PFqTag -> IO CInt
-foreign import ccall unsafe pfq_is_enabled          :: Ptr PFqTag -> IO CInt
+foreign import ccall unsafe pfq_enable              :: PFqHandlePtr -> IO CInt
+foreign import ccall unsafe pfq_disable             :: PFqHandlePtr -> IO CInt
+foreign import ccall unsafe pfq_is_enabled          :: PFqHandlePtr -> IO CInt
 
-foreign import ccall unsafe pfq_set_promisc         :: Ptr PFqTag -> CString -> CInt -> IO CInt
-foreign import ccall unsafe pfq_timestamping_enable     :: Ptr PFqTag -> CInt -> IO CInt
-foreign import ccall unsafe pfq_is_timestamping_enabled :: Ptr PFqTag -> IO CInt
+foreign import ccall unsafe pfq_set_promisc         :: PFqHandlePtr -> CString -> CInt -> IO CInt
+foreign import ccall unsafe pfq_timestamping_enable     :: PFqHandlePtr -> CInt -> IO CInt
+foreign import ccall unsafe pfq_is_timestamping_enabled :: PFqHandlePtr -> IO CInt
 
-foreign import ccall unsafe pfq_set_caplen          :: Ptr PFqTag -> CSize -> IO CInt
-foreign import ccall unsafe pfq_get_caplen          :: Ptr PFqTag -> IO CPtrdiff
+foreign import ccall unsafe pfq_set_caplen          :: PFqHandlePtr -> CSize -> IO CInt
+foreign import ccall unsafe pfq_get_caplen          :: PFqHandlePtr -> IO CPtrdiff
 
-foreign import ccall unsafe pfq_set_weight          :: Ptr PFqTag -> CInt -> IO CInt
-foreign import ccall unsafe pfq_get_weight          :: Ptr PFqTag -> IO CInt
+foreign import ccall unsafe pfq_set_weight          :: PFqHandlePtr -> CInt -> IO CInt
+foreign import ccall unsafe pfq_get_weight          :: PFqHandlePtr -> IO CInt
 
-foreign import ccall unsafe pfq_get_maxlen          :: Ptr PFqTag -> IO CPtrdiff
+foreign import ccall unsafe pfq_get_maxlen          :: PFqHandlePtr -> IO CPtrdiff
 
-foreign import ccall unsafe pfq_set_tx_slots        :: Ptr PFqTag -> CSize -> IO CInt
-foreign import ccall unsafe pfq_get_tx_slots        :: Ptr PFqTag -> IO CSize
+foreign import ccall unsafe pfq_set_tx_slots        :: PFqHandlePtr -> CSize -> IO CInt
+foreign import ccall unsafe pfq_get_tx_slots        :: PFqHandlePtr -> IO CSize
 
-foreign import ccall unsafe pfq_set_rx_slots        :: Ptr PFqTag -> CSize -> IO CInt
-foreign import ccall unsafe pfq_get_rx_slots        :: Ptr PFqTag -> IO CSize
-foreign import ccall unsafe pfq_get_rx_slot_size    :: Ptr PFqTag -> IO CSize
+foreign import ccall unsafe pfq_set_rx_slots        :: PFqHandlePtr -> CSize -> IO CInt
+foreign import ccall unsafe pfq_get_rx_slots        :: PFqHandlePtr -> IO CSize
+foreign import ccall unsafe pfq_get_rx_slot_size    :: PFqHandlePtr -> IO CSize
 
-foreign import ccall unsafe pfq_bind                :: Ptr PFqTag -> CString -> CInt -> IO CInt
-foreign import ccall unsafe pfq_bind_group          :: Ptr PFqTag -> CInt -> CString -> CInt -> IO CInt
+foreign import ccall unsafe pfq_bind                :: PFqHandlePtr -> CString -> CInt -> IO CInt
+foreign import ccall unsafe pfq_bind_group          :: PFqHandlePtr -> CInt -> CString -> CInt -> IO CInt
 
-foreign import ccall unsafe pfq_unbind              :: Ptr PFqTag -> CString -> CInt -> IO CInt
-foreign import ccall unsafe pfq_unbind_group        :: Ptr PFqTag -> CInt -> CString -> CInt -> IO CInt
+foreign import ccall unsafe pfq_unbind              :: PFqHandlePtr -> CString -> CInt -> IO CInt
+foreign import ccall unsafe pfq_unbind_group        :: PFqHandlePtr -> CInt -> CString -> CInt -> IO CInt
 
-foreign import ccall unsafe pfq_egress_bind         :: Ptr PFqTag -> CString -> CInt -> IO CInt
-foreign import ccall unsafe pfq_egress_unbind       :: Ptr PFqTag -> IO CInt
+foreign import ccall unsafe pfq_egress_bind         :: PFqHandlePtr -> CString -> CInt -> IO CInt
+foreign import ccall unsafe pfq_egress_unbind       :: PFqHandlePtr -> IO CInt
 
-foreign import ccall unsafe pfq_join_group          :: Ptr PFqTag -> CInt -> CULong -> CInt -> IO CInt
-foreign import ccall unsafe pfq_leave_group         :: Ptr PFqTag -> CInt -> IO CInt
+foreign import ccall unsafe pfq_join_group          :: PFqHandlePtr -> CInt -> CULong -> CInt -> IO CInt
+foreign import ccall unsafe pfq_leave_group         :: PFqHandlePtr -> CInt -> IO CInt
 
-foreign import ccall unsafe pfq_get_stats           :: Ptr PFqTag -> Ptr Statistics -> IO CInt
-foreign import ccall unsafe pfq_get_group_stats     :: Ptr PFqTag -> CInt -> Ptr Statistics -> IO CInt
-foreign import ccall unsafe pfq_get_group_counters  :: Ptr PFqTag -> CInt -> Ptr Counters -> IO CInt
+foreign import ccall unsafe pfq_get_stats           :: PFqHandlePtr -> Ptr Statistics -> IO CInt
+foreign import ccall unsafe pfq_get_group_stats     :: PFqHandlePtr -> CInt -> Ptr Statistics -> IO CInt
+foreign import ccall unsafe pfq_get_group_counters  :: PFqHandlePtr -> CInt -> Ptr Counters -> IO CInt
 
-foreign import ccall unsafe pfq_set_group_computation :: Ptr PFqTag -> CInt -> Ptr a -> IO CInt
-foreign import ccall unsafe pfq_set_group_computation_from_string :: Ptr PFqTag -> CInt -> CString -> IO CInt
-foreign import ccall unsafe pfq_set_group_computation_from_file   :: Ptr PFqTag -> CInt -> CString -> IO CInt
+foreign import ccall unsafe pfq_set_group_computation :: PFqHandlePtr -> CInt -> Ptr a -> IO CInt
+foreign import ccall unsafe pfq_set_group_computation_from_string :: PFqHandlePtr -> CInt -> CString -> IO CInt
+foreign import ccall unsafe pfq_set_group_computation_from_file   :: PFqHandlePtr -> CInt -> CString -> IO CInt
 
-foreign import ccall pfq_dispatch                   :: Ptr PFqTag -> FunPtr CPFqCallback -> CLong -> Ptr Word8 -> IO CInt
+foreign import ccall pfq_dispatch                   :: PFqHandlePtr -> FunPtr CPFqCallback -> CLong -> Ptr Word8 -> IO CInt
 foreign import ccall "wrapper" make_callback        :: CPFqCallback -> IO (FunPtr CPFqCallback)
 
-foreign import ccall unsafe pfq_read                :: Ptr PFqTag -> Ptr NetQueue -> CLong -> IO CInt
+foreign import ccall unsafe pfq_read                :: PFqHandlePtr -> Ptr NetQueue -> CLong -> IO CInt
 
-foreign import ccall unsafe pfq_vlan_filters_enable :: Ptr PFqTag -> CInt -> CInt -> IO CInt
-foreign import ccall unsafe pfq_vlan_set_filter     :: Ptr PFqTag -> CInt -> CInt -> IO CInt
-foreign import ccall unsafe pfq_vlan_reset_filter   :: Ptr PFqTag -> CInt -> CInt -> IO CInt
+foreign import ccall unsafe pfq_vlan_filters_enable :: PFqHandlePtr -> CInt -> CInt -> IO CInt
+foreign import ccall unsafe pfq_vlan_set_filter     :: PFqHandlePtr -> CInt -> CInt -> IO CInt
+foreign import ccall unsafe pfq_vlan_reset_filter   :: PFqHandlePtr -> CInt -> CInt -> IO CInt
 
-foreign import ccall unsafe pfq_bind_tx             :: Ptr PFqTag -> CString -> CInt -> CInt -> IO CInt
-foreign import ccall unsafe pfq_unbind_tx           :: Ptr PFqTag -> IO CInt
+foreign import ccall unsafe pfq_bind_tx             :: PFqHandlePtr -> CString -> CInt -> CInt -> IO CInt
+foreign import ccall unsafe pfq_unbind_tx           :: PFqHandlePtr -> IO CInt
 
-foreign import ccall unsafe pfq_send                :: Ptr PFqTag -> Ptr CChar -> CSize -> CSize -> CUInt -> IO CInt
-foreign import ccall unsafe pfq_send_to             :: Ptr PFqTag -> Ptr CChar -> CSize -> CInt -> CInt -> CSize -> CUInt -> IO CInt
-foreign import ccall unsafe pfq_send_raw            :: Ptr PFqTag -> Ptr CChar -> CSize -> CInt -> CInt -> CULLong -> CUInt -> CInt -> CInt -> IO CInt
+foreign import ccall unsafe pfq_send                :: PFqHandlePtr -> Ptr CChar -> CSize -> CSize -> CUInt -> IO CInt
+foreign import ccall unsafe pfq_send_to             :: PFqHandlePtr -> Ptr CChar -> CSize -> CInt -> CInt -> CSize -> CUInt -> IO CInt
+foreign import ccall unsafe pfq_send_raw            :: PFqHandlePtr -> Ptr CChar -> CSize -> CInt -> CInt -> CULLong -> CUInt -> CInt -> CInt -> IO CInt
 
-foreign import ccall unsafe pfq_sync_queue          :: Ptr PFqTag -> CInt -> IO CInt
+foreign import ccall unsafe pfq_sync_queue          :: PFqHandlePtr -> CInt -> IO CInt
 

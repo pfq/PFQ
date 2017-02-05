@@ -143,8 +143,8 @@ runThreads op mfuns =
         f <- newMVar 0
         _ <- forkOn (coreNum binding) (
                  handle ((\e -> M.void (putStrLn ("[pfq] Exception: " ++ show e) >> swapMVar c (-1))) :: SomeException -> IO ()) $ do
-                 fp <- Q.openNoGroup (caplen op) (slots op) 1024
-                 withForeignPtr fp  $ \q -> do
+                 hq <- Q.openNoGroup (caplen op) (slots op) 1024
+                 Q.withPFq hq $ \q -> do
                      Q.joinGroup q (groupId binding) Q.class_default Q.policy_shared
                      forM_ (netDevs binding) $ \dev ->
                        forM_ (devQueues dev) $ \queue -> do

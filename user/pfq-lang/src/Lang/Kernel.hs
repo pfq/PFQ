@@ -31,16 +31,15 @@ import Control.Monad()
 import Options
 
 import Data.Maybe
-import Foreign.ForeignPtr
 
 
 load :: Q.Function (Qbuff -> Action Qbuff) -> OptionT IO String
 load comp = do
     gid' <- fmap (fromJust . gid) ask
-    lift $ Q.openNoGroup 64 4096 4096 >>= \fp ->
-        withForeignPtr fp $ \ctrl -> do
-            Q.joinGroup ctrl gid' class_control policy_shared
-            Q.setGroupComputation ctrl gid' comp
+    lift $ Q.openNoGroup 64 4096 4096 >>= \handle ->
+        withPFq handle $ \handlePtr -> do
+            Q.joinGroup handlePtr gid' class_control policy_shared
+            Q.setGroupComputation handlePtr gid' comp
             return $ "PFQ: computation loaded for gid " ++ show gid' ++ "."
 
 

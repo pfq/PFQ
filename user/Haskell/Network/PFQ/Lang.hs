@@ -46,7 +46,7 @@
 
 module Network.PFQ.Lang
     (
-        -- * Basic types
+      -- * Basic types
 
       IPv4(..)
     , CIDR(..)
