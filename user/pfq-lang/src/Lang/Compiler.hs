@@ -18,7 +18,7 @@
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE CPP #-}
 
-module QLang.Compiler
+module Lang.Compiler
 (
   compile
 ) where
@@ -34,7 +34,7 @@ import Control.Exception
 import Control.Monad.Reader
 import Options
 
-import QLang.Parser
+import Lang.Parser
 
 #if __GLASGOW_HASKELL__ < 710
 import Control.Applicative

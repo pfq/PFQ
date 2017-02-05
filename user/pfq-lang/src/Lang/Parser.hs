@@ -17,7 +17,7 @@
 
 {-# LANGUAGE TupleSections #-}
 
-module QLang.Parser
+module Lang.Parser
   ( defaultImports
   , parseCode
   , mkMainFunction

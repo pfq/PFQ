@@ -17,20 +17,30 @@
 
 {-# LANGUAGE TupleSections #-}
 
-module QLang.JSON
+module Lang.Kernel
 (
-  compile
-) where
+  load
+)where
 
+import Language.Haskell.Interpreter
 import Network.PFQ.Lang as Q
+import Network.PFQ as Q
 
-import qualified Data.Aeson as A
-import qualified Data.ByteString.Lazy.Char8 as C
+import Control.Monad.Reader
+import Control.Monad()
 import Options
 
+import Data.Maybe
+import Foreign.ForeignPtr
 
-compile :: (Monad m) => Q.Function (Qbuff -> Action Qbuff) -> OptionT m String
--- compile comp = return (C.unpack $ A.encode comp)
-compile comp = return (C.unpack $ A.encode $ fst (Q.serialize comp 0))
+
+load :: Q.Function (Qbuff -> Action Qbuff) -> OptionT IO String
+load comp = do
+    gid' <- fmap (fromJust . gid) ask
+    lift $ Q.openNoGroup 64 4096 4096 >>= \fp ->
+        withForeignPtr fp $ \ctrl -> do
+            Q.joinGroup ctrl gid' class_control policy_shared
+            Q.setGroupComputation ctrl gid' comp
+            return $ "PFQ: computation loaded for gid " ++ show gid' ++ "."
 
 

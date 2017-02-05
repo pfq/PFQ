@@ -19,7 +19,12 @@ Executable pfq-lang
                         CmdLine
                         Options
                         Paths
-                        QLang.Parser
+                        Lang.Compiler 
+                        Lang.FDescr  
+                        Lang.JSON  
+                        Lang.Kernel 
+                        Lang.Parser
+
     build-depends:      base >=4.7, 
                         mtl,
                         bytestring,

@@ -29,10 +29,10 @@ import System.IO
 import Data.Maybe
 import Control.Exception
 
-import qualified QLang.JSON
-import qualified QLang.FDescr
-import qualified QLang.Compiler
-import qualified QLang.PFQ
+import qualified Lang.JSON
+import qualified Lang.FDescr
+import qualified Lang.Compiler
+import qualified Lang.Kernel
 
 
 main :: IO ()
@@ -45,7 +45,7 @@ main = do
 
       code <- hGetContents inHandle
 
-      result <- try $ runReaderT (QLang.Compiler.compile code) opt'
+      result <- try $ runReaderT (Lang.Compiler.compile code) opt'
 
       case result of
         Left (WontCompile es)  ->  error $ unlines (map errMsg es)
@@ -54,10 +54,10 @@ main = do
         Left (UnknownError xs) ->  error xs
         Right comp -> do
             (case () of
-                _ | json opt'   -> runReaderT (QLang.JSON.compile comp) opt'
-                  | fdescr opt' -> runReaderT (QLang.FDescr.compile comp) opt'
+                _ | json opt'   -> runReaderT (Lang.JSON.compile comp) opt'
+                  | fdescr opt' -> runReaderT (Lang.FDescr.compile comp) opt'
                   | otherwise   -> return "") >>= hPutStr outHandle
-            when (isJust (gid opt')) $ runReaderT (QLang.PFQ.load comp) opt' >>= hPutStr stderr
+            when (isJust (gid opt')) $ runReaderT (Lang.Kernel.load comp) opt' >>= hPutStr stderr
 
       hPutStr outHandle "\n"
 

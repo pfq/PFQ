@@ -17,14 +17,20 @@
 
 {-# LANGUAGE TupleSections #-}
 
-module QLang.FDescr
+module Lang.JSON
 (
   compile
 ) where
 
 import Network.PFQ.Lang as Q
+
+import qualified Data.Aeson as A
+import qualified Data.ByteString.Lazy.Char8 as C
 import Options
 
 
 compile :: (Monad m) => Q.Function (Qbuff -> Action Qbuff) -> OptionT m String
-compile comp = return $ show (fst $ Q.serialize comp 0)
+-- compile comp = return (C.unpack $ A.encode comp)
+compile comp = return (C.unpack $ A.encode $ fst (Q.serialize comp 0))
+
+
