@@ -100,10 +100,10 @@ main = do
     infoM "daemon" ("Total number of egress port: " ++ show negrs)
 
     runDetached Nothing DevNull $
-        (Q.openNoGroup 1514 4096 4096 >>= \fp ->
-            withForeignPtr fp $ \ctrl -> do
+        (Q.openNoGroup 1514 4096 4096 >>= \hq ->
+            withPfq hq $ \ctrl -> do
             fps <- replicateM (countEgress config) (Q.openNoGroup 1514 4096 4096)
-            withMany withForeignPtr fps $ \egrs -> do
+            withMany withPfq fps $ \egrs -> do
                     runQSetup opts ctrl egrs
                     foreverDaemon opts (SLH.close s >> Q.close ctrl >> mapM_ Q.close egrs))
                 `E.catch` (\e -> errorM "daemon" (show (e :: SomeException)) >> foreverDaemon opts (SLH.close s))
@@ -113,12 +113,12 @@ countEgress :: [Group] -> Int
 countEgress gs = sum $ map (\Group{ output = out } -> length out) gs
 
 
-bindInput :: Ptr PFqTag -> Int -> NetDevice ->  IO ()
+bindInput :: PfqHandlePtr -> Int -> NetDevice ->  IO ()
 bindInput q gid (NetDevice d hq _ _) =
     Q.bindGroup q gid d hq
 
 
-bindOutput :: Ptr PFqTag -> (Int, Policy, NetDevice) ->  IO ()
+bindOutput :: PfqHandlePtr -> (Int, Policy, NetDevice) ->  IO ()
 bindOutput q (gid, pol, NetDevice d hq w cl) = bindEgress q gid d hq
     where bindEgress q gid dev queue = do
             infoM "daemon" ("    egress bind on dev " ++ dev ++ ", port " ++ show queue ++ ", class " ++ show cl)
@@ -127,7 +127,7 @@ bindOutput q (gid, pol, NetDevice d hq w cl) = bindEgress q gid d hq
             Q.setWeight q w
 
 
-runQSetup :: Options -> Ptr PFqTag -> [Ptr PFqTag] -> IO ()
+runQSetup :: Options -> PfqHandlePtr -> [PfqHandlePtr] -> IO ()
 runQSetup opts ctrl egrs = do
     infoM "daemon" $ "Running daemon with " ++ show opts
     infoM "daemon" $ "Loading new configuration for " ++ show (length config) ++ " group(s)..."

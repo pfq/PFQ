@@ -42,7 +42,7 @@ dumpPacket p = do
                 putStrLn $ "[" ++ showHex bytes "" ++ "]"
 
 
-recvLoop :: Ptr PFqTag -> IO ()
+recvLoop ::PfqHandlePtr -> IO ()
 recvLoop q = do
     queue <- Q.read q 100000000
     gid   <- Q.getGroupId q
@@ -63,7 +63,7 @@ dumper :: String -> IO ()
 dumper dev = do
     putStrLn  $ "dumping " ++ dev  ++ "..."
     fp <- Q.open 64 4096 4096
-    withForeignPtr fp  $ \q -> do
+    Q.withPfq fp $ \q -> do
         Q.timestampingEnable q True
 
         gid <- Q.getGroupId q

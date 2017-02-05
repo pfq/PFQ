@@ -144,7 +144,7 @@ runThreads op mfuns =
         _ <- forkOn (coreNum binding) (
                  handle ((\e -> M.void (putStrLn ("[pfq] Exception: " ++ show e) >> swapMVar c (-1))) :: SomeException -> IO ()) $ do
                  hq <- Q.openNoGroup (caplen op) (slots op) 1024
-                 Q.withPFq hq $ \q -> do
+                 Q.withPfq hq $ \q -> do
                      Q.joinGroup q (groupId binding) Q.class_default Q.policy_shared
                      forM_ (netDevs binding) $ \dev ->
                        forM_ (devQueues dev) $ \queue -> do
@@ -160,7 +160,7 @@ runThreads op mfuns =
         return c
 
 
-recvLoop :: (Num a) => Ptr Q.PFqTag -> State a -> IO Int
+recvLoop :: (Num a) => Q.PfqHandlePtr -> State a -> IO Int
 recvLoop q state = do
     netQueue <- Q.read q 20000
     case Q.qLen netQueue of

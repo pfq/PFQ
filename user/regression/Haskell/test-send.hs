@@ -47,12 +47,12 @@ ping = C.pack [
         0x36, 0x37                                      -- 67
         ]
 
-sendSync :: Ptr Q.PFqTag -> Int -> IO Int
+sendSync :: Q.PfqHandlePtr -> Int -> IO Int
 sendSync q n  =
     Q.send q ping 1 1 >>= (\b -> if b then return (n+1) else return n)
 
 
-sendAsync :: Ptr Q.PFqTag -> Int -> IO Int
+sendAsync :: Q.PfqHandlePtr -> Int -> IO Int
 sendAsync q n =
     Q.sendAsync q ping 1 >>= (\b -> if b then return (n+1)
                                              else return n)
@@ -76,7 +76,7 @@ sender xs = do
 
     fp <- Q.open 64 1024 1024
 
-    withForeignPtr fp  $ \q -> do
+    Q.withPfq fp  $ \q -> do
             Q.enable q
             Q.bindTx q dev queue kthread
 

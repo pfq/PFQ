@@ -29,7 +29,7 @@ import Network.PFQ.Lang.Default
 handler :: Q.Callback
 handler h _ = print h
 
-recvDispatch :: Ptr PFqTag -> IO()
+recvDispatch :: PfqHandlePtr -> IO()
 recvDispatch q = do
         Q.dispatch q handler 1000
         -- cs <- Q.getGroupId q >>= Q.getGroupCounters q
@@ -40,7 +40,7 @@ dumper :: String -> IO ()
 dumper dev = do
     putStrLn  $ "dumping " ++ dev  ++ "..."
     fp <- Q.open 64 4096 4096
-    withForeignPtr fp  $ \q -> do
+    withPfq fp  $ \q -> do
         Q.timestampingEnable q True
         gid <- Q.getGroupId q
         Q.bindGroup q gid dev (-1)
