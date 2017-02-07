@@ -77,7 +77,7 @@ options :: Mode (CmdArgs Options)
 options = cmdArgsMode $ Options
     {   firstcore = 0       &= typ "CORE" &= help "First core involved"
     ,   exclude   = []      &= typ "CORE" &= help "Exclude core from binding"
-    ,   algorithm = Nothing               &= help "Binding algorithm: round-robin, naive, multiple/n, even, odd, all-in:id, step:id, custom:step/multi"
+    ,   algorithm = Nothing               &= help "Binding algorithm: round-robin, naive, multiple/n, raster/n, even, odd, all-in:id, step:id, custom:step/multi"
     ,   msitype   = Nothing &= typ "MSI"  &= help "MSI type: TxRx, Rx, Tx or None"
     ,   core      = False                 &= help "Inspect cores irq"
     ,   arguments = []                    &= args
@@ -98,6 +98,7 @@ makeIrqBinding :: [String] -> Int -> IrqBinding
 makeIrqBinding ["round-robin"]    first  = IrqBinding (-1)      1       1       none
 makeIrqBinding ["naive"]          first  = IrqBinding first     1       1       none
 makeIrqBinding ["multiple", m]    first  = IrqBinding (-1)      1    (read m)   none
+makeIrqBinding ["raster", m]      first  = IrqBinding first     1    (read m)   none
 makeIrqBinding ["even"]           first  = IrqBinding first     1       1       even
 makeIrqBinding ["odd"]            first  = IrqBinding first     1       1       odd
 makeIrqBinding ["all-in", n]      _      = IrqBinding (read n)  0       1       none
