@@ -75,6 +75,11 @@ int pfq_skb_pool_init (struct core_spsc_fifo **pool, size_t pool_size, size_t sk
 			if (!skb)
 				return total;
 
+			if(skb_linearize(skb) < 0) {
+				__kfree_skb(skb);
+				return total;
+			}
+
 			skb->nf_trace = 1;
 
 			PFQ_CB(skb)->id = total;

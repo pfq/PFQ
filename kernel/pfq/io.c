@@ -810,7 +810,7 @@ int pfq_copy_bits(const struct sk_buff *skb, int offset, void *to, int len)
 	int data = skb_headroom(skb);
 	int end = pfq_skb_end_offset(skb);
 
-	if (len <= (end - data - offset)) {
+	if (likely(len <= (end - data - offset))) {
 		skb_copy_from_linear_data_offset(skb, offset, to, len);
 		return 0;
 	}
@@ -872,13 +872,15 @@ size_t pfq_sk_queue_recv(struct core_sock_opt *opt,
 
 
 		/* copy bytes of packet */
-
+#if 0
 		if (pfq_copy_bits(skb, 0, pkt, bytes) != 0) {
 			printk(KERN_WARNING "[PFQ] BUG! skb_copy_bits failed (bytes=%zu, skb_len=%d mac_len=%d)!\n",
 			       bytes, skb->len, skb->mac_len);
 			return copied;
 		}
-
+#else
+		skb_copy_from_linear_data_offset(skb, 0, pkt, bytes);
+#endif
 
 		/* fill pkt header */
 

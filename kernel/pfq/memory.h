@@ -259,15 +259,12 @@ ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, 
 		struct sk_buff *skb = core_spsc_peek(pool);
 		if (likely(skb != NULL)) {
 			if(pfq_skb_is_recycleable(skb)) {
-
 				sparse_inc(global->percpu_memory, pool_pop[idx]);
 				core_spsc_consume(pool);
-
 #if 0
 				pfq_skb_release_head_state(skb);
 				pfq_skb_release_data(skb);
 #endif
-
 				return pfq_skb_recycle(skb);
 			}
 			else {
