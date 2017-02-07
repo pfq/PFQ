@@ -37,8 +37,8 @@ struct pfq_percpu_pool
 {
         struct spinlock		tx_lock;
 
-	struct pfq_skb_pools	tx_multi;
-	struct pfq_skb_pools	rx_multi;
+	struct pfq_skb_pool	tx;
+	struct pfq_skb_pool	rx;
 
 } ____pfq_cacheline_aligned;
 

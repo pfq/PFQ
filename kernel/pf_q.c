@@ -657,7 +657,7 @@ pfq_netif_receive_skb(struct sk_buff *skb)
 		   nskb can be either a new skb or NULL */
 
 		pool = per_cpu_ptr(global->percpu_pool, smp_processor_id());
-		pfq_kfree_skb_pool(skb, &pool->rx_multi);
+		pfq_kfree_skb_pool(skb, &pool->rx);
 	}
 
 	if (nskb)
@@ -688,7 +688,7 @@ pfq_netif_rx(struct sk_buff *skb)
 		   nskb can be either a new skb or NULL */
 
 		pool = per_cpu_ptr(global->percpu_pool, smp_processor_id());
-		pfq_kfree_skb_pool(skb, &pool->rx_multi);
+		pfq_kfree_skb_pool(skb, &pool->rx);
 	}
 
 	if (nskb)
@@ -719,7 +719,7 @@ pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
 		   nskb can be either a new skb or NULL */
 
 		pool = per_cpu_ptr(global->percpu_pool, smp_processor_id());
-		pfq_kfree_skb_pool(skb, &pool->rx_multi);
+		pfq_kfree_skb_pool(skb, &pool->rx);
 	}
 
 	if (nskb)

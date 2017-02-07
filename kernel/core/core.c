@@ -125,7 +125,7 @@ int core_process_batch(struct core_percpu_data *data,
 #if 0
 	for_each_qbuff(PFQ_QBUFF_QUEUE(&GC_ptr->pool), buff, n)
 	{
-		qbuff_free(buff, &pool->rx_multi);
+		qbuff_free(buff, &pool->rx);
 	}
 
 	GC_reset(GC_ptr);
@@ -349,7 +349,7 @@ int core_process_batch(struct core_percpu_data *data,
 			__sparse_inc(global->percpu_stats, kern, cpu);
 		}
 
-		qbuff_free(buff, &pool->rx_multi);
+		qbuff_free(buff, &pool->rx);
 	}
 
 	/* reset the GC */

@@ -306,7 +306,8 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr,
 	skb = pfq_alloc_skb_pool( len
 				, GFP_ATOMIC
 				, ctx->node
-				, ctx->tx_multi);
+				, 1
+				, ctx->tx);
 	if (unlikely(skb == NULL)) {
 		if (printk_ratelimit())
 			printk(KERN_INFO "[PFQ] Tx could not allocate an skb!\n");
@@ -351,7 +352,7 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr,
 
 	/* release the packet */
 
-	pfq_kfree_skb_pool(skb, ctx->tx_multi);
+	pfq_kfree_skb_pool(skb, ctx->tx);
 
 	if (ret.ok)
 		dev_queue->queue->trans_start = ctx->jiffies;
@@ -392,7 +393,7 @@ pfq_sk_queue_xmit(struct core_sock *so,
 
 	pool = this_cpu_ptr(global->percpu_pool);
 
-	ctx.tx_multi = &pool->tx_multi;
+	ctx.tx = &pool->tx;
 
 	/* lock the Tx pool */
 
@@ -703,7 +704,7 @@ pfq_receive_run( int cpu
 		++work;
 
 		if (unlikely(core_sock_counter() == 0)) {
-			pfq_kfree_skb_pool(skb, &pool->rx_multi);
+			pfq_kfree_skb_pool(skb, &pool->rx);
 			continue;
 		}
 
@@ -733,7 +734,7 @@ pfq_receive_run( int cpu
 				printk(KERN_INFO "[PFQ] GC: memory exhausted!\n");
 			__sparse_inc(global->percpu_stats, lost, cpu);
 			__sparse_inc(global->percpu_memory, os_free, cpu);
-			pfq_kfree_skb_pool(skb, &pool->rx_multi);
+			pfq_kfree_skb_pool(skb, &pool->rx);
 			continue;
 		}
 
@@ -749,7 +750,7 @@ pfq_receive_run( int cpu
 	}
 
 	while ((skb = core_spsc_pop(data->rx_free)))
-		pfq_kfree_skb_pool(skb, &pool->rx_multi);
+		pfq_kfree_skb_pool(skb, &pool->rx);
 
 	core_spsc_consumer_sync(data->rx_fifo);
 

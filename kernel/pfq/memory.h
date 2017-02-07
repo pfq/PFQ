@@ -149,7 +149,7 @@ pfq_skb_release_data(struct sk_buff *skb)
 	if (shinfo->frag_list)
 		pfq_kfree_skb_list(shinfo->frag_list);
 
-#if 0	
+#if 0
         skb_free_head(skb);
 #endif
 
@@ -252,11 +252,10 @@ struct sk_buff * pfq_netdev_alloc_skb_ip_align(struct net_device *dev,
 
 static inline
 struct sk_buff *
-____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, struct core_spsc_fifo *pool)
+____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, int idx, struct core_spsc_fifo *pool)
 {
 #ifdef PFQ_USE_SKB_POOL
 	if (likely(pool)) {
-		const int idx = PFQ_SKB_POOL_IDX(size);
 		struct sk_buff *skb = core_spsc_peek(pool);
 		if (likely(skb != NULL)) {
 			if(pfq_skb_is_recycleable(skb)) {
@@ -286,15 +285,13 @@ ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, 
 
 
 static inline
-void pfq_kfree_skb_pool(struct sk_buff *skb, struct pfq_skb_pools *pools)
+void pfq_kfree_skb_pool(struct sk_buff *skb, struct pfq_skb_pool *pool)
 {
 #ifdef PFQ_USE_SKB_POOL
 	if (skb->nf_trace) {
 		const int idx = PFQ_CB(skb)->pool;
-		struct core_spsc_fifo *pool = pfq_skb_pool_idx(pools, idx);
-		if (pool) {
-
-			if (!core_spsc_push(pool, skb)) {
+		if (pool->fifo) {
+			if (!core_spsc_push(pool->fifo, skb)) {
 				pfq_skb_dump("[PFQ] BUG [internal error!]", skb);
 				sparse_inc(global->percpu_memory, os_free);
 				kfree_skb(skb);
@@ -318,8 +315,8 @@ struct sk_buff * pfq_alloc_skb(unsigned int size, gfp_t priority)
 
 	if (likely(atomic_read(&global->pool_enabled))) {
 		struct pfq_percpu_pool *cpu_pool = this_cpu_ptr(global->percpu_pool);
-		struct core_spsc_fifo *pool = pfq_skb_pool_get(&cpu_pool->rx_multi, size);
-		return ____pfq_alloc_skb_pool(size, priority, 0, NUMA_NO_NODE, pool);
+		struct core_spsc_fifo *pool = pfq_skb_pool_get(&cpu_pool->rx, size);
+		return ____pfq_alloc_skb_pool(size, priority, 0, NUMA_NO_NODE, 0, pool);
 	}
 
 #endif
@@ -340,11 +337,10 @@ struct sk_buff * pfq_alloc_skb_fclone(unsigned int size, gfp_t priority)
 
 static inline
 struct sk_buff *
-pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int node, struct pfq_skb_pools *pools)
+pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int node, int idx, struct pfq_skb_pool *pool)
 {
 #ifdef PFQ_USE_SKB_POOL
-	struct core_spsc_fifo *pool = pfq_skb_pool_get(pools, size);
-	return ____pfq_alloc_skb_pool(size, priority, 0, node, pool);
+	return ____pfq_alloc_skb_pool(size, priority, 0, node, idx, pool->fifo);
 #endif
 	sparse_inc(global->percpu_memory, os_alloc);
 	return __alloc_skb(size, priority, 0, NUMA_NO_NODE);
