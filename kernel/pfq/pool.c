@@ -63,7 +63,8 @@ int pfq_skb_pool_init (struct core_spsc_fifo **pool, size_t pool_size, size_t sk
 
 		struct sk_buff *skb;
 
-		*pool = core_spsc_init(pool_size, cpu);
+		/* one slot is already added by the queue to distinguish between full and empty state */
+		*pool = core_spsc_init(pool_size + PFQ_POOL_CACHELINE_PAD-1, cpu);
 		if (!*pool) {
 			printk(KERN_ERR "[PFQ] pfq_skb_pool_init: out of memory!\n");
 			return -ENOMEM;

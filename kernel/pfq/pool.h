@@ -33,7 +33,9 @@
 #include <core/stats.h>
 
 
-#define PFQ_POOL_SKB_SIZE  2048
+#define PFQ_POOL_SKB_SIZE		2048
+#define PFQ_POOL_CACHELINE_PAD		(64/sizeof(void *))
+
 
 struct pfq_skb_pool
 {
