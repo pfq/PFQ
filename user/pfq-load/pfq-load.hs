@@ -201,7 +201,8 @@ main = do
 
     -- set cpufreq governor...
     unless (null (cpu_governor conf)) $
-        runSystem ("/usr/bin/cpufreq-set -g " ++ cpu_governor conf) ("*** cpufreq-set error! Make sure you have cpufrequtils installed! *** ", True)
+        forM_ [0.. core-1] $ \n -> do
+            runSystem ("/usr/bin/cpufreq-set -g " ++ cpu_governor conf ++ " -c " ++ show n) ("*** cpufreq-set error! Make sure you have cpufrequtils installed! *** ", True)
 
     -- load PFQ (if required)...
     if pfqForceLoad 
@@ -277,6 +278,7 @@ loadConfig confs opt =
                         (read . clean) <$> readFile conf
 
 
+{-# NOINLINE getNumberOfPhyCores #-}
 getNumberOfPhyCores :: IO Int
 getNumberOfPhyCores = readFile proc_cpuinfo >>= \file ->
     return $ (length . filter (isInfixOf "processor") . lines) file
