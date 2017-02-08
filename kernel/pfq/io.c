@@ -691,14 +691,15 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb)
 	struct core_percpu_data * data;
 	struct pfq_percpu_pool * pool;
 	int cpu;
+
 	/* if no socket is open drop the packet */
         cpu = smp_processor_id();
 	data = per_cpu_ptr(global->percpu_data, cpu);
-	pool = per_cpu_ptr(global->percpu_pool, cpu);
 
 	if (unlikely(core_sock_counter() == 0)) {
 		if (skb) {
 			sparse_inc(global->percpu_memory, os_free);
+			pool = per_cpu_ptr(global->percpu_pool, cpu);
 			pfq_kfree_skb_pool(skb, &pool->rx);
 		}
 		return 0;
@@ -710,6 +711,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb)
 		/* if required, timestamp the packet now */
 		if (skb->tstamp.tv64 == 0)
 			__net_timestamp(skb);
+
 		/* if vlan header is present, remove it */
 		if (global->vlan_untag && skb->protocol == cpu_to_be16(ETH_P_8021Q)) {
 			skb = pfq_vlan_untag(skb);
@@ -719,9 +721,11 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb)
 			}
 		}
 		skb_reset_mac_len(skb);
+
 		/* push the mac header: reset skb->data to the beginning of the packet */
 		if (likely(skb->pkt_type != PACKET_OUTGOING))
 		    skb_push(skb, skb->mac_len);
+
 		/* pass the ownership of this skb to the garbage collector */
 		buff = GC_make_buff(data->GC, skb);
 		if (unlikely(buff == NULL)) {
@@ -729,10 +733,12 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb)
 				printk(KERN_INFO "[PFQ] GC: memory exhausted!\n");
 			__sparse_inc(global->percpu_stats, lost, cpu);
 			__sparse_inc(global->percpu_memory, os_free, cpu);
+			pool = per_cpu_ptr(global->percpu_pool, cpu);
 			pfq_kfree_skb_pool(skb, &pool->rx);
 			return 0;
 		}
 
+		/* process this batch or return now */
 		if ((GC_size(data->GC) < (size_t)global->capt_batch_len) &&
 		     (ktime_to_ns(ktime_sub(qbuff_get_ktime(buff), data->last_rx)) < 1000000)) {
 			return 0;
@@ -743,8 +749,9 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb)
                 if (GC_size(data->GC) == 0)
 			return 0;
 	}
+
 	return core_process_batch( data
-				 , pool
+				 , per_cpu_ptr(global->percpu_pool, cpu)
 				 , data->GC
 				 , cpu);
 }
