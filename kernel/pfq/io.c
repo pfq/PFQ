@@ -686,48 +686,43 @@ pfq_qbuff_lazy_xmit_run(struct core_qbuff_queue *buffs, struct core_endpoint_inf
 
 
 int
-pfq_receive_run( int cpu
-	       , int budget
-	       , struct core_percpu_data *data
-	       , struct pfq_percpu_pool *pool)
+pfq_receive(struct napi_struct *napi, struct sk_buff * skb)
 {
-	struct sk_buff *skb;
-	int work = 0;
-
+	struct core_percpu_data * data;
+	struct pfq_percpu_pool * pool;
+	int cpu;
 	/* if no socket is open drop the packet */
+        cpu = smp_processor_id();
+	data = per_cpu_ptr(global->percpu_data, cpu);
+	pool = per_cpu_ptr(global->percpu_pool, cpu);
 
-	while(work < budget &&
-	      (skb = core_spsc_pop(data->rx_fifo)))
+	if (unlikely(core_sock_counter() == 0)) {
+		if (skb) {
+			sparse_inc(global->percpu_memory, os_free);
+			pfq_kfree_skb_pool(skb, &pool->rx);
+		}
+		return 0;
+	}
+
+	if (likely(skb))
 	{
 		struct qbuff * buff;
-
-		++work;
-
-		if (unlikely(core_sock_counter() == 0)) {
-			pfq_kfree_skb_pool(skb, &pool->rx);
-			continue;
-		}
-
+		/* if required, timestamp the packet now */
+		if (skb->tstamp.tv64 == 0)
+			__net_timestamp(skb);
 		/* if vlan header is present, remove it */
-
 		if (global->vlan_untag && skb->protocol == cpu_to_be16(ETH_P_8021Q)) {
 			skb = pfq_vlan_untag(skb);
 			if (unlikely(!skb)) {
 				__sparse_inc(global->percpu_stats, lost, cpu);
-				continue;
+				return -1;
 			}
 		}
-
 		skb_reset_mac_len(skb);
-
 		/* push the mac header: reset skb->data to the beginning of the packet */
-
 		if (likely(skb->pkt_type != PACKET_OUTGOING))
 		    skb_push(skb, skb->mac_len);
-
-
 		/* pass the ownership of this skb to the garbage collector */
-
 		buff = GC_make_buff(data->GC, skb);
 		if (unlikely(buff == NULL)) {
 			if (printk_ratelimit())
@@ -735,73 +730,24 @@ pfq_receive_run( int cpu
 			__sparse_inc(global->percpu_stats, lost, cpu);
 			__sparse_inc(global->percpu_memory, os_free, cpu);
 			pfq_kfree_skb_pool(skb, &pool->rx);
-			continue;
-		}
-
-		/* push or process the batch ? */
-
-		if ((GC_size(data->GC) < (size_t)global->capt_batch_len))
-			continue;
-
-		core_process_batch( data
-				  , pool
-				  , data->GC
-				  , cpu);
-	}
-
-	while ((skb = core_spsc_pop(data->rx_free)))
-		pfq_kfree_skb_pool(skb, &pool->rx);
-
-	core_spsc_consumer_sync(data->rx_fifo);
-
-	return work;
-}
-
-
-
-int
-pfq_receive(struct napi_struct *napi, struct sk_buff * skb)
-{
-	struct core_percpu_data * data;
-	int cpu;
-
-	(void)napi;
-
-	cpu = smp_processor_id();
-	data = per_cpu_ptr(global->percpu_data, cpu);
-
-	/* if required, timestamp the packet now */
-
-	if (likely(skb))
-	{
-		size_t len;
-
-		if (skb->tstamp.tv64 == 0)
-			__net_timestamp(skb);
-
-		if (unlikely(!(len = core_spsc_push(data->rx_fifo, skb)))) {
-			if (skb->nf_trace) {
-				core_spsc_push(data->rx_free, skb);
-			} else {
-				sparse_inc(global->percpu_memory, os_free);
-				kfree_skb(skb);
-			}
 			return 0;
 		}
 
-		if (len < (size_t)global->capt_batch_len) {
+		if ((GC_size(data->GC) < (size_t)global->capt_batch_len) &&
+		     (ktime_to_ns(ktime_sub(qbuff_get_ktime(buff), data->last_rx)) < 1000000)) {
 			return 0;
 		}
+		data->last_rx = qbuff_get_ktime(buff);
 	}
-
-	if (data->rx_napi) {
-		pfq_receive_run(cpu, global->capt_batch_len, data, per_cpu_ptr(global->percpu_pool, cpu));
-		core_spsc_producer_sync(data->rx_fifo);
+	else {
+                if (GC_size(data->GC) == 0)
+			return 0;
 	}
-
-	return 0;
+	return core_process_batch( data
+				 , pool
+				 , data->GC
+				 , cpu);
 }
-
 
 
 static inline

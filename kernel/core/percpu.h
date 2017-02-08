@@ -45,6 +45,7 @@ struct core_percpu_data
 	struct core_spsc_fifo   *rx_free;
 	struct GC_data		*GC;
 
+	ktime_t			last_rx;
 	struct timer_list	timer;
 	uint32_t		counter;
 

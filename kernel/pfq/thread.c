@@ -39,7 +39,6 @@
 
 
 static DEFINE_MUTEX(pfq_thread_tx_pool_lock);
-static DEFINE_MUTEX(pfq_thread_rx_pool_lock);
 
 
 static struct pfq_thread_tx_data pfq_thread_tx_pool[Q_CORE_MAX_CPU] =
@@ -50,18 +49,6 @@ static struct pfq_thread_tx_data pfq_thread_tx_pool[Q_CORE_MAX_CPU] =
 		.task	= NULL,
 		.sock   = {NULL, NULL, NULL, NULL},
 		.sock_queue = {{-1}, {-1}, {-1}, {-1}}
-	}
-};
-
-
-static struct pfq_thread_rx_data pfq_thread_rx_pool[Q_CORE_MAX_CPU] =
-{
-	[0 ... Q_CORE_MAX_CPU-1] = {
-		.id   = -1,
-		.cpu  = -1,
-		.task = NULL,
-		.napi = {-1, -1, -1, -1},
-		.napi_nr = 0
 	}
 };
 
@@ -291,173 +278,12 @@ pfq_stop_tx_threads(void)
 }
 
 
-static int
-pfq_rx_thread(void *_data)
-{
-	struct pfq_thread_rx_data *data = (struct pfq_thread_rx_data *)_data;
-
-
-#ifdef PFQ_DEBUG
-        int now = 0;
-#endif
-
-	if (data == NULL) {
-		printk(KERN_INFO "[PFQ] Rx thread data error!\n");
-		return -EPERM;
-	}
-
-	printk(KERN_INFO "[PFQ] Rx[%d] thread started on cpu %d.\n", data->id, data->cpu);
-
-	__set_current_state(TASK_RUNNING);
-
-        for(;;)
-	{
-		int i, n;
-
-		/* poll the registered NAPI queues */
-
-		for(i = 0; i < 1024; i++)
-		{
-			for(n = 0; n < data->napi_nr; n++)
-			{
-				struct core_percpu_data * cpudata = per_cpu_ptr(global->percpu_data, data->napi[n]);
-				struct pfq_percpu_pool * pool = per_cpu_ptr(global->percpu_pool, data->napi[n]);
-				pfq_receive_run(data->napi[n], 65536, cpudata, pool);
-			}
-		}
-
-                if (unlikely(kthread_should_stop()))
-                        break;
-
-		pfq_relax();
-
-		if (core_sock_counter() == 0)
-			msleep(1);
-
-#ifdef PFQ_DEBUG
-		if (now != jiffies/(HZ*10)) {
-			now = jiffies/(HZ*10);
-			pfq_thread_ping("Rx", (struct pfq_thread_data *)data);
-		}
-#endif
-	}
-
-        printk(KERN_INFO "[PFQ] Rx[%d] thread stopped on cpu %d.\n", data->id, data->cpu);
-	data->task = NULL;
-        return 0;
-}
-
-
-int
-pfq_start_rx_threads(void)
-{
-	int err = 0;
-
-	if (global->rx_cpu_nr)
-	{
-		int napi_idx, napi_quota;
-		int i, n, node;
-
-		napi_quota = (global->napi_cpu_nr + global->rx_cpu_nr - 1)/global->rx_cpu_nr;
-
-                napi_idx = 0;
-
-		printk(KERN_INFO "[PFQ] starting %d Rx thread(s): napi quota %d...\n", global->rx_cpu_nr, napi_quota);
-
-		for(n = 0; n < global->rx_cpu_nr; n++)
-		{
-			struct pfq_thread_rx_data *data = &pfq_thread_rx_pool[n];
-
-			node = global->rx_cpu[n] == -1 ? NUMA_NO_NODE : cpu_to_node(global->rx_cpu[n]);
-
-			data->id = n;
-			data->cpu = global->rx_cpu[n];
-			data->task = kthread_create_on_node(pfq_rx_thread,
-							    data, node,
-							    "kpfq-Rx/%d", data->cpu);
-			if (IS_ERR(data->task)) {
-				printk(KERN_INFO "[PFQ] kernel_thread: create failed on cpu %d!\n",
-				       data->cpu);
-				err = PTR_ERR(data->task);
-				data->task = NULL;
-				return err;
-			}
-
-			/* bind napi context to this thread */
-
-			printk(KERN_INFO "[PFQ] creating Rx[%d] kthread on cpu %d...\n", data->id, data->cpu);
-
-			for(i = 0; i < min(napi_quota, Q_MAX_RX_NAPI) &&
-					napi_idx < global->napi_cpu_nr;  i++)
-			{
-				int napi_cpu = global->napi_cpu[napi_idx++];
-
-				printk(KERN_INFO "[PFQ]    bound -> napi cpu %d\n", napi_cpu);
-
-				data->napi[data->napi_nr++] = napi_cpu;
-
-				/* disable napi processing on napi_cpu */
- 				per_cpu_ptr(global->percpu_data, napi_cpu)->rx_napi = false;
-			}
-
-			kthread_bind(data->task, data->cpu);
-			wake_up_process(data->task);
-		}
-	}
-
-	return err;
-}
-
-
-void
-pfq_stop_rx_threads(void)
-{
-	if (global->rx_cpu_nr)
-	{
-		int n;
-
-		printk(KERN_INFO "[PFQ] stopping %d Rx thread(s)...\n", global->rx_cpu_nr);
-
-		for(n = 0; n < global->rx_cpu_nr; n++)
-		{
-			struct pfq_thread_rx_data *data = &pfq_thread_rx_pool[n];
-
-			if (data->task)
-			{
-				pr_devel("[PFQ stopping Rx[%d] thread@%p\n", data->id, data->task);
-
-				kthread_stop(data->task);
-
-				data->id   = -1;
-				data->cpu  = -1;
-				data->task = NULL;
-			}
-		}
-	}
-}
-
-
 int
 pfq_check_threads_affinity(void)
 {
 	bool inuse[Q_CORE_MAX_CPU] = {false};
 	int i, cpu;
 
-	/* check Rx thread affinity */
-
-	for(i=0; i < global->rx_cpu_nr; ++i)
-	{
-		cpu = global->rx_cpu[i];
-		if ( cpu < 0 || cpu >= num_online_cpus()) {
-			printk(KERN_INFO "[PFQ] error: Rx[%d] thread bad affinity on cpu:%d!\n", i, cpu);
-			return -EFAULT;
-		}
-		if (inuse[cpu]) {
-			printk(KERN_INFO "[PFQ] error: Rx[%d] thread cpu:%d already in use!\n", i, cpu);
-			return -EFAULT;
-		}
-		inuse[cpu] = true;
-	}
 
 	/* check Tx thread affinity */
 
@@ -477,29 +303,4 @@ pfq_check_threads_affinity(void)
 
 	return 0;
 }
-
-
-int
-pfq_check_napi_contexts(void)
-{
-	bool inuse[Q_CORE_MAX_CPU] = {false};
-	int i, cpu;
-
-	for(i=0; i < global->napi_cpu_nr; ++i)
-	{
-		cpu = global->napi_cpu[i];
-		if ( cpu < 0 || cpu >= num_online_cpus()) {
-			printk(KERN_INFO "[PFQ] error: Napi[%d] context: cpu %d bad value!\n", i, cpu);
-			return -EFAULT;
-		}
-		if (inuse[cpu]) {
-			printk(KERN_INFO "[PFQ] error: Napi[%d] context: cpu %d already bound!\n", i, cpu);
-			return -EFAULT;
-		}
-		inuse[cpu] = true;
-	}
-
-	return 0;
-}
-
 

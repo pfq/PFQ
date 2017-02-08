@@ -38,8 +38,6 @@ module_param_named(skb_pool_size,	 default_global.skb_pool_size,		int, 0644);
 module_param_named(vlan_untag,		 default_global.vlan_untag,		int, 0644);
 
 module_param_array_named(tx_cpu,	 default_global.tx_cpu,	  int, &default_global.tx_cpu_nr, 0644);
-module_param_array_named(rx_cpu,	 default_global.rx_cpu,	  int, &default_global.rx_cpu_nr, 0644);
-module_param_array_named(napi_cpu,	 default_global.napi_cpu, int, &default_global.napi_cpu_nr, 0644);
 
 MODULE_PARM_DESC(capt_slot_size,	" Maximum capture length (bytes)");
 MODULE_PARM_DESC(xmit_slot_size,	" Maximum transmission length (default=1514 bytes)");
@@ -52,6 +50,4 @@ MODULE_PARM_DESC(skb_pool_size,		" Socket buffer pool size (default=1024)");
 #endif
 
 MODULE_PARM_DESC(tx_cpu,		" Tx k-threads cpu");
-MODULE_PARM_DESC(rx_cpu,		" Rx k-threads cpu");
-MODULE_PARM_DESC(napi_cpu,		" Napi threads cpu (bound to Rx k-threads)");
 

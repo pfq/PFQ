@@ -489,10 +489,6 @@ static int __init pfq_init_module(void)
 	if ((err = pfq_check_threads_affinity()) < 0)
 		goto err6;
 
-	/* check napi contexts */
-	if ((err = pfq_check_napi_contexts()) < 0)
-		goto err6;
-
 	/* start Tx threads */
 	if (global->tx_cpu_nr)
 	{
@@ -500,18 +496,11 @@ static int __init pfq_init_module(void)
 			goto err7;
 	}
 
-	/* start Rx threads */
-	if (global->rx_cpu_nr)
-	{
-		if ((err = pfq_start_rx_threads()) < 0)
-			goto err8;
-	}
-
 	/* proc init */
 
 	err = pfq_proc_init();
 	if (err < 0)
-		goto err9;
+		goto err8;
 
 	/* start a timer */
 
@@ -538,10 +527,8 @@ static int __init pfq_init_module(void)
         printk(KERN_INFO "[PFQ] ready!\n");
         return 0;
 
-err9:
-	pfq_proc_destruct();
 err8:
-	pfq_stop_rx_threads();
+	pfq_proc_destruct();
 err7:
 	pfq_stop_tx_threads();
 err6:
@@ -572,9 +559,6 @@ static void __exit pfq_exit_module(void)
 
 	/* unregister proc */
 	pfq_proc_destruct();
-
-	/* stop Rx threads */
-	pfq_stop_rx_threads();
 
 	/* stop Tx threads */
 	pfq_stop_tx_threads();

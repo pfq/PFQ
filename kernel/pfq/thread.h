@@ -37,10 +37,6 @@ extern struct task_struct *kthread_tx_pool [Q_CORE_MAX_CPU];
 
 extern int  pfq_start_tx_threads(void);
 extern void pfq_stop_tx_threads(void);
-
-extern int  pfq_start_rx_threads(void);
-extern void pfq_stop_rx_threads(void);
-
 extern int  pfq_bind_tx_thread(int tx_index, struct core_sock *sock, int sock_queue);
 extern int  pfq_unbind_tx_thread(struct core_sock *sock);
 
@@ -65,21 +61,6 @@ struct pfq_thread_tx_data
 
 	struct core_sock *	sock[Q_MAX_TX_QUEUES];
 	atomic_t		sock_queue[Q_MAX_TX_QUEUES];
-
-} ____pfq_cacheline_aligned;
-
-
-
-struct pfq_thread_rx_data
-{
-	int			id;
-	int			cpu;
-	struct task_struct *	task;
-
-	/* specific for Rx data */
-
-	int			napi[Q_MAX_RX_NAPI];
-	int			napi_nr;
 
 } ____pfq_cacheline_aligned;
 
