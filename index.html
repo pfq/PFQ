@@ -51,16 +51,16 @@
 (10G, 40G and beyond), in-kernel functional processing and packets steering across sockets/end-points.</p>
 
 <p>PFQ is highly optimized for multi-core architecture, as well as for network devices equipped with multiple hardware queues. 
-It works with any NIC and provides a script designed to compile accelerated device drivers starting from the source code.</p>
+It works with any NIC and provides a script to make accelerated network device drivers starting from the source code.</p>
 
-<p>PFQ framework enables the development of high-performance network applications in C, C++ and Haskell language. 
+<p>PFQ enables the development of high-performance network applications in C, C++ and Haskell language. 
 In addition, a pure functional language designed for early stages in-kernel packet processing is included: 
 <strong><a href="http://pfq.github.io/PFQ/v5.x/lang/haskell/index.html">pfq-lang</a></strong>.</p>
 
 <p>pfq-lang is inspired by Haskell and allows to run small applications on top of network device drivers.  
 Through pfq-lang it is possible to build efficient bridges, port mirrors, simple firewalls, network balancers and so forth.</p>
 
-<p>The package provides the source code of the PFQ kernel module, user-space libraries for C, C++11-14 and Haskell language, 
+<p>The package includes the source code of the PFQ kernel module, user-space libraries for C, C++11-14 and Haskell language, 
 an implementation of pfq-lang as eDSL for C++11-14 and Haskell, an experimental pfq-lang compiler and a set of diagnostic tools.</p>
 
 <h3>
@@ -72,9 +72,9 @@ an implementation of pfq-lang as eDSL for C++11-14 and Haskell, an experimental 
 <li>Preallocated pools of socket buffers.</li> 
 <li>Compliant with a plethora of network devices drivers.</li>
 <li>Rx and Tx line-rate on 10-Gbit links (14,8 Mpps), on-top-of Intel ixgbe <i>vanilla</i> drivers.</li>
-<li>Transparent support of kernel threads for asynchronous packets transmission.</li>
+<li>Kernel threads for asynchronous packets transmission.</li>
 <li>Transmission with active timestamping.</li>
-<li>Groups of sockets which enable concurrent monitoring with multiple multi-threaded applications.</li>
+<li>Groups of sockets for multi-threaded applications.</li>
 <li>Per-group packet steering through randomized hashing or deterministic classification.</li>
 <li>Per-group Berkeley and VLAN filters.</li>
 <li>User-space libraries for C, C++11-14 and Haskell language.</li>
@@ -82,8 +82,8 @@ an implementation of pfq-lang as eDSL for C++11-14 and Haskell, an experimental 
 <li><b>pfq-lang</b> eDLS for both C++11-14 and Haskell language.</li>
 <li><b>pfq-lang</b> experimental compiler.</li>
 <li>Accelerated pcap library for legacy applications (line-speed tested with <a href="https://github.com/awgn/captop">captop</a>).</li>
-<li>I/O user<->kernel memory-mapped communications on top of <b>HugePages</b>.</li>
-<li><b>pfq-omatic</b> script that automatically accelerates vanilla network drivers.</li>
+<li>Memory-mapped I/O between user and kernel on top of <b>HugePages</b>.</li>
+<li><b>pfq-omatic</b> script to build accelerated vanilla network drivers.</li>
 <li><b>pfqd</b> daemon used to configure and parallelize (pcap) legacy applications.</li>
 
 </ul>
@@ -91,7 +91,7 @@ an implementation of pfq-lang as eDSL for C++11-14 and Haskell, an experimental 
 <h3>
 <a name="performance" class="anchor" href="#performance"><span class="octicon octicon-link"></span></a>Performance</h3>
 
-<p>PFQ performance is highly dependent on the hardware used. </p>
+<p>PFQ performance highly depends on the hardware used.</p>
 
 <p>Running on top of a Xeon processor equipped and the Intel 82599 10G controller, PFQ can process, steer to user-space and transmit the line speed (~14,8 Million packets per second) using 2 or 3 kernel threads.</p>
 <p>The following link shows the configuration file and the performance measured running PFQ on top of <a href="https://github.com/pfq/PFQ/wiki/Intel-IXGBE-10-20G">Intel 82599 10/20G NICs</a>.</p>
@@ -100,6 +100,7 @@ an implementation of pfq-lang as eDSL for C++11-14 and Haskell, an experimental 
 <a name="releases" class="anchor" href="#releases"><span class="octicon octicon-link"></span></a>Releases</h3>
 
 <p>The current <em>stable</em> release is the <a href="https://github.com/pfq/PFQ/tree/master">master</a> branch (<strong>v5.2</strong>).</p>
+<p>The upcoming major release (<strong>v6.0</strong>) is expected to be released in the first quarter of 2017.</p>
 
 <h3>
 <a name="source-code" class="anchor" href="#source-code"><span class="octicon octicon-link"></span></a>Source code</h3>
