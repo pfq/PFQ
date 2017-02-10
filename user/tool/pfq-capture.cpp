@@ -133,7 +133,6 @@ namespace thread
         , m_read()
         , m_batch()
         , m_flow_map()
-        , m_flow()
         , m_filename()
         , m_file(nullptr)
         {
@@ -261,10 +260,7 @@ namespace thread
                             auto key = std::make_tuple(ipv4->saddr, ipv4->daddr, udp->source, udp->dest, ipv4->protocol);
                             auto this_flow = m_flow_map[this_rop & 1].find(key);
                             if (this_flow == m_flow_map[this_rop & 1].end()) {
-
                                 std::tie(this_flow, std::ignore) = m_flow_map[this_rop & 1].insert(std::make_pair(key, flow::state{}));
-
-                                m_flow.fetch_add(1, std::memory_order_relaxed);
                             }
 
                             this_flow->second.count++;
@@ -302,11 +298,12 @@ namespace thread
             auto rop = flow::rop.load(std::memory_order_relaxed) + 1;
             return m_flow_map[rop & 1];
         }
-
-        unsigned long
-        flow() const
+        
+        FlowMap const &
+        flow_map() const
         {
-            return m_flow.load(std::memory_order_relaxed);
+            auto rop = flow::rop.load(std::memory_order_relaxed) + 1;
+            return m_flow_map[rop & 1];
         }
 
         size_t
@@ -366,8 +363,6 @@ namespace thread
         size_t m_batch;
 
         FlowMap m_flow_map[2];
-
-        std::atomic_long m_flow;
 
         std::string m_filename;
         FILE * m_file;
@@ -608,7 +603,7 @@ try
 
         std::for_each(thread_ctx.begin(), thread_ctx.end(), [&](const thread::context *c) {
             sum += c->read();
-            flow += c->flow();
+            flow += c->flow_map().size();
             sum_stats += c->stats();
         });
 
@@ -657,7 +652,9 @@ try
                               << show_ip(std::get<0>(f.first)) << ":"
                               << ntohs(std::get<2>(f.first))   << " -> "
                               << show_ip(std::get<1>(f.first)) << ":"
-                              << ntohs(std::get<3>(f.first))   << ' ' << pretty_number<double>(f.second.count) << ' ' << pretty_number<double>(f.second.bytes) << std::endl;
+                              << ntohs(std::get<3>(f.first))   << "\t" 
+                              << pretty_number<double>(f.second.count) << "pkt/sec - " 
+                              << pretty_number<double>(f.second.bytes * 8) << "bit/sec"  << std::endl;
 
                     f.second.count = 0;
                     f.second.bytes = 0;
