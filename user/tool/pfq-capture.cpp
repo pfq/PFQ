@@ -23,7 +23,7 @@
 #include <csignal>
 #include <tuple>
 #include <limits>
-#include <unordered_set>
+#include <unordered_map>
 
 #include <pfq/pfq.hpp>
 #include <pfq/lang/lang.hpp>
@@ -66,21 +66,33 @@ namespace opt
     bool dump      = false;
 
     std::string dumpfile;
-    
+
     std::atomic_bool stop;
 }
 
 
-typedef std::tuple<uint32_t, uint32_t, uint16_t, uint16_t> Tuple;
+typedef std::tuple<uint32_t, uint32_t, uint16_t, uint16_t, uint8_t> Tuple;
 
-struct HashTuple
+
+namespace flow
 {
-    uint32_t operator()(Tuple const &t) const
-    {
+    std::atomic_int  rop;
 
-        return std::get<0>(t) ^ std::get<1>(t) ^ std::get<2>(t) ^ (static_cast<uint32_t>(std::get<3>(t)) << 16);
-    }
-};
+    struct HashTuple
+    {
+        uint32_t operator()(Tuple const &t) const
+        {
+
+            return std::get<0>(t) ^ std::get<1>(t) ^ std::get<2>(t) ^ (static_cast<uint32_t>(std::get<3>(t)) << 16);
+        }
+    };
+
+    struct state
+    {
+        size_t  count;
+        size_t  bytes;
+    };
+}
 
 
 namespace thread
@@ -112,13 +124,15 @@ namespace thread
 
     struct context
     {
+        using FlowMap = std::unordered_map<std::tuple<uint32_t, uint32_t, uint16_t, uint16_t, uint8_t>, flow::state, flow::HashTuple>;
+
         context(int id, const thread_binding &b)
         : m_id(id)
         , m_bind(b)
         , m_pfq(group_policy::undefined, opt::caplen, opt::slots)
         , m_read()
         , m_batch()
-        , m_set()
+        , m_flow_map()
         , m_flow()
         , m_filename()
         , m_file(nullptr)
@@ -190,6 +204,8 @@ namespace thread
             {
                 auto many = m_pfq.read(opt::timeout_ms);
 
+                auto this_rop = flow::rop.load(std::memory_order_acquire);
+
                 m_read += many.size();
                 m_batch = std::max(m_batch, many.size());
 
@@ -201,7 +217,7 @@ namespace thread
                         while (!it.ready())
                             std::this_thread::yield();
 
-                        auto h = *it;
+                        auto & h = *it;
                         const unsigned char *buff = static_cast<unsigned char *>(it.data());
 
                         if (m_file)
@@ -235,17 +251,28 @@ namespace thread
                         while(!it.ready())
                             std::this_thread::yield();
 
+                        auto & h = *it;
+
                         iphdr  * ipv4 = reinterpret_cast<iphdr *> (static_cast<char *>(it.data()) + 14);
                         if (ipv4->protocol == IPPROTO_TCP || ipv4->protocol == IPPROTO_UDP)
                         {
                             udphdr * udp = reinterpret_cast<udphdr *>(static_cast<char *>(it.data()) + (ipv4->ihl<<2));
 
-                            if (m_set.insert(std::make_tuple(ipv4->saddr, ipv4->daddr, udp->source, udp->dest)).second)
-                                m_flow++;
+                            auto key = std::make_tuple(ipv4->saddr, ipv4->daddr, udp->source, udp->dest, ipv4->protocol);
+                            auto this_flow = m_flow_map[this_rop & 1].find(key);
+                            if (this_flow == m_flow_map[this_rop & 1].end()) {
+
+                                std::tie(this_flow, std::ignore) = m_flow_map[this_rop & 1].insert(std::make_pair(key, flow::state{}));
+
+                                m_flow.fetch_add(1, std::memory_order_relaxed);
+                            }
+
+                            this_flow->second.count++;
+                            this_flow->second.bytes+= h.len;
                         }
                     }
                 }
-                
+
                 if (opt::stop.load(std::memory_order_relaxed))
                     break;
             }
@@ -268,10 +295,18 @@ namespace thread
             return m_read;
         }
 
+
+        FlowMap &
+        flow_map()
+        {
+            auto rop = flow::rop.load(std::memory_order_relaxed) + 1;
+            return m_flow_map[rop & 1];
+        }
+
         unsigned long
         flow() const
         {
-            return m_flow;
+            return m_flow.load(std::memory_order_relaxed);
         }
 
         size_t
@@ -330,9 +365,9 @@ namespace thread
         unsigned long long m_read;
         size_t m_batch;
 
-        std::unordered_set<std::tuple<uint32_t, uint32_t, uint16_t, uint16_t>, HashTuple> m_set;
+        FlowMap m_flow_map[2];
 
-        unsigned long m_flow;
+        std::atomic_long m_flow;
 
         std::string m_filename;
         FILE * m_file;
@@ -350,7 +385,7 @@ void usage(std::string name)
         " -c --caplen INT               Set caplen\n"
         " -w --write FILE               Write packets to file (pcap)\n"
         " -d --dump                     Dump packets to stdout\n"
-        " -l --flow                     Enable flow counter\n"
+        "    --flow                     Enable per-flow counters\n"
         " -s --slot INT                 Set slots\n"
         "    --seconds INT              Terminate after INT seconds\n"
         "    --no-promisc               Disable promiscuous mode (enabled by default)\n"
@@ -369,6 +404,16 @@ void sighandler(int)
 {
     opt::stop.store(true, std::memory_order_relaxed);
 }
+
+
+inline std::string show_ip(uint32_t addr)
+{
+    char ip[16];
+    if (inet_ntop(AF_INET, &addr, ip, sizeof(ip)) == nullptr)
+        throw std::runtime_error("address::operator<<");
+    return ip;
+}
+
 
 int
 main(int argc, char *argv[])
@@ -547,6 +592,8 @@ try
 
     for(size_t y=0; y < opt::seconds; y++)
     {
+        flow::rop.fetch_add(1, std::memory_order_release);
+
         std::this_thread::sleep_for(std::chrono::seconds(1));
 
         if (opt::stop.load(std::memory_order_relaxed))
@@ -565,25 +612,25 @@ try
             sum_stats += c->stats();
         });
 
-        std::cout << "recv: ";
+        std::cout << "recv      : ";
         std::for_each(thread_ctx.begin(), thread_ctx.end(), [&](const thread::context *c) {
                       std::cout << c->stats().recv << ' ';
                       });
         std::cout << " -> " << sum_stats.recv << std::endl;
 
-        std::cout << "lost: ";
+        std::cout << "lost      : ";
         std::for_each(thread_ctx.begin(), thread_ctx.end(), [&](const thread::context *c) {
                       std::cout << c->stats().lost << ' ';
                       });
         std::cout << " -> " << sum_stats.lost << std::endl;
 
-        std::cout << "drop: ";
+        std::cout << "drop      : ";
         std::for_each(thread_ctx.begin(), thread_ctx.end(), [&](const thread::context *c) {
                       std::cout << c->stats().drop << ' ';
                       });
         std::cout << " -> " << sum_stats.drop << std::endl;
 
-        std::cout << "max_batch: ";
+        std::cout << "max_batch : ";
         std::for_each(thread_ctx.begin(), thread_ctx.end(), [&](const thread::context *c) {
                       std::cout << c->batch() << ' ';
                       });
@@ -594,13 +641,29 @@ try
         auto rate = (static_cast<int64_t>(sum-old)*1000000)/
                         std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count();
 
-        std::cout << "capture: " << vt100::BOLD << pretty_number<double>(rate) << " pkt/sec" << vt100::RESET;
+        std::cout << "capture   : " << vt100::BOLD << pretty_number<double>(rate) << " pkt/sec" << vt100::RESET << std::endl;
 
-        if (flow) {
-            std::cout << " flow: " << flow;
+        if (opt::flow) {
+
+            std::cout << "flows     : " << flow << std::endl;
+
+            for(auto &ctx : thread_ctx) {
+
+                auto & fmap = ctx->flow_map();
+                for(auto & f : fmap) {
+
+                    std::cout << "    "
+                              << static_cast<int>(std::get<4>(f.first)) << "|"
+                              << show_ip(std::get<0>(f.first)) << ":"
+                              << ntohs(std::get<2>(f.first))   << " -> "
+                              << show_ip(std::get<1>(f.first)) << ":"
+                              << ntohs(std::get<3>(f.first))   << ' ' << pretty_number<double>(f.second.count) << ' ' << pretty_number<double>(f.second.bytes) << std::endl;
+
+                    f.second.count = 0;
+                    f.second.bytes = 0;
+                }
+            }
         }
-
-        std::cout << std::endl;
 
         old = sum, begin = end;
         old_stats = sum_stats;
