@@ -74,11 +74,11 @@ static inline bool pfq_skb_is_recycleable(const struct sk_buff *skb)
 		return false;
 	}
 
-#if 0
 	if (unlikely(skb_is_nonlinear(skb))) {
 		sparse_inc(global->percpu_memory, err_nolinr);
 		return false;
 	}
+#if 0
 	skb_size = SKB_DATA_ALIGN(skb_size);
 	if (unlikely(pfq_skb_end_offset(skb) < skb_size)) {
 		sparse_inc(global->percpu_memory, err_memory);
@@ -95,17 +95,15 @@ pfq_skb_release_head_state(struct sk_buff *skb)
 {
 	skb_dst_drop(skb);
 
-#if 0
-#ifdef CONFIG_XFRM
-	secpath_put(skb->sp);
-#endif
-#endif
 	if (skb->destructor) {
 		WARN_ON(in_irq());
 		skb->destructor(skb);
 	}
 
 #if 0
+#ifdef CONFIG_XFRM
+	secpath_put(skb->sp);
+#endif
 #if IS_ENABLED(CONFIG_NF_CONNTRACK)
 	nf_conntrack_put(skb->nfct);
 #endif
@@ -166,25 +164,18 @@ pfq_skb_recycle(struct sk_buff *skb)
 	bool pfmemalloc;
 #endif
 
-	int  pool;
-        uint32_t id;
-        struct sk_buff *addr;
-
 	/* reset skb */
 
 #if (LINUX_VERSION_CODE > KERNEL_VERSION(3,5,0))
 	pfmemalloc = skb->pfmemalloc;
 #endif
 
-	pool = PFQ_CB(skb)->pool;
-        id   = PFQ_CB(skb)->id;
-        addr = PFQ_CB(skb)->addr;
-
 	//
 	// size = SKB_DATA_ALIGN(size);
         //
 
-	memset(skb, 0, offsetof(struct sk_buff, tail));
+	memset(skb, 0, offsetof(struct sk_buff, cb));
+	memset(skb, offsetof(struct sk_buff, cb) + sizeof(skb->cb), offsetof(struct sk_buff, tail));
 
 	// skb->truesize = SKB_TRUESIZE(size);
 	//
@@ -192,10 +183,6 @@ pfq_skb_recycle(struct sk_buff *skb)
 #if (LINUX_VERSION_CODE > KERNEL_VERSION(3,5,0))
 	skb->pfmemalloc = pfmemalloc;
 #endif
-
-	PFQ_CB(skb)->pool = pool;
-	PFQ_CB(skb)->addr = addr;
-	PFQ_CB(skb)->id = id;
 
 	atomic_set(&skb->users, 1);
 
@@ -212,10 +199,9 @@ pfq_skb_recycle(struct sk_buff *skb)
 	skb->transport_header = (typeof(skb->transport_header))~0U;
 
 	shinfo = skb_shinfo(skb);
-#if 0
 	memset(shinfo, 0, offsetof(struct skb_shared_info, dataref));
 	kmemcheck_annotate_variable(shinfo->destructor_arg);
-#endif
+
 	atomic_set(&shinfo->dataref,1);
 
 	skb->nf_trace = 1;
@@ -261,10 +247,10 @@ ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, 
 			if(pfq_skb_is_recycleable(skb)) {
 				sparse_inc(global->percpu_memory, pool_pop[idx]);
 				core_spsc_consume(pool);
-#if 0
+
 				pfq_skb_release_head_state(skb);
 				pfq_skb_release_data(skb);
-#endif
+
 				return pfq_skb_recycle(skb);
 			}
 			else {
