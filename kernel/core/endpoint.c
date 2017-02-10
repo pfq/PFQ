@@ -57,7 +57,7 @@ core_add_dev_to_endpoints(struct net_device *dev, struct core_endpoint_info *ts)
 }
 
 
-static
+static inline
 size_t copy_to_user_qbuffs(struct core_sock *so, struct core_qbuff_refs *buffs,
 			 unsigned long long mask, int cpu, pfq_gid_t gid)
 {
@@ -82,7 +82,7 @@ size_t copy_to_user_qbuffs(struct core_sock *so, struct core_qbuff_refs *buffs,
 }
 
 
-static
+static inline
 size_t copy_to_dev_qbuffs(struct core_sock *so, struct core_qbuff_refs *buffs,
 			 unsigned long long mask, int cpu, pfq_gid_t gid)
 {

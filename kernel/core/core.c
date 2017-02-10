@@ -327,7 +327,7 @@ int core_process_batch(struct core_percpu_data *data,
 			struct core_sock * so = core_sock_get_by_id(id);
 			core_copy_to_endpoint_qbuffs(so, PFQ_QBUFF_REFS(&refs), sock_queue[(int __force)id], cpu, gid);
 		})
-	})
+	});
 
 	/* forward buffs to network devices */
 
