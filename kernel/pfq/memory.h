@@ -53,6 +53,11 @@ extern struct sk_buff * __pfq_netdev_alloc_skb(struct net_device *dev, unsigned 
 
 static inline bool pfq_skb_is_recycleable(const struct sk_buff *skb)
 {
+	if( PFQ_CB(skb)->head != skb->head) {
+		sparse_inc(global->percpu_memory, err_broken);
+		return false;
+	}
+
 	if (unlikely(irqs_disabled())) {
 		sparse_inc(global->percpu_memory, err_irqdis);
 		return false;
@@ -134,24 +139,20 @@ void pfq_kfree_skb_list(struct sk_buff *segs)
 }
 
 
-#if defined(PFQ_FULL_SKB_RECYCLE)
 static inline
-void skb_free_head(struct sk_buff *skb)
+bool skb_free_head(struct sk_buff *skb)
 {
         unsigned char *head = skb->head;
 
         if (skb->head_frag) {
                 sparse_inc(global->percpu_memory, dbg_skb_free_frag);
                 skb_free_frag(head);
+                return false;
 	}
-        else {
-                sparse_inc(global->percpu_memory, dbg_skb_free_head);
-                kfree(head);
-	}
+	return true;
 }
-#endif
 
-static inline void
+static inline bool
 pfq_skb_release_data(struct sk_buff *skb)
 {
 	int i;
@@ -165,10 +166,7 @@ pfq_skb_release_data(struct sk_buff *skb)
 	if (unlikely(shinfo->frag_list))
 		pfq_kfree_skb_list(shinfo->frag_list);
 
-#if defined(PFQ_FULL_SKB_RECYCLE)
-        skb_free_head(skb);
-#endif
-
+        return skb_free_head(skb);
 }
 
 
@@ -178,64 +176,14 @@ pfq_skb_recycle(struct sk_buff *skb)
 {
 	struct skb_shared_info *shinfo;
 
-#if (LINUX_VERSION_CODE > KERNEL_VERSION(3,5,0))
-	bool pfmemalloc;
-#endif
-
-	int  pool;
-        uint32_t id;
-        struct sk_buff *addr;
-
-	/* reset skb */
-
-#if (LINUX_VERSION_CODE > KERNEL_VERSION(3,5,0))
-	pfmemalloc = skb->pfmemalloc;
-#endif
-
-	pool = PFQ_CB(skb)->pool;
-        id   = PFQ_CB(skb)->id;
-        addr = PFQ_CB(skb)->addr;
-
-	//
-	// size = SKB_DATA_ALIGN(size);
-        //
-
-	memset(skb, 0, offsetof(struct sk_buff, tail));
-
-	// skb->truesize = SKB_TRUESIZE(size);
-	//
-
-#if (LINUX_VERSION_CODE > KERNEL_VERSION(3,5,0))
-	skb->pfmemalloc = pfmemalloc;
-#endif
-
-	PFQ_CB(skb)->pool = pool;
-	PFQ_CB(skb)->addr = addr;
-	PFQ_CB(skb)->id = id;
-
-	atomic_set(&skb->users, 1);
-
-	/* head + end are already set */
-
-	skb->data = skb->head;
-	skb_reset_tail_pointer(skb);
-
-	//
-        // skb->end = skb->tail + size;
-        //
-
-	skb->mac_header = (typeof(skb->mac_header))~0U;
-	skb->transport_header = (typeof(skb->transport_header))~0U;
+	memcpy(skb, PFQ_CB(skb)->skb_orig, sizeof(struct sk_buff));
 
 	shinfo = skb_shinfo(skb);
 
-#if defined(PFQ_FULL_SKB_RECYCLE)
 	memset(shinfo, 0, offsetof(struct skb_shared_info, dataref));
 	kmemcheck_annotate_variable(shinfo->destructor_arg);
-#endif
-	atomic_set(&shinfo->dataref,1);
 
-	skb->nf_trace = 1;
+	atomic_set(&shinfo->dataref,1);
 	return skb;
 }
 
@@ -276,13 +224,19 @@ ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, 
 		struct sk_buff *skb = core_spsc_peek(pool);
 		if (likely(skb != NULL)) {
 			if(pfq_skb_is_recycleable(skb)) {
+
 				sparse_inc(global->percpu_memory, pool_pop[idx]);
+
 				core_spsc_consume(pool);
-
 				pfq_skb_release_head_state(skb);
-				pfq_skb_release_data(skb);
 
-				return pfq_skb_recycle(skb);
+				if (pfq_skb_release_data(skb))
+					return pfq_skb_recycle(skb);
+				else {
+					sparse_inc(global->percpu_memory, pool_norecycl[idx]);
+					// FIXME
+					// kfree_skbmem(skb);
+				}
 			}
 			else {
 				sparse_inc(global->percpu_memory, pool_norecycl[idx]);
