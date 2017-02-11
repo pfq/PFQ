@@ -75,6 +75,7 @@ struct core_memory_stats
 	local_t err_fclone;
 	local_t err_nolinr;
 	local_t err_nfound;
+	local_t err_broken;
 
 	local_t dbg_dst_drop;
 	local_t dbg_skb_dtor;
@@ -101,6 +102,7 @@ struct core_pool_stats
 	uint64_t err_fclone;
 	uint64_t err_nolinr;
 	uint64_t err_nfound;
+	uint64_t err_broken;
 
 	uint64_t dbg_dst_drop;
 	uint64_t dbg_skb_dtor;

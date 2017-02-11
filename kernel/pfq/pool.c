@@ -137,6 +137,7 @@ pfq_get_skb_pool_stats(void)
         ,  .err_fclone 	     = sparse_read(global->percpu_memory, err_fclone)
         ,  .err_nolinr       = sparse_read(global->percpu_memory, err_nolinr)
         ,  .err_nfound 	     = sparse_read(global->percpu_memory, err_nfound)
+        ,  .err_broken	     = sparse_read(global->percpu_memory, err_broken)
 
 	, .dbg_dst_drop       = sparse_read(global->percpu_memory, dbg_dst_drop)
 	, .dbg_skb_dtor	      = sparse_read(global->percpu_memory, dbg_skb_dtor)

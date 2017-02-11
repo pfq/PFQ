@@ -213,6 +213,7 @@ static int pfq_proc_memory(struct seq_file *m, void *v)
 	seq_printf(m, "  error fclone   : %10ld\n", sparse_read(global->percpu_memory, err_fclone));
 	seq_printf(m, "  error nolinr   : %10ld\n", sparse_read(global->percpu_memory, err_nolinr));
 	seq_printf(m, "  error nfound   : %10ld\n", sparse_read(global->percpu_memory, err_nfound));
+	seq_printf(m, "  error broken   : %10ld\n", sparse_read(global->percpu_memory, err_broken));
 
 	seq_printf(m, "\nPFQ POOL stats\n");
 	seq_printf(m, "  skb.dst_drop   : %10ld\n", sparse_read(global->percpu_memory, dbg_dst_drop));
