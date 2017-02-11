@@ -30,6 +30,7 @@
 #include <linux/skbuff.h>
 #include <linux/hardirq.h>
 #include <net/dst.h>
+#include <net/xfrm.h>
 #include <pragma/diagnostic_pop>
 
 #include <core/global.h>
@@ -98,30 +99,25 @@ pfq_skb_release_head_state(struct sk_buff *skb)
 		skb_dst_drop(skb);
 	}
 
-#if 0
 #ifdef CONFIG_XFRM
 	secpath_put(skb->sp);
 #endif
-#endif
-	if (skb->destructor) {
+	if (unlikely(skb->destructor)) {
                 sparse_inc(global->percpu_memory, dbg_skb_dtor);
 		WARN_ON(in_irq());
 		skb->destructor(skb);
 	}
 
-#if defined(PFQ_FULL_SKB_RECYCLE)
-
-#if IS_ENABLED(CONFIG_NF_CONNTRACK)
-	nf_conntrack_put(skb->nfct);
-#endif
-
-#ifdef NET_SKBUFF_NF_DEFRAG_NEEDED
-	nf_conntrack_put_reasm(skb->nfct_reasm);
-#endif
-#ifdef CONFIG_BRIDGE_NETFILTER
-	nf_bridge_put(skb->nf_bridge);
-#endif
-#endif
+// #if IS_ENABLED(CONFIG_NF_CONNTRACK)
+// 	nf_conntrack_put(skb->nfct);
+// #endif
+//
+// #ifdef NET_SKBUFF_NF_DEFRAG_NEEDED
+// 	nf_conntrack_put_reasm(skb->nfct_reasm);
+// #endif
+// #ifdef CONFIG_BRIDGE_NETFILTER
+// 	nf_bridge_put(skb->nf_bridge);
+// #endif
 
 }
 
