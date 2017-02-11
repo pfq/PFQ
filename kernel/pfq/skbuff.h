@@ -32,7 +32,8 @@
 
 struct pfq_cb
 {
-	void *	 addr;
+	void *	 head;
+	void *   skb_orig;
 	uint32_t id;
 	u8	 pool;
 };
@@ -42,12 +43,13 @@ static inline
 void pfq_skb_dump(const char *msg, const struct sk_buff *skb)
 {
 	struct skb_shared_info *shinfo =  skb_shinfo(skb);
-	printk(KERN_INFO "[%s] skb@%p -> pool[%d] id=%u addr=%p len=%d data_len=%d truesize=%d {head=%p data=%p tail=%u end=%u users=%d} >> [nfrags=%d tx_flags=%x gso_size=%d data_ref=%d darg=%p]\n"
+	printk(KERN_INFO "[%s] skb@%p -> pool[%d] id=%u head=%p skb_orig=%p len=%d data_len=%d truesize=%d {head=%p data=%p tail=%u end=%u users=%d} >> [nfrags=%d tx_flags=%x gso_size=%d data_ref=%d darg=%p]\n"
 			, msg
 			, (void *)skb
 			, skb->nf_trace ? PFQ_CB(skb)->pool : -1
 			, PFQ_CB(skb)->id
-			, PFQ_CB(skb)->addr
+			, PFQ_CB(skb)->head
+			, PFQ_CB(skb)->skb_orig
 			, skb->len
 			, skb->data_len
 			, skb->truesize

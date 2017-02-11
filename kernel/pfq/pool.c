@@ -44,6 +44,7 @@ pfq_skb_pool_flush(struct core_spsc_fifo *pool)
 		if (atomic_read(&skb->users) > 1) {
 			in_use++;
 		}
+		kfree(PFQ_CB(skb)->skb_orig);
 		kfree_skb(skb);
 		total++;
 	}
@@ -84,8 +85,11 @@ int pfq_skb_pool_init (struct core_spsc_fifo **pool, size_t pool_size, size_t sk
 			skb->nf_trace = 1;
 
 			PFQ_CB(skb)->id = total;
-			PFQ_CB(skb)->addr = skb;
 			PFQ_CB(skb)->pool = idx;
+			PFQ_CB(skb)->head = skb->head;
+			PFQ_CB(skb)->skb_orig = kmalloc(sizeof(struct sk_buff), GFP_KERNEL);
+
+			memcpy(PFQ_CB(skb)->skb_orig, skb, sizeof(struct sk_buff));
 
 			core_spsc_push(*pool, skb);
 			sparse_inc(global->percpu_memory, os_alloc);
