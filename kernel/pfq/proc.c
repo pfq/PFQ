@@ -213,8 +213,16 @@ static int pfq_proc_memory(struct seq_file *m, void *v)
 	seq_printf(m, "  error fclone   : %10ld\n", sparse_read(global->percpu_memory, err_fclone));
 	seq_printf(m, "  error nolinr   : %10ld\n", sparse_read(global->percpu_memory, err_nolinr));
 	seq_printf(m, "  error nfound   : %10ld\n", sparse_read(global->percpu_memory, err_nfound));
+
+	seq_printf(m, "\nPFQ POOL stats\n");
+	seq_printf(m, "  skb.dst_drop   : %10ld\n", sparse_read(global->percpu_memory, dbg_dst_drop));
+	seq_printf(m, "  skb.dtor       : %10ld\n", sparse_read(global->percpu_memory, dbg_skb_dtor));
+	seq_printf(m, "  skb.frag_unref : %10ld\n", sparse_read(global->percpu_memory, dbg_skb_frag_unref));
+	seq_printf(m, "  skb.free_frag  : %10ld\n", sparse_read(global->percpu_memory, dbg_skb_free_frag));
+	seq_printf(m, "  skb.free_head  : %10ld\n", sparse_read(global->percpu_memory, dbg_skb_free_head));
+
 #endif
-	seq_printf(m, "Kernel\n");
+	seq_printf(m, "\nKernel\n");
 	seq_printf(m, "  skb_alloc      : %10ld\n", sparse_read(global->percpu_memory, os_alloc));
 	seq_printf(m, "  skb_free       : %10ld\n", sparse_read(global->percpu_memory, os_free));
 

@@ -46,7 +46,7 @@ struct pfq_skb_pool
 extern int	pfq_skb_pool_init_all(void);
 extern int	pfq_skb_pool_free_all(void);
 
-extern struct  core_pool_stat pfq_get_skb_pool_stats(void);
+extern struct  core_pool_stats pfq_get_skb_pool_stats(void);
 
 
 static inline

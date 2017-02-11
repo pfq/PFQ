@@ -110,10 +110,10 @@ skb_pool_free(struct core_spsc_fifo **pool)
 }
 
 
-struct core_pool_stat
+struct core_pool_stats
 pfq_get_skb_pool_stats(void)
 {
-        struct core_pool_stat ret =
+        return (struct core_pool_stats)
         {
            .os_alloc         = sparse_read(global->percpu_memory, os_alloc)
         ,  .os_free          = sparse_read(global->percpu_memory, os_free)
@@ -137,8 +137,14 @@ pfq_get_skb_pool_stats(void)
         ,  .err_fclone 	     = sparse_read(global->percpu_memory, err_fclone)
         ,  .err_nolinr       = sparse_read(global->percpu_memory, err_nolinr)
         ,  .err_nfound 	     = sparse_read(global->percpu_memory, err_nfound)
+
+	, .dbg_dst_drop       = sparse_read(global->percpu_memory, dbg_dst_drop)
+	, .dbg_skb_dtor	      = sparse_read(global->percpu_memory, dbg_skb_dtor)
+	, .dbg_skb_frag_unref = sparse_read(global->percpu_memory, dbg_skb_frag_unref)
+	, .dbg_skb_free_frag  = sparse_read(global->percpu_memory, dbg_skb_free_frag)
+	, .dbg_skb_free_head  = sparse_read(global->percpu_memory, dbg_skb_free_head)
+
 	};
-	return ret;
 }
 
 /* public */
