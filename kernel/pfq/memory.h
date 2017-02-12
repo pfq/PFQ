@@ -176,12 +176,11 @@ pfq_skb_recycle(struct sk_buff *skb)
 {
 	struct skb_shared_info *shinfo;
 
-	memcpy(skb, PFQ_CB(skb)->skb_orig, sizeof(struct sk_buff));
-
 	shinfo = skb_shinfo(skb);
-
 	memset(shinfo, 0, offsetof(struct skb_shared_info, dataref));
 	kmemcheck_annotate_variable(shinfo->destructor_arg);
+
+	memcpy(skb, PFQ_CB(skb)->skb_orig, sizeof(struct sk_buff));
 
 	atomic_set(&shinfo->dataref,1);
 	return skb;
