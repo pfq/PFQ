@@ -73,6 +73,8 @@ int pfq_skb_pool_init (struct core_spsc_fifo **pool, size_t pool_size, size_t sk
 
 		for(; total < pool_size; total++)
 		{
+			struct sk_buff *blueprint;
+
 			skb = __alloc_skb(skb_len, GFP_KERNEL, 0, cpu_to_node(cpu));
 			if (!skb)
 				return total;
@@ -82,12 +84,18 @@ int pfq_skb_pool_init (struct core_spsc_fifo **pool, size_t pool_size, size_t sk
 				return total;
 			}
 
+			blueprint = kmalloc(sizeof(struct sk_buff), GFP_KERNEL);
+			if (!blueprint) {
+				__kfree_skb(skb);
+				return total;
+			}
+
 			skb->nf_trace = 1;
 
 			PFQ_CB(skb)->id = total;
 			PFQ_CB(skb)->pool = idx;
 			PFQ_CB(skb)->head = skb->head;
-			PFQ_CB(skb)->skb_orig = kmalloc(sizeof(struct sk_buff), GFP_KERNEL);
+			PFQ_CB(skb)->skb_orig = blueprint;
 
 			memcpy(PFQ_CB(skb)->skb_orig, skb, sizeof(struct sk_buff));
 
