@@ -522,8 +522,9 @@ static int __init pfq_init_module(void)
         printk(KERN_INFO "[PFQ] xmit_slot_size  : %d\n", global->xmit_slot_size);
         printk(KERN_INFO "[PFQ] capt_batch_len  : %d\n", global->capt_batch_len);
         printk(KERN_INFO "[PFQ] xmit_batch_len  : %d\n", global->xmit_batch_len);
-        printk(KERN_INFO "[PFQ] skb_pool_size   : %d\n", global->skb_pool_size);
         printk(KERN_INFO "[PFQ] vlan_untag      : %d\n", global->vlan_untag);
+        printk(KERN_INFO "[PFQ] skb_pool_size   : %d\n", global->skb_pool_size);
+        printk(KERN_INFO "[PFQ] skb_size        : %zu\n", sizeof(struct sk_buff));
         printk(KERN_INFO "[PFQ] ready!\n");
         return 0;
 

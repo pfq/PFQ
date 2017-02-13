@@ -99,9 +99,11 @@ int pfq_skb_pool_init (struct core_spsc_fifo **pool, size_t pool_size, size_t sk
 
 			memcpy(PFQ_CB(skb)->skb_orig, skb, sizeof(struct sk_buff));
 
-			if (total == 0) {
+#if 0
+			if (cpu == 0) {
 				pfq_printk_skb("pool", skb);
 			}
+#endif
 
 			core_spsc_push(*pool, skb);
 			sparse_inc(global->percpu_memory, os_alloc);
