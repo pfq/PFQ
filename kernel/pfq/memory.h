@@ -80,11 +80,11 @@ static inline bool pfq_skb_is_recycleable(const struct sk_buff *skb)
 		return false;
 	}
 
+#if 0
 	if (unlikely(skb_is_nonlinear(skb))) {
 		sparse_inc(global->percpu_memory, err_nolinr);
 		return false;
 	}
-#if 0
 	skb_size = SKB_DATA_ALIGN(skb_size);
 	if (unlikely(pfq_skb_end_offset(skb) < skb_size)) {
 		sparse_inc(global->percpu_memory, err_memory);
@@ -140,19 +140,18 @@ void pfq_kfree_skb_list(struct sk_buff *segs)
 
 
 static inline
-bool skb_free_head(struct sk_buff *skb)
+void skb_free_head(struct sk_buff *skb)
 {
         unsigned char *head = skb->head;
 
         if (skb->head_frag) {
                 sparse_inc(global->percpu_memory, dbg_skb_free_frag);
                 skb_free_frag(head);
-                return false;
 	}
-	return true;
 }
 
-static inline bool
+
+static inline void
 pfq_skb_release_data(struct sk_buff *skb)
 {
 	int i;
@@ -166,7 +165,7 @@ pfq_skb_release_data(struct sk_buff *skb)
 	if (unlikely(shinfo->frag_list))
 		pfq_kfree_skb_list(shinfo->frag_list);
 
-        return skb_free_head(skb);
+        skb_free_head(skb);
 }
 
 
@@ -179,10 +178,10 @@ pfq_skb_recycle(struct sk_buff *skb)
 	shinfo = skb_shinfo(skb);
 	memset(shinfo, 0, offsetof(struct skb_shared_info, dataref));
 	kmemcheck_annotate_variable(shinfo->destructor_arg);
+	atomic_set(&shinfo->dataref,1);
 
 	memcpy(skb, PFQ_CB(skb)->skb_orig, sizeof(struct sk_buff));
 
-	atomic_set(&shinfo->dataref,1);
 	return skb;
 }
 
@@ -228,14 +227,8 @@ ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, 
 
 				core_spsc_consume(pool);
 				pfq_skb_release_head_state(skb);
-
-				if (pfq_skb_release_data(skb))
-					return pfq_skb_recycle(skb);
-				else {
-					sparse_inc(global->percpu_memory, pool_norecycl[idx]);
-					// FIXME
-					// kfree_skbmem(skb);
-				}
+				pfq_skb_release_data(skb);
+				pfq_skb_recycle(skb);
 			}
 			else {
 				sparse_inc(global->percpu_memory, pool_norecycl[idx]);
