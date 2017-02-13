@@ -250,7 +250,7 @@ void pfq_kfree_skb_pool(struct sk_buff *skb, struct pfq_skb_pool *pool)
 		const int idx = PFQ_CB(skb)->pool;
 		if (likely(pool->fifo)) {
 			if (unlikely(!core_spsc_push(pool->fifo, skb))) {
-				pfq_skb_dump("[PFQ] BUG [internal error!]", skb);
+				pfq_printk_skb("[PFQ] internal error", skb);
 				sparse_inc(global->percpu_memory, os_free);
 				kfree_skb(skb);
 				return;

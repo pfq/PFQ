@@ -40,16 +40,16 @@ struct pfq_cb
 
 
 static inline
-void pfq_skb_dump(const char *msg, const struct sk_buff *skb)
+void pfq_printk_skb(const char *msg, const struct sk_buff *skb)
 {
 	struct skb_shared_info *shinfo =  skb_shinfo(skb);
-	printk(KERN_INFO "[%s] skb@%p -> pool[%d] id=%u head=%p skb_orig=%p len=%d data_len=%d truesize=%d {head=%p data=%p tail=%u end=%u users=%d} >> [nfrags=%d tx_flags=%x gso_size=%d data_ref=%d darg=%p]\n"
+	printk(KERN_INFO "%s: skb@%p -> pool[%d] [id=%u head=%p skb_orig=%p] len=%d data_len=%d truesize=%d {head=%p data=%p tail=%u end=%u users=%d} >> [nfrags=%d tx_flags=%x gso_size=%d data_ref=%d darg=%p frag_list=%p]\n"
 			, msg
 			, (void *)skb
-			, skb->nf_trace ? PFQ_CB(skb)->pool : -1
-			, PFQ_CB(skb)->id
-			, PFQ_CB(skb)->head
-			, PFQ_CB(skb)->skb_orig
+			, skb->nf_trace ? PFQ_CB(skb)->pool	: -1
+			, skb->nf_trace ? PFQ_CB(skb)->id	: 0
+			, skb->nf_trace ? PFQ_CB(skb)->head	: 0
+			, skb->nf_trace ? PFQ_CB(skb)->skb_orig : 0
 			, skb->len
 			, skb->data_len
 			, skb->truesize
@@ -63,6 +63,7 @@ void pfq_skb_dump(const char *msg, const struct sk_buff *skb)
 			, shinfo->gso_size
 			, atomic_read(&shinfo->dataref)
 			, shinfo->destructor_arg
+			, shinfo->frag_list
 			);
 }
 
