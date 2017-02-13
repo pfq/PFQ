@@ -25,13 +25,14 @@
 #define PFQ_SKBUFF_H
 
 #include <linux/skbuff.h>
+#include <linux/kernel.h>
 
 
 #define PFQ_CB(addr)    ((struct pfq_cb *)(((struct sk_buff *)(addr))->cb))
 
-
 struct pfq_cb
 {
+	char pad[FIELD_SIZEOF(struct sk_buff, cb) - sizeof(void *)*3];
 	void *	 head;
 	void *   skb_orig;
 	uint32_t id;
