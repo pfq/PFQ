@@ -37,9 +37,6 @@
 #include <linux/pf_q.h>
 
 
-#define SPSC_FIFO_BATCH		64
-
-
 struct core_spsc_fifo
 {
 	struct

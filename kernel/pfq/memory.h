@@ -117,18 +117,6 @@ pfq_skb_release_head_state(struct sk_buff *skb)
 		WARN_ON(in_irq());
 		skb->destructor(skb);
 	}
-
-// #if IS_ENABLED(CONFIG_NF_CONNTRACK)
-// 	nf_conntrack_put(skb->nfct);
-// #endif
-//
-// #ifdef NET_SKBUFF_NF_DEFRAG_NEEDED
-// 	nf_conntrack_put_reasm(skb->nfct_reasm);
-// #endif
-// #ifdef CONFIG_BRIDGE_NETFILTER
-// 	nf_bridge_put(skb->nf_bridge);
-// #endif
-
 }
 
 
@@ -238,7 +226,7 @@ ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, 
 				core_spsc_consume(pool);
 				pfq_skb_release_head_state(skb);
 				pfq_skb_release_data(skb);
-				pfq_skb_recycle(skb);
+				return pfq_skb_recycle(skb);
 			}
 			else {
 				sparse_inc(global->percpu_memory, pool_norecycl[idx]);

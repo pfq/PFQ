@@ -53,44 +53,15 @@
 })
 
 
-#define sparse_add(ptr, var, value) ({ \
-        local_add(value, &(this_cpu_ptr(ptr)->var)); \
-})
+#define sparse_add(ptr, var, value)		local_add(value, &(this_cpu_ptr(ptr)->var))
+#define sparse_sub(ptr, var, value)		local_sub(value, &(this_cpu_ptr(ptr)->var))
+#define sparse_inc(ptr, var)			local_inc(&(this_cpu_ptr(ptr)->var))
+#define sparse_dec(ptr, var)			local_dec(&(this_cpu_ptr(ptr)->var))
 
-
-#define sparse_sub(ptr, var, value) ({ \
-        local_sub(value, &(this_cpu_ptr(ptr)->var)); \
-})
-
-
-#define sparse_inc(ptr, var) ({ \
-        local_inc(&(this_cpu_ptr(ptr)->var)); \
-})
-
-
-#define sparse_dec(ptr, var) ({ \
-        local_dec(&(this_cpu_ptr(ptr)->var)); \
-})
-
-
-#define __sparse_add(ptr, var, value, cpu) ({ \
-        local_add(value, &(per_cpu_ptr(ptr, cpu)->var)); \
-})
-
-
-#define __sparse_sub(ptr, var, value, cpu) ({ \
-        local_sub(value, &(per_cpu_ptr(ptr, cpu)->var)); \
-})
-
-
-#define __sparse_inc(ptr, var, cpu) ({ \
-        local_inc(&(per_cpu_ptr(ptr, cpu)->var)); \
-})
-
-
-#define __sparse_dec(ptr, var, cpu) ({ \
-        local_dec(&per_cpu_ptr(ptr, cpu)->var); \
-})
+#define __sparse_add(ptr, var, value, cpu)	local_add(value, &(per_cpu_ptr(ptr, cpu)->var))
+#define __sparse_sub(ptr, var, value, cpu) 	local_sub(value, &(per_cpu_ptr(ptr, cpu)->var))
+#define __sparse_inc(ptr, var, cpu)	   	local_inc(&(per_cpu_ptr(ptr, cpu)->var))
+#define __sparse_dec(ptr, var, cpu)	   	local_dec(&per_cpu_ptr(ptr, cpu)->var)
 
 
 #endif /* PFQ_SPARSE_H */
