@@ -53,7 +53,8 @@ extern struct sk_buff * __pfq_netdev_alloc_skb(struct net_device *dev, unsigned 
 
 static inline bool pfq_skb_is_recycleable(const struct sk_buff *skb)
 {
-	if( PFQ_CB(skb)->head != skb->head) {
+#ifdef PFQ_USE_EXTRA_COUNTERS
+	if(unlikely(PFQ_CB(skb)->head != skb->head)) {
 		sparse_inc(global->percpu_memory, err_broken);
 		return false;
 	}
@@ -63,12 +64,10 @@ static inline bool pfq_skb_is_recycleable(const struct sk_buff *skb)
 		return false;
 	}
 
-	if (skb->fclone != SKB_FCLONE_UNAVAILABLE) {
+	if (unlikely(skb->fclone != SKB_FCLONE_UNAVAILABLE)) {
 		sparse_inc(global->percpu_memory, err_fclone);
 		return false;
 	}
-
-	/*  check whether the skb is shared with someone else.. */
 
 	if (unlikely(atomic_read(&skb->users) > 1)) {
 		sparse_inc(global->percpu_memory, err_shared);
@@ -85,13 +84,15 @@ static inline bool pfq_skb_is_recycleable(const struct sk_buff *skb)
 		sparse_inc(global->percpu_memory, err_nolinr);
 		return false;
 	}
-	skb_size = SKB_DATA_ALIGN(skb_size);
-	if (unlikely(pfq_skb_end_offset(skb) < skb_size)) {
-		sparse_inc(global->percpu_memory, err_memory);
-		return false;
-	}
 #endif
-
+#else
+	if(unlikely(PFQ_CB(skb)->head != skb->head		||
+		    irqs_disabled()				||
+		    skb->fclone != SKB_FCLONE_UNAVAILABLE	||
+		    atomic_read(&skb->users) > 1		||
+		    skb_cloned(skb)))
+		return false;
+#endif
 	return true;
 }
 
@@ -100,7 +101,9 @@ static inline void
 pfq_skb_release_head_state(struct sk_buff *skb)
 {
 	if (unlikely(skb->_skb_refdst)) {
+#ifdef PFQ_USE_EXTRA_COUNTERS
                 sparse_inc(global->percpu_memory, dbg_dst_drop);
+#endif
 		skb_dst_drop(skb);
 	}
 
@@ -108,7 +111,9 @@ pfq_skb_release_head_state(struct sk_buff *skb)
 	secpath_put(skb->sp);
 #endif
 	if (unlikely(skb->destructor)) {
+#ifdef PFQ_USE_EXTRA_COUNTERS
                 sparse_inc(global->percpu_memory, dbg_skb_dtor);
+#endif
 		WARN_ON(in_irq());
 		skb->destructor(skb);
 	}
@@ -132,7 +137,9 @@ void pfq_kfree_skb_list(struct sk_buff *segs)
 {
 	while (segs) {
 		struct sk_buff *next = segs->next;
+#ifdef PFQ_USE_EXTRA_COUNTERS
                 sparse_inc(global->percpu_memory, dbg_skb_free_frag);
+#endif
 		kfree_skb(segs);
 		segs = next;
 	}
@@ -145,7 +152,9 @@ void skb_free_head(struct sk_buff *skb)
         unsigned char *head = skb->head;
 
         if (skb->head_frag) {
+#ifdef PFQ_USE_EXTRA_COUNTERS
                 sparse_inc(global->percpu_memory, dbg_skb_free_frag);
+#endif
                 skb_free_frag(head);
 	}
 }
@@ -158,7 +167,9 @@ pfq_skb_release_data(struct sk_buff *skb)
 	struct skb_shared_info *shinfo = skb_shinfo(skb);
 
 	for (i = 0; i < shinfo->nr_frags; i++) {
+#ifdef PFQ_USE_EXTRA_COUNTERS
                 sparse_inc(global->percpu_memory, dbg_skb_frag_unref);
+#endif
 		__skb_frag_unref(&shinfo->frags[i]);
 	}
 
@@ -221,10 +232,9 @@ ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, 
 	if (likely(pool)) {
 		struct sk_buff *skb = core_spsc_peek(pool);
 		if (likely(skb != NULL)) {
-			if(pfq_skb_is_recycleable(skb)) {
+			if(likely(pfq_skb_is_recycleable(skb))) {
 
 				sparse_inc(global->percpu_memory, pool_pop[idx]);
-
 				core_spsc_consume(pool);
 				pfq_skb_release_head_state(skb);
 				pfq_skb_release_data(skb);
@@ -248,10 +258,10 @@ static inline
 void pfq_kfree_skb_pool(struct sk_buff *skb, struct pfq_skb_pool *pool)
 {
 #ifdef PFQ_USE_SKB_POOL
-	if (skb->nf_trace) {
+	if (likely(skb->nf_trace)) {
 		const int idx = PFQ_CB(skb)->pool;
-		if (pool->fifo) {
-			if (!core_spsc_push(pool->fifo, skb)) {
+		if (likely(pool->fifo)) {
+			if (unlikely(!core_spsc_push(pool->fifo, skb))) {
 				pfq_skb_dump("[PFQ] BUG [internal error!]", skb);
 				sparse_inc(global->percpu_memory, os_free);
 				kfree_skb(skb);

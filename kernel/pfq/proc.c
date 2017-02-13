@@ -205,6 +205,7 @@ static int pfq_proc_memory(struct seq_file *m, void *v)
 		}
 	}
 
+#if defined(PFQ_USE_EXTRA_COUNTERS)
 	seq_printf(m, "\nPFQ POOL error\n");
 	seq_printf(m, "  error shared   : %10ld\n", sparse_read(global->percpu_memory, err_shared));
 	seq_printf(m, "  error cloned   : %10ld\n", sparse_read(global->percpu_memory, err_cloned));
@@ -221,6 +222,7 @@ static int pfq_proc_memory(struct seq_file *m, void *v)
 	seq_printf(m, "  skb.frag_unref : %10ld\n", sparse_read(global->percpu_memory, dbg_skb_frag_unref));
 	seq_printf(m, "  skb.free_frag  : %10ld\n", sparse_read(global->percpu_memory, dbg_skb_free_frag));
 	seq_printf(m, "  skb.free_head  : %10ld\n", sparse_read(global->percpu_memory, dbg_skb_free_head));
+#endif
 
 #endif
 	seq_printf(m, "\nKernel\n");
