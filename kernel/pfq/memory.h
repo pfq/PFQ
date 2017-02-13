@@ -134,20 +134,6 @@ void pfq_kfree_skb_list(struct sk_buff *segs)
 }
 
 
-static inline
-void skb_free_head(struct sk_buff *skb)
-{
-        unsigned char *head = skb->head;
-
-        if (skb->head_frag) {
-#ifdef PFQ_USE_EXTRA_COUNTERS
-                sparse_inc(global->percpu_memory, dbg_skb_free_frag);
-#endif
-                skb_free_frag(head);
-	}
-}
-
-
 static inline void
 pfq_skb_release_data(struct sk_buff *skb)
 {
@@ -164,7 +150,13 @@ pfq_skb_release_data(struct sk_buff *skb)
 	if (unlikely(shinfo->frag_list))
 		pfq_kfree_skb_list(shinfo->frag_list);
 
-        skb_free_head(skb);
+        if (unlikely(skb->head_frag)) {
+		unsigned char *head = skb->head;
+#ifdef PFQ_USE_EXTRA_COUNTERS
+                sparse_inc(global->percpu_memory, dbg_skb_free_frag);
+#endif
+                skb_free_frag(head);
+	}
 }
 
 
@@ -176,11 +168,10 @@ pfq_skb_recycle(struct sk_buff *skb)
 
 	shinfo = skb_shinfo(skb);
 	memset(shinfo, 0, offsetof(struct skb_shared_info, dataref));
-	kmemcheck_annotate_variable(shinfo->destructor_arg);
+	// kmemcheck_annotate_variable(shinfo->destructor_arg);
 	atomic_set(&shinfo->dataref,1);
 
 	memcpy(skb, PFQ_CB(skb)->skb_orig, sizeof(struct sk_buff));
-
 	return skb;
 }
 
@@ -218,22 +209,22 @@ ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, 
 {
 #ifdef PFQ_USE_SKB_POOL
 	if (likely(pool)) {
-		struct sk_buff *skb = core_spsc_peek(pool);
-		if (likely(skb != NULL)) {
-			if(likely(pfq_skb_is_recycleable(skb))) {
+		struct sk_buff *skb = core_spsc_pop(pool);
+		if (likely(skb && pfq_skb_is_recycleable(skb))) {
 
-				sparse_inc(global->percpu_memory, pool_pop[idx]);
-				core_spsc_consume(pool);
-				pfq_skb_release_head_state(skb);
-				pfq_skb_release_data(skb);
-				return pfq_skb_recycle(skb);
-			}
-			else {
-				sparse_inc(global->percpu_memory, pool_norecycl[idx]);
-			}
+			sparse_inc(global->percpu_memory, pool_pop[idx]);
+
+			// pfq_skb_release_head_state(skb);
+
+			pfq_skb_release_data(skb);
+
+			return pfq_skb_recycle(skb);
 		}
 		else {
-			sparse_inc(global->percpu_memory, pool_empty[idx]);
+			if (skb)
+				sparse_inc(global->percpu_memory, pool_norecycl[idx]);
+			else
+				sparse_inc(global->percpu_memory, pool_empty[idx]);
 		}
 	}
 #endif
