@@ -24,16 +24,30 @@ import Data.Maybe
 import Data.List(isInfixOf)
 import Data.List.Split(splitOneOf)
 import Control.Monad.State
+import Control.Exception
 
 import Numeric(showHex,readHex)
 
 import Data.Bits
 import Data.Data
 
+import System.Console.ANSI
 import System.Console.CmdArgs
 import System.IO.Unsafe
+import System.IO.Error
+import System.Exit
 
 proc_interrupt, proc_cpuinfo :: String
+
+
+bold  = setSGRCode [SetConsoleIntensity BoldIntensity]
+red   = setSGRCode [SetColor Foreground Vivid Red]
+blue  = setSGRCode [SetColor Foreground Vivid Blue]
+reset = setSGRCode []
+
+
+putStrBoldLn :: String -> IO ()
+putStrBoldLn msg = putStrLn $ bold ++ msg ++ reset
 
 
 proc_interrupt = "/proc/interrupts"
@@ -104,8 +118,7 @@ makeIrqBinding ["odd"]            first  = IrqBinding first     1       1       
 makeIrqBinding ["all-in", n]      _      = IrqBinding (read n)  0       1       none
 makeIrqBinding ["step",   s]      first  = IrqBinding first   (read s)  1       none
 makeIrqBinding ["custom", s, m]   first  = IrqBinding first   (read s) (read m) none
-
-makeIrqBinding _ _ = error "PFQ: unknown IRQ binding algorithm"
+makeIrqBinding _ _ =  error "pfq-affinity: unknown IRQ binding algorithm"
 
 
 none :: a -> Bool
@@ -116,7 +129,7 @@ none _ = True
 --
 
 main :: IO ()
-main = do
+main = handle (\(ErrorCall msg) -> putStrBoldLn (red ++ msg ++ reset) *> exitWith (ExitFailure 1)) $ do
     ops <- cmdArgsRun options
     let runcmd = forM_ (arguments ops) $ \dev -> dispatch dev
     evalStateT runcmd (ops, firstcore ops)
@@ -127,9 +140,9 @@ main = do
 dispatch :: String -> BindStateT IO ()
 dispatch arg = do
     (op, start) <- get
-    case () of 
+    case () of
         _ | Just _  <- algorithm op -> makeBinding arg
-          | Nothing <- algorithm op -> if core op 
+          | Nothing <- algorithm op -> if core op
                                             then showIRQ arg
                                             else showBinding arg
 
@@ -146,8 +159,8 @@ makeBinding dev = do
     lift $ do
         putStrLn $ "Setting binding for device " ++ dev ++
             case msi of { Nothing -> ":"; Just None -> "(none):"; _ -> " (" ++ show msi ++ "):" }
-        when (null irq) $ error $ "PFQ: irq(s) not found for dev " ++ dev ++ "!"
-        when (null core) $ error "PFQ: no eligible cores found!"
+        when (null irq) $ error ("pfq-affinity: irq(s) not found for dev " ++ dev ++ "!")
+        when (null core) $ error "pfq-affinity: no eligible cores found!"
         mapM_ setIrqAffinity $ zip irq core
     put (op, last core + 1)
 
@@ -162,7 +175,7 @@ showBinding dev = do
     lift $ do
         putStrLn $ "Binding for device " ++ dev ++
             case msi of { Nothing -> ":"; Just None -> "(none):";  _ -> " (" ++ show (fromJust msi) ++ "):" }
-        when (null irq) $ error $ "PFQ: irq vector not found for dev " ++ dev ++ "!"
+        when (null irq) $ error $ "pfq-affinity: irq vector not found for dev " ++ dev ++ "!"
         forM_ irq $ \n ->
             getIrqAffinity n >>= \cs -> putStrLn $ "   irq " ++ show n ++ " -> core " ++ show cs
 
@@ -171,18 +184,18 @@ showBinding dev = do
 --
 
 showIRQ :: String -> BindStateT IO ()
-showIRQ core = do   
+showIRQ core = do
     (op,_) <- get
     let irq = getInterrupts
     lift $ do
         putStrLn $ "Core " ++ core ++ ":"
-        mat <- forM irq $ \n -> 
-            getIrqAffinity (read $ fst n) >>= \l -> if read core `elem` l 
+        mat <- forM irq $ \n ->
+            getIrqAffinity (read $ fst n) >>= \l -> if read core `elem` l
                                                     then return $ Just (n, l)
                                                     else return Nothing
         let out = map fst $ catMaybes mat
         forM_ out $ \(n,descr) ->
-            putStrLn $ "  irq -> " ++ n ++ "\t(" ++ descr ++ ")" 
+            putStrLn $ "  irq -> " ++ n ++ "\t(" ++ descr ++ ")"
 
 
 -- set irq affinity for the given (irq,core) pair
@@ -224,7 +237,7 @@ getCpusListFromMask mask  = [ n | n <- [0 .. 4095], let p2 = 1 `shiftL` n, mask 
 --
 
 mkBinding :: Device -> [Int] -> Int -> IrqBinding -> Maybe MSI -> [Int]
-mkBinding _   _  _ _ Nothing = error "PFQ: to create IRQ bindings you need to specify the MSI type"
+mkBinding _   _  _ _ Nothing = error "pfq-affinity: to create IRQ bindings you must specify the MSI type"
 mkBinding dev excl f (IrqBinding f' step multi filt) msi =
     take nqueue [ n | let f''= if f' == -1 then f else f',
                       x <- [f'', f''+ step .. ] >>= replicate multi,

@@ -32,6 +32,7 @@ import Control.Applicative
 import Control.Monad
 import Control.Monad.State
 import Control.Concurrent (threadDelay)
+import Control.Exception
 
 import Data.Data
 
@@ -57,12 +58,17 @@ red   = setSGRCode [SetColor Foreground Vivid Red]
 blue  = setSGRCode [SetColor Foreground Vivid Blue]
 reset = setSGRCode []
 
-configFiles = [ "/etc/pfq.conf", "/root/.pfq.conf" ]
+configFiles = [ "/etc/pfq.conf"
+              , "/root/.pfq.conf"
+              , "/root/pfq.conf"
+              ]
 
 defaultDelay = 100000
 
-data YesNo = Yes | No | Unspec
+
+data Toggle = Enable | Disable
     deriving (Show, Read, Eq)
+
 
 newtype OptString = OptString { getOptString :: String }
     deriving (Show, Read, Eq)
@@ -79,12 +85,18 @@ instance Semigroup (OptList a) where
     _ <> b = b
 
 
+data SystemError = SystemError String ExitCode
+    deriving (Show, Typeable)
+
+instance Exception SystemError
+
+
 data Device =
     Device
     {   devname   :: String
     ,   devspeed  :: Maybe Int
     ,   channels  :: Maybe Int
-    ,   flowctrl  :: YesNo
+    ,   flowctrl  :: Maybe Toggle
     ,   ethopt    :: [(String, String)]
     } deriving (Show, Read, Eq)
 
@@ -151,7 +163,7 @@ options = cmdArgsMode $ Options
 
 
 main :: IO ()
-main = do
+main = handle (\(SystemError msg code) -> putStrBoldLn msg *> exitWith code) $ do
 
     -- load options...
     home <- getHomeDirectory
@@ -170,9 +182,9 @@ main = do
 
 
     -- determine whether pfq load is required...
-    
-    tstamp <- if null (pfq_module conf) 
-                then getCurrentTime 
+
+    tstamp <- if null (pfq_module conf)
+                then getCurrentTime
                 else getModificationTime $ pfq_module conf
 
 
@@ -181,49 +193,46 @@ main = do
                                     , (/= (pfqModCmd ++ " " ++ show tstamp)) <$> possiblyReadFile tmp_pfq
                                     ]
     writeFile tmp_pfq pfqModCmd
-    appendFile tmp_pfq (" " ++ (show tstamp))
+    appendFile tmp_pfq (" " ++ show tstamp)
 
     -- check queues
-    when (maybe False (> core) (queues opt)) $ error "queues number is too big!"
+    when (maybe False (> core) (queues opt)) $ errorWithoutStackTrace "queues number is too big!"
 
     -- unload pfq and drivers that depend on it...
     evalStateT (unloadDependencies pfqForceLoad "pfq") pmod
 
     -- check irqbalance deaemon
-    unless (null bal) $ do
-        putStrBoldLn $ "Irqbalance daemon detected @pid " ++ show bal ++ ". Sending SIGKILL..."
-        forM_ bal $ signalProcess sigKILL
+    unless (null bal) $
+        putStrBoldLn ("Irqbalance daemon detected @pid " ++ show bal ++ ". Sending SIGKILL...") *> forM_ bal (signalProcess sigKILL)
 
     -- check cpufreqd deaemon
-    unless (null frd) $ do
-        putStrBoldLn $ "Cpufreqd daemon detected @pid " ++ show frd ++ ". Sending SIGKILL..."
-        forM_ frd $ signalProcess sigKILL
+    unless (null frd) $
+        putStrBoldLn ("Cpufreqd daemon detected @pid " ++ show frd ++ ". Sending SIGKILL...") *> forM_ frd (signalProcess sigKILL)
 
     -- set cpufreq governor...
     unless (null (cpu_governor conf)) $
-        forM_ [0.. core-1] $ \n -> do
-            runSystem ("/usr/bin/cpufreq-set -g " ++ cpu_governor conf ++ " -c " ++ show n) ("*** cpufreq-set error! Make sure you have cpufrequtils installed! *** ", True)
+        forM_ [0.. core-1] $ \n ->
+            runSystem ("/usr/bin/cpufreq-set -g " ++ cpu_governor conf ++ " -c " ++ show n) "*** cpufreq-set error! Make sure you have cpufrequtils installed! ***"
 
     -- load PFQ (if required)...
-    if pfqForceLoad 
-        then do
-            putStrBoldLn $ blue ++ "Loading pfq [" ++ pfqModCmd ++ "]"
-            runSystem pfqModCmd (red ++ "insmod pfq.ko error.", True)
-
-        else putStrBoldLn $ red ++ "Using pfq.ko module already loaded (use --force to reload it)..."
+    if pfqForceLoad
+       then putStrBoldLn (blue ++ "Loading pfq [" ++ pfqModCmd ++ "]") *>
+                runSystem pfqModCmd (red ++ "insmod pfq.ko error.")
+       else putStrBoldLn $ red ++ "Using pfq.ko module already loaded (use --force to reload it)..."
 
     -- update current loaded proc/modules
     pmod2 <- getProcModules
 
     -- unload drivers...
-    unless (null (drivers conf)) $ do
-        putStrBoldLn "Unloading vanilla/standard drivers..."
+    unless (null (drivers conf)) $
+        putStrBoldLn "Unloading vanilla/standard drivers..." *>
         evalStateT (forM_ (drivers conf) $ unloadDependencies True . takeBaseName . drvmod) pmod2
 
     -- load and configure device drivers...
     forM_ (drivers conf) $ \drv -> do
         let rss = maybe [] (mkRssOption (drvmod drv) (instances drv)) (queues opt)
-        loadModule InsertMod (drvmod drv) (drvopt drv ++ rss)
+        unless (null $ drvmod drv) $
+            loadModule InsertMod (drvmod drv) (drvopt drv ++ rss)
         forM_ (devices drv) $ setupDevice (queues opt)
 
     -- set interrupt affinity...
@@ -317,10 +326,9 @@ unloadDependencies rm name = do
     when (rm && isModuleLoaded name proc_mods) $ do
         liftIO $ rmmod name
         put $ rmmodFromProcMOdules name proc_mods
-    where rmmod name = do
-            putStrBoldLn $ "Unloading " ++ name ++ "..."
-            runSystem ("/sbin/rmmod " ++ name) ("rmmod " ++ name ++ " error.", True)
-          isModuleLoaded name =  any (\(mod,_) -> mod == name)
+        where rmmod name = putStrBoldLn ("Unloading " ++ name ++ "...") *>
+                            runSystem ("/sbin/rmmod " ++ name) ("rmmod " ++ name ++ " error.")
+              isModuleLoaded name =  any (\(mod,_) -> mod == name)
 
 
 data LoadMode = InsertMod | ProbeMod
@@ -328,9 +336,7 @@ data LoadMode = InsertMod | ProbeMod
 
 
 isLoaded :: String -> IO Bool
-isLoaded mod = do
-    pmod <- getProcModules
-    return $ mod `elem` fmap fst pmod
+isLoaded mod = getProcModules >>= (\pmod -> return $ mod `elem` fmap fst pmod)
 
 
 -- putStrBoldLn $ "Loading " ++ name ++ " " ++ show opts
@@ -344,9 +350,8 @@ mkLoadModuleCmd mode name opts =
 
 
 loadModule :: LoadMode -> String -> [String] -> IO ()
-loadModule mode name opts = do
-    putStrBoldLn $ "Loading " ++ name ++ " " ++ show opts
-    runSystem (mkLoadModuleCmd mode name opts) ("insmod " ++ name ++ " error.", True)
+loadModule mode name opts = putStrBoldLn ("Loading " ++ name ++ " " ++ show opts) *>
+    runSystem (mkLoadModuleCmd mode name opts) ("insmod " ++ name ++ " error.")
 
 
 
@@ -356,33 +361,35 @@ setupDevice queues (Device dev speed channels fctrl opts) = do
     putStrBoldLn $ "Activating " ++ dev ++ "..."
 
     threadDelay defaultDelay
-    runSystem ("/sbin/ifconfig " ++ dev ++ " up") ("ifconfig error!", True)
+    runSystem ("/sbin/ifconfig " ++ dev ++ " up") "ifconfig error!"
 
     threadDelay defaultDelay
     case fctrl of
-        No -> do
+        Just Enable -> do
                 putStrBoldLn $ "Disabling flow control for " ++ dev ++ "..."
-                runSystem ("/sbin/ethtool -A " ++ dev ++ " autoneg off rx off tx off") ("ethtool: flowctrl error!", False)
-        Yes -> do
+                runSystem ("/sbin/ethtool -A " ++ dev ++ " autoneg off rx off tx off") "ethtool: flowctrl error!"
+        Just Disable -> do
                 putStrBoldLn $ "Enabling flow control for " ++ dev ++ "..."
-                runSystem ("/sbin/ethtool -A " ++ dev ++ " autoneg on rx on tx on") ("ethtool: flowctrl error!", False)
-        Unspec -> return ()
+                runSystem ("/sbin/ethtool -A " ++ dev ++ " autoneg on rx on tx on") "ethtool: flowctrl error!"
+        Nothing -> return ()
 
     threadDelay defaultDelay
+
     when (isJust speed) $ do
         let s = fromJust speed
         putStrBoldLn $ "Setting speed (" ++ show s ++ ") for " ++ dev ++ "..."
-        runSystem ("/sbin/ethtool -s " ++ dev ++ " speed " ++ show s ++ " duplex full") ("ethtool: set speed error!", False)
+        runSystem ("/sbin/ethtool -s " ++ dev ++ " speed " ++ show s ++ " duplex full") "ethtool: set speed error!"
 
     threadDelay defaultDelay
+
     when (isJust queues || isJust channels) $ do
         let c = fromJust (queues <|> channels)
         putStrBoldLn $ "Setting channels to " ++ show c ++ "..."
-        runSystem ("/sbin/ethtool -L " ++ dev ++ " combined " ++ show c) ("", False)
+        runSystem ("/sbin/ethtool -L " ++ dev ++ " combined " ++ show c) "ethtool: setting channels error!"
 
-    forM_ opts $ \(opt, arg) -> do
-        threadDelay defaultDelay
-        runSystem ("/sbin/ethtool " ++ opt ++ " " ++ dev ++ " " ++ arg) ("ethtool:" ++ opt ++ " error!", True)
+    forM_ opts $ \(opt, arg) ->
+        threadDelay defaultDelay *>
+        runSystem ("/sbin/ethtool " ++ opt ++ " " ++ dev ++ " " ++ arg) ("ethtool:" ++ opt ++ " error!")
 
 
 getDevices ::  Config -> [String]
@@ -396,13 +403,13 @@ setupIRQAffinity fc excl algs devs = do
     let affinity = zip algs (tails devs)
     unless (null affinity) $
         forM_ affinity $ \(alg, devs') ->
-            runSystem ("pfq-affinity -f " ++ show fc  ++ " " ++ excl_opt ++ " -a " ++ alg ++ " -m TxRx " ++ unwords devs') ("pfq-affinity error!", True)
+            runSystem ("pfq-affinity -f " ++ show fc  ++ " " ++ excl_opt ++ " -a " ++ alg ++ " -m TxRx " ++ unwords devs') "pfq-affinity error!"
 
 
-runSystem :: String -> (String,Bool) -> IO ()
-runSystem cmd (errmsg,term) = do
-    putStrLn $ "-> " ++ cmd
-    system cmd >>= \ec -> when (ec /= ExitSuccess) $ (if term then error else putStrLn) errmsg
+runSystem :: String -> String -> IO ()
+runSystem cmd errmsg =
+    putStrLn ("-> " ++ cmd) *>
+        system cmd >>= \ec -> when (ec /= ExitSuccess) $ throw (SystemError (red ++ errmsg ++ reset) ec)
 
 
 putStrBoldLn :: String -> IO ()
