@@ -360,25 +360,27 @@ setupDevice queues (Device dev speed channels fctrl opts) = do
 
     putStrBoldLn $ "Activating " ++ dev ++ "..."
 
-    threadDelay defaultDelay
     runSystem ("/sbin/ifconfig " ++ dev ++ " up") "ifconfig error!"
 
     threadDelay defaultDelay
-    case fctrl of
-        Just Enable -> do
-                putStrBoldLn $ "Disabling flow control for " ++ dev ++ "..."
-                runSystem ("/sbin/ethtool -A " ++ dev ++ " autoneg off rx off tx off") "ethtool: flowctrl error!"
-        Just Disable -> do
-                putStrBoldLn $ "Enabling flow control for " ++ dev ++ "..."
-                runSystem ("/sbin/ethtool -A " ++ dev ++ " autoneg on rx on tx on") "ethtool: flowctrl error!"
-        Nothing -> return ()
+
+    if isJust speed
+       then do
+            let s = fromJust speed
+            putStrBoldLn $ "Setting speed (" ++ show s ++ ") for " ++ dev ++ "..."
+            runSystem ("/sbin/ethtool -s " ++ dev ++ " speed " ++ show s ++ " duplex full autoneg off") "ethtool: set speed error!"
+       else
+            putStrBoldLn ("Auto-negotiating speed for " ++ dev ++ "...") *>
+            runSystem ("/sbin/ethtool -s " ++ dev ++ " duplex full autoneg off") "ethtool: auto-negotiation error!"
 
     threadDelay defaultDelay
 
-    when (isJust speed) $ do
-        let s = fromJust speed
-        putStrBoldLn $ "Setting speed (" ++ show s ++ ") for " ++ dev ++ "..."
-        runSystem ("/sbin/ethtool -s " ++ dev ++ " speed " ++ show s ++ " duplex full") "ethtool: set speed error!"
+    when (isJust fctrl) $ do
+        let t = fromJust $ (== Enable) <$> fctrl
+        if t then putStrBoldLn ("Disabling flow control for " ++ dev ++ "...") *>
+                    runSystem ("/sbin/ethtool -A " ++ dev ++ " autoneg off rx off tx off") "ethtool: disabling flow-ctrl error!"
+             else putStrBoldLn ("Enabling flow control for " ++ dev ++ "...") *>
+                    runSystem ("/sbin/ethtool -A " ++ dev ++ " autoneg on rx on tx on") "ethtool: enabling flow-ctrl error!"
 
     threadDelay defaultDelay
 
