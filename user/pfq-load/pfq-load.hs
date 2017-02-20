@@ -378,9 +378,9 @@ setupDevice queues (Device dev speed channels fctrl opts) = do
     when (isJust fctrl) $ do
         let t = fromJust $ (== Enable) <$> fctrl
         if t then putStrBoldLn ("Disabling flow control for " ++ dev ++ "...") *>
-                    runSystem ("/sbin/ethtool -A " ++ dev ++ " autoneg off rx off tx off") "ethtool: disabling flow-ctrl error!"
+                    runSystem ("/sbin/ethtool -A " ++ dev ++ " rx on tx on") "ethtool: enabling flow-ctrl error!"
              else putStrBoldLn ("Enabling flow control for " ++ dev ++ "...") *>
-                    runSystem ("/sbin/ethtool -A " ++ dev ++ " autoneg on rx on tx on") "ethtool: enabling flow-ctrl error!"
+                    runSystem ("/sbin/ethtool -A " ++ dev ++ " autoneg off rx off tx off") "ethtool: disabling flow-ctrl error!"
 
     threadDelay defaultDelay
 
