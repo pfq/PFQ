@@ -91,6 +91,8 @@ namespace flow
     {
         size_t  count;
         size_t  bytes;
+        size_t  count_dscp[64];
+        size_t  bytes_dscp[64];
     };
 }
 
@@ -263,8 +265,12 @@ namespace thread
                                 std::tie(this_flow, std::ignore) = m_flow_map[this_rop & 1].insert(std::make_pair(key, flow::state{}));
                             }
 
+                            auto dscp = ipv4->tos >> 2;
+
                             this_flow->second.count++;
                             this_flow->second.bytes+= h.len;
+                            this_flow->second.count_dscp[dscp]++;
+                            this_flow->second.bytes_dscp[dscp] += h.len;
                         }
                     }
                 }
@@ -298,7 +304,7 @@ namespace thread
             auto rop = flow::rop.load(std::memory_order_relaxed) + 1;
             return m_flow_map[rop & 1];
         }
-        
+
         FlowMap const &
         flow_map() const
         {
@@ -652,9 +658,21 @@ try
                               << show_ip(std::get<0>(f.first)) << ":"
                               << ntohs(std::get<2>(f.first))   << " -> "
                               << show_ip(std::get<1>(f.first)) << ":"
-                              << ntohs(std::get<3>(f.first))   << "\t" 
-                              << pretty_number<double>(f.second.count) << "pkt/sec - " 
-                              << pretty_number<double>(f.second.bytes * 8) << "bit/sec"  << std::endl;
+                              << ntohs(std::get<3>(f.first))   << "\t"
+                              << pretty_number<double>(f.second.count) << "pkt/sec - "
+                              << pretty_number<double>(f.second.bytes * 8) << "bit/sec - ";
+
+                    for(int i = 0; i < 64; i++) {
+                        auto & cnt = f.second.count_dscp[i];
+                        auto & byt = f.second.bytes_dscp[i];
+                        if (cnt) {
+                            std::cout << std::hex << i << ":{ pkt " << cnt << ", bytes " << byt << "} ";
+                            cnt = 0;
+                            byt = 0;
+                        }
+                    }
+
+                    std::cout << std::endl;
 
                     f.second.count = 0;
                     f.second.bytes = 0;
