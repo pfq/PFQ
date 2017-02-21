@@ -265,7 +265,7 @@ namespace thread
                                 std::tie(this_flow, std::ignore) = m_flow_map[this_rop & 1].insert(std::make_pair(key, flow::state{}));
                             }
 
-                            auto dscp = ipv4->tos >> 2;
+                            auto dscp = ntohs(ipv4->tos) >> 2;
 
                             this_flow->second.count++;
                             this_flow->second.bytes+= h.len;
@@ -666,7 +666,7 @@ try
                         auto & cnt = f.second.count_dscp[i];
                         auto & byt = f.second.bytes_dscp[i];
                         if (cnt) {
-                            std::cout << std::hex << i << ":{ pkt " << cnt << ", bytes " << byt << "} ";
+                            std::cout << std::hex << i << std::dec << ":{ pkt " << cnt << ", " << pretty_number<double>(byt*8) << "bit/sec } ";
                             cnt = 0;
                             byt = 0;
                         }
