@@ -237,7 +237,7 @@ static inline
 void pfq_kfree_skb_pool(struct sk_buff *skb, struct pfq_skb_pool *pool)
 {
 #ifdef PFQ_USE_SKB_POOL
-	if (likely(skb->nf_trace)) {
+	if (likely(skb->peeked)) {
 		const int idx = PFQ_CB(skb)->pool;
 		if (likely(pool->fifo)) {
 			if (unlikely(!core_spsc_push(pool->fifo, skb))) {

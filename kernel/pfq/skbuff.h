@@ -44,20 +44,27 @@ static inline
 void pfq_printk_skb(const char *msg, const struct sk_buff *skb)
 {
 	struct skb_shared_info *shinfo =  skb_shinfo(skb);
-	printk(KERN_INFO "%s: skb@%p -> pool[%d] [id=%u head=%p skb_orig=%p] len=%d data_len=%d truesize=%d {head=%p data=%p tail=%u end=%u users=%d} >> [nfrags=%d tx_flags=%x gso_size=%d data_ref=%d darg=%p frag_list=%p]\n"
+
+	printk(KERN_INFO "%s: skb@%p -> peeked:%d [pool=%d id=%u head=%p skb_orig=%p] len=%d data_len=%d mac_len=%d hdr_len=%d truesize=%d {head=%p data=%p tail=%u end=%u mac_h=%d net_h=%d trans_h=%d users=%d} >> [nfrags=%d tx_flags=%x gso_size=%d data_ref=%d darg=%p frag_list=%p]\n"
 			, msg
 			, (void *)skb
-			, skb->nf_trace ? PFQ_CB(skb)->pool	: -1
-			, skb->nf_trace ? PFQ_CB(skb)->id	: 0
-			, skb->nf_trace ? PFQ_CB(skb)->head	: 0
-			, skb->nf_trace ? PFQ_CB(skb)->skb_orig : 0
+			, skb->peeked
+			, skb->peeked ? PFQ_CB(skb)->pool	: -1
+			, skb->peeked ? PFQ_CB(skb)->id		: 0
+			, skb->peeked ? PFQ_CB(skb)->head	: 0
+			, skb->peeked ? PFQ_CB(skb)->skb_orig	: 0
 			, skb->len
 			, skb->data_len
+			, skb->mac_len
+			, skb->hdr_len
 			, skb->truesize
 			, skb->head
 			, skb->data
 			, skb->tail
 			, skb->end
+			, skb->mac_header
+			, skb->network_header
+			, skb->transport_header
 			, atomic_read(&skb->users)
 			, shinfo->nr_frags
 			, shinfo->tx_flags
