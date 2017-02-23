@@ -384,10 +384,10 @@ setupDevice queues (Device dev speed channels fctrl opts) = do
 
     threadDelay defaultDelay
 
-    when (isJust queues || isJust channels) $ do
-        let c = fromJust (queues <|> channels)
+    when (isJust channels) $ do
+        let c = fromJust (channels)
         putStrBoldLn $ "Setting channels to " ++ show c ++ "..."
-        runSystem ("/sbin/ethtool -L " ++ dev ++ " combined " ++ show c) "ethtool: setting channels error!"
+        runSystem ("/sbin/ethtool -L " ++ dev ++ " combined " ++ show c) ""
 
     forM_ opts $ \(opt, arg) ->
         threadDelay defaultDelay *>
@@ -411,7 +411,7 @@ setupIRQAffinity fc excl algs devs = do
 runSystem :: String -> String -> IO ()
 runSystem cmd errmsg =
     putStrLn ("-> " ++ cmd) *>
-        system cmd >>= \ec -> when (ec /= ExitSuccess) $ throw (SystemError (red ++ errmsg ++ reset) ec)
+        system cmd >>= \ec -> unless (null errmsg || ec == ExitSuccess) $ throw (SystemError (red ++ errmsg ++ reset) ec)
 
 
 putStrBoldLn :: String -> IO ()
