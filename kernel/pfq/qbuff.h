@@ -1,5 +1,4 @@
-/***************************************************************
- *
+ /****************************************************************
  * (C) 2011-16 Nicola Bonelli <nicola@pfq.io>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -156,9 +155,27 @@ qbuff_maclen(struct qbuff const *buff)
 static inline void
 qbuff_copy_to_kernel(struct qbuff *buff, gfp_t pri)
 {
-	struct sk_buff *nskb = skb_copy(QBUFF_SKB(buff), pri);
-	skb_pull(nskb, nskb->mac_len);
-	netif_receive_skb(nskb);
+	struct sk_buff *nskb, *skb = QBUFF_SKB(buff);
+
+	if (likely(skb->pkt_type != PACKET_OUTGOING))
+		skb_pull(skb, QBUFF_SKB(buff)->mac_len);
+
+	skb->network_header = 0;
+	skb->transport_header = -1;
+	skb_reset_mac_len(skb);
+
+	/* copy the skb */
+
+	nskb = skb_copy_for_kernel(skb, pri);
+	if (nskb) {
+		nskb->peeked = 0;
+		netif_receive_skb(nskb);
+	}
+	else {
+		if (printk_ratelimit())
+			printk(KERN_INFO "[PFQ] copy_to_kernel: error!\n");
+	}
+
 }
 
 
