@@ -384,8 +384,8 @@ setupDevice queues (Device dev speed channels fctrl opts) = do
 
     threadDelay defaultDelay
 
-    when (isJust channels) $ do
-        let c = fromJust (channels)
+    when (isJust queues || isJust channels) $ do
+        let c = fromJust (channels <|> queues)
         putStrBoldLn $ "Setting channels to " ++ show c ++ "..."
         runSystem ("/sbin/ethtool -L " ++ dev ++ " combined " ++ show c) ""
 
