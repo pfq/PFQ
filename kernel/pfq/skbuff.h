@@ -96,10 +96,8 @@ static inline
 struct sk_buff *
 skb_copy_for_kernel(struct sk_buff *skb, gfp_t pri)
 {
-	if (skb->nf_trace) {
-		return skb_copy(skb, pri);
-	}
-	return skb;
+	return skb->peeked ?  skb_copy(skb, pri) :
+			      skb_clone(skb, pri);
 }
 
 
