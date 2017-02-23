@@ -645,8 +645,9 @@ pfq_netif_receive_skb(struct sk_buff *skb)
 		pfq_kfree_skb_pool(skb, &pool->rx);
 	}
 
-	if (nskb)
+	if (nskb) {
 		return netif_receive_skb(nskb);
+	}
 
 	return 0;
 }
@@ -676,8 +677,9 @@ pfq_netif_rx(struct sk_buff *skb)
 		pfq_kfree_skb_pool(skb, &pool->rx);
 	}
 
-	if (nskb)
+	if (nskb) {
 		return netif_rx(nskb);
+	}
 
 	return 0;
 }
@@ -696,7 +698,7 @@ pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
                 return GRO_NORMAL;
         }
 
-	nskb = skb_copy_for_kernel(skb, GFP_KERNEL);
+	nskb = skb_copy_for_kernel(skb, GFP_ATOMIC);
 	if (skb != nskb) {
 		struct pfq_percpu_pool *pool;
 
@@ -707,8 +709,9 @@ pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
 		pfq_kfree_skb_pool(skb, &pool->rx);
 	}
 
-	if (nskb)
+	if (nskb) {
 		return napi_gro_receive(napi,nskb);
+	}
 
 	return 0;
 }
