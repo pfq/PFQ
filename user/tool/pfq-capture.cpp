@@ -9,6 +9,7 @@
 #include <fstream>
 #include <sstream>
 
+#include <iomanip>
 #include <cstdio>
 #include <thread>
 #include <chrono>
@@ -646,8 +647,13 @@ try
 
         if (opt::flow) {
 
-            std::cout << "flows     : " << flow << std::endl;
+            auto dur_now = end.time_since_epoch();
 
+            std::cout << "timestamp : " << std::chrono::duration_cast<std::chrono::seconds>(dur_now).count() << ':' 
+                                        << '.' << std::setfill('0') << std::setw(9) << (std::chrono::duration_cast<std::chrono::nanoseconds>(dur_now).count() % 1000000)
+                                        << std::endl;
+
+            std::cout << "flows     : " << flow << std::endl;
             for(auto &ctx : thread_ctx) {
 
                 auto & fmap = ctx->flow_map();
