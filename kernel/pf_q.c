@@ -223,14 +223,14 @@ static int pfq_ioctl(struct socket *sock, unsigned int cmd, unsigned long arg)
         return 0;
 }
 
-static int pfq_netdev_notifier(struct notifier_block *this, unsigned long info,
-			       void *data)
+static int pfq_netdev_notifier( struct notifier_block *this
+			      , unsigned long info
+			      , void *data)
 {
 	struct net_device *dev = netdev_notifier_info_to_dev(data);
-
 	if (dev) {
+
                 const char *kind = "NETDEV_UNKNOWN";
-		BUG_ON(dev->ifindex >= Q_CORE_MAX_DEVICE);
 
 		switch(info)
 		{
@@ -506,12 +506,6 @@ static int __init pfq_init_module(void)
 
 	pfq_timer_init();
 
-	/* ensure each device has ifindex < Q_MAX_DEVICE */
-	{
-		struct net_device *dev;
-		for_each_netdev(&init_net, dev)
-			BUG_ON(dev->ifindex >= Q_CORE_MAX_DEVICE);
-	}
 
         printk(KERN_INFO "[PFQ] version %d.%d.%d...\n",
                PFQ_MAJOR(PFQ_VERSION_CODE),

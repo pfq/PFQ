@@ -59,7 +59,7 @@ int core_devmap_equal(int i1, int q1, int i2, int q2)
 static inline
 unsigned long core_devmap_get_groups(int dev, int queue)
 {
-        return (long unsigned)atomic_long_read(&global->devmap[dev][queue]);
+        return (long unsigned)atomic_long_read(&global->devmap[dev & Q_CORE_MAX_DEVICE_MASK][queue & Q_CORE_MAX_QUEUE_MASK]);
 }
 
 

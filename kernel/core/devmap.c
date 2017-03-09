@@ -36,7 +36,7 @@ void core_devmap_toggle_update(void)
     for(i=0; i < Q_CORE_MAX_DEVICE; ++i)
     {
         unsigned long val = 0;
-        for(j=0; j < Q_CORE_MAX_HW_QUEUE; ++j)
+        for(j=0; j < Q_CORE_MAX_QUEUE; ++j)
         {
             val |= (unsigned long)atomic_long_read(&global->devmap[i][j]);
         }
@@ -60,7 +60,7 @@ int core_devmap_update(int action, int index, int queue, pfq_gid_t gid)
 
     for(i=0; i < Q_CORE_MAX_DEVICE; ++i)
     {
-        for(q=0; q < Q_CORE_MAX_HW_QUEUE; ++q)
+        for(q=0; q < Q_CORE_MAX_QUEUE; ++q)
         {
             long tmp;
 
