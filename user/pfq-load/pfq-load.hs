@@ -176,7 +176,7 @@ main = handle (\(SystemError msg code) -> putStrBoldLn msg *> exitWith code) $ d
 
     -- compute the command to load pfq...
 
-    let pfqModCmd = if null (pfq_module conf)
+    let pfqLoadCmd = if null (pfq_module conf)
         then mkLoadModuleCmd ProbeMod  "pfq" (pfq_options conf)
         else mkLoadModuleCmd InsertMod (pfq_module conf) (pfq_options conf)
 
@@ -190,9 +190,9 @@ main = handle (\(SystemError msg code) -> putStrBoldLn msg *> exitWith code) $ d
 
     pfqForceLoad <- or <$> sequence [ return $ force opt
                                     , not <$> isLoaded "pfq"
-                                    , (/= (pfqModCmd ++ " " ++ show tstamp)) <$> possiblyReadFile tmp_pfq
+                                    , (/= (pfqLoadCmd ++ " " ++ show tstamp)) <$> possiblyReadFile tmp_pfq
                                     ]
-    writeFile tmp_pfq pfqModCmd
+    writeFile tmp_pfq pfqLoadCmd
     appendFile tmp_pfq (" " ++ show tstamp)
 
     -- check queues
@@ -216,8 +216,13 @@ main = handle (\(SystemError msg code) -> putStrBoldLn msg *> exitWith code) $ d
 
     -- load PFQ (if required)...
     if pfqForceLoad
-       then putStrBoldLn (blue ++ "Loading pfq [" ++ pfqModCmd ++ "]") *>
-                runSystem pfqModCmd (red ++ "insmod pfq.ko error.")
+       then do
+            putStrBoldLn (blue ++ "Loading pfq [" ++ pfqLoadCmd ++ "]")
+            system "/bin/dmesg --clear"
+            runSystem pfqLoadCmd (red ++ "load pfq.ko error!")
+            xs <- lines <$> readProcess "/bin/dmesg" ["-t"] []
+            forM_ xs $ \x -> when ("pfq: unknown parameter" `isInfixOf` x) (throw $ SystemError (red ++ "load pfq.ko: " ++ x ++ "!") (ExitFailure 42))
+
        else putStrBoldLn $ red ++ "Using pfq.ko module already loaded (use --force to reload it)..."
 
     -- update current loaded proc/modules
