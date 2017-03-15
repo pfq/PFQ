@@ -44,7 +44,7 @@ enum
 */
 
 extern int  core_devmap_update(int action, int index, int queue, pfq_gid_t gid);
-extern void core_devmap_toggle_update(void);
+
 
 static inline
 int core_devmap_equal(int i1, int q1, int i2, int q2)
@@ -63,10 +63,12 @@ unsigned long core_devmap_get_groups(int dev, int queue)
 }
 
 
+extern void core_devmap_toggle_update(void);
+
 static inline
 int core_devmap_toggle_get(int index)
 {
-        return atomic_read(&global->devmap_toggle[index]);
+        return atomic_read(&global->devmap_toggle[index & Q_CORE_MAX_DEVICE_MASK]);
 }
 
 
