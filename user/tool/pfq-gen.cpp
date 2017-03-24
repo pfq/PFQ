@@ -76,6 +76,36 @@ namespace more
     }
 }
 
+static int
+in_cksum(u_short *addr, int len)
+{
+    register int nleft = len;
+    register u_short *w = addr;
+    register int sum = 0;
+    u_short answer = 0;
+
+    /*
+     * Our algorithm is simple, using a 32 bit accumulator (sum), we add
+     * sequential 16 bit words to it, and at the end, fold back all the
+     * carry bits from the top 16 bits into the lower 16 bits.
+     */
+    while (nleft > 1)  {
+        sum += *w++;
+        nleft -= 2;
+    }
+
+    /* mop up an odd byte, if necessary */
+    if (nleft == 1) {
+        *(u_char *)(&answer) = *(u_char *)w ;
+        sum += answer;
+    }
+
+    /* add back carry outs from top 16 bits to low 16 bits */
+    sum = (sum >> 16) + (sum & 0xffff); /* add hi 16 to low 16 */
+    sum += (sum >> 16);         /* add carry */
+    answer = ~sum;              /* truncate to 16 bits */
+    return(answer);
+}
 
 namespace opt
 {
@@ -98,6 +128,8 @@ namespace opt
     bool   active_ts   = false;
     bool   poisson     = false;
     bool   interactive = false;
+    bool   checksum    = false;
+
     double rate = 0;
 
     uint32_t src_ip;
@@ -193,7 +225,6 @@ char *make_packets( size_t size
         {
             ip->daddr = dst_ip | htonl(static_cast<uint32_t>(gen()) & rand_mask);
         }
-
 
         /* UDP header */
 
@@ -358,6 +389,12 @@ namespace thread
                     ip->daddr = opt::dst_ip | htonl(static_cast<uint32_t>(m_gen()) & rand_mask);
                 }
 
+                if (opt::checksum)
+                {
+                    ip->check = 0;
+                    ip->check = in_cksum(reinterpret_cast<u_short *>(ip), 20);
+                }
+
                 n++;
 
                 if (opt::stop.load(std::memory_order_relaxed))
@@ -486,6 +523,12 @@ namespace thread
                     ip->daddr = opt::dst_ip | htonl(static_cast<uint32_t>(m_gen()) & rand_mask);
                 }
 
+                if (opt::checksum)
+                {
+                    ip->check = 0;
+                    ip->check = in_cksum(reinterpret_cast<u_short *>(ip), 20);
+                }
+
                 n++;
 
                 if (opt::stop.load(std::memory_order_relaxed))
@@ -529,21 +572,29 @@ namespace thread
                     if (opt::interactive)
                         wait_keyboard();
 
-                    if (auto ip = opt::rand_src_ip ? reinterpret_cast<iphdr *>(data + 14) : nullptr)
+                    auto ip = reinterpret_cast<iphdr *>(data + 14);
+
+                    if (opt::rand_src_ip)
                     {
                         ip->saddr = opt::src_ip | htonl(static_cast<uint32_t>(m_gen()) & rand_mask);
                     }
-                    if (auto ip = opt::rand_dst_ip ? reinterpret_cast<iphdr *>(data + 14) : nullptr)
+                    if (opt::rand_dst_ip)
                     {
                         ip->daddr = opt::dst_ip | htonl(static_cast<uint32_t>(m_gen()) & rand_mask);
                     }
 
-                    if (auto ip = opt::rand_flow ? reinterpret_cast<iphdr *>(data + 14) : nullptr)
+                    if (opt::rand_flow)
                     {
                         auto hash = ip->saddr ^ ip->daddr;
                         auto seed = opt::rand_seed[(hash+l) & rand_flow_mask];
                         ip->saddr ^= seed;
                         ip->daddr ^= seed;
+                    }
+
+                    if (opt::checksum)
+                    {
+                        ip->check = 0;
+                        ip->check = in_cksum(reinterpret_cast<u_short *>(ip), 20);
                     }
 
                     if (m_async)
@@ -632,6 +683,7 @@ void usage(std::string name)
         "    --loop                     Loop through the trace file N times\n"
 #endif
 
+        " -C --ip-checksum              Enable IP checksum\n"
         "    --src-ip IP                Source IP address\n"
         "    --dst-ip IP                Dest IP address\n"
         "    --src-port PORT            Source UDP port\n"
@@ -640,6 +692,7 @@ void usage(std::string name)
         "    --rand-src-ip              Randomize IP source addresses\n"
         "    --rand-dst-ip              Randomize IP dest addresses\n"
         "    --rand-depth               Depth of randomization (0-32)\n"
+
 #ifdef HAVE_PCAP_H
         " -F --rand-flow                Randomize IP addresses per-flow\n"
         "    --rand-flow-depth          Depth of flow-randomization (def. 8)\n"
@@ -898,6 +951,12 @@ try
         if ( any_strcmp(argv[i], "--rand-dst-ip") )
         {
             opt::rand_dst_ip = true;
+            continue;
+        }
+
+        if ( any_strcmp(argv[i], "-C", "--ip-checksum") )
+        {
+            opt::checksum= true;
             continue;
         }
 
