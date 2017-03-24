@@ -232,6 +232,7 @@ char *make_packets( size_t size
         udp->len = htons(size - 34);
         udp->source = htons(src_port);
         udp->dest   = htons(dst_port);
+        udp->check  = 0;
     }
 
     return area;
