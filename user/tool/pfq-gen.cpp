@@ -32,6 +32,7 @@
 #include <linux/sockios.h>
 #include <net/if.h>
 #include <netinet/ether.h>
+#include <arpa/inet.h>
 
 #include <more/vt100.hpp>
 #include <more/binding.hpp>
@@ -90,18 +91,25 @@ namespace opt
     std::atomic_int nthreads;
     std::atomic_bool stop;
 
-    bool   rand_ip     = false;
+    bool   rand_src_ip = false;
+    bool   rand_dst_ip = false;
+
     bool   rand_flow   = false;
     bool   active_ts   = false;
     bool   poisson     = false;
     bool   interactive = false;
-    double rate      = 0;
+    double rate = 0;
+
+    uint32_t src_ip;
+    uint32_t dst_ip;
+
+    uint16_t src_port;
+    uint16_t dst_port;
 
     uint32_t rand_depth = 32;
     uint32_t rand_flow_depth = 8;
 
     std::vector<uint32_t> rand_seed;
-
     std::vector< std::vector<int> > kthread;
 
     std::string file;
@@ -115,23 +123,20 @@ namespace opt
 }
 
 
-char *make_packets(size_t size, size_t numb)
+char *make_packets( size_t size
+                  , uint32_t src_ip
+                  , uint32_t dst_ip
+                  , uint16_t src_port
+                  , uint16_t dst_port
+                  , size_t numb)
 {
-    static unsigned char ping[98] =
+    static unsigned char payload[34] =
     {
         0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xf0, 0xbf, /* L`..UF.. */
         0x97, 0xe2, 0xff, 0xae, 0x08, 0x00, 0x45, 0x00, /* ......E. */
-        0x00, 0x54, 0xb3, 0xf9, 0x40, 0x00, 0x40, 0x01, /* .T..@.@. */
-        0xf5, 0x32, 0xc0, 0xa8, 0x00, 0x02, 0xad, 0xc2, /* .2...... */
-        0x23, 0x10, 0x08, 0x00, 0xf2, 0xea, 0x42, 0x04, /* #.....B. */
-        0x00, 0x01, 0xfe, 0xeb, 0xfc, 0x52, 0x00, 0x00, /* .....R.. */
-        0x00, 0x00, 0x06, 0xfe, 0x02, 0x00, 0x00, 0x00, /* ........ */
-        0x00, 0x00, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, /* ........ */
-        0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, /* ........ */
-        0x1e, 0x1f, 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, /* .. !"#$% */
-        0x26, 0x27, 0x28, 0x29, 0x2a, 0x2b, 0x2c, 0x2d, /* &'()*+,- */
-        0x2e, 0x2f, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, /* ./012345 */
-        0x36, 0x37                                      /* 67 */
+        0x00, 0x54, 0xb3, 0xf9, 0x40, 0x00, 0x40, 0x11, /* .T..@.@. */
+        0xf5, 0x32, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* .2...... */
+        0x00, 0x00
     };
 
     if (!opt::dst_mac.empty())
@@ -139,43 +144,63 @@ char *make_packets(size_t size, size_t numb)
         struct ether_addr addr;
         if (ether_aton_r(opt::dst_mac.c_str(), &addr) == nullptr)
             throw std::runtime_error("ether_addr: " + opt::dst_mac + " bad mac address!");
-        memcpy(ping, addr.ether_addr_octet, 6);
+        memcpy(payload, addr.ether_addr_octet, 6);
     }
-
 
     if (!opt::src_mac.empty())
     {
         struct ether_addr addr;
         if (ether_aton_r(opt::src_mac.c_str(), &addr) == nullptr)
             throw std::runtime_error("ether_addr: " + opt::src_mac + " bad mac address!");
-        memcpy(ping+6, addr.ether_addr_octet, 6);
+        memcpy(payload+6, addr.ether_addr_octet, 6);
     }
 
     char * area = new char[size * numb];
 
     std::mt19937 gen;
 
-    auto rand_mask = ((1ULL << opt::rand_depth)-1);
+    uint32_t rand_mask = ((1U << opt::rand_depth)-1);
 
     for(size_t i = 0; i < numb; ++i)
     {
         char * packet = area + i * size;
 
-        memcpy(packet, ping, std::min(size, sizeof(ping)));
+        memcpy(packet, payload, std::min(size, sizeof(payload)));
 
-        for(auto n = sizeof(ping); n < size; n++)
+        for(auto n = sizeof(payload); n < size; n++)
         {
-            packet[n] = static_cast<char>(0x38 + n - sizeof(ping));
+            packet[n] = static_cast<char>(0x38 + n - sizeof(payload));
         }
+
+        auto ip = reinterpret_cast<iphdr *>(packet + 14);
+
+        /* IP len */
+
+        ip->tot_len = htons(size - 14);
+
+        /* IP addresses */
+
+        ip->saddr = src_ip;
+        ip->daddr = dst_ip;
 
         /* randomize IP address */
 
-        auto ip = reinterpret_cast<iphdr *>(packet + 14);
-        if (opt::rand_ip)
+        if (opt::rand_src_ip)
         {
-            ip->saddr = static_cast<uint32_t>(gen()) & rand_mask;
-            ip->daddr = static_cast<uint32_t>(gen()) & rand_mask;
+            ip->saddr = src_ip | htonl(static_cast<uint32_t>(gen()) & rand_mask);
         }
+        if (opt::rand_dst_ip)
+        {
+            ip->daddr = dst_ip | htonl(static_cast<uint32_t>(gen()) & rand_mask);
+        }
+
+
+        /* UDP header */
+
+        auto udp = reinterpret_cast<udphdr *>(packet + 34);
+        udp->len = htons(size - 34);
+        udp->source = htons(src_port);
+        udp->dest   = htons(dst_port);
     }
 
     return area;
@@ -197,7 +222,7 @@ namespace thread
         , m_gros(std::unique_ptr<std::atomic_ullong>(new std::atomic_ullong(0)))
         , m_fail(std::unique_ptr<std::atomic_ullong>(new std::atomic_ullong(0)))
         , m_gen()
-        , m_packet(make_packets(opt::len, opt::preload))
+        , m_packet(make_packets(opt::len, opt::src_ip, opt::dst_ip, opt::src_port, opt::dst_port, opt::preload))
         {
             if (m_bind.dev.empty())
                 throw std::runtime_error("context[" + std::to_string (m_id) + "]: device unspecified");
@@ -293,7 +318,7 @@ namespace thread
 
             auto rc = opt::rate != 0.0;
 
-            auto rand_mask = ((1ULL << opt::rand_depth)-1);
+            uint32_t rand_mask = ((1U << opt::rand_depth)-1);
 
             for(size_t n = 0; n < opt::npackets;)
             {
@@ -324,10 +349,13 @@ namespace thread
                 m_band->fetch_add(len, std::memory_order_relaxed);
                 m_gros->fetch_add(len+24, std::memory_order_relaxed);
 
-                if (opt::rand_ip)
+                if (opt::rand_src_ip)
                 {
-                    ip->saddr = static_cast<uint32_t>(m_gen()) & rand_mask;
-                    ip->daddr = static_cast<uint32_t>(m_gen()) & rand_mask;
+                    ip->saddr = opt::src_ip | htonl(static_cast<uint32_t>(m_gen()) & rand_mask);
+                }
+                if (opt::rand_dst_ip)
+                {
+                    ip->daddr = opt::dst_ip | htonl(static_cast<uint32_t>(m_gen()) & rand_mask);
                 }
 
                 n++;
@@ -427,7 +455,7 @@ namespace thread
 
             std::exponential_distribution<double> exp_dist(1.0 / static_cast<double>((delta-pkt_time).count()));
 
-            auto rand_mask = ((1ULL << opt::rand_depth)-1);
+            uint32_t rand_mask = ((1U << opt::rand_depth)-1);
 
             for(size_t n = 0; n < opt::npackets;)
             {
@@ -449,10 +477,13 @@ namespace thread
                 m_band->fetch_add(len, std::memory_order_relaxed);
                 m_gros->fetch_add(len+24, std::memory_order_relaxed);
 
-                if (opt::rand_ip)
+                if (opt::rand_src_ip)
                 {
-                    ip->saddr = static_cast<uint32_t>(m_gen()) & rand_mask;
-                    ip->daddr = static_cast<uint32_t>(m_gen()) & rand_mask;
+                    ip->saddr = opt::src_ip | htonl(static_cast<uint32_t>(m_gen()) & rand_mask);
+                }
+                if (opt::rand_dst_ip)
+                {
+                    ip->daddr = opt::dst_ip | htonl(static_cast<uint32_t>(m_gen()) & rand_mask);
                 }
 
                 n++;
@@ -470,7 +501,7 @@ namespace thread
             u_char *data;
 
             auto rc = opt::rate != 0.0;
-            auto rand_mask = ((1ULL << opt::rand_depth)-1);
+            uint32_t rand_mask = ((1U << opt::rand_depth)-1);
             auto rand_flow_mask = ((1ULL << opt::rand_flow_depth)-1);
 
             for (size_t l = 0; l < opt::loop; l++)
@@ -498,10 +529,13 @@ namespace thread
                     if (opt::interactive)
                         wait_keyboard();
 
-                    if (auto ip = opt::rand_ip ? reinterpret_cast<iphdr *>(data + 14) : nullptr)
+                    if (auto ip = opt::rand_src_ip ? reinterpret_cast<iphdr *>(data + 14) : nullptr)
                     {
-                        ip->saddr = static_cast<uint32_t>(m_gen()) & rand_mask;
-                        ip->daddr = static_cast<uint32_t>(m_gen()) & rand_mask;
+                        ip->saddr = opt::src_ip | htonl(static_cast<uint32_t>(m_gen()) & rand_mask);
+                    }
+                    if (auto ip = opt::rand_dst_ip ? reinterpret_cast<iphdr *>(data + 14) : nullptr)
+                    {
+                        ip->daddr = opt::dst_ip | htonl(static_cast<uint32_t>(m_gen()) & rand_mask);
                     }
 
                     if (auto ip = opt::rand_flow ? reinterpret_cast<iphdr *>(data + 14) : nullptr)
@@ -597,7 +631,14 @@ void usage(std::string name)
         " -r --read FILE                Read pcap trace file to send\n"
         "    --loop                     Loop through the trace file N times\n"
 #endif
+
+        "    --src-ip IP                Source IP address\n"
+        "    --dst-ip IP                Dest IP address\n"
+        "    --src-port PORT            Source UDP port\n"
+        "    --dst-port PORT            Dest UDP address\n"
         " -R --rand-ip                  Randomize IP addresses\n"
+        "    --rand-src-ip              Randomize IP source addresses\n"
+        "    --rand-dst-ip              Randomize IP dest addresses\n"
         "    --rand-depth               Depth of randomization (0-32)\n"
 #ifdef HAVE_PCAP_H
         " -F --rand-flow                Randomize IP addresses per-flow\n"
@@ -789,9 +830,74 @@ try
             continue;
         }
 
+        if ( any_strcmp(argv[i], "--src-ip") )
+        {
+            if (++i == argc)
+            {
+                throw std::runtime_error("IP missing");
+            }
+
+            if (inet_pton(AF_INET, argv[i], &opt::src_ip) != 1) {
+                throw std::runtime_error("src-ip: bad address!");
+            }
+
+            continue;
+        }
+
+
+        if ( any_strcmp(argv[i], "--dst-ip") )
+        {
+            if (++i == argc)
+            {
+                throw std::runtime_error("IP missing");
+            }
+
+            if (inet_pton(AF_INET, argv[i], &opt::dst_ip) != 1) {
+                throw std::runtime_error("dst-ip: bad address!");
+            }
+
+            continue;
+        }
+
+        if ( any_strcmp(argv[i], "--src-port") )
+        {
+            if (++i == argc)
+            {
+                throw std::runtime_error("port missing");
+            }
+
+            opt::src_port = static_cast<uint16_t>(atoi(argv[i]));
+            continue;
+        }
+
+
+        if ( any_strcmp(argv[i], "--dst-port") )
+        {
+            if (++i == argc)
+            {
+                throw std::runtime_error("port missing");
+            }
+
+            opt::dst_port = static_cast<uint16_t>(atoi(argv[i]));
+            continue;
+        }
+
         if ( any_strcmp(argv[i], "-R", "--rand-ip") )
         {
-            opt::rand_ip = true;
+            opt::rand_src_ip = true;
+            opt::rand_dst_ip = true;
+            continue;
+        }
+
+        if ( any_strcmp(argv[i], "--rand-src-ip") )
+        {
+            opt::rand_src_ip = true;
+            continue;
+        }
+
+        if ( any_strcmp(argv[i], "--rand-dst-ip") )
+        {
+            opt::rand_dst_ip = true;
             continue;
         }
 
@@ -867,7 +973,8 @@ try
     // loading rand seeds...
     //
 
-    std::cout << "rand_ip    : "  << std::boolalpha << opt::rand_ip << std::endl;
+    std::cout << "rand_ip_src: "  << std::boolalpha << (opt::rand_src_ip) << std::endl;
+    std::cout << "rand_ip_dst: "  << std::boolalpha << (opt::rand_dst_ip) << std::endl;
 
     if (opt::rand_flow)
     {
@@ -961,7 +1068,9 @@ try
 
     auto mq = std::any_of(std::begin(binding), std::end(binding), [](more::thread_binding const &b) { return b.dev.front().queue.size() > 1; });
 
-    if (!opt::rand_ip && mq)
+    if (!opt::rand_src_ip &&
+        !opt::rand_dst_ip &&
+        mq)
     {
         std::cout << vt100::BOLD << "*** Multiple queue detected! Consider to randomize IP addresses with -R option! ***" << vt100::RESET << std::endl;
     }
