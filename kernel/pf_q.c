@@ -628,7 +628,7 @@ pfq_netif_receive_skb(struct sk_buff *skb)
 		return NET_RX_SUCCESS;
 	}
 
-	nskb = skb_copy_for_kernel(skb, GFP_ATOMIC);
+	nskb = skb->peeked ? skb_copy(skb, GFP_ATOMIC) : skb;
 	if (skb != nskb) {
 		struct pfq_percpu_pool *pool;
 
@@ -660,7 +660,7 @@ pfq_netif_rx(struct sk_buff *skb)
 		return NET_RX_SUCCESS;
 	}
 
-	nskb = skb_copy_for_kernel(skb, GFP_ATOMIC);
+	nskb = skb->peeked ? skb_copy(skb, GFP_ATOMIC) : skb;
 	if (skb != nskb) {
 		struct pfq_percpu_pool *pool;
 
@@ -692,7 +692,7 @@ pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
                 return GRO_NORMAL;
         }
 
-	nskb = skb_copy_for_kernel(skb, GFP_ATOMIC);
+	nskb = skb->peeked ? skb_copy(skb, GFP_ATOMIC) : skb;
 	if (skb != nskb) {
 		struct pfq_percpu_pool *pool;
 

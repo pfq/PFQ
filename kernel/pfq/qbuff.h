@@ -166,7 +166,7 @@ qbuff_copy_to_kernel(struct qbuff *buff, gfp_t pri)
 
 	/* copy the skb */
 
-	nskb = skb_copy_for_kernel(skb, pri);
+	nskb = skb->peeked ? skb_copy(skb, GFP_KERNEL) : skb;
 	if (nskb) {
 		nskb->peeked = 0;
 		netif_receive_skb(nskb);

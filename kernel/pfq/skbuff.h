@@ -91,16 +91,6 @@ unsigned int pfq_skb_end_offset(const struct sk_buff *skb)
 #endif
 
 
-
-static inline
-struct sk_buff *
-skb_copy_for_kernel(struct sk_buff *skb, gfp_t pri)
-{
-	return skb->peeked ?  skb_copy(skb, pri) :
-			      skb_clone(skb, pri);
-}
-
-
 static inline
 struct sk_buff *
 skb_clone_for_tx(struct sk_buff *skb, struct net_device *dev, gfp_t pri)
