@@ -729,8 +729,6 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb)
 		/* pass the ownership of this skb to the garbage collector */
 		buff = GC_make_buff(data->GC, skb);
 		if (unlikely(buff == NULL)) {
-			if (printk_ratelimit())
-				printk(KERN_INFO "[PFQ] GC: memory exhausted!\n");
 			__sparse_inc(global->percpu_stats, lost, cpu);
 			__sparse_inc(global->percpu_memory, os_free, cpu);
 			pool = per_cpu_ptr(global->percpu_pool, cpu);

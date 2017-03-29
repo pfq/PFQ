@@ -164,7 +164,7 @@ qbuff_copy_to_kernel(struct qbuff *buff, gfp_t pri)
 	skb->transport_header = -1;
 	skb_reset_mac_len(skb);
 
-	/* copy the skb */
+	/* copy the skb only if peeked */
 
 	nskb = skb->peeked ? skb_copy(skb, GFP_KERNEL) : skb;
 	if (nskb) {
@@ -175,7 +175,6 @@ qbuff_copy_to_kernel(struct qbuff *buff, gfp_t pri)
 		if (printk_ratelimit())
 			printk(KERN_INFO "[PFQ] copy_to_kernel: error!\n");
 	}
-
 }
 
 
