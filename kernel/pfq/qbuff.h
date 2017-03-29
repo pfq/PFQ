@@ -153,7 +153,7 @@ qbuff_maclen(struct qbuff const *buff)
 
 
 static inline void
-qbuff_copy_to_kernel(struct qbuff *buff, gfp_t pri)
+qbuff_move_or_copy_to_kernel(struct qbuff *buff, gfp_t pri)
 {
 	struct sk_buff *nskb, *skb = QBUFF_SKB(buff);
 

@@ -335,21 +335,31 @@ int core_process_batch(struct core_percpu_data *data,
 	if (endpoints.cnt_total)
 	{
 		size_t total = (size_t)pfq_qbuff_lazy_xmit_run(PFQ_QBUFF_QUEUE(&GC_ptr->pool), &endpoints);
-
 		__sparse_add(global->percpu_stats, frwd, total, cpu);
 		__sparse_add(global->percpu_stats, disc, endpoints.cnt_total - total, cpu);
 	}
+
 
 	/* forward buffs to kernel and release them... */
 
 	for_each_qbuff(PFQ_QBUFF_QUEUE(&GC_ptr->pool), buff, n)
 	{
 		if (fwd_to_kernel(buff)) {
-			qbuff_copy_to_kernel(buff, GFP_KERNEL);
+
+			bool peeked = QBUFF_SKB(buff)->peeked;
+
+			qbuff_move_or_copy_to_kernel(buff, GFP_KERNEL);
+
+			/* only if peeked we need to free/recycle the qbuff/skb */
+			if (peeked)
+				qbuff_free(buff, &pool->rx);
+
 			__sparse_inc(global->percpu_stats, kern, cpu);
 		}
-
-		qbuff_free(buff, &pool->rx);
+		else {
+			/* Peeked or not, always free the qbuff/skb here */
+			qbuff_free(buff, &pool->rx);
+		}
 	}
 
 	/* reset the GC */
