@@ -57,7 +57,7 @@ static const char *__size_HugePage(size_t size)
 
 
 static struct pfq_hugepages_descr *
-__free_HugePages(void)
+__get_free_HugePages(void)
 {
 	int n = 0;
 	for(; n < pfq_hugepages_numb; n++)
@@ -94,7 +94,7 @@ get_HugePages(unsigned long user_addr, size_t user_size, size_t hugepage_size, s
 		if (descr->pid == current->tgid) {
 
 			if ((descr->offset + size) > descr->size) {
-				printk(KERN_WARNING "[PFQ] error: could not allocate %zu in HugePages!\n", size);
+				printk(KERN_WARNING "[PFQ] error: could not allocate %zu bytes in HugePages!\n", size);
 				goto done;
 			}
 
@@ -105,7 +105,7 @@ get_HugePages(unsigned long user_addr, size_t user_size, size_t hugepage_size, s
 		}
 	}
 
-        descr = __free_HugePages();
+        descr = __get_free_HugePages();
 	if (descr) {
 
 		struct page ** hugepages;
@@ -119,12 +119,12 @@ get_HugePages(unsigned long user_addr, size_t user_size, size_t hugepage_size, s
 
 		if (hugepage_size == 1024*1024*1024) {
 			/* for a 1G page workaround */
-			printk(KERN_WARNING "[PFQ] %s HugePages: using 1 page!\n", __size_HugePage(hugepage_size));
+			printk(KERN_INFO "[PFQ] %s HugePages: using 1 page.\n", __size_HugePage(hugepage_size));
 			npages = 1;
 		}
 		else {
 			npages = PAGE_ALIGN(user_size) / PAGE_SIZE;
-			printk(KERN_WARNING "[PFQ] %s HugePages: using (%d 4k-pages)!\n", __size_HugePage(hugepage_size), npages);
+			printk(KERN_INFO "[PFQ] %s HugePages: backted to %d 4k-pages.\n", __size_HugePage(hugepage_size), npages);
 		}
 
 
@@ -152,8 +152,7 @@ get_HugePages(unsigned long user_addr, size_t user_size, size_t hugepage_size, s
 		}
 
 		if (!base_addr) {
-			// FIXME (get_user_pages_fast...)
-			printk(KERN_WARNING "[PFQ] vm_map_ram: mapping memory failure!\n");
+			printk(KERN_WARNING "[PFQ] error: vm_map_ram: mapping memory failure!\n");
 			goto done;
 		}
 
@@ -170,7 +169,7 @@ get_HugePages(unsigned long user_addr, size_t user_size, size_t hugepage_size, s
 		ret->offset    = size;
 	}
 	else {
-		printk(KERN_WARNING "[PFQ] get_HugePages: no slots available!\n");
+		printk(KERN_WARNING "[PFQ] error: get_free_HugePages: no slots available!\n");
 	}
 
 done:
@@ -225,7 +224,7 @@ int put_HugePages(void)
 	}
 
 	mutex_unlock(&pfq_hugepages_mutex);
-	printk(KERN_WARNING "[PFQ] put_HugePages: pid (%d) not found!\n", current->tgid);
+	printk(KERN_WARNING "[PFQ] error: put_HugePages: pid (%d) not found!\n", current->tgid);
 	return -EPERM;
 }
 
@@ -260,12 +259,12 @@ pfq_mmap(struct file *file, struct socket *sock, struct vm_area_struct *vma)
         int ret;
 
         if(size & (PAGE_SIZE-1)) {
-                printk(KERN_WARNING "[PFQ] pfq_mmap: size not multiple of PAGE_SIZE!\n");
+                printk(KERN_WARNING "[PFQ] error: pfq_mmap: size not multiple of PAGE_SIZE!\n");
                 return -EINVAL;
         }
 
         if(size > so->shmem.size) {
-                printk(KERN_WARNING "[PFQ] pfq_mmap: area too large!\n");
+                printk(KERN_WARNING "[PFQ] error: pfq_mmap: area too large!\n");
                 return -EINVAL;
         }
 
@@ -326,7 +325,7 @@ pfq_vmalloc_user(struct pfq_shmem_descr *shmem, size_t mem_size)
         shmem->hugepages_descr = NULL;
 
 	if (shmem->addr == NULL) {
-		printk(KERN_WARNING "[PFQ] shmem: out of memory (vmalloc %zu bytes)!", tot_mem);
+		printk(KERN_WARNING "[PFQ] error: shmem: out of memory (vmalloc %zu bytes)!", tot_mem);
 		return -ENOMEM;
 	}
 

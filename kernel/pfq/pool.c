@@ -50,7 +50,7 @@ pfq_skb_pool_flush(struct core_spsc_fifo *pool)
 	}
 
 	if (in_use)
-		printk(KERN_WARNING "[PFQ] pfq_skb_pool_flush: pool@%p -> %zu buffers still in use!!\n", pool, in_use);
+		printk(KERN_WARNING "[PFQ] error: pfq_skb_pool_flush: pool@%p -> %zu buffers still in use!!\n", pool, in_use);
 
 	return total;
 }

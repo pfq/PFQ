@@ -173,7 +173,7 @@ qbuff_move_or_copy_to_kernel(struct qbuff *buff, gfp_t pri)
 	}
 	else {
 		if (printk_ratelimit())
-			printk(KERN_INFO "[PFQ] copy_to_kernel: error!\n");
+			printk(KERN_INFO "[PFQ] error: copy_to_kernel!\n");
 	}
 }
 

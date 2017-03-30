@@ -825,7 +825,7 @@ size_t pfq_sk_queue_recv(struct core_sock_opt *opt,
 		/* copy bytes of packet */
 #if 0
 		if (pfq_copy_bits(skb, 0, pkt, bytes) != 0) {
-			printk(KERN_WARNING "[PFQ] BUG! skb_copy_bits failed (bytes=%zu, skb_len=%d mac_len=%d)!\n",
+			printk(KERN_WARNING "[PFQ] error: BUG! skb_copy_bits failed (bytes=%zu, skb_len=%d mac_len=%d)!\n",
 			       bytes, skb->len, skb->mac_len);
 			return copied;
 		}
