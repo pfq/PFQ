@@ -15,6 +15,7 @@
 -- Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 --
 
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE LambdaCase #-}
 
@@ -27,6 +28,9 @@ import Data.Maybe
 import Data.Either
 import Data.Char
 import Data.Time.Clock
+import qualified Data.ByteString as B (ByteString, readFile)
+import qualified Data.Yaml as Y
+import Data.Yaml (FromJSON(..), (.:), (.:?))
 
 import Control.Applicative
 import Control.Monad
@@ -49,25 +53,27 @@ import System.Posix.Types
 import qualified Network.PFQ as Q (version)
 
 proc_cpuinfo, proc_modules, tmp_pfq :: String
+
 proc_cpuinfo = "/proc/cpuinfo"
 proc_modules = "/proc/modules"
 tmp_pfq      = "/tmp/pfq.opt"
+
 
 bold  = setSGRCode [SetConsoleIntensity BoldIntensity]
 red   = setSGRCode [SetColor Foreground Vivid Red]
 blue  = setSGRCode [SetColor Foreground Vivid Blue]
 reset = setSGRCode []
 
-configFiles = [ "/etc/pfq.conf"
+
+configFiles = [ "/etc/pfq.conf.yaml"
+              , "/root/.pfq.conf.yaml"
+              , "/root/pfq.conf.yaml"
+              , "/etc/pfq.conf"
               , "/root/.pfq.conf"
               , "/root/pfq.conf"
               ]
 
 defaultDelay = 100000
-
-
-data Toggle = Enable | Disable
-    deriving (Show, Read, Eq)
 
 
 newtype OptString = OptString { getOptString :: String }
@@ -96,10 +102,19 @@ data Device =
     {   devname   :: String
     ,   devspeed  :: Maybe Int
     ,   channels  :: Maybe Int
-    ,   flowctrl  :: Maybe Toggle
+    ,   flowctrl  :: Maybe Bool
     ,   ethopt    :: [(String, String)]
     } deriving (Show, Read, Eq)
 
+instance FromJSON Device where
+  parseJSON (Y.Object v) =
+    Device <$>
+        v .:   "devname"    <*>
+        v .:?  "devspeed"   <*>
+        v .:?  "channels"   <*>
+        v .:?  "flowctrl"   <*>
+        v .:   "ethopt"
+  parseJSON _ = fail "Expected Object for Device value"
 
 data Driver =
     Driver
@@ -110,6 +125,16 @@ data Driver =
     } deriving (Show, Read, Eq)
 
 
+instance FromJSON Driver where
+  parseJSON (Y.Object v) =
+    Driver <$>
+        v .:   "drvmod"    <*>
+        v .:   "drvopt"    <*>
+        v .:   "instances" <*>
+        v .:   "devices"
+  parseJSON _ = fail "Expected Object for Driver value"
+
+
 data Config = Config
     {   pfq_module     :: String
     ,   pfq_options    :: [String]
@@ -118,6 +143,19 @@ data Config = Config
     ,   cpu_governor   :: String
     ,   drivers        :: [Driver]
     } deriving (Show, Read, Eq)
+
+
+instance FromJSON Config where
+  parseJSON (Y.Object v) =
+      Config <$>
+        v .:   "pfq_module"     <*>
+        v .:   "pfq_options"    <*>
+        v .:   "exclude_core"   <*>
+        v .:   "irq_affinity"   <*>
+        v .:   "cpu_governor"   <*>
+        v .:   "drivers"
+  parseJSON _ = fail "Expected Object for Config value"
+
 
 
 instance Semigroup Config where
@@ -288,8 +326,15 @@ loadConfig :: [FilePath] -> Options -> IO Config
 loadConfig confs opt =
     getFirstConfig confs >>= \case
         Nothing   -> putStrBoldLn "Using default config..." >> return (mkConfig opt)
-        Just conf -> putStrBoldLn ("Using " ++ conf ++ " config...") >>
-                        (read . clean) <$> readFile conf
+        Just conf ->
+            putStrBoldLn ("Using " ++ conf ++ " config...") *>
+            if "yaml" `isInfixOf` conf
+               then do
+                   conf' <- Y.decodeFileEither conf
+                   case conf' of
+                      Right x -> return x
+                      Left  x -> throw $ SystemError (Y.prettyPrintParseException x) (ExitFailure 42)
+               else (read . clean) <$> readFile conf
 
 
 {-# NOINLINE getNumberOfPhyCores #-}
@@ -381,7 +426,7 @@ setupDevice queues (Device dev speed channels fctrl opts) = do
     threadDelay defaultDelay
 
     when (isJust fctrl) $ do
-        let t = fromJust $ (== Enable) <$> fctrl
+        let t = fromJust fctrl
         if t then putStrBoldLn ("Disabling flow control for " ++ dev ++ "...") *>
                     runSystem ("/sbin/ethtool -A " ++ dev ++ " rx on tx on") "ethtool: enabling flow-ctrl error!"
              else putStrBoldLn ("Enabling flow control for " ++ dev ++ "...") *>

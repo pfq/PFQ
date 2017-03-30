@@ -1,0 +1,41 @@
+#
+# PFQ configuration file
+#
+
+
+pfq_module  :   "/opt/PFQ/kernel/pfq.ko"                                                  
+
+pfq_options :   [ "capt_batch_len=64"
+                , "xmit_batch_len=64"
+                , "skb_pool_size=1024"
+                ]
+
+exclude_core:   []
+irq_affinity:   []
+
+cpu_governor:   "performance"
+
+
+drivers:
+  - drvmod:         ""
+    drvopt:         [] 
+    instances:      1
+    devices: 
+        - devname  : "eth0"
+          devspeed : 10000
+          channels : null
+          flowctrl : yes
+          ethopt   : [ ["-G", "tx 768"]
+                     , ["-C", "tx-frames-irq 1024"] 
+                     , ["-C", "rx-usecs 50"] 
+                     ] 
+  - drvmod       :   ""
+    drvopt       :   [] 
+    instances    :   1
+    devices: 
+        - devname  : "eth0"
+          devspeed : 10000
+          # channels : 2
+          flowctrl : no
+          ethopt   : [ ]
+

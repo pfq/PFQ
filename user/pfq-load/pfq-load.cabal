@@ -24,6 +24,8 @@ Executable pfq-load
                         mtl,
                         unix,
                         time,
+                        yaml,
+                        text,
                         pfq
     extra-libraries:    pfq
     default-language:   Haskell2010

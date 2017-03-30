@@ -37,5 +37,6 @@ Library
                  storable-tuple,
                  storablevector,
                  unix,
+                 yaml,
                  hint
                     
