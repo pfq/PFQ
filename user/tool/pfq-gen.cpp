@@ -191,7 +191,7 @@ char *make_packets( size_t size
 
     std::mt19937 gen;
 
-    uint32_t rand_mask = ((1U << opt::rand_depth)-1);
+    uint32_t rand_mask = ((1ULL << opt::rand_depth)-1);
 
     for(size_t i = 0; i < numb; ++i)
     {
@@ -350,7 +350,7 @@ namespace thread
 
             auto rc = opt::rate != 0.0;
 
-            uint32_t rand_mask = ((1U << opt::rand_depth)-1);
+            uint32_t rand_mask = ((1ULL << opt::rand_depth)-1);
 
             for(size_t n = 0; n < opt::npackets;)
             {
@@ -493,7 +493,7 @@ namespace thread
 
             std::exponential_distribution<double> exp_dist(1.0 / static_cast<double>((delta-pkt_time).count()));
 
-            uint32_t rand_mask = ((1U << opt::rand_depth)-1);
+            uint32_t rand_mask = ((1ULL << opt::rand_depth)-1);
 
             for(size_t n = 0; n < opt::npackets;)
             {
@@ -545,7 +545,7 @@ namespace thread
             u_char *data;
 
             auto rc = opt::rate != 0.0;
-            uint32_t rand_mask = ((1U << opt::rand_depth)-1);
+            uint32_t rand_mask = ((1ULL << opt::rand_depth)-1);
             auto rand_flow_mask = ((1ULL << opt::rand_flow_depth)-1);
 
             for (size_t l = 0; l < opt::loop; l++)
@@ -877,8 +877,7 @@ try
             }
 
             opt::rand_depth = static_cast<uint32_t>(std::atoi(argv[i]));
-
-            if (opt::rand_depth > 31)
+            if (opt::rand_depth > 32)
                 throw std::runtime_error("rand-depth: too large value [0-32]!");
 
             continue;
