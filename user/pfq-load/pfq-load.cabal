@@ -18,6 +18,7 @@ Executable pfq-load
                         filepath, 
                         directory,
                         semigroups,
+                        bytestring,
                         split,
                         process,
                         ansi-terminal,
