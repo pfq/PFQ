@@ -247,7 +247,6 @@ core_sock_enable(struct core_sock *so, struct pfq_so_enable *mem)
 		}
 
 		mem->user_addr = (unsigned long)(mem->user_addr + so->shmem.hugepages_descr->offset - so->shmem.size);
-
 	}
 
 	return 0;

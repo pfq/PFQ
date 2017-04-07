@@ -100,6 +100,7 @@ pfq_tx_thread(void *_data)
 			sock_queue = atomic_read(&data->sock_queue[n]);
 			smp_rmb();
 			sock = data->sock[n];
+
 			if (sock_queue != -1 && sock != NULL) {
 				reg = true;
 				tx = pfq_sk_queue_xmit(sock, sock_queue, data->cpu, &data->sock_queue[n]);
@@ -115,8 +116,6 @@ pfq_tx_thread(void *_data)
                 if (kthread_should_stop())
                         break;
 
-		pfq_relax();
-
 #ifdef PFQ_DEBUG
 		if (now != jiffies/(HZ*10)) {
 			now = jiffies/(HZ*10);
@@ -125,7 +124,7 @@ pfq_tx_thread(void *_data)
 #endif
 
 		if (total_sent == 0)
-			schedule();
+			pfq_relax();
 
 		if (!reg)
 			msleep(1);
