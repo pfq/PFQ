@@ -65,7 +65,7 @@ size_t copy_to_user_qbuffs(struct core_sock *so, struct core_qbuff_refs *buffs,
 
 	__sparse_add(so->stats, recv, len, cpu);
 
-        if (likely(core_sock_get_rx_queue(&so->opt) != NULL)) {
+        if (likely(core_sock_shared_rx_queue(&so->opt) != NULL)) {
 
 		smp_rmb();
 

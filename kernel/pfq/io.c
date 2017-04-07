@@ -172,26 +172,26 @@ ktime_t wait_until(uint64_t tv64, ktime_t now, struct net_dev_queue *dev_queue, 
 
 
 static inline
-ptrdiff_t acquire_sk_tx_prod_off_by(int index, struct pfq_tx_queue *txm)
+ptrdiff_t acquire_sk_tx_prod_off_by(int index, struct pfq_shared_tx_queue *tx_queue)
 {
-	return __atomic_load_n((index & 1) ? &txm->prod.off1 : &txm->prod.off0, __ATOMIC_ACQUIRE);
+	return __atomic_load_n((index & 1) ? &tx_queue->prod.off1 : &tx_queue->prod.off0, __ATOMIC_ACQUIRE);
 }
 
 
 static inline
-ptrdiff_t maybe_swap_sk_tx_queue(struct pfq_tx_queue *txm, unsigned int *cons_idx_ret)
+ptrdiff_t maybe_swap_sk_tx_queue(struct pfq_shared_tx_queue *tx_queue, unsigned int *cons_idx_ret)
 {
-	unsigned int prod_idx = __atomic_load_n(&txm->prod.index, __ATOMIC_ACQUIRE);
-	unsigned int cons_idx = __atomic_load_n(&txm->cons.index, __ATOMIC_RELAXED);
+	unsigned int prod_idx = __atomic_load_n(&tx_queue->prod.index, __ATOMIC_ACQUIRE);
+	unsigned int cons_idx = __atomic_load_n(&tx_queue->cons.index, __ATOMIC_RELAXED);
 
-	ptrdiff_t prod_off = acquire_sk_tx_prod_off_by(cons_idx, txm);
+	ptrdiff_t prod_off = acquire_sk_tx_prod_off_by(cons_idx, tx_queue);
 
-	if (prod_idx != cons_idx && txm->cons.off == prod_off) /* swap this queue */
+	if (prod_idx != cons_idx && tx_queue->cons.off == prod_off) /* swap this queue */
 	{
-		__atomic_store_n(&txm->cons.index, prod_idx, __ATOMIC_RELAXED);
-		txm->cons.off = 0;
+		__atomic_store_n(&tx_queue->cons.index, prod_idx, __ATOMIC_RELAXED);
+		tx_queue->cons.off = 0;
 		*cons_idx_ret = prod_idx;
-		return acquire_sk_tx_prod_off_by(prod_idx, txm);
+		return acquire_sk_tx_prod_off_by(prod_idx, tx_queue);
 	}
 	else
 	{
@@ -376,7 +376,7 @@ pfq_sk_queue_xmit(struct core_sock *so,
 	struct pfq_mbuff_xmit_context ctx;
 	struct pfq_percpu_pool *pool;
 	int batch_cntr = 0, cons_idx;
-	struct pfq_tx_queue *txm;
+	struct pfq_shared_tx_queue *tx_queue;
 	struct pfq_pkthdr *hdr, *hdr1;
 	ptrdiff_t prod_off;
         char *begin, *end;
@@ -385,8 +385,8 @@ pfq_sk_queue_xmit(struct core_sock *so,
 
 	/* get the Tx queue descriptor */
 
-	txm = core_sock_get_tx_queue(&so->opt, sock_queue);
-	if (unlikely(txm == NULL))
+	tx_queue = core_sock_shared_tx_queue(&so->opt, sock_queue);
+	if (unlikely(tx_queue == NULL))
 		return ret; /* socket not enabled... */
 
 	/* enable skb_pool for Tx threads */
@@ -406,9 +406,9 @@ pfq_sk_queue_xmit(struct core_sock *so,
 
 	/* initialize the boundaries of this queue */
 
-	prod_off = maybe_swap_sk_tx_queue(txm, &cons_idx);
-	begin    = txinfo->shmem_addr + (cons_idx & 1) * txm->size + txm->cons.off;
-	end      = txinfo->shmem_addr + (cons_idx & 1) * txm->size + prod_off;
+	prod_off = maybe_swap_sk_tx_queue(tx_queue, &cons_idx);
+	begin    = txinfo->shmem_addr + (cons_idx & 1) * tx_queue->size + tx_queue->cons.off;
+	end      = txinfo->shmem_addr + (cons_idx & 1) * tx_queue->size + prod_off;
 
         /* setup the context */
 
@@ -507,7 +507,7 @@ pfq_sk_queue_xmit(struct core_sock *so,
 
 	/* update the local consumer offset */
 
-	txm->cons.off = prod_off;
+	tx_queue->cons.off = prod_off;
 
 	/* count the packets left in the shared queue */
 
@@ -776,7 +776,7 @@ size_t pfq_sk_queue_recv(struct core_sock_opt *opt,
 			 int burst_len,
 			 pfq_gid_t gid)
 {
-	struct pfq_rx_queue *rx_queue = core_sock_get_rx_queue(opt);
+	struct pfq_shared_rx_queue *rx_queue = core_sock_shared_rx_queue(opt);
 	struct pfq_pkthdr *hdr;
 	struct qbuff *buff;
 	unsigned long data;

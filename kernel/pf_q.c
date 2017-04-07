@@ -159,7 +159,7 @@ pfq_poll(struct file *file, struct socket *sock, poll_table * wait)
 
 	poll_wait(file, &so->opt.waitqueue, wait);
 
-        if(!core_sock_get_rx_queue(&so->opt))
+        if(!core_sock_shared_rx_queue(&so->opt))
                 return mask;
 
         if (core_mpsc_queue_len(so) > 0)
@@ -174,7 +174,7 @@ static int pfq_ioctl(struct socket *sock, unsigned int cmd, unsigned long arg)
         switch (cmd) {
 	case QIOCTX:
 	{
-		if (core_sock_get_tx_queue(&so->opt, -1) == NULL) {
+		if (core_sock_shared_tx_queue(&so->opt, -1) == NULL) {
 			printk(KERN_INFO "[PFQ|%d] Tx queue: socket not enabled!\n", so->id);
 			return -EPERM;
 		}

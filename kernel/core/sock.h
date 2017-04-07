@@ -47,7 +47,7 @@
 
 struct core_txq_info
 {
-	atomic_long_t		addr;			/* (pfq_tx_queue *) */
+	atomic_long_t		addr;			/* (pfq_shared_tx_queue *) */
 	void			*shmem_addr;
 	int			def_ifindex;		/* default ifindex */
 	int			def_queue;		/* default queue */
@@ -66,7 +66,7 @@ void core_txq_info_init(struct core_txq_info *info)
 
 struct core_rxq_info
 {
-	atomic_long_t		addr;		/* (pfq_rx_queue *) */
+	atomic_long_t		addr;		/* (pfq_shared_rx_queue *) */
 	void			*shmem_addr;
 };
 
@@ -141,26 +141,26 @@ core_sock_get_tx_queue_info(struct core_sock_opt *that, int index)
 /* queues */
 
 static inline
-struct pfq_rx_queue *
-core_sock_get_rx_queue(struct core_sock_opt *that)
+struct pfq_shared_rx_queue *
+core_sock_shared_rx_queue(struct core_sock_opt *that)
 {
-	return (struct pfq_rx_queue *)atomic_long_read(&that->rxq_info.addr);
+	return (struct pfq_shared_rx_queue *)atomic_long_read(&that->rxq_info.addr);
 }
 
 static inline
-struct pfq_tx_queue *
-core_sock_get_tx_queue(struct core_sock_opt *that, int index)
+struct pfq_shared_tx_queue *
+core_sock_shared_tx_queue(struct core_sock_opt *that, int index)
 {
 	if (index == -1)
-		return (struct pfq_tx_queue *)atomic_long_read(&that->txq_info.addr);
-	return (struct pfq_tx_queue *)atomic_long_read(&that->txq_info_async[index].addr);
+		return (struct pfq_shared_tx_queue *)atomic_long_read(&that->txq_info.addr);
+	return (struct pfq_shared_tx_queue *)atomic_long_read(&that->txq_info_async[index].addr);
 }
 
 /* memory mapped queues */
 
 static inline
 struct pfq_shared_queue *
-core_sock_get_shared_queue(struct core_sock *p)
+core_sock_shared_queue(struct core_sock *p)
 {
         return (struct pfq_shared_queue *) p->shmem.addr;
 }

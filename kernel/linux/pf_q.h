@@ -194,7 +194,7 @@ typedef uint8_t  pfq_qver_t;
 /* PFQ socket queue */
 
 
-struct pfq_rx_queue
+struct pfq_shared_rx_queue
 {
         unsigned long		shinfo;	    /* atomic */
         unsigned int            len;        /* queue length in slots */
@@ -205,7 +205,7 @@ struct pfq_rx_queue
 
 
 
-struct pfq_tx_queue
+struct pfq_shared_tx_queue
 {
         size_t				size;	    /* queue size in bytes */
 
@@ -229,9 +229,9 @@ struct pfq_tx_queue
 
 struct pfq_shared_queue
 {
-        struct pfq_rx_queue rx;
-        struct pfq_tx_queue tx;
-        struct pfq_tx_queue tx_async[Q_MAX_TX_QUEUES];
+        struct pfq_shared_rx_queue rx;
+        struct pfq_shared_tx_queue tx;
+        struct pfq_shared_tx_queue tx_async[Q_MAX_TX_QUEUES];
 };
 
 

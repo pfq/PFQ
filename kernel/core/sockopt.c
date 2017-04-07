@@ -777,7 +777,7 @@ int core_setsockopt(struct socket *sock,
 		if (copy_from_user(&queue, optval, optlen))
 			return -EFAULT;
 
-		if (core_sock_get_tx_queue(&so->opt, -1) == NULL) {
+		if (core_sock_shared_tx_queue(&so->opt, -1) == NULL) {
 			printk(KERN_INFO "[PFQ|%d] Tx queue: socket not enabled!\n", so->id);
 			return -EPERM;
 		}

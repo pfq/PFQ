@@ -52,7 +52,7 @@ static inline size_t core_spsc_queue_mem(struct core_sock *so)
 static inline
 size_t core_mpsc_queue_len(struct core_sock *p)
 {
-	struct pfq_shared_queue *q = core_sock_get_shared_queue(p);
+	struct pfq_shared_queue *q = core_sock_shared_queue(p);
 	unsigned long data;
 	if (!q)
 		return 0;
@@ -64,7 +64,7 @@ size_t core_mpsc_queue_len(struct core_sock *p)
 static inline
 int core_mpsc_queue_index(struct core_sock *p)
 {
-	struct pfq_shared_queue *q = core_sock_get_shared_queue(p);
+	struct pfq_shared_queue *q = core_sock_shared_queue(p);
 	unsigned long data;
 	if (!q)
 		return 0;
@@ -74,7 +74,7 @@ int core_mpsc_queue_index(struct core_sock *p)
 
 
 static inline
-char *core_mpsc_slot_ptr(struct core_sock_opt *opt, struct pfq_rx_queue *qd, size_t qindex, size_t slot)
+char *core_mpsc_slot_ptr(struct core_sock_opt *opt, struct pfq_shared_rx_queue *qd, size_t qindex, size_t slot)
 {
 	(void)qd;
 	return (char *)(opt->rxq_info.shmem_addr) + (opt->rx_queue_len * (qindex & 1) + slot) * opt->rx_slot_size;
