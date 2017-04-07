@@ -399,7 +399,6 @@ pfq_sk_queue_xmit(struct core_sock *so,
 
 	spin_lock(&pool->tx_lock);
 
-
 	if (cpu == Q_NO_KTHREAD) {
 		cpu = smp_processor_id();
 	}
@@ -422,7 +421,6 @@ pfq_sk_queue_xmit(struct core_sock *so,
 	/* lock the dev_queue */
 
 	if (pfq_dev_queue_get(ctx.net, txinfo->def_ifindex, txinfo->def_queue, &dev_queue) < 0) {
-
 		spin_unlock(&pool->tx_lock);
 
 		if (printk_ratelimit())
@@ -489,12 +487,10 @@ pfq_sk_queue_xmit(struct core_sock *so,
 			break;
 	}
 
-
 	/* unlock the current queue, enable bottom half */
 
 	HARD_TX_UNLOCK(dev_queue.dev, dev_queue.queue);
 	local_bh_enable();
-
 
 	/* release the dev_queue */
 
@@ -503,7 +499,6 @@ pfq_sk_queue_xmit(struct core_sock *so,
 	/* unlock the Tx pool... */
 
 	spin_unlock(&pool->tx_lock);
-
 
 	/* update the local consumer offset */
 
