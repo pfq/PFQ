@@ -263,6 +263,9 @@ core_sock_disable(struct core_sock *so)
 		pr_devel("[PFQ|%d] unbinding Tx threads...\n", so->id);
 		core_sock_tx_unbind(so);
 
+		pr_devel("[PFQ|%d] unlinking shared queue...\n", so->id);
+		core_shared_queue_unlink(so);
+
 		msleep(Q_CORE_GRACE_PERIOD);
 
 		pr_devel("[PFQ|%d] leaving all groups...\n", so->id);
@@ -270,9 +273,8 @@ core_sock_disable(struct core_sock *so)
 
 		msleep(Q_CORE_GRACE_PERIOD);
 
-		pr_devel("[PFQ|%d] disabling shared queue...\n", so->id);
-		core_shared_queue_disable(so);
-		msleep(Q_CORE_GRACE_PERIOD);
+		pr_devel("[PFQ|%d] unmapping shared queue...\n", so->id);
+		core_shared_queue_unmap(so);
 	}
 	else {
 		pr_devel("[PFQ|%d] socket (already) disabled.\n", so->id);

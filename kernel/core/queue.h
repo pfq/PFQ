@@ -35,7 +35,7 @@
 
 
 extern int core_shared_queue_enable(struct core_sock *so, unsigned long user_addr, size_t user_size, size_t hugepage_size);
-extern int core_shared_queue_disable(struct core_sock *so);
+extern int core_shared_queue_unmap(struct core_sock *so);
 
 
 static inline size_t core_mpsc_queue_mem(struct core_sock *so)
@@ -78,6 +78,19 @@ char *core_mpsc_slot_ptr(struct core_sock_opt *opt, struct pfq_shared_rx_queue *
 {
 	(void)qd;
 	return (char *)(opt->rxq_info.shmem_addr) + (opt->rx_queue_len * (qindex & 1) + slot) * opt->rx_slot_size;
+}
+
+
+static inline
+void core_shared_queue_unlink(struct core_sock *so)
+{
+	int n;
+	atomic_long_set(&so->opt.rxq_info.addr, 0);
+	atomic_long_set(&so->opt.txq_info.addr, 0);
+	for(n = 0; n < Q_MAX_TX_QUEUES; n++)
+	{
+		atomic_long_set(&so->opt.txq_info_async[n].addr, 0);
+	}
 }
 
 

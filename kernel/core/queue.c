@@ -141,23 +141,13 @@ core_shared_queue_enable(struct core_sock *so, unsigned long user_addr, size_t u
 
 
 int
-core_shared_queue_disable(struct core_sock *so)
+core_shared_queue_unmap(struct core_sock *so)
 {
-	size_t n;
-
-	atomic_long_set(&so->opt.rxq_info.addr, 0);
-	atomic_long_set(&so->opt.txq_info.addr, 0);
-
-	for(n = 0; n < Q_MAX_TX_QUEUES; n++)
-	{
-		atomic_long_set(&so->opt.txq_info_async[n].addr, 0);
+	if (so->shmem.addr) {
+		pfq_shared_memory_free(&so->shmem);
+		so->shmem.addr = NULL;
 	}
 
-	msleep(Q_CORE_GRACE_PERIOD);
-
-	if (so->shmem.addr)
-		pfq_shared_memory_free(&so->shmem);
-
-	pr_devel("[PFQ|%d] Rx/Tx shared queues disabled.\n", so->id);
+	pr_devel("[PFQ|%d] Rx/Tx shared queues unmapped.\n", so->id);
 	return 0;
 }
