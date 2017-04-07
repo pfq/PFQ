@@ -261,7 +261,7 @@ data Statistics = Statistics {
 
 -- |PFQ counters.
 
-data Counters = Counters {
+newtype Counters = Counters {
       counter     ::  [Integer] -- ^ per-group counter
     } deriving (Eq, Show)
 
@@ -554,7 +554,7 @@ close hdl =
 getId :: PfqHandlePtr
       -> IO Int
 getId hdl =
-    liftM fromIntegral (pfq_id hdl >>= throwPfqIf hdl (== -1))
+    fmap fromIntegral (pfq_id hdl >>= throwPfqIf hdl (== -1))
 
 
 -- |Return the group-id of the socket.
@@ -562,7 +562,7 @@ getId hdl =
 getGroupId :: PfqHandlePtr
            -> IO Int
 getGroupId hdl =
-    liftM fromIntegral (pfq_group_id hdl >>= throwPfqIf hdl (== -1))
+    fmap fromIntegral (pfq_group_id hdl >>= throwPfqIf hdl (== -1))
 
 
 -- |Enable the socket for packets capture and transmission.
@@ -628,7 +628,7 @@ setWeight hdl value =
 getWeight :: PfqHandlePtr
           -> IO Int
 getWeight hdl =
-    liftM fromIntegral (pfq_get_weight hdl >>= throwPfqIf hdl (== -1))
+    fmap fromIntegral (pfq_get_weight hdl >>= throwPfqIf hdl (== -1))
 
 
 -- |Specify the capture length of packets, in bytes.
@@ -648,7 +648,7 @@ setCaplen hdl value =
 getCaplen :: PfqHandlePtr
           -> IO Int
 getCaplen hdl =
-    liftM fromIntegral (pfq_get_caplen hdl >>= throwPfqIf hdl (== -1))
+    fmap fromIntegral (pfq_get_caplen hdl >>= throwPfqIf hdl (== -1))
 
 
 -- |Return the max transmission length of packets, in bytes.
@@ -656,7 +656,7 @@ getCaplen hdl =
 getMaxlen :: PfqHandlePtr
           -> IO Int
 getMaxlen hdl =
-    liftM fromIntegral (pfq_get_maxlen hdl >>= throwPfqIf hdl (== -1))
+    fmap fromIntegral (pfq_get_maxlen hdl >>= throwPfqIf hdl (== -1))
 
 
 -- |Specify the length of the Rx queue, in number of packets.
@@ -674,7 +674,7 @@ setRxSlots hdl value =
 getRxSlots :: PfqHandlePtr
            -> IO Int
 getRxSlots hdl =
-    liftM fromIntegral (pfq_get_rx_slots hdl >>= throwPfqIf hdl (== -1))
+    fmap fromIntegral (pfq_get_rx_slots hdl >>= throwPfqIf hdl (== -1))
 
 
 -- |Return the length of a Rx slot, in bytes.
@@ -682,7 +682,7 @@ getRxSlots hdl =
 getRxSlotSize :: PfqHandlePtr
               -> IO Int
 getRxSlotSize hdl =
-    liftM fromIntegral (pfq_get_rx_slot_size hdl >>= throwPfqIf hdl (== -1))
+    fmap fromIntegral (pfq_get_rx_slot_size hdl >>= throwPfqIf hdl (== -1))
 
 
 -- |Specify the length of the Tx queue, in number of packets.
@@ -700,7 +700,7 @@ setTxSlots hdl value =
 getTxSlots :: PfqHandlePtr
            -> IO Int
 getTxSlots hdl =
-    liftM fromIntegral (pfq_get_tx_slots hdl >>= throwPfqIf hdl (== -1))
+    fmap fromIntegral (pfq_get_tx_slots hdl >>= throwPfqIf hdl (== -1))
 
 
 -- |Bind the main group of the socket to the given device/queue.
@@ -1111,7 +1111,7 @@ send :: PfqHandlePtr
      -> IO Bool
 send hdl xs copies fhint =
     unsafeUseAsCStringLen xs $ \(p, l) ->
-        liftM (> 0) $ pfq_send hdl
+        fmap (> 0) $ pfq_send hdl
                         p
                         (fromIntegral l)
                         (fromIntegral fhint)
@@ -1131,7 +1131,7 @@ sendTo :: PfqHandlePtr
        -> IO Bool
 sendTo hdl xs ifindex qindex copies fhint =
     unsafeUseAsCStringLen xs $ \(p, l) ->
-    liftM (> 0) $ pfq_send_to hdl
+    fmap (> 0) $ pfq_send_to hdl
                     p
                     (fromIntegral l)
                     (fromIntegral ifindex)
@@ -1152,7 +1152,7 @@ sendAsync :: PfqHandlePtr
           -> IO Bool
 sendAsync hdl xs copies =
     unsafeUseAsCStringLen xs $ \(p, l) ->
-        liftM (> 0) $ pfq_send_raw hdl
+        fmap (> 0) $ pfq_send_raw hdl
                         p
                         (fromIntegral l)
                         0
@@ -1176,7 +1176,7 @@ sendAt :: PfqHandlePtr
        -> IO Bool
 sendAt hdl xs ts copies =
     unsafeUseAsCStringLen xs $ \(p, l) ->
-        liftM (> 0) $ pfq_send_raw hdl
+        fmap (> 0) $ pfq_send_raw hdl
                         p
                         (fromIntegral l)
                         0
@@ -1190,9 +1190,9 @@ sendAt hdl xs ts copies =
 -- C functions from libpfq
 --
 
-foreign import ccall unsafe pfq_open                :: CSize -> CSize -> CSize -> IO (PfqHandlePtr)
-foreign import ccall unsafe pfq_open_nogroup        :: CSize -> CSize -> CSize -> IO (PfqHandlePtr)
-foreign import ccall unsafe pfq_open_group          :: CULong -> CInt  -> CSize -> CSize -> CSize -> IO (PfqHandlePtr)
+foreign import ccall unsafe pfq_open                :: CSize -> CSize -> CSize -> IO PfqHandlePtr
+foreign import ccall unsafe pfq_open_nogroup        :: CSize -> CSize -> CSize -> IO PfqHandlePtr
+foreign import ccall unsafe pfq_open_group          :: CULong -> CInt  -> CSize -> CSize -> CSize -> IO PfqHandlePtr
 
 foreign import ccall unsafe pfq_close               :: PfqHandlePtr -> IO CInt
 foreign import ccall unsafe pfq_error               :: PfqHandlePtr -> IO CString

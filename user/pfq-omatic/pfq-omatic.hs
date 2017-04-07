@@ -37,27 +37,27 @@ import qualified Network.PFQ as Q (version)
 
 
 --
--- Configuration 
+-- Configuration
 --
 
 procCpuInfo = "/proc/cpuinfo" :: String
 
 pfqKcompat  = "/usr/include/linux/pf_q-kcompat.h" :: String
 
-pfqSymvers  = 
+pfqSymvers  =
     [ "/lib/modules/" ++ uname_r ++ "/kernel/net/pfq/Module.symvers"
     , home_dir ++ "/PFQ/kernel/Module.symvers"
     , "/opt/PFQ/kernel/Module.symvers"
     , "/usr/src/PFQ/kernel/Module.symvers"
-    ] :: [String] 
+    ] :: [String]
 
-makeFilePatch = unlines 
+makeFilePatch = unlines
     [ ""
     , "all:"
     , "\tmake -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules"
     , "\n"
     , "clean:"
-    , "\tmake -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean" 
+    , "\tmake -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean"
     ] :: String
 
 
@@ -77,7 +77,7 @@ getArguments :: IO (Option, [String])
 getArguments = do
     args <- getArgs
     let xs = deleteFirstsBy (==) args ["-?", "-ik", "--in-kernel"]
-        ik = "-ik" `elem` args || "--in-kernel" `elem` args 
+        ik = "-ik" `elem` args || "--in-kernel" `elem` args
         hl = "-?" `elem` args
     return (Option hl ik, xs)
 
@@ -96,7 +96,7 @@ main = do
     symver <- fromJust <$> getMostRecentFile pfqSymvers
     copyFile symver "Module.symvers"
 
-    makefile <- if inKernel opt 
+    makefile <- if inKernel opt
                 then do patchMakeFile "Makefile"
                         return "Makefile.ik"
                 else return "Makefile"
@@ -143,8 +143,8 @@ patchSource file = do
 
 patchMakeFile :: FilePath -> IO ()
 patchMakeFile file = do
-    putStrLn "[PFQ] creating Makefile.ik..." 
-    orig <- readFile file        
+    putStrLn "[PFQ] creating Makefile.ik..."
+    orig <- readFile file
     writeFile (file ++ ".ik") (orig ++ makeFilePatch)
 
 

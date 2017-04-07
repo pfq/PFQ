@@ -100,7 +100,7 @@ newtype Qbuff = Qbuff ()
 
 -- |Function pointer data type represents a function in a list of FunctionDescr.
 
-data FunPtr = FunPtr Int deriving (Generic, Typeable)
+newtype FunPtr = FunPtr Int deriving (Generic, Typeable)
 
 instance ToJSON FunPtr
 instance FromJSON FunPtr
@@ -417,14 +417,14 @@ serializeFun symb n cont a b c d e f g h =
                                          mkArgument f s7,
                                          mkArgument g s8,
                                          mkArgument h s9] n (if cont then n9 else (-1)) ], n+1)
-        (s2, n2) = (serialize a n1)
-        (s3, n3) = (serialize b n2)
-        (s4, n4) = (serialize c n3)
-        (s5, n5) = (serialize d n4)
-        (s6, n6) = (serialize e n5)
-        (s7, n7) = (serialize f n6)
-        (s8, n8) = (serialize g n7)
-        (s9, n9) = (serialize h n8)
+        (s2, n2) = serialize a n1
+        (s3, n3) = serialize b n2
+        (s4, n4) = serialize c n3
+        (s5, n5) = serialize d n4
+        (s6, n6) = serialize e n5
+        (s7, n7) = serialize f n6
+        (s8, n8) = serialize g n7
+        (s9, n9) = serialize h n8
 
     in (s1 ++ fixDescrList n1 s2 ++
               fixDescrList n2 s3 ++

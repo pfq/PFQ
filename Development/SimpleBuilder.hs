@@ -343,8 +343,7 @@ buildTargets tgts script baseDir level = do
                                          putStrLn $ "cd " ++ workDir
                               -- build target
                               if dryRun opt
-                                  then void $
-                                       mapM (putStrLn . evalCmd opt) cmds'
+                                  then mapM_ (putStrLn . evalCmd opt) cmds'
                                   else void $
                                        do ec <- sequenceWhile (== ExitSuccess) $ map (execCmd opt) cmds'
                                           when (length ec /= length cmds') $
@@ -390,7 +389,7 @@ simpleBuilder script' args = do
         exitSuccess
     sb <- let sb = sandbox opt
           in if isJust sb
-               then liftM Just $
+                then fmap Just $
                     checkDir (fromJust sb) >>
                     canonicalizePath
                         (fromJust sb)
@@ -426,6 +425,6 @@ showTargets script =
 {-# NOINLINE numberOfPhyCores #-}
 numberOfPhyCores :: Int
 numberOfPhyCores = unsafePerformIO $
-    liftM (length . filter (isInfixOf "processor") . lines) $ readFile "/proc/cpuinfo"
+    (length . filter (isInfixOf "processor") . lines) <$> readFile "/proc/cpuinfo"
 
 
