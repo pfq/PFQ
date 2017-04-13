@@ -1628,7 +1628,7 @@ pfq_send_raw(pfq_t *q
 	    , int queue)
 {
         struct pfq_shared_queue *sh_queue = (struct pfq_shared_queue *)(q->shm_addr);
-        struct pfq_tx_queue *tx;
+        struct pfq_shared_tx_queue *tx;
         unsigned int index;
         size_t this_slot_size;
         ptrdiff_t offset, *poff_addr;
@@ -1645,11 +1645,11 @@ pfq_send_raw(pfq_t *q
 
 		tss = (int)pfq_fold((queue == Q_ANY_QUEUE ? pfq_symmetric_hash(buf) : (unsigned int)queue),
 										      (unsigned int)q->tx_num_async);
-		tx = (struct pfq_tx_queue *)&sh_queue->tx_async[tss];
+		tx = (struct pfq_shared_tx_queue *)&sh_queue->tx_async[tss];
 	}
 	else {
 		tss = -1;
-		tx = (struct pfq_tx_queue *)&sh_queue->tx;
+		tx = (struct pfq_shared_tx_queue *)&sh_queue->tx;
 	}
 
 	index = __atomic_load_n(&tx->cons.index, __ATOMIC_RELAXED);
