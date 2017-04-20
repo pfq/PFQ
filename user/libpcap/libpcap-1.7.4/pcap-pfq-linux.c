@@ -357,7 +357,7 @@ pfq_group_map_dump(struct pfq_group_map *map)
 {
 	int n = 0;
 	for(; n < map->size; n++)
-		fprintf(stderr, "[PFQ] config group for dev '%s' = %d\n", map->entry[n].dev, map->entry[n].group);
+		fprintf(stdout, "[PFQ] config group for dev '%s' = %d\n", map->entry[n].dev, map->entry[n].group);
 }
 
 
@@ -674,14 +674,14 @@ pfq_parse_env(struct pfq_opt *opt)
 
 	if ((var = getenv("PFQ_TX_HW_QUEUE"))) {
 		if (pfq_parse_integers(opt->tx_hw_queue, 4, var) < 0) {
-			fprintf(stderr, "[PFQ] PFQ_TX_HW_QUEUE parse error!\n");
+			fprintf(stderr, "[PFQ] parse error: PFQ_TX_HW_QUEUE!\n");
 			return -1;
 		}
 	}
 
 	if ((var = getenv("PFQ_TX_IDX_THREAD"))) {
 		if (pfq_parse_integers(opt->tx_idx_thread, 4, var) < 0) {
-			fprintf(stderr, "[PFQ] PFQ_TX_IDX_THREAD parse error!\n");
+			fprintf(stderr, "[PFQ] parse error: PFQ_TX_IDX_THREAD!\n");
 			return -1;
 		}
 	}
@@ -796,7 +796,7 @@ static void
 pfq_warn_if(int index, const char *filename, const char *key)
 {
 	if (index != PFQ_GROUP_DEF)
-		fprintf(stderr, "[PFQ] WARNING: %s: key %s: group ignored!\n", filename, key);
+		fprintf(stdout, "[PFQ] WARNING: %s: key %s: group ignored!\n", filename, key);
 }
 
 
