@@ -103,6 +103,7 @@ namespace pfq {
     static constexpr int any_queue   = Q_ANY_QUEUE;
     static constexpr int any_group   = Q_ANY_GROUP;
     static constexpr int no_kthread  = Q_NO_KTHREAD;
+    static constexpr int any_kthread = Q_ANY_KTHREAD;
 
     //////////////////////////////////////////////////////////////////////
 
@@ -1046,40 +1047,26 @@ namespace pfq {
 
         //! Store the packet and transmit the packets in the queue.
         /*!
-         * The queue is flushed every fhint packets.
+         * The queue is flushed every fsync packets.
          * Requires the socket is bound for transmission to a net device and queue.
          * See 'bind_tx'.
          */
 
         bool
-        send(const_buffer pkt, size_t fhint = 1, unsigned int copies = 1)
+        send(const_buffer pkt, size_t fsync = 1, unsigned int copies = 1)
         {
-            auto ret = send_raw(pkt.first, pkt.second, 0, 0, 0, copies, false);
-            if (++data_->tx_attempt == fhint)
+            retry:
+            auto ret = send_raw(pkt.first, pkt.second, 0, copies, no_kthread);
+            if (!ret || ++data_->tx_attempt == fsync)
             {
                 data_->tx_attempt = 0;
                 this->sync_queue(0);
+                if (!ret)
+                    goto retry;
             }
             return ret;
         }
 
-
-        //! Store the packet and transmit the packets in the queue.
-        /*!
-         * The queue is flushed every fhint packets.
-         */
-
-        bool
-        send_to(const_buffer pkt, int ifindex, int qindex, size_t fhint = 1, unsigned int copies = 1)
-        {
-            auto ret = send_raw(pkt.first, pkt.second, ifindex, qindex, 0, copies, false);
-            if (++data_->tx_attempt == fhint)
-            {
-                data_->tx_attempt = 0;
-                this->sync_queue(0);
-            }
-            return ret;
-        }
 
         //! Transmit the packet asynchronously.
         /*!
@@ -1089,9 +1076,9 @@ namespace pfq {
          */
 
         bool
-        send_async(const_buffer pkt, unsigned int copies = 1)
+        send_async(const_buffer pkt, unsigned int copies, int async = any_kthread)
         {
-            return send_raw(pkt.first, pkt.second, 0, 0, 0, copies, true, any_queue);
+            return send_raw(pkt.first, pkt.second, 0, copies, async);
         }
 
 
@@ -1105,10 +1092,10 @@ namespace pfq {
 
         template <typename Clock, typename Duration>
         bool
-        send_at(const_buffer pkt, std::chrono::time_point<Clock, Duration> const &tp, unsigned int copies = 1)
+        send_at(const_buffer pkt, std::chrono::time_point<Clock, Duration> const &tp, unsigned int copies=1, int async = any_kthread)
         {
             auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(tp.time_since_epoch()).count();
-            return send_raw(pkt.first, pkt.second, 0, 0, static_cast<uint64_t>(ns), copies, true, any_queue);
+            return send_raw(pkt.first, pkt.second, static_cast<uint64_t>(ns), copies, async);
         }
 
         //! Schedule a packet transmission.
@@ -1122,12 +1109,9 @@ namespace pfq {
         bool
         send_raw( const char *buf
                 , size_t len
-                , int ifindex
-                , int qindex
                 , uint64_t nsec
                 , unsigned int copies
-                , bool async
-                , int queue = any_queue)
+                , int async)
         {
             if (unlikely(!data_->shm_addr))
                 throw system_error("PFQ: send: socket not enabled");
@@ -1137,10 +1121,11 @@ namespace pfq {
             int tss;
 
             auto tx = [&] {
-                if (async) {
+                if (async != no_kthread) {
                     if (unlikely(data_->tx_num_async == 0))
                         throw system_error("PFQ: send: socket not bound to async threads");
-                    tss = static_cast<int>(fold(queue == any_queue ? symmetric_hash(buf) : static_cast<uint32_t>(queue), static_cast<uint32_t>(data_->tx_num_async)));
+                    tss = static_cast<int>(fold(async == any_kthread ? 
+                                                symmetric_hash(buf) : static_cast<uint32_t>(async), static_cast<uint32_t>(data_->tx_num_async)));
                     return &static_cast<struct pfq_shared_queue *>(data_->shm_addr)->tx_async[tss];
                 }
 
@@ -1192,8 +1177,6 @@ namespace pfq {
                 hdr->len              = static_cast<uint16_t>(len);
                 hdr->caplen           = static_cast<uint16_t>(caplen);
                 hdr->info.data.copies = copies;
-                hdr->info.ifindex     = ifindex;
-                hdr->info.queue       = static_cast<uint8_t>(qindex);
 
 			    memcpy(hdr+1, buf, caplen);
 
