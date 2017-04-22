@@ -61,7 +61,6 @@ void core_kernel_stats_reset(struct core_kernel_stats __percpu *stats)
 
 void core_group_counters_reset(struct core_group_counters __percpu *counters)
 {
-
 	int i, n;
 	for_each_present_cpu(i)
 	{

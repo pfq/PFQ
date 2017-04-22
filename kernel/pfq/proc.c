@@ -47,19 +47,18 @@
 
 struct proc_dir_entry *pfq_proc_dir = NULL;
 
-static const char proc_computations[] = "computations";
-static const char proc_groups[]       = "groups";
-static const char proc_stats[]        = "stats";
-static const char proc_memory[]       = "memory";
+static const char proc_lang[]	 = "lang";
+static const char proc_groups[]  = "groups";
+static const char proc_sockets[] = "sockets";
+static const char proc_global[]  = "global";
+static const char proc_memory[]  = "memory";
 
 
 static void
 seq_printf_functional_node(struct seq_file *m, struct pfq_lang_functional_node const *node, size_t index)
 {
 	char buffer[256];
-
 	snprintf_functional_node(buffer, sizeof(buffer), node, index);
-
 	seq_printf(m, "%s\n", buffer);
 }
 
@@ -82,7 +81,7 @@ seq_printf_computation_tree(struct seq_file *m, struct pfq_lang_computation_tree
 }
 
 
-static int pfq_proc_comp(struct seq_file *m, void *v)
+static int pfq_proc_lang(struct seq_file *m, void *v)
 {
 	struct pfq_lang_computation_tree *comp;
 	size_t n;
@@ -108,11 +107,45 @@ static int pfq_proc_comp(struct seq_file *m, void *v)
 	return 0;
 }
 
+static int pfq_proc_sockets(struct seq_file *m, void *v)
+{
+	size_t n;
+
+	seq_printf(m, "socket: recv      lost      drop      sent      disc.     failed    forward   kernel\n");
+
+	mutex_lock(&global->socket_lock);
+
+        for(n = 0; n < (__force int)Q_CORE_MAX_ID; n++)
+        {
+		struct core_sock *so = (struct core_sock *)atomic_long_read(&global->socket_ptr[(__force int)n]);
+                struct pfq_stats stats;
+
+		if (!so)
+			continue;
+
+		core_kernel_stats_read(so->stats, &stats);
+
+		seq_printf(m, "%6zu: %-9lu %-9lu %-9lu %-9lu %-9lu %-9lu %-9lu %-9lu\n", n,
+			   stats.recv,
+			   stats.lost,
+			   stats.drop,
+			   stats.sent,
+			   stats.disc,
+			   stats.fail,
+			   stats.frwd,
+			   stats.kern);
+        }
+
+	mutex_unlock(&global->socket_lock);
+	return 0;
+}
+
+
 static int pfq_proc_groups(struct seq_file *m, void *v)
 {
 	size_t n;
 
-	seq_printf(m, "group: recv      lost      drop      sent      disc.     failed    forward   kernel    pol pid   def.    uplane   cplane    ctrl\n");
+	seq_printf(m, " group: recv      lost      drop      sent      disc.     failed    forward   kernel    pol pid   def.    uplane   cplane    ctrl\n");
 
 	core_group_lock();
 
@@ -124,7 +157,7 @@ static int pfq_proc_groups(struct seq_file *m, void *v)
 		if (!this_group->enabled)
 			continue;
 
-		seq_printf(m, "%5zu: %-9lu %-9lu %-9lu %-9lu %-9lu %-9lu %-9lu %-9lu", n,
+		seq_printf(m, "%6zu: %-9lu %-9lu %-9lu %-9lu %-9lu %-9lu %-9lu %-9lu", n,
 			   sparse_read(this_group->stats, recv),
 			   sparse_read(this_group->stats, lost),
 			   sparse_read(this_group->stats, drop),
@@ -260,9 +293,14 @@ static int pfq_proc_groups_open(struct inode *inode, struct file *file)
 	return single_open(file, pfq_proc_groups, PDE_DATA(inode));
 }
 
-static int pfq_proc_comp_open(struct inode *inode, struct file *file)
+static int pfq_proc_sockets_open(struct inode *inode, struct file *file)
 {
-	return single_open(file, pfq_proc_comp, PDE_DATA(inode));
+	return single_open(file, pfq_proc_sockets, PDE_DATA(inode));
+}
+
+static int pfq_proc_lang_open(struct inode *inode, struct file *file)
+{
+	return single_open(file, pfq_proc_lang, PDE_DATA(inode));
 }
 
 static int pfq_proc_stats_open(struct inode *inode, struct file *file)
@@ -278,7 +316,7 @@ pfq_proc_stats_reset(struct file *file, const char __user *buf, size_t length, l
 }
 
 
-static const struct file_operations pfq_proc_stats_fops = {
+static const struct file_operations pfq_proc_global_fops = {
 	.owner   = THIS_MODULE,
 	.open    = pfq_proc_stats_open,
 	.read    = seq_read,
@@ -296,9 +334,17 @@ static const struct file_operations pfq_proc_groups_fops = {
 	.release = single_release,
 };
 
-static const struct file_operations pfq_proc_comp_fops = {
+static const struct file_operations pfq_proc_sockets_fops = {
 	.owner   = THIS_MODULE,
-	.open    = pfq_proc_comp_open,
+	.open    = pfq_proc_sockets_open,
+	.read    = seq_read,
+	.llseek  = seq_lseek,
+	.release = single_release,
+};
+
+static const struct file_operations pfq_proc_lang_fops = {
+	.owner   = THIS_MODULE,
+	.open    = pfq_proc_lang_open,
 	.read    = seq_read,
 	.llseek  = seq_lseek,
 	.release = single_release,
@@ -312,10 +358,11 @@ int pfq_proc_init(void)
 		return -ENOMEM;
 	}
 
-	proc_create(proc_computations,	0644, pfq_proc_dir, &pfq_proc_comp_fops);
-	proc_create(proc_groups,	0644, pfq_proc_dir, &pfq_proc_groups_fops);
-	proc_create(proc_stats,		0644, pfq_proc_dir, &pfq_proc_stats_fops);
-	proc_create(proc_memory,	0644, pfq_proc_dir, &pfq_proc_memory_fops);
+	proc_create(proc_lang,	  0644, pfq_proc_dir, &pfq_proc_lang_fops);
+	proc_create(proc_groups,  0644, pfq_proc_dir, &pfq_proc_groups_fops);
+	proc_create(proc_sockets, 0644, pfq_proc_dir, &pfq_proc_sockets_fops);
+	proc_create(proc_global,  0644, pfq_proc_dir, &pfq_proc_global_fops);
+	proc_create(proc_memory,  0644, pfq_proc_dir, &pfq_proc_memory_fops);
 
 	return 0;
 }
@@ -323,10 +370,11 @@ int pfq_proc_init(void)
 
 int pfq_proc_destruct(void)
 {
-	remove_proc_entry(proc_computations,	pfq_proc_dir);
-	remove_proc_entry(proc_groups,		pfq_proc_dir);
-	remove_proc_entry(proc_stats,		pfq_proc_dir);
-	remove_proc_entry(proc_memory,		pfq_proc_dir);
+	remove_proc_entry(proc_lang,	pfq_proc_dir);
+	remove_proc_entry(proc_groups,  pfq_proc_dir);
+	remove_proc_entry(proc_sockets, pfq_proc_dir);
+	remove_proc_entry(proc_global,	pfq_proc_dir);
+	remove_proc_entry(proc_memory,	pfq_proc_dir);
 	remove_proc_entry("pfq", init_net.proc_net);
 
 	return 0;
