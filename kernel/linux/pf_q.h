@@ -148,6 +148,7 @@ typedef uint8_t  pfq_qver_t;
 #define Q_ANY_DEVICE			-1
 #define Q_ANY_QUEUE			-1
 #define Q_ANY_GROUP			-1
+#define Q_ANY_KTHREAD			0xbadbee
 #define Q_NO_KTHREAD			-1
 
 /*timestamp*/

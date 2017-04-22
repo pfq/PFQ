@@ -713,7 +713,7 @@ pfq_egress_unbind(pfq_t *q)
 
 
 int
-pfq_unbind_group(pfq_t *q, int gid, const char *dev, int queue) /* Q_ANY_QUEUE */
+pfq_unbind_group(pfq_t *q, int gid, const char *dev, int queue)
 {
 	struct pfq_so_binding b;
 
@@ -1617,15 +1617,12 @@ pfq_unbind_tx(pfq_t *q)
 
 
 int
-pfq_send_raw(pfq_t *q
+pfq_send_raw( pfq_t *q
 	    , const void *buf
 	    , const size_t len
-	    , int ifindex
-	    , int qindex
 	    , uint64_t nsec
 	    , unsigned int copies
-	    , int async
-	    , int queue)
+	    , int async)
 {
         struct pfq_shared_queue *sh_queue = (struct pfq_shared_queue *)(q->shm_addr);
         struct pfq_shared_tx_queue *tx;
@@ -1639,12 +1636,13 @@ pfq_send_raw(pfq_t *q
 	if (unlikely(q->shm_addr == NULL))
 		return Q_ERROR(q, "PFQ: send: socket not enabled");
 
-	if (async) {
+	if (async != Q_NO_KTHREAD) {
 		if (unlikely(q->tx_num_async == 0))
 			return Q_ERROR(q, "PFQ: send: socket not bound to async thread");
 
-		tss = (int)pfq_fold((queue == Q_ANY_QUEUE ? pfq_symmetric_hash(buf) : (unsigned int)queue),
-										      (unsigned int)q->tx_num_async);
+		tss = (int)pfq_fold((async == Q_ANY_KTHREAD ? pfq_symmetric_hash(buf) : (unsigned int)async)
+				   ,(unsigned int)q->tx_num_async);
+
 		tx = (struct pfq_shared_tx_queue *)&sh_queue->tx_async[tss];
 	}
 	else {
@@ -1653,41 +1651,29 @@ pfq_send_raw(pfq_t *q
 	}
 
 	index = __atomic_load_n(&tx->cons.index, __ATOMIC_RELAXED);
-	if (index == __atomic_load_n(&tx->prod.index, __ATOMIC_RELAXED))
-	{
+	if (index == __atomic_load_n(&tx->prod.index, __ATOMIC_RELAXED)) {
 		++index;
-
 		poff_addr = (index & 1) ? &tx->prod.off1 : &tx->prod.off0;
                 __atomic_store_n(poff_addr, 0, __ATOMIC_RELEASE);
                 __atomic_store_n(&tx->prod.index, index, __ATOMIC_RELEASE);
 	}
-	else
-	{
+	else {
 		poff_addr = (index & 1) ? &tx->prod.off1 : &tx->prod.off0;
 	}
 
 	base_addr = q->tx_queue_addr + q->tx_queue_size * (size_t)(2 * (1+tss) + (index & 1 ? 1 : 0));
-
         offset = __atomic_load_n(poff_addr, __ATOMIC_RELAXED);
-
-	/* calc the real caplen */
-
 	caplen = (uint16_t)min(len, q->tx_slot_size - sizeof(struct pfq_pkthdr));
 
 	this_slot_size = ALIGN(sizeof(struct pfq_pkthdr) + caplen, 64);
 
-	if (likely(((size_t)(offset) + this_slot_size) < q->tx_queue_size))
-	{
+	if (likely(((size_t)(offset) + this_slot_size) < q->tx_queue_size)) {
 		struct pfq_pkthdr *hdr = (struct pfq_pkthdr *)(base_addr + offset);
-		hdr->tstamp.tv64	= nsec;
-		hdr->len		= (uint16_t)len;
-		hdr->caplen		= (uint16_t)caplen;
-		hdr->info.data.copies	= copies;
-                hdr->info.ifindex	= ifindex;
-                hdr->info.queue		= (uint8_t)qindex;
-
-		memcpy(hdr+1, buf, caplen);
-
+		hdr->tstamp.tv64       = nsec;
+		hdr->len	       = (uint16_t)len;
+		hdr->caplen	       = (uint16_t)caplen;
+		hdr->info.data.copies  = copies;
+		__builtin_memcpy(hdr+1, buf, caplen);
                 __atomic_store_n(poff_addr, offset + (ptrdiff_t)this_slot_size, __ATOMIC_RELEASE);
 		return Q_VALUE(q, (int)len);
 	}
@@ -1695,25 +1681,22 @@ pfq_send_raw(pfq_t *q
 	return Q_VALUE(q, 0);
 }
 
-int
-pfq_send(pfq_t *q, const void *ptr, size_t len, size_t fhint, unsigned int copies)
-{
-	int ret = pfq_send_raw(q, ptr, len, 0, 0, 0, copies, 0, Q_ANY_QUEUE);
-	if (++q->tx_attempt == fhint) {
-		q->tx_attempt = 0;
-		pfq_sync_queue(q, 0);
-	}
-	return ret;
-}
-
 
 int
-pfq_send_to(pfq_t *q, const void *ptr, size_t len, int ifindex, int qindex, size_t fhint, unsigned int copies)
+pfq_send( pfq_t *q
+	, const void *ptr
+	, size_t len
+	, unsigned int copies
+	, size_t fsync)
 {
-	int ret = pfq_send_raw(q, ptr, len, ifindex, qindex, 0, copies, 0, Q_ANY_QUEUE);
-	if (++q->tx_attempt == fhint) {
+	int ret;
+	retry:
+	ret = pfq_send_raw(q, ptr, len, 0, copies, Q_NO_KTHREAD);
+	if (ret == 0 || ++q->tx_attempt == fsync) {
 		q->tx_attempt = 0;
 		pfq_sync_queue(q, 0);
+		if (ret == 0)
+			goto retry;
 	}
 	return ret;
 }
@@ -1722,11 +1705,11 @@ pfq_send_to(pfq_t *q, const void *ptr, size_t len, int ifindex, int qindex, size
 int
 pfq_sync_queue(pfq_t *q, int queue)
 {
-        /* if (setsockopt(q->fd, PF_Q, Q_SO_TX_QUEUE_XMIT, &queue, sizeof(queue)) == -1) */
         if (ioctl(q->fd, QIOCTX, queue) == -1)
 		return Q_ERROR(q, "PFQ: Tx queue");
         return Q_OK(q);
 }
+
 
 size_t
 pfq_mem_size(pfq_t const *q)

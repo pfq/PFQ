@@ -76,6 +76,8 @@ module Network.PFQ
     ,  any_device
     ,  any_queue
     ,  any_group
+    ,  any_kthread
+    ,  no_kthread
     ,  version_code
     ,  major_version
     ,  minor_version
@@ -347,6 +349,7 @@ newtype VlanTag = VlanTag { getVid:: CInt }
     , any_device           = Q_ANY_DEVICE
     , any_queue            = Q_ANY_QUEUE
     , any_group            = Q_ANY_GROUP
+    , any_kthread          = Q_ANY_KTHREAD
     , no_kthread           = Q_NO_KTHREAD
     , group_max_counters   = Q_MAX_COUNTERS
     , version_code         = PFQ_VERSION_CODE

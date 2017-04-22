@@ -871,7 +871,7 @@ pfq_activate_linux(pcap_t *handle)
 
 			tot = pfq_count_tx_thread(&handle->opt.config);
 			if (tot) {
-				fprintf(stderr, "[PFQ] enabling %zu Tx async on dev %s...\n", tot, first_dev);
+				fprintf(stderr, "[PFQ] enabling %zu async Tx on dev %s...\n", tot, first_dev);
 
 				handle->opt.config.pfq_tx_async = 1;
 
@@ -984,9 +984,10 @@ pfq_inject_linux(pcap_t *handle, const void * buf, size_t size)
 	int ret;
 
 	if (handle->opt.config.pfq_tx_async)
-		ret = pfq_send_async(handlep->q, buf, size, 1);
+		ret = pfq_send_async(handlep->q, buf, size, 1, Q_ANY_KTHREAD);
 	else
-		ret = pfq_send(handlep->q, buf, size, handle->opt.config.pfq_tx_sync, 1);
+		ret = pfq_send(handlep->q, buf, size, 1, handle->opt.config.pfq_tx_sync);
+
         if (ret == -1) {
 		snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "%s", pfq_error(handlep->q));
 		return PCAP_ERROR;
