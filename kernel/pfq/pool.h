@@ -40,6 +40,10 @@
 struct pfq_skb_pool
 {
 	struct core_spsc_fifo *fifo;
+	void		      *base;
+	size_t		       base_size;
+	void		      *data;
+	size_t		       data_size;
 };
 
 

@@ -173,7 +173,7 @@ pfq_skb_recycle(struct sk_buff *skb)
 
 	// kmemcheck_annotate_variable(shinfo->destructor_arg);
 #if 1
-	__builtin_memcpy(skb, PFQ_CB(skb)->skb_orig, sizeof(struct sk_buff));
+	__builtin_memcpy(skb, skb+2048, sizeof(struct sk_buff));
 #else
 	skb->data = skb->head + NET_SKB_PAD;
 	skb_reset_tail_pointer(skb);
