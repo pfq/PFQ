@@ -167,11 +167,18 @@ pfq_skb_recycle(struct sk_buff *skb)
 	struct skb_shared_info *shinfo;
 
 	shinfo = skb_shinfo(skb);
-	memset(shinfo, 0, offsetof(struct skb_shared_info, dataref));
-	// kmemcheck_annotate_variable(shinfo->destructor_arg);
+
+	__builtin_memset(shinfo, 0, offsetof(struct skb_shared_info, dataref));
 	atomic_set(&shinfo->dataref,1);
 
-	memcpy(skb, PFQ_CB(skb)->skb_orig, sizeof(struct sk_buff));
+	// kmemcheck_annotate_variable(shinfo->destructor_arg);
+#if 1
+	__builtin_memcpy(skb, PFQ_CB(skb)->skb_orig, sizeof(struct sk_buff));
+#else
+	skb->data = skb->head + NET_SKB_PAD;
+	skb_reset_tail_pointer(skb);
+#endif
+
 	return skb;
 }
 

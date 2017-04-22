@@ -202,7 +202,7 @@ ptrdiff_t maybe_swap_sk_tx_queue(struct pfq_shared_tx_queue *tx_queue, unsigned 
 }
 
 
-static
+static inline
 unsigned int dev_tx_max_skb_copies(struct net_device *dev, unsigned int req_copies)
 {
 	if (likely(req_copies == 1 || req_copies == 0))
@@ -276,7 +276,7 @@ pfq_xmit(struct qbuff *buff, struct net_device *dev, int queue, int more)
 
 
 /*
- * transmit a mbuff packet with copies
+ * transmit a buff with copies
  */
 
 static tx_response_t
@@ -291,15 +291,6 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr,
 
 	if (unlikely(!dev_queue->dev))
 		return (tx_response_t){.ok = 0, .fail = ctx->copies};
-
-#if 0
-	/* wait until for the timestap to expire (if specified) */
-	if (hdr->tstamp.tv64) {
-		ctx->now = wait_until(hdr->tstamp.tv64, ctx->now, dev_queue, ctx->stop, ctx->intr);
-		if (*ctx->intr)
-			return (tx_response_t){.ok = 0, .fail = ctx->copies};
-	}
-#endif
 
 	/* allocate a new socket buffer */
 
@@ -355,7 +346,7 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr,
 	pfq_kfree_skb_pool(skb, ctx->tx);
 
 	if (ret.ok)
-		dev_queue->queue->trans_start = ctx->jiffies;
+	     dev_queue->queue->trans_start = ctx->jiffies;
 
 	return ret;
 }
@@ -381,7 +372,6 @@ pfq_sk_queue_xmit(struct core_sock *so,
 	ptrdiff_t prod_off;
         char *begin, *end;
         tx_response_t ret = {0};
-
 
 	/* get the Tx queue descriptor */
 
@@ -415,12 +405,13 @@ pfq_sk_queue_xmit(struct core_sock *so,
 	ctx.now	    = ktime_get_real();
 	ctx.jiffies = jiffies;
         ctx.node    = cpu == -1 ? NUMA_NO_NODE : cpu_to_node(cpu);
-        ctx.intr    = false;
         ctx.stop    = stop;
+        // ctx.intr    = false;
 
 	/* lock the dev_queue */
 
 	if (pfq_dev_queue_get(ctx.net, txinfo->def_ifindex, txinfo->def_queue, &dev_queue) < 0) {
+
 		spin_unlock(&pool->tx_lock);
 
 		if (printk_ratelimit())
@@ -467,9 +458,8 @@ pfq_sk_queue_xmit(struct core_sock *so,
 
                 /* set the xmit_more bit */
 
-		ctx.xmit_more = likely(batch_cntr < (global->xmit_batch_len/ctx.copies)) ?
-				likely(PFQ_SHARED_QUEUE_NEXT_VAR_PKTHDR(hdr) < (struct pfq_pkthdr *)end) :
-				(batch_cntr = 0, false);
+		ctx.xmit_more = batch_cntr < global->xmit_batch_len ?
+				PFQ_SHARED_QUEUE_NEXT_VAR_PKTHDR(hdr) < (struct pfq_pkthdr *)end : (batch_cntr = 0, false);
 
 		/* transmit this packet */
 
@@ -483,8 +473,8 @@ pfq_sk_queue_xmit(struct core_sock *so,
 			ret.value += tmp.value;
 		}
 
-		if (unlikely(ctx.intr))
-			break;
+		// if (unlikely(ctx.intr))
+		// 	break;
 	}
 
 	/* unlock the current queue, enable bottom half */
@@ -508,7 +498,7 @@ pfq_sk_queue_xmit(struct core_sock *so,
 
 	for_each_sk_mbuff(hdr, end, 0)
 	{
-		/* dynamic slot size: ensure the caplen is non zero! */
+		/* dynamic slot size: ensure the caplen is not zero! */
 		if (unlikely(!hdr->caplen))
 			break;
 		ret.fail++;
