@@ -40,11 +40,11 @@ pfq_dev_refcnt_read_by_index(struct net *net, int ifindex)
 
 
 
-int pfq_dev_queue_get(struct net *net, int ifindex, int queue, struct net_dev_queue *dq)
+int pfq_dev_queue_get(struct net *net, int ifindex, int queue, struct pfq_dev_queue *dq)
 {
 	struct net_device *dev = dev_get_by_index(net, ifindex);
 	if (dev == NULL) {
-		*dq = (struct net_dev_queue){.dev = NULL, .queue = NULL, .mapping = 0};
+		*dq = (struct pfq_dev_queue){.dev = NULL, .queue = NULL, .mapping = 0};
 		return -EFAULT;
 	}
 
@@ -55,7 +55,7 @@ int pfq_dev_queue_get(struct net *net, int ifindex, int queue, struct net_dev_qu
 }
 
 
-void pfq_dev_queue_put(struct net_dev_queue *dq)
+void pfq_dev_queue_put(struct pfq_dev_queue *dq)
 {
 	if(likely(dq->dev)) {
 		dev_put(dq->dev);

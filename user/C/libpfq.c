@@ -1705,7 +1705,11 @@ pfq_send( pfq_t *q
 int
 pfq_sync_queue(pfq_t *q, int queue)
 {
+#if 1
+	if (setsockopt(q->fd, PF_Q, Q_SO_TX_QUEUE_XMIT, &queue, sizeof(queue)) == -1)
+#else
         if (ioctl(q->fd, QIOCTX, queue) == -1)
+#endif
 		return Q_ERROR(q, "PFQ: Tx queue");
         return Q_OK(q);
 }

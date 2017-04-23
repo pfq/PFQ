@@ -30,7 +30,7 @@
 #include <pragma/diagnostic_pop>
 
 
-struct net_dev_queue
+struct pfq_dev_queue
 {
 	struct net_device   *dev;
 	struct netdev_queue *queue;
@@ -39,8 +39,8 @@ struct net_dev_queue
 
 
 extern int pfq_dev_refcnt_read_by_index(struct net *net, int ifindex);
-extern int pfq_dev_queue_get(struct net *net, int ifindex, int queue, struct net_dev_queue *dq);
-extern void pfq_dev_queue_put(struct net_dev_queue *dq);
+extern int pfq_dev_queue_get(struct net *net, int ifindex, int queue, struct pfq_dev_queue *dq);
+extern void pfq_dev_queue_put(struct pfq_dev_queue *dq);
 
 
 static inline int

@@ -141,7 +141,7 @@ ktime_t wait_until_relaxed(uint64_t ts, atomic_t const *stop, bool *intr)
 
 
 static
-ktime_t wait_until(uint64_t tv64, ktime_t now, struct net_dev_queue *dev_queue, atomic_t const *stop, bool *intr)
+ktime_t wait_until(uint64_t tv64, ktime_t now, struct pfq_dev_queue *dev_queue, atomic_t const *stop, bool *intr)
 {
 	ktime_t now_;
 
@@ -283,7 +283,7 @@ static tx_response_t
 __pfq_mbuff_xmit(struct pfq_pkthdr *hdr,
 		 const void *buf,
 		 size_t len,
-		 struct net_dev_queue *dev_queue,
+		 struct pfq_dev_queue *dev_queue,
 		 struct pfq_mbuff_xmit_context *ctx)
 {
 	struct sk_buff *skb;
@@ -363,7 +363,7 @@ pfq_sk_queue_xmit(struct core_sock *so,
 		  atomic_t const *stop)
 {
 	struct core_txq_info const * txinfo = core_sock_get_tx_queue_info(&so->opt, sock_queue);
-	struct net_dev_queue dev_queue = {.dev = NULL, .queue = NULL, .mapping = 0};
+	struct pfq_dev_queue dev_queue = {.dev = NULL, .queue = NULL, .mapping = 0};
 	struct pfq_mbuff_xmit_context ctx;
 	struct pfq_percpu_pool *pool;
 	int batch_cntr = 0, cons_idx;
