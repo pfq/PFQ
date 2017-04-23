@@ -50,4 +50,5 @@ MODULE_PARM_DESC(skb_pool_size,		" Socket buffer pool size (default=1024)");
 #endif
 
 MODULE_PARM_DESC(tx_cpu,		" Tx k-threads cpu");
+MODULE_PARM_DESC(tx_rety,		" Tx retry attempts (default 1)");
 

@@ -38,6 +38,7 @@ struct core_global_data default_global =
 	.skb_pool_size		= 1024,
 	.tx_cpu			= {0},
 	.tx_cpu_nr		= 0,
+	.tx_rety		= 1,
 
 	.socket_ptr		= {{0}},
 	.socket_count		= {0},
@@ -50,7 +51,6 @@ struct core_global_data default_global =
 	.pool_enabled		= {0},
 	.groups			= {{}},
      // .groups_lock		= {{0}},
-
 
 	.percpu_stats		= NULL,
 	.percpu_memory		= NULL,

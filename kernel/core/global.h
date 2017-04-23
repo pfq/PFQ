@@ -52,6 +52,7 @@ struct core_global_data
 
 	int tx_cpu[Q_CORE_MAX_CPU];
 	int tx_cpu_nr;
+	int tx_retry;
 
 	atomic_long_t   socket_ptr[Q_CORE_MAX_ID];
 	atomic_t        socket_count;
