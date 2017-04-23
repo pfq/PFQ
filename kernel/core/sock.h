@@ -49,8 +49,8 @@ struct core_txq_info
 {
 	atomic_long_t		addr;			/* (pfq_shared_tx_queue *) */
 	void			*shmem_addr;
-	int			def_ifindex;		/* default ifindex */
-	int			def_queue;		/* default queue */
+	int			ifindex;		/* ifindex */
+	int			queue;			/* queue */
 };
 
 
@@ -59,8 +59,8 @@ void core_txq_info_init(struct core_txq_info *info)
 {
 	atomic_long_set(&info->addr, 0);
 	info->shmem_addr = NULL;
-	info->def_ifindex = -1;
-	info->def_queue = -1;
+	info->ifindex = -1;
+	info->queue = -1;
 }
 
 

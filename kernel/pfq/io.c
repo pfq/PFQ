@@ -410,12 +410,12 @@ pfq_sk_queue_xmit(struct core_sock *so,
 
 	/* lock the dev_queue */
 
-	if (pfq_dev_queue_get(ctx.net, txinfo->def_ifindex, txinfo->def_queue, &dev_queue) < 0) {
+	if (pfq_dev_queue_get(ctx.net, txinfo->ifindex, txinfo->queue, &dev_queue) < 0) {
 
 		spin_unlock(&pool->tx_lock);
 
 		if (printk_ratelimit())
-			printk(KERN_INFO "[PFQ] sk_queue_xmit: could not lock default device!\n");
+			printk(KERN_INFO "[PFQ] sk_queue_xmit: could not lock the dev_queue!\n");
 
 		return ret;
 	}

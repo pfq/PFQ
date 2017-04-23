@@ -753,11 +753,11 @@ int core_setsockopt(struct socket *sock,
 		}
 		else /* sync queue */
 		{
-			so->opt.txq_info.def_ifindex = bind.ifindex;
-			so->opt.txq_info.def_queue = bind.qindex;
+			so->opt.txq_info.ifindex = bind.ifindex;
+			so->opt.txq_info.queue = bind.qindex;
 			pr_devel("[PFQ|%d] Tx bind: if_index=%d qindex=%d\n", so->id,
-				so->opt.txq_info.def_ifindex,
-				so->opt.txq_info.def_queue);
+				so->opt.txq_info.ifindex,
+				so->opt.txq_info.queue);
 		}
 
         } break;
