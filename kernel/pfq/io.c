@@ -227,7 +227,7 @@ unsigned int dev_tx_max_skb_copies(struct net_device *dev, unsigned int req_copi
  */
 
 static inline int
-__pfq_xmit(struct sk_buff *skb, struct net_device *dev, int xmit_more)
+__pfq_xmit(struct sk_buff *skb, struct net_device *dev, int xmit_more, int retry)
 {
 	int ret;
 #if(LINUX_VERSION_CODE >= KERNEL_VERSION(3,18,0))
@@ -236,7 +236,11 @@ __pfq_xmit(struct sk_buff *skb, struct net_device *dev, int xmit_more)
 	skb->mark = xmit_more;
 #endif
 
-	ret = dev->netdev_ops->ndo_start_xmit(skb, dev);
+	do {
+		ret = dev->netdev_ops->ndo_start_xmit(skb, dev);
+	}
+	while (!dev_xmit_complete(ret) && retry-- > 0);
+
 	if (!dev_xmit_complete(ret)) {
 		kfree_skb(skb);
 	}
@@ -266,7 +270,7 @@ pfq_xmit(struct qbuff *buff, struct net_device *dev, int queue, int more)
 	local_bh_disable();
 	HARD_TX_LOCK(dev, txq, smp_processor_id());
 
-	ret = __pfq_xmit(skb, dev, more);
+	ret = __pfq_xmit(skb, dev, more, global->tx_retry);
 
 	HARD_TX_UNLOCK(dev, txq);
         local_bh_enable();
@@ -332,7 +336,7 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr,
 
 		const bool xmit_more_ = ctx->xmit_more || ctx->copies != 1;
 
-		if (__pfq_xmit(skb, dev_queue->dev, xmit_more_) == NETDEV_TX_OK)
+		if (__pfq_xmit(skb, dev_queue->dev, xmit_more_, global->tx_retry) == NETDEV_TX_OK)
 			ret.ok++;
 		else
 			ret.fail++;
@@ -539,7 +543,7 @@ pfq_qbuff_queue_xmit(struct core_qbuff_queue *buffs, unsigned long long mask, st
 
 		if (likely(!netif_xmit_frozen_or_drv_stopped(txq))) {
 
-			if (__pfq_xmit(QBUFF_SKB(buff), dev, !( n == last_idx || ((mask & (mask-1)) == 0))) == NETDEV_TX_OK)
+			if (__pfq_xmit(QBUFF_SKB(buff), dev, !( n == last_idx || ((mask & (mask-1)) == 0)), global->tx_retry) == NETDEV_TX_OK)
 				++ret.ok;
 			else
 				++ret.fail;
@@ -647,7 +651,7 @@ pfq_qbuff_lazy_xmit_run(struct core_qbuff_queue *buffs, struct core_endpoint_inf
 				struct sk_buff *nskb = skb_clone_for_tx(skb, dev, GFP_ATOMIC);
 				if (likely(nskb))
 				{
-					if (__pfq_xmit(nskb, dev, xmit_more) == NETDEV_TX_OK)
+					if (__pfq_xmit(nskb, dev, xmit_more, global->tx_retry) == NETDEV_TX_OK)
 						sent++;
 					else
 						sparse_inc(global->percpu_stats, disc);
