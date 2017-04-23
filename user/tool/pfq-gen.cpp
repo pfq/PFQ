@@ -370,7 +370,7 @@ namespace thread
                 }
                 else
                 {
-                    if (!m_pfq.send(pfq::const_buffer(reinterpret_cast<const char *>(m_packet.get()), len), opt::queue_sync, opt::copies))
+                    if (!m_pfq.send(pfq::const_buffer(reinterpret_cast<const char *>(m_packet.get()), len), opt::copies, opt::queue_sync))
                     {
                         m_fail->fetch_add(1, std::memory_order_relaxed);
                         continue;
@@ -436,7 +436,7 @@ namespace thread
                 }
                 else
                 {
-                    if (!m_pfq.send(pfq::const_buffer(reinterpret_cast<const char *>(m_packet.get() + idx * opt::len), len), opt::queue_sync, opt::copies))
+                    if (!m_pfq.send(pfq::const_buffer(reinterpret_cast<const char *>(m_packet.get() + idx * opt::len), len), opt::copies, opt::queue_sync))
                     {
                         m_fail->fetch_add(1, std::memory_order_relaxed);
                         continue;
@@ -608,7 +608,7 @@ namespace thread
                     }
                     else
                     {
-                        if (!m_pfq.send(pfq::const_buffer(reinterpret_cast<const char *>(data), plen), opt::queue_sync, opt::copies))
+                        if (!m_pfq.send(pfq::const_buffer(reinterpret_cast<const char *>(data), plen), opt::copies, opt::queue_sync))
                         {
                             m_fail->fetch_add(1, std::memory_order_relaxed);
                             continue;
