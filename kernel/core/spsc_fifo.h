@@ -31,9 +31,6 @@
 #include <stdlib.h>
 #define likely(x)		__builtin_expect((x),1)
 #define unlikely(x)		__builtin_expect((x),0)
-#define kmalloc(s,m)		malloc(s)
-#define kmalloc_node(s,m,n)	malloc(s)
-#define kfree(s) free(s)
 #endif
 #include <linux/pf_q.h>
 
@@ -222,7 +219,7 @@ struct core_spsc_fifo *
 core_spsc_init(size_t size, int cpu)
 {
 	struct core_spsc_fifo *fifo = (struct core_spsc_fifo *)
-		kmalloc_node(sizeof(struct core_spsc_fifo) + sizeof(void *)*(size+1), GFP_KERNEL, cpu_to_node(cpu));
+		pfq_malloc_pages(sizeof(struct core_spsc_fifo) + sizeof(void *)*(size+1), GFP_KERNEL);
 	if (fifo != NULL)
 	{
 		fifo->size = size+1;
@@ -236,12 +233,16 @@ core_spsc_init(size_t size, int cpu)
 
 
 static inline
-void core_spsc_free(struct core_spsc_fifo *fifo, void (*free_)(void *))
+void core_spsc_free(size_t size, struct core_spsc_fifo *fifo, void (*free_)(void *))
 {
 	void *ptr;
-	while ((ptr = core_spsc_pop(fifo)))
-		free_(ptr);
-	kfree(fifo);
+
+	if (free_) {
+		while ((ptr = core_spsc_pop(fifo)))
+			free_(ptr);
+	}
+
+	pfq_free_pages(fifo, sizeof(struct core_spsc_fifo) + sizeof(void *)*(size+1));
 }
 
 

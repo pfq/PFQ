@@ -153,12 +153,12 @@ int pfq_skb_pool_init(struct pfq_skb_pool *pool, size_t pool_size, size_t skb_le
 
 
 static size_t
-skb_pool_free(struct pfq_skb_pool *pool)
+pfq_skb_pool_free(struct pfq_skb_pool *pool, size_t pool_size)
 {
 	size_t total = 0;
 	if (pool) {
 		total = pfq_skb_pool_flush(pool);
-		kfree(pool->fifo);
+		core_spsc_free(pool_size, pool->fifo, NULL);
 		pool->fifo = NULL;
 	}
 	return total;
@@ -238,9 +238,9 @@ int pfq_skb_pool_free_all(void)
 	{
 		struct pfq_percpu_pool *pool = per_cpu_ptr(global->percpu_pool, cpu);
 		if (pool) {
-			total += skb_pool_free(&pool->rx);
+			total += pfq_skb_pool_free(&pool->rx, global->skb_pool_size);
 			spin_lock(&pool->tx_lock);
-			total += skb_pool_free(&pool->tx);
+			total += pfq_skb_pool_free(&pool->tx, global->skb_pool_size);
 			spin_unlock(&pool->tx_lock);
 		}
 	}
