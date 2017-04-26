@@ -117,8 +117,6 @@ int pfq_skb_pool_init(struct pfq_skb_pool *pool, size_t pool_size, size_t skb_le
 	printk(KERN_INFO "[PFQ] pool: base@%p (%zu bytes).\n", pool->base, pool->base_size);
 	printk(KERN_INFO "[PFQ] pool: data@%p (%zu bytes).\n", pool->data, pool->data_size);
 
-	/* FIXME */
-
 	/* one slot is added by the queue to distinguish between full and empty state */
 	pool->fifo = core_spsc_init(pool_size + PFQ_POOL_CACHELINE_PAD-1, cpu);
 	if (!pool->fifo) {

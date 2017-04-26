@@ -1093,9 +1093,8 @@ pfq_read_linux(pcap_t *handle, int max_packets, pcap_handler callback, u_char *u
                 uint16_t vlan_tci;
 		const char *pkt;
 
-		__builtin_prefetch(pfq_pkt_header(it), 0, 3);
-		__builtin_prefetch((char *)(pfq_pkt_header(it))+64, 0, 3);
-		__builtin_prefetch((char *)(pfq_pkt_header(it))+128, 0, 3);
+		__builtin_prefetch(pfq_pkt_header(it), 0, 2);
+		__builtin_prefetch(((void *)pfq_pkt_header(it))+64, 0, 2);
 
 		while (!pfq_pkt_ready(nq, it)) {
 			if (unlikely(handle->break_loop)) {

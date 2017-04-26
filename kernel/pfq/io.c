@@ -372,7 +372,7 @@ pfq_sk_queue_xmit(struct core_sock *so,
 	struct pfq_percpu_pool *pool;
 	int batch_cntr = 0, cons_idx;
 	struct pfq_shared_tx_queue *tx_queue;
-	struct pfq_pkthdr *hdr, *hdr1;
+	struct pfq_pkthdr *hdr;
 	ptrdiff_t prod_off;
         char *begin, *end;
         tx_response_t ret = {0};
@@ -426,12 +426,7 @@ pfq_sk_queue_xmit(struct core_sock *so,
 	/* prefetch packets... */
 
 	hdr  = (struct pfq_pkthdr *)begin;
-        prefetch_r3(hdr);
-        prefetch_r3((char *)hdr+64);
-
-	hdr1 = PFQ_SHARED_QUEUE_NEXT_VAR_PKTHDR(hdr);
-        prefetch_r3(hdr1);
-        prefetch_r3((char *)hdr1+64);
+        prefetch_r2(hdr);
 
 	/* disable bottom half and lock the queue */
 
@@ -442,9 +437,7 @@ pfq_sk_queue_xmit(struct core_sock *so,
 	{
                 tx_response_t tmp = {0};
 
-		hdr1 = PFQ_SHARED_QUEUE_NEXT_VAR_PKTHDR(hdr1);
-                prefetch_r3(hdr1);
-                prefetch_r3((char *)hdr1+64);
+		prefetch_r2(PFQ_SHARED_QUEUE_NEXT_VAR_PKTHDR(hdr));
 
 		/* because of dynamic slot size, ensure the caplen is not set to 0 */
 
@@ -784,13 +777,6 @@ size_t pfq_sk_queue_recv(struct core_sock_opt *opt,
 		size_t bytes, slot_index;
 		char *pkt;
 
-		/* prefetch skb data that is to be copied soon */
-
-		if (likely(skb)) {
-			prefetch_r3(skb->data);
-			prefetch_r3((char *)skb->data+64);
-		}
-
 		/* compute the boundaries */
 
 		bytes = min_t(size_t, skb->len, opt->caplen);
@@ -808,7 +794,7 @@ size_t pfq_sk_queue_recv(struct core_sock_opt *opt,
 
 
 		/* copy bytes of packet */
-#if 0
+#if 1
 		if (pfq_copy_bits(skb, 0, pkt, bytes) != 0) {
 			printk(KERN_WARNING "[PFQ] error: BUG! skb_copy_bits failed (bytes=%zu, skb_len=%d mac_len=%d)!\n",
 			       bytes, skb->len, skb->mac_len);
