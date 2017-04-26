@@ -140,11 +140,11 @@ int pfq_percpu_destruct(void)
 
                 data = per_cpu_ptr(global->percpu_data, cpu);
 
-		for_each_qbuff(&data->GC->pool, buff, n)
-		{
-			sparse_inc(global->percpu_memory, os_free);
-			kfree_skb(QBUFF_SKB(buff));
-		}
+		// for_each_qbuff(&data->GC->pool, buff, n)
+		// {
+		// 	sparse_inc(global->percpu_memory, os_free);
+		// 	kfree_skb(QBUFF_SKB(buff));
+		// }
 
                 total += data->GC->pool.len;
 
