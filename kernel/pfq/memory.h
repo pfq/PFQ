@@ -43,7 +43,7 @@
 #include <pfq/sparse.h>
 #include <pfq/percpu.h>
 #include <pfq/skbuff.h>
-
+#include <pfq/alloc.h>
 
 
 extern struct sk_buff * __pfq_alloc_skb(unsigned int size, gfp_t priority, int fclone, int node);

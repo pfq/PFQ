@@ -31,29 +31,6 @@
 
 
 static
-void *pfq_malloc_pages(size_t size, gfp_t gfp_flags)
-{
-	int po;
-	if (WARN_ON(!size))
-		return NULL;
-	gfp_flags |= __GFP_COMP;
-	po = get_order(size);
-	return (void *) __get_free_pages(gfp_flags, po);
-}
-
-
-static
-void pfq_free_pages(void *addr, size_t size)
-{
-	int po;
-	if (addr == NULL)
-	       return;
-	po = get_order(size);
-        free_pages((unsigned long) addr, po);
-}
-
-
-static
 struct sk_buff *
 pfq_build_skb(void *base, void *data, unsigned int frag_size)
 {

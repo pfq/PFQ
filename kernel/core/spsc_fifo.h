@@ -26,6 +26,7 @@
 
 #ifdef __KERNEL__
 #include <linux/slab.h>
+#include <pfq/alloc.h>
 #else
 #include <stdlib.h>
 #define likely(x)		__builtin_expect((x),1)
