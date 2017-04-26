@@ -68,10 +68,6 @@ int pfq_percpu_init(void)
 		data->counter = 0;
 		data->GC = GCptrs[cpu];
 
-		data->rx_fifo = core_spsc_init(global->skb_pool_size, cpu);
-		data->rx_free = core_spsc_init(global->skb_pool_size, cpu);
-                data->rx_napi = true;
-
 		GC_data_init(data->GC);
 
 		preempt_enable();
@@ -153,19 +149,6 @@ int pfq_percpu_destruct(void)
                 total += data->GC->pool.len;
 
 		GC_reset(data->GC);
-
-		while ((skb = core_spsc_pop(data->rx_fifo)))
-		{
-			sparse_inc(global->percpu_memory, os_free);
-			kfree_skb(skb);
-			total++;
-		}
-		while ((skb = core_spsc_pop(data->rx_free)))
-		{
-			sparse_inc(global->percpu_memory, os_free);
-			kfree_skb(skb);
-			total++;
-		}
 
 		preempt_enable();
         }

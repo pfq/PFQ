@@ -41,8 +41,6 @@ void core_percpu_free(void);
 
 struct core_percpu_data
 {
-	struct core_spsc_fifo   *rx_fifo;
-	struct core_spsc_fifo   *rx_free;
 	struct GC_data		*GC;
 
 	ktime_t			last_rx;
@@ -52,8 +50,6 @@ struct core_percpu_data
         unsigned long		sock_eligible_mask;
 	unsigned long           sock_mask[Q_CORE_MAX_SOCK_MASK];
         int                     sock_cnt;
-
-	bool			rx_napi;
 
 } ____pfq_cacheline_aligned;
 

@@ -77,8 +77,6 @@ void core_percpu_free(void)
 		struct core_percpu_data *data = per_cpu_ptr(global->percpu_data, cpu);
 
 		kfree(data->GC);
-		kfree(data->rx_fifo);
-		kfree(data->rx_free);
 	}
 
 	free_percpu(global->percpu_stats);
