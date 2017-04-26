@@ -24,12 +24,10 @@
 #ifndef PFQ_SHMEM_H
 #define PFQ_SHMEM_H
 
-#include <pragma/diagnostic_push>
 #include <linux/vmalloc.h>
 #include <linux/net.h>
-#include <pragma/diagnostic_pop>
 
-struct core_sock;
+struct pfq_sock;
 
 
 enum pfq_shmem_kind
@@ -63,8 +61,8 @@ struct pfq_shmem_descr
 };
 
 
-extern size_t pfq_total_queue_mem(struct core_sock *so);
-extern size_t pfq_total_queue_mem_aligned(struct core_sock *so);
+extern size_t pfq_total_queue_mem(struct pfq_sock *so);
+extern size_t pfq_total_queue_mem_aligned(struct pfq_sock *so);
 
 extern int    pfq_mmap(struct file *file, struct socket *sock, struct vm_area_struct *vma);
 extern int    pfq_vmalloc_user(struct pfq_shmem_descr *shmem, size_t size);

@@ -21,11 +21,9 @@
  *
  ****************************************************************/
 
-#include <core/percpu.h>
-#include <core/global.h>
-
-#include <pfq/memory.h>
 #include <pfq/percpu.h>
+#include <pfq/global.h>
+#include <pfq/memory.h>
 #include <pfq/pool.h>
 #include <pfq/printk.h>
 
@@ -75,7 +73,7 @@ pfq_skb_pool_flush(struct pfq_skb_pool *pool)
 	pfq_free_pages(pool->data, pool->data_size);
 
 #if 0
-	while ((skb = core_spsc_pop(pool->fifo)))
+	while ((skb = pfq_spsc_pop(pool->fifo)))
 	{
 		sparse_inc(global->percpu_memory, os_free);
 		if (atomic_read(&skb->users) > 1) {
@@ -118,7 +116,7 @@ int pfq_skb_pool_init(struct pfq_skb_pool *pool, size_t pool_size, size_t skb_le
 	printk(KERN_INFO "[PFQ] pool: data@%p (%zu bytes).\n", pool->data, pool->data_size);
 
 	/* one slot is added by the queue to distinguish between full and empty state */
-	pool->fifo = core_spsc_init(pool_size + PFQ_POOL_CACHELINE_PAD-1, cpu);
+	pool->fifo = pfq_spsc_init(pool_size + PFQ_POOL_CACHELINE_PAD-1, cpu);
 	if (!pool->fifo) {
 		printk(KERN_ERR "[PFQ] pfq_skb_pool_init: out of memory!\n");
 		return -ENOMEM;
@@ -141,7 +139,7 @@ int pfq_skb_pool_init(struct pfq_skb_pool *pool, size_t pool_size, size_t skb_le
 
 		memcpy(skb + 2048, skb, sizeof(struct sk_buff));
 
-		core_spsc_push(pool->fifo, skb);
+		pfq_spsc_push(pool->fifo, skb);
 		sparse_inc(global->percpu_memory, os_alloc);
 	}
 
@@ -156,17 +154,17 @@ pfq_skb_pool_free(struct pfq_skb_pool *pool, size_t pool_size)
 	size_t total = 0;
 	if (pool) {
 		total = pfq_skb_pool_flush(pool);
-		core_spsc_free(pool_size, pool->fifo, NULL);
+		pfq_spsc_free(pool_size, pool->fifo, NULL);
 		pool->fifo = NULL;
 	}
 	return total;
 }
 
 
-struct core_pool_stats
+struct pfq_pool_stats
 pfq_get_skb_pool_stats(void)
 {
-        return (struct core_pool_stats)
+        return (struct pfq_pool_stats)
         {
            .os_alloc         = sparse_read(global->percpu_memory, os_alloc)
         ,  .os_free          = sparse_read(global->percpu_memory, os_free)

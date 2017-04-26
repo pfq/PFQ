@@ -25,25 +25,20 @@
 #ifndef PFQ_MEMORY_H
 #define PFQ_MEMORY_H
 
-#include <pragma/diagnostic_push>
+#include <pfq/alloc.h>
+#include <pfq/define.h>
+#include <pfq/global.h>
+#include <pfq/percpu.h>
+#include <pfq/pool.h>
+#include <pfq/skbuff.h>
+#include <pfq/sparse.h>
+#include <pfq/stats.h>
+
 #include <linux/version.h>
 #include <linux/skbuff.h>
 #include <linux/hardirq.h>
 #include <net/dst.h>
 #include <net/xfrm.h>
-#include <pragma/diagnostic_pop>
-
-#include <core/global.h>
-#include <core/percpu.h>
-#include <core/define.h>
-#include <core/stats.h>
-
-#include <pfq/pool.h>
-#include <pfq/global.h>
-#include <pfq/sparse.h>
-#include <pfq/percpu.h>
-#include <pfq/skbuff.h>
-#include <pfq/alloc.h>
 
 
 extern struct sk_buff * __pfq_alloc_skb(unsigned int size, gfp_t priority, int fclone, int node);
@@ -222,11 +217,11 @@ struct sk_buff * pfq_netdev_alloc_skb_ip_align(struct net_device *dev,
 
 static inline
 struct sk_buff *
-____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, int idx, struct core_spsc_fifo *pool)
+____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, int idx, struct pfq_spsc_fifo *pool)
 {
 #ifdef PFQ_USE_SKB_POOL
 	if (likely(pool)) {
-		struct sk_buff *skb = core_spsc_pop(pool);
+		struct sk_buff *skb = pfq_spsc_pop(pool);
 		if (likely(skb && pfq_skb_is_recycleable(skb))) {
 
 			sparse_inc(global->percpu_memory, pool_pop[idx]);
@@ -257,7 +252,7 @@ void pfq_kfree_skb_pool(struct sk_buff *skb, struct pfq_skb_pool *pool)
 	if (likely(skb->peeked)) {
 		const int idx = PFQ_CB(skb)->pool;
 		if (likely(pool->fifo)) {
-			if (unlikely(!core_spsc_push(pool->fifo, skb))) {
+			if (unlikely(!pfq_spsc_push(pool->fifo, skb))) {
 				pfq_printk_skb("[PFQ] internal error", skb);
 				sparse_inc(global->percpu_memory, os_free);
 				kfree_skb(skb);
@@ -281,7 +276,7 @@ struct sk_buff * pfq_alloc_skb(unsigned int size, gfp_t priority)
 
 	if (likely(atomic_read(&global->pool_enabled))) {
 		struct pfq_percpu_pool *cpu_pool = this_cpu_ptr(global->percpu_pool);
-		struct core_spsc_fifo *pool = pfq_skb_pool_get(&cpu_pool->rx, size);
+		struct pfq_spsc_fifo *pool = pfq_skb_pool_get(&cpu_pool->rx, size);
 		return ____pfq_alloc_skb_pool(size, priority, 0, NUMA_NO_NODE, 0, pool);
 	}
 

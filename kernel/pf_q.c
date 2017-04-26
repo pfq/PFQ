@@ -23,7 +23,6 @@
  *
  ****************************************************************/
 
-#include <pragma/diagnostic_push>
 
 #include <linux/kernel.h>
 #include <linux/version.h>
@@ -52,19 +51,18 @@
 
 #include <linux/pf_q.h>
 
-#include <pragma/diagnostic_pop>
+#include <lang/symtable.h>
 
-#include <core/global.h>
-#include <core/devmap.h>
-#include <core/lang/symtable.h>
-#include <core/percpu.h>
-#include <core/group.h>
-#include <core/sock.h>
-#include <core/stats.h>
-#include <core/queue.h>
-#include <core/endpoint.h>
-#include <core/define.h>
-#include <core/GC.h>
+#include <pfq/global.h>
+#include <pfq/devmap.h>
+#include <pfq/percpu.h>
+#include <pfq/group.h>
+#include <pfq/sock.h>
+#include <pfq/stats.h>
+#include <pfq/queue.h>
+#include <pfq/endpoint.h>
+#include <pfq/define.h>
+#include <pfq/GC.h>
 
 #include <pfq/percpu.h>
 #include <pfq/shmem.h>
@@ -99,7 +97,7 @@ static int
 pfq_release(struct socket *sock)
 {
         struct sock * sk = sock->sk;
-        struct core_sock *so;
+        struct pfq_sock *so;
         pfq_id_t id;
 	int numb = 0;
 
@@ -118,17 +116,17 @@ pfq_release(struct socket *sock)
 	/* disable socket... */
 
 	pr_devel("[PFQ|%d] disabling socket...\n", so->id);
-	core_sock_disable(so);
+	pfq_sock_disable(so);
 
 	/* release the socket id */
 
 	pr_devel("[PFQ|%d] releasing id...\n", so->id);
-	msleep(Q_CORE_GRACE_PERIOD);
-	core_sock_release_id(so->id);
+	msleep(Q_GRACE_PERIOD);
+	pfq_sock_release_id(so->id);
 
 #if 0
 	/* reset the GC at the last socket closed */
-        if (core_sock_counter() == 0) {
+        if (pfq_sock_counter() == 0) {
 		pr_devel("[PFQ|%d] resetting GC...\n", id);
                 numb = pfq_percpu_GC_reset();
 	}
@@ -154,15 +152,15 @@ static unsigned int
 pfq_poll(struct file *file, struct socket *sock, poll_table * wait)
 {
         struct sock *sk = sock->sk;
-        struct core_sock *so = pfq_sk(sk);
+        struct pfq_sock *so = pfq_sk(sk);
         unsigned int mask = 0;
 
 	poll_wait(file, &so->opt.waitqueue, wait);
 
-        if(!core_sock_shared_rx_queue(&so->opt))
+        if(!pfq_sock_shared_rx_queue(&so->opt))
                 return mask;
 
-        if (core_mpsc_queue_len(so) > 0)
+        if (pfq_mpsc_queue_len(so) > 0)
                 mask |= POLLIN | POLLRDNORM;
 
         return mask;
@@ -170,11 +168,11 @@ pfq_poll(struct file *file, struct socket *sock, poll_table * wait)
 
 static int pfq_ioctl(struct socket *sock, unsigned int cmd, unsigned long arg)
 {
-        struct core_sock *so = pfq_sk(sock->sk);
+        struct pfq_sock *so = pfq_sk(sock->sk);
         switch (cmd) {
 	case QIOCTX:
 	{
-		if (core_sock_shared_tx_queue(&so->opt, -1) == NULL) {
+		if (pfq_sock_shared_tx_queue(&so->opt, -1) == NULL) {
 			printk(KERN_INFO "[PFQ|%d] Tx queue: socket not enabled!\n", so->id);
 			return -EPERM;
 		}
@@ -294,8 +292,8 @@ static struct proto_ops pfq_ops =
         .bind       = sock_no_bind,
         .mmap       = pfq_mmap,
         .poll       = pfq_poll,
-        .setsockopt = core_setsockopt,
-        .getsockopt = core_getsockopt,
+        .setsockopt = pfq_setsockopt,
+        .getsockopt = pfq_getsockopt,
         .ioctl	    = pfq_ioctl,
         .recvmsg    = sock_no_recvmsg,
         .sendmsg    = sock_no_sendmsg
@@ -306,7 +304,7 @@ static struct proto pfq_proto =
 {
 	.name  = "PFQ",
         .owner = THIS_MODULE,
-        .obj_size = sizeof(struct core_sock)
+        .obj_size = sizeof(struct pfq_sock)
 };
 
 
@@ -321,7 +319,7 @@ pfq_create(
 #endif
     )
 {
-        struct core_sock *so;
+        struct pfq_sock *so;
         struct sock *sk;
 	pfq_id_t id;
 
@@ -360,7 +358,7 @@ pfq_create(
 
         /* get a unique id for this sock */
 
-        id = core_sock_get_free_id(so);
+        id = pfq_sock_get_free_id(so);
         if ((__force int)id == -1) {
                 printk(KERN_WARNING "[PFQ] error: pfq_sock_init: resource exhausted!\n");
                 sk_free(sk);
@@ -371,7 +369,7 @@ pfq_create(
 
         /* initialize sock */
 
-	if (core_sock_init(so, id) < 0) {
+	if (pfq_sock_init(so, id) < 0) {
                 printk(KERN_WARNING "[PFQ] error: pfq_sock_init: no memory!\n");
 		sk_free(sk);
 		mutex_unlock(&global->socket_lock);
@@ -380,7 +378,7 @@ pfq_create(
 
         /* initialize sock opt */
 
-        core_sock_opt_init(&so->opt, global->capt_slot_size, global->xmit_slot_size);
+        pfq_sock_opt_init(&so->opt, global->capt_slot_size, global->xmit_slot_size);
 
         /* initialize socket */
 
@@ -421,37 +419,37 @@ static int __init pfq_init_module(void)
 
 	/* initialize global data */
 
-	global = core_global_init();
+	global = pfq_global_init();
 
 	/* check options */
 
-        if (global->capt_batch_len <= 0 || global->capt_batch_len > Q_CORE_BUFF_BATCH_LEN) {
+        if (global->capt_batch_len <= 0 || global->capt_batch_len > Q_BUFF_BATCH_LEN) {
                 printk(KERN_INFO "[PFQ] capt_batch_len=%d not allowed: valid range (0,%d]!\n",
-                       global->capt_batch_len, Q_CORE_BUFF_BATCH_LEN);
+                       global->capt_batch_len, Q_BUFF_BATCH_LEN);
                 return -EFAULT;
         }
 
-        if (global->xmit_batch_len <= 0 || global->xmit_batch_len > (Q_CORE_BUFF_BATCH_LEN*4)) {
+        if (global->xmit_batch_len <= 0 || global->xmit_batch_len > (Q_BUFF_BATCH_LEN*4)) {
                 printk(KERN_INFO "[PFQ] xmit_batch_len=%d not allowed: valid range (0,%d]!\n",
-                       global->xmit_batch_len, Q_CORE_BUFF_BATCH_LEN * 4);
+                       global->xmit_batch_len, Q_BUFF_BATCH_LEN * 4);
                 return -EFAULT;
         }
 
-	if (global->skb_pool_size > Q_CORE_MAX_POOL_SIZE) {
+	if (global->skb_pool_size > Q_MAX_POOL_SIZE) {
                 printk(KERN_INFO "[PFQ] skb_pool_size=%d not allowed: valid range [0,%d]!\n",
-                       global->skb_pool_size, Q_CORE_MAX_POOL_SIZE);
+                       global->skb_pool_size, Q_MAX_POOL_SIZE);
 		return -EFAULT;
 	}
 
 	/* initialize data structures ... */
 
-	err = core_groups_init();
+	err = pfq_groups_init();
 	if (err < 0)
 		goto err1;
 
 	/* initialization */
 
-	err = core_percpu_alloc();
+	err = pfq_percpu_alloc();
 	if (err < 0)
 		goto err1;
 
@@ -539,7 +537,7 @@ err4:
 err3:
 	pfq_percpu_destruct();
 err2:
-	core_percpu_free();
+	pfq_percpu_free();
 err1:
 	return err < 0 ? err : -EFAULT;
 }
@@ -572,10 +570,10 @@ static void __exit pfq_exit_module(void)
         proto_unregister(&pfq_proto);
 
         /* disable direct capture */
-        core_devmap_toggle_reset();
+        pfq_devmap_toggle_reset();
 
         /* wait grace period */
-        msleep(Q_CORE_GRACE_PERIOD);
+        msleep(Q_GRACE_PERIOD);
 
         /* free per CPU data */
         total += pfq_percpu_destruct();
@@ -587,12 +585,12 @@ static void __exit pfq_exit_module(void)
                 printk(KERN_INFO "[PFQ] %d additional sk_buff freed (GC)!\n", total);
 
         /* free per-cpu data */
-        core_percpu_free();
+        pfq_percpu_free();
 
 	/* free symbol table of pfq-lang functions */
 	pfq_lang_symtable_free();
 
-	core_groups_destruct();
+	pfq_groups_destruct();
 
         printk(KERN_INFO "[PFQ] unloaded.\n");
 }
@@ -603,7 +601,7 @@ static void __exit pfq_exit_module(void)
 static inline
 bool pfq_capture_enabled(const struct sk_buff *skb)
 {
-        return core_devmap_toggle_get(skb->dev->ifindex);
+        return pfq_devmap_toggle_get(skb->dev->ifindex);
 }
 
 

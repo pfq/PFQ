@@ -23,19 +23,103 @@
 #ifndef PFQ_QBUFF_H
 #define PFQ_QBUFF_H
 
-#include <pragma/diagnostic_push>
+#include <pfq/qbuff.h>
+#include <pfq/global.h>
+#include <pfq/vlan.h>
+#include <pfq/types.h>
+#include <pfq/skbuff.h>
+
 #include <linux/kernel.h>
 #include <linux/version.h>
 #include <linux/skbuff.h>
 #include <linux/ip.h>
-#include <pragma/diagnostic_pop>
 
-#include <core/qbuff.h>
-#include <core/global.h>
+struct pfq_lang_monad;
 
-#include <pfq/vlan.h>
-#include <pfq/types.h>
-#include <pfq/skbuff.h>
+struct qbuff
+{
+	void		       *addr;		/* struct sk_buff * */
+	struct pfq_lang_monad  *monad;
+	struct GC_log	       *log;
+        unsigned long		group_mask;
+        uint32_t		counter;
+        uint32_t		state;
+};
+
+
+#define PFQ_DEFINE_QUEUE(name, size) \
+	struct name {  \
+		size_t len; \
+		struct qbuff queue[size]; \
+	}
+
+
+#define PFQ_DEFINE_QUEUE_REF(name, size) \
+	struct name {  \
+		size_t len; \
+		struct qbuff *ref[size]; \
+	}
+
+
+struct pfq_qbuff_queue
+{
+	size_t len;
+	struct qbuff queue[];
+};
+
+
+struct pfq_qbuff_refs
+{
+	size_t len;
+	struct qbuff *queue[];
+};
+
+
+PFQ_DEFINE_QUEUE(pfq_qbuff_batch, Q_BUFF_BATCH_LEN);
+PFQ_DEFINE_QUEUE(pfq_qbuff_long_queue,  Q_BUFF_QUEUE_LEN);
+
+
+PFQ_DEFINE_QUEUE_REF(pfq_ref_batch, Q_BUFF_BATCH_LEN);
+PFQ_DEFINE_QUEUE_REF(pfq_ref_long_queue,  Q_BUFF_QUEUE_LEN);
+
+
+#define PFQ_QBUFF_QUEUE(q) \
+	__builtin_choose_expr(__builtin_types_compatible_p(typeof(q),struct pfq_qbuff_batch *),      (struct pfq_qbuff_queue *)(q), \
+	__builtin_choose_expr(__builtin_types_compatible_p(typeof(q),struct pfq_qbuff_long_queue *), (struct pfq_qbuff_queue *)(q), (void)0))
+
+
+#define PFQ_QBUFF_REFS(q) \
+	__builtin_choose_expr(__builtin_types_compatible_p(typeof(q),struct pfq_ref_batch *),	    (struct pfq_qbuff_refs *)(q), \
+	__builtin_choose_expr(__builtin_types_compatible_p(typeof(q),struct pfq_ref_long_queue *), (struct pfq_qbuff_refs *)(q), (void)0))
+
+
+#define PFQ_QBUFF_QUEUE_AT(q, n) \
+	__builtin_choose_expr(__builtin_types_compatible_p(typeof(q),struct pfq_qbuff_batch *),       (struct qbuff  *)(&((q)->queue[n])), \
+	__builtin_choose_expr(__builtin_types_compatible_p(typeof(q),struct pfq_qbuff_long_queue *),  (struct qbuff  *)(&((q)->queue[n])), \
+	__builtin_choose_expr(__builtin_types_compatible_p(typeof(q),struct pfq_qbuff_queue *),       (struct qbuff  *)(&((q)->queue[n])), \
+	__builtin_choose_expr(__builtin_types_compatible_p(typeof(q),struct pfq_ref_batch *),	      *(struct qbuff **)(&((q)->queue[n])), \
+	__builtin_choose_expr(__builtin_types_compatible_p(typeof(q),struct pfq_ref_long_queue *),   *(struct qbuff **)(&((q)->queue[n])), \
+	__builtin_choose_expr(__builtin_types_compatible_p(typeof(q),struct pfq_qbuff_refs *),	      *(struct qbuff **)(&((q)->queue[n])), (void)0))))))
+
+
+#define STATIC_TYPE(typ, val) __builtin_choose_expr(__builtin_types_compatible_p(typ, typeof((val))), 0, (void)0)
+
+
+#define for_each_qbuff(q, buff, n) \
+        for((n) = 0; ((n) < (q)->len) && ((buff) = PFQ_QBUFF_QUEUE_AT((q),n)); (n)++)
+
+
+#define for_each_qbuff_with_mask(mask, q, buff, n) \
+        for((n) = pfq_ctz(mask); ((n) < (q)->len) && (mask) && ((buff) = PFQ_QBUFF_QUEUE_AT((q),n)); \
+                (mask) ^=(1ULL << (n)), n = pfq_ctz(mask))
+
+
+#define for_each_qbuff_from(x, q, buff, n) \
+        for((n) = (x); ((n) < (q)->len) && ((buff) = PFQ_QBUFF_QUEUE_AT((q), n)); (n)++)
+
+
+#define for_each_qbuff_upto(max, q, buff, n) \
+        for((n) = 0; ((n) < (max)) && ((n) < (q)->len) && ((buff) = PFQ_QBUFF_QUEUE_AT((q),n)); (n)++)
 
 
 #define QBUFF_SKB(buff) \
@@ -207,7 +291,7 @@ qbuff_get_rx_queue(struct qbuff const *buff)
 
 
 static inline bool
-qbuff_run_bp_filter(struct qbuff *buff, struct core_group *this_group)
+qbuff_run_bp_filter(struct qbuff *buff, struct pfq_group *this_group)
 {
 	struct sk_filter *bpf = (struct sk_filter *)atomic_long_read(&this_group->bp_filter);
 
@@ -226,7 +310,7 @@ qbuff_run_bp_filter(struct qbuff *buff, struct core_group *this_group)
 static inline bool
 qbuff_run_vlan_filter(struct qbuff const *buff, pfq_gid_t gid)
 {
-	return core_group_check_vlan_filter(gid, QBUFF_SKB(buff)->vlan_tci & ~VLAN_TAG_PRESENT);
+	return pfq_group_check_vlan_filter(gid, QBUFF_SKB(buff)->vlan_tci & ~VLAN_TAG_PRESENT);
 }
 
 

@@ -21,13 +21,13 @@
  *
  ****************************************************************/
 
-#include <core/global.h>
-#include <core/define.h>
+#include <pfq/global.h>
+#include <pfq/define.h>
 
 #include <linux/module.h>
 
 
-extern struct core_global_data default_global;
+extern struct pfq_global_data default_global;
 
 
 module_param_named(capt_slot_size,	 default_global.capt_slot_size,		int, 0644);

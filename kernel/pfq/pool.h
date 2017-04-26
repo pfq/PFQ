@@ -24,13 +24,11 @@
 #ifndef PFQ_SKBUFF_POOL_H
 #define PFQ_SKBUFF_POOL_H
 
-#include <pragma/diagnostic_push>
-#include <linux/skbuff.h>
-#include <pragma/diagnostic_pop>
+#include <pfq/spsc_fifo.h>
+#include <pfq/global.h>
+#include <pfq/stats.h>
 
-#include <core/spsc_fifo.h>
-#include <core/global.h>
-#include <core/stats.h>
+#include <linux/skbuff.h>
 
 
 #define PFQ_POOL_SKB_SIZE		2048
@@ -39,7 +37,7 @@
 
 struct pfq_skb_pool
 {
-	struct core_spsc_fifo *fifo;
+	struct pfq_spsc_fifo *fifo;
 	void		      *base;
 	size_t		       base_size;
 	void		      *data;
@@ -47,20 +45,18 @@ struct pfq_skb_pool
 };
 
 
-extern int	pfq_skb_pool_init_all(void);
-extern int	pfq_skb_pool_free_all(void);
-
-extern struct  core_pool_stats pfq_get_skb_pool_stats(void);
+extern int pfq_skb_pool_init_all(void);
+extern int pfq_skb_pool_free_all(void);
+extern struct pfq_pool_stats pfq_get_skb_pool_stats(void);
 
 
 static inline
-struct core_spsc_fifo *pfq_skb_pool_get(struct pfq_skb_pool *pool, size_t size)
+struct pfq_spsc_fifo *pfq_skb_pool_get(struct pfq_skb_pool *pool, size_t size)
 {
 	if (likely(size <= PFQ_POOL_SKB_SIZE))
 		return pool->fifo;
 	return NULL;
 }
-
 
 
 #endif /* PFQ_SKBUFF_POOL_H */

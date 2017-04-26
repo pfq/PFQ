@@ -24,9 +24,7 @@
 #ifndef PFQ_ATOMIC_H
 #define PFQ_ATOMIC_H
 
-#include <pragma/diagnostic_push>
 #include <asm/atomic.h>
 #include <asm/local.h>
-#include <pragma/diagnostic_pop>
 
 #endif /* PFQ_ATOMIC_H */

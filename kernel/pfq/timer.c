@@ -21,15 +21,14 @@
  *
  ****************************************************************/
 
-#include <core/percpu.h>
-
+#include <pfq/percpu.h>
 #include <pfq/timer.h>
 #include <pfq/io.h>
 
 
 static void pfq_timer(unsigned long cpu)
 {
-	struct core_percpu_data *data;
+	struct pfq_percpu_data *data;
 
 	pfq_receive(NULL, NULL);
 	data = per_cpu_ptr(global->percpu_data, cpu);
@@ -61,7 +60,7 @@ void pfq_timer_init(void)
 	int cpu;
 	for_each_present_cpu(cpu)
 	{
-                struct core_percpu_data *data;
+                struct pfq_percpu_data *data;
 		preempt_disable();
 		data = per_cpu_ptr(global->percpu_data, cpu);
         	pfq_setup_timer(&data->timer, cpu);
@@ -75,7 +74,7 @@ void pfq_timer_fini(void)
 	int cpu;
 	for_each_present_cpu(cpu)
 	{
-                struct core_percpu_data *data;
+                struct pfq_percpu_data *data;
 		preempt_disable();
 		data = per_cpu_ptr(global->percpu_data, cpu);
         	del_timer(&data->timer);

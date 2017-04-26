@@ -23,14 +23,71 @@
  *
  ****************************************************************/
 
-#include <core/global.h>
 #include <pfq/global.h>
 
+struct pfq_global_data default_global =
+{
+	.capt_slot_size		= 1514,
+	.xmit_slot_size		= 1514,
+	.xmit_batch_len		= 1,
+	.capt_batch_len		= 1,
 
-extern struct core_global_data default_global;
+	.vlan_untag		= 0,
 
-struct core_global_data *
+	.skb_pool_size		= 1024,
+	.tx_cpu			= {0},
+	.tx_cpu_nr		= 0,
+	.tx_retry		= 1,
+
+	.socket_ptr		= {{0}},
+	.socket_count		= {0},
+     // .socket_lock		= {{0}},
+
+	.devmap			= {{{0}}},
+	.devmap_toggle		= {{0}},
+     // .devmap_lock		= {{0}},
+
+	.pool_enabled		= {0},
+	.groups			= {{}},
+     // .groups_lock		= {{0}},
+
+	.percpu_stats		= NULL,
+	.percpu_memory		= NULL,
+	.percpu_data		= NULL,
+	.percpu_pool		= NULL,
+
+	.functions		= {}
+     // .symtable_sem		= {0},
+};
+
+
+struct pfq_global_data * global;
+
+struct pfq_global_data *
 pfq_global_alloc(void)
 {
 	return &default_global;
 }
+
+struct pfq_global_data *
+pfq_global_init(void)
+{
+	static struct pfq_global_data *data;
+	if (!data)
+	{
+		if ((data = pfq_global_alloc()))
+		{
+			memcpy(data, &default_global, sizeof(default_global));
+			mutex_init(&data->socket_lock);
+			mutex_init(&data->devmap_lock);
+			mutex_init(&data->groups_lock);
+			init_rwsem(&data->symtable_sem);
+		}
+	}
+
+	return data;
+}
+
+
+extern struct pfq_global_data default_global;
+

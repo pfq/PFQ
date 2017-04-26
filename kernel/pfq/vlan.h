@@ -24,10 +24,8 @@
 #ifndef PFQ_VLAN_H
 #define PFQ_VLAN_H
 
-#include <pragma/diagnostic_push>
 #include <linux/version.h>
 #include <linux/if_vlan.h>
-#include <pragma/diagnostic_pop>
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,9,0))
 

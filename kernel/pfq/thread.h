@@ -24,21 +24,22 @@
 #ifndef PFQ_THREAD_H
 #define PFQ_THREAD_H
 
-#include <pragma/diagnostic_push>
+#include <pfq/sock.h>
+#include <pfq/define.h>
+
 #include <linux/kthread.h>
 #include <linux/mutex.h>
 #include <linux/rwsem.h>
-#include <pragma/diagnostic_pop>
 
-#include <core/sock.h>
-#include <core/define.h>
 
-extern struct task_struct *kthread_tx_pool [Q_CORE_MAX_CPU];
+struct pfq_sock;
+
+extern struct task_struct *kthread_tx_pool [Q_MAX_CPU];
 
 extern int  pfq_start_tx_threads(void);
 extern void pfq_stop_tx_threads(void);
-extern int  pfq_bind_tx_thread(int tx_index, struct core_sock *sock, int sock_queue);
-extern int  pfq_unbind_tx_thread(struct core_sock *sock);
+extern int  pfq_bind_tx_thread(int tx_index, struct pfq_sock *sock, int sock_queue);
+extern int  pfq_unbind_tx_thread(struct pfq_sock *sock);
 
 extern int pfq_check_threads_affinity(void);
 extern int pfq_check_napi_contexts(void);
@@ -59,7 +60,7 @@ struct pfq_thread_tx_data
 
 	/* specific for Tx data */
 
-	struct core_sock *	sock[Q_MAX_TX_QUEUES];
+	struct pfq_sock *	sock[Q_MAX_TX_QUEUES];
 	atomic_t		sock_queue[Q_MAX_TX_QUEUES];
 
 } ____pfq_cacheline_aligned;

@@ -24,66 +24,9 @@
 #ifndef PFQ_IO_H
 #define PFQ_IO_H
 
-#include <core/GC.h>
-#include <core/sock.h>
-
+#include <pfq/GC.h>
+#include <pfq/sock.h>
 #include <pfq/types.h>
-
-
-struct napi_struct;
-struct sk_buff;
-
-struct napi_struct;
-
-
-typedef union
-{
-	uint64_t value;
-	struct {
-		uint32_t ok;
-		uint32_t fail;
-	};
-
-} tx_response_t;
-
-
-extern size_t pfq_sk_queue_recv(struct core_sock_opt *opt,
-		                struct core_qbuff_refs *buffs,
-		                unsigned long long buffs_mask,
-		                int burst_len,
-		                pfq_gid_t gid);
-
-struct pfq_mbuff_xmit_context
-{
-	struct pfq_skb_pool	       *tx;
-	struct net		       *net;
-	ktime_t			        now;
-	unsigned long			jiffies;
-	int				node;
-	int				copies;
-	atomic_t const			*stop;
-	bool				*intr;
-	bool				xmit_more;
-};
-
-
-/* socket queues */
-
-extern tx_response_t
-pfq_sk_queue_xmit(struct core_sock *so, int qindex, int cpu, atomic_t const *stop);
-
-
-/* skb queues */
-
-extern int pfq_xmit(struct qbuff *buff, struct net_device *dev, int queue, int more);
-
-extern tx_response_t
-pfq_qbuff_queue_xmit(struct core_qbuff_queue *buff, unsigned long long buffs_mask, struct net_device *dev, int queue_index);
-
-/* skb lazy xmit */
-
-extern int pfq_qbuff_lazy_xmit(struct qbuff * buff, struct net_device *dev, int queue_index);
-extern int pfq_qbuff_lazy_xmit_run(struct core_qbuff_queue *queue, struct core_endpoint_info const *info);
 
 
 #define pfq_qbuff_queue_lazy_xmit(buffs, mask, dev, queue_index) ({ \
@@ -101,6 +44,62 @@ extern int pfq_qbuff_lazy_xmit_run(struct core_qbuff_queue *queue, struct core_e
 		} \
 		n; \
 	})
+
+typedef union
+{
+	uint64_t value;
+	struct {
+		uint32_t ok;
+		uint32_t fail;
+	};
+
+} tx_response_t;
+
+
+struct sk_buff;
+struct napi_struct;
+struct napi_struct;
+
+
+extern size_t pfq_sk_queue_recv( struct pfq_sock_opt *opt
+			       , struct pfq_qbuff_refs *buffs
+			       , unsigned long long buffs_mask
+			       , int burst_len
+			       , pfq_gid_t gid);
+
+
+struct pfq_mbuff_xmit_context
+{
+	struct pfq_skb_pool	*tx;
+	struct net		*net;
+	ktime_t			now;
+	unsigned long		jiffies;
+	int			node;
+	int			copies;
+	atomic_t const		*stop;
+	bool			*intr;
+	bool			xmit_more;
+};
+
+
+/* socket queues */
+
+extern tx_response_t
+pfq_sk_queue_xmit(struct pfq_sock *so, int qindex, int cpu, atomic_t const *stop);
+
+
+/* skb queues */
+
+extern int pfq_xmit(struct qbuff *buff, struct net_device *dev, int queue, int more);
+
+extern tx_response_t
+pfq_qbuff_queue_xmit(struct pfq_qbuff_queue *buff, unsigned long long buffs_mask, struct net_device *dev, int queue_index);
+
+/* skb lazy xmit */
+
+extern int pfq_qbuff_lazy_xmit(struct qbuff * buff, struct net_device *dev, int queue_index);
+extern int pfq_qbuff_lazy_xmit_run(struct pfq_qbuff_queue *queue, struct pfq_endpoint_info const *info);
+
 
 /* receive */
 

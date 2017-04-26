@@ -21,14 +21,12 @@
  *
  ****************************************************************/
 
-#include <pragma/diagnostic_push>
+
+#include <pfq/global.h>
+#include <pfq/sparse.h>
+
 #include <linux/if_vlan.h>
 #include <linux/version.h>
-#include <pragma/diagnostic_pop>
-
-#include <core/global.h>
-
-#include <pfq/sparse.h>
 
 /* inspired to linux kernel vlan_untag */
 

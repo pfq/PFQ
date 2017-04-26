@@ -24,11 +24,8 @@
 #ifndef PFQ_TIMER_H
 #define PFQ_TIMER_H
 
-#include <pragma/diagnostic_push>
 #include <linux/module.h>
 #include <linux/timer.h>
-#include <pragma/diagnostic_pop>
-
 
 extern void pfq_timer_init(void);
 extern void pfq_timer_fini(void);

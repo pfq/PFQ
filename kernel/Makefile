@@ -21,13 +21,13 @@ obj-m := $(TARGET).o
 pfq-y := pf_q.o pfq/proc.o pfq/shmem.o pfq/memory.o pfq/pool.o pfq/bpf.o pfq/vlan.o \
 				pfq/sock.o pfq/thread.o pfq/netdev.o pfq/global.o \
 		 		pfq/param.o pfq/timer.o pfq/io.o pfq/percpu.o pfq/qbuff.o \
-		 		core/core.o core/sockopt.o core/queue.o core/GC.o core/global.o core/percpu.o core/devmap.o \
-		 		core/sock.o core/group.o core/endpoint.o core/stats.o core/printk.o \
-		 		core/lang/engine.o core/lang/signature.o core/lang/symtable.o \
-		 		core/lang/filter.o core/lang/steering.o core/lang/forward.o \
-		 		core/lang/predicate.o core/lang/combinator.o core/lang/control.o \
-		 		core/lang/property.o core/lang/bloom.o core/lang/vlan.o core/lang/misc.o \
-		 		core/lang/dummy.o
+		 		pfq/core.o pfq/sockopt.o pfq/queue.o pfq/GC.o pfq/global.o pfq/percpu.o pfq/devmap.o \
+		 		pfq/sock.o pfq/group.o pfq/endpoint.o pfq/stats.o pfq/printk.o \
+		 		lang/engine.o lang/signature.o lang/symtable.o \
+		 		lang/filter.o lang/steering.o lang/forward.o \
+		 		lang/predicate.o lang/combinator.o lang/control.o \
+		 		lang/property.o lang/bloom.o lang/vlan.o lang/misc.o \
+		 		lang/dummy.o
 
 KERNELVERSION := $(shell uname -r)
 

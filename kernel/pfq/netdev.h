@@ -25,9 +25,7 @@
 #define PFQ_NETDEV_H
 
 
-#include <pragma/diagnostic_push>
 #include <linux/netdevice.h>
-#include <pragma/diagnostic_pop>
 
 
 struct pfq_dev_queue

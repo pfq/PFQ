@@ -25,11 +25,9 @@
 #ifndef PFQ_SPARSE_H
 #define PFQ_SPARSE_H
 
-#include <pragma/diagnostic_push>
 #include <linux/smp.h>
 #include <linux/percpu.h>
 #include <asm/local.h>
-#include <pragma/diagnostic_pop>
 
 
 /*

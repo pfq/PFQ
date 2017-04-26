@@ -28,27 +28,24 @@
 #include <net/inet_common.h>
 #endif
 
-#include <core/core.h>
-#include <core/percpu.h>
-#include <core/global.h>
-#include <core/devmap.h>
+#include <lang/engine.h>
+#include <lang/symtable.h>
 
-#include <core/lang/engine.h>
-#include <core/lang/symtable.h>
-
-#include <core/queue.h>
-#include <core/bitops.h>
-#include <core/qbuff.h>
-#include <core/GC.h>
-
+#include <pfq/GC.h>
+#include <pfq/bitops.h>
+#include <pfq/core.h>
+#include <pfq/devmap.h>
+#include <pfq/global.h>
 #include <pfq/io.h>
-#include <pfq/vlan.h>
-#include <pfq/thread.h>
 #include <pfq/memory.h>
-#include <pfq/qbuff.h>
-#include <pfq/skbuff.h>
 #include <pfq/netdev.h>
+#include <pfq/percpu.h>
 #include <pfq/prefetch.h>
+#include <pfq/qbuff.h>
+#include <pfq/queue.h>
+#include <pfq/skbuff.h>
+#include <pfq/thread.h>
+#include <pfq/vlan.h>
 
 
 /*
@@ -215,8 +212,8 @@ unsigned int dev_tx_max_skb_copies(struct net_device *dev, unsigned int req_copi
 		return 1;
 	}
 
-	if (unlikely(req_copies > Q_CORE_MAX_TX_SKB_COPY))
-		return Q_CORE_MAX_TX_SKB_COPY;
+	if (unlikely(req_copies > Q_MAX_TX_SKB_COPY))
+		return Q_MAX_TX_SKB_COPY;
 
 	return req_copies;
 }
@@ -361,12 +358,12 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr,
  */
 
 tx_response_t
-pfq_sk_queue_xmit(struct core_sock *so,
+pfq_sk_queue_xmit(struct pfq_sock *so,
 		  int sock_queue,
 		  int cpu,
 		  atomic_t const *stop)
 {
-	struct core_txq_info const * txinfo = core_sock_get_tx_queue_info(&so->opt, sock_queue);
+	struct pfq_txq_info const * txinfo = pfq_sock_get_tx_queue_info(&so->opt, sock_queue);
 	struct pfq_dev_queue dev_queue = {.dev = NULL, .queue = NULL, .mapping = 0};
 	struct pfq_mbuff_xmit_context ctx;
 	struct pfq_percpu_pool *pool;
@@ -379,7 +376,7 @@ pfq_sk_queue_xmit(struct core_sock *so,
 
 	/* get the Tx queue descriptor */
 
-	tx_queue = core_sock_shared_tx_queue(&so->opt, sock_queue);
+	tx_queue = pfq_sock_shared_tx_queue(&so->opt, sock_queue);
 	if (unlikely(tx_queue == NULL))
 		return ret; /* socket not enabled... */
 
@@ -506,7 +503,7 @@ pfq_sk_queue_xmit(struct core_sock *so,
  */
 
 tx_response_t
-pfq_qbuff_queue_xmit(struct core_qbuff_queue *buffs, unsigned long long mask, struct net_device *dev, int queue)
+pfq_qbuff_queue_xmit(struct pfq_qbuff_queue *buffs, unsigned long long mask, struct net_device *dev, int queue)
 {
 	struct netdev_queue *txq;
 	struct qbuff *buff;
@@ -570,7 +567,7 @@ pfq_qbuff_lazy_xmit(struct qbuff * buff, struct net_device *dev, int queue)
 {
 	struct GC_log *buff_log = buff->log;
 
-	if (buff_log->num_devs >= Q_CORE_BUFF_LOG_LEN) {
+	if (buff_log->num_devs >= Q_BUFF_LOG_LEN) {
 		if (printk_ratelimit())
 			printk(KERN_INFO "[PFQ] bridge %s: too many annotation!\n", dev->name);
 		return 0;
@@ -586,7 +583,7 @@ pfq_qbuff_lazy_xmit(struct qbuff * buff, struct net_device *dev, int queue)
 
 
 int
-pfq_qbuff_lazy_xmit_run(struct core_qbuff_queue *buffs, struct core_endpoint_info const *endpoints)
+pfq_qbuff_lazy_xmit_run(struct pfq_qbuff_queue *buffs, struct pfq_endpoint_info const *endpoints)
 {
 	struct netdev_queue *txq;
 	struct net_device *dev;
@@ -666,7 +663,7 @@ pfq_qbuff_lazy_xmit_run(struct core_qbuff_queue *buffs, struct core_endpoint_inf
 int
 pfq_receive(struct napi_struct *napi, struct sk_buff * skb)
 {
-	struct core_percpu_data * data;
+	struct pfq_percpu_data * data;
 	struct pfq_percpu_pool * pool;
 	int cpu;
 
@@ -674,7 +671,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb)
         cpu = smp_processor_id();
 	data = per_cpu_ptr(global->percpu_data, cpu);
 
-	if (unlikely(core_sock_counter() == 0)) {
+	if (unlikely(pfq_sock_counter() == 0)) {
 		if (skb) {
 			sparse_inc(global->percpu_memory, os_free);
 			pool = per_cpu_ptr(global->percpu_pool, cpu);
@@ -726,7 +723,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb)
 			return 0;
 	}
 
-	return core_process_batch( data
+	return pfq_process_batch( data
 				 , per_cpu_ptr(global->percpu_pool, cpu)
 				 , data->GC
 				 , cpu);
@@ -748,13 +745,13 @@ int pfq_copy_bits(const struct sk_buff *skb, int offset, void *to, int len)
 }
 
 
-size_t pfq_sk_queue_recv(struct core_sock_opt *opt,
-			 struct core_qbuff_refs *buffs,
+size_t pfq_sk_queue_recv(struct pfq_sock_opt *opt,
+			 struct pfq_qbuff_refs *buffs,
 			 unsigned long long mask,
 			 int burst_len,
 			 pfq_gid_t gid)
 {
-	struct pfq_shared_rx_queue *rx_queue = core_sock_shared_rx_queue(opt);
+	struct pfq_shared_rx_queue *rx_queue = pfq_sock_shared_rx_queue(opt);
 	struct pfq_pkthdr *hdr;
 	struct qbuff *buff;
 	unsigned long data;
@@ -769,7 +766,7 @@ size_t pfq_sk_queue_recv(struct core_sock_opt *opt,
 	qlen = PFQ_SHARED_QUEUE_LEN(data);
 	qver = PFQ_SHARED_QUEUE_VER(data);
 
-	hdr  = (struct pfq_pkthdr *) core_mpsc_slot_ptr(opt, rx_queue, qver, qlen);
+	hdr  = (struct pfq_pkthdr *) pfq_mpsc_slot_ptr(opt, rx_queue, qver, qlen);
 
 	for_each_qbuff_with_mask(mask, buffs, buff, n)
 	{

@@ -21,7 +21,7 @@
  *
  ****************************************************************/
 
-#include <core/lang/monad.h>
+#include <lang/monad.h>
 #include <pfq/qbuff.h>
 
 bool

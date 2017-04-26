@@ -24,16 +24,14 @@
 #ifndef PFQ_SOCKOPT_H
 #define PFQ_SOCKOPT_H
 
-#include <pragma/diagnostic_push>
 #include <linux/version.h>
 #include <linux/net.h>
-#include <pragma/diagnostic_pop>
 
-extern int core_getsockopt(struct socket *sock,
+extern int pfq_getsockopt(struct socket *sock,
                 int level, int optname,
                 char __user * optval, int __user * optlen);
 
-extern int core_setsockopt(struct socket *sock,
+extern int pfq_setsockopt(struct socket *sock,
                 int level, int optname,
                 char __user * optval,
                 unsigned int optlen);

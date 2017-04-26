@@ -24,10 +24,8 @@
 #ifndef PFQ_STRING_H
 #define PFQ_STRING_H
 
-#include <pragma/diagnostic_push>
 #include <linux/string.h>
 #include <linux/ctype.h>
-#include <pragma/diagnostic_pop>
 
 #endif /* PFQ_NET_STRING_H */
 

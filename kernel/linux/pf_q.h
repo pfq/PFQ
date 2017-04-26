@@ -27,13 +27,9 @@
 
 #ifdef __KERNEL__
 
-#include <pragma/diagnostic_push>
-
 #include <linux/types.h>
 #include <linux/filter.h>
 #include <linux/skbuff.h>
-
-#include <pragma/diagnostic_pop>
 
 #else  /* user space */
 

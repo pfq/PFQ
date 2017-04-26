@@ -21,25 +21,24 @@
  *
  ****************************************************************/
 
-#include <pragma/diagnostic_push>
+
+#include <lang/module.h>
+
+#include <pfq/bitops.h>
+#include <pfq/define.h>
+#include <pfq/global.h>
+#include <pfq/group.h>
+#include <pfq/memory.h>
+#include <pfq/printk.h>
+#include <pfq/proc.h>
+#include <pfq/sparse.h>
+
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/proc_fs.h>
 #include <linux/seq_file.h>
 #include <linux/pf_q.h>
 #include <net/net_namespace.h>
-#include <pragma/diagnostic_pop>
-
-#include <core/lang/module.h>
-#include <core/global.h>
-#include <core/define.h>
-#include <core/group.h>
-#include <core/bitops.h>
-
-#include <pfq/sparse.h>
-#include <pfq/proc.h>
-#include <pfq/memory.h>
-#include <pfq/printk.h>
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3,10,0)
 #define PDE_DATA(a) PDE(a)->data
@@ -86,13 +85,13 @@ static int pfq_proc_lang(struct seq_file *m, void *v)
 	struct pfq_lang_computation_tree *comp;
 	size_t n;
 
-	core_group_lock();
+	pfq_group_lock();
 
-	for(n = 0; n < Q_CORE_MAX_GID; n++)
+	for(n = 0; n < Q_MAX_GID; n++)
 	{
 		pfq_gid_t gid = (__force pfq_gid_t)n;
 
-		struct core_group *this_group = core_group_get(gid);
+		struct pfq_group *this_group = pfq_group_get(gid);
 
 		if (!this_group->policy)
 			continue;
@@ -103,7 +102,7 @@ static int pfq_proc_lang(struct seq_file *m, void *v)
 		seq_printf_computation_tree(m, comp);
 	}
 
-	core_group_unlock();
+	pfq_group_unlock();
 	return 0;
 }
 
@@ -115,15 +114,15 @@ static int pfq_proc_sockets(struct seq_file *m, void *v)
 
 	mutex_lock(&global->socket_lock);
 
-        for(n = 0; n < (__force int)Q_CORE_MAX_ID; n++)
+        for(n = 0; n < (__force int)Q_MAX_ID; n++)
         {
-		struct core_sock *so = (struct core_sock *)atomic_long_read(&global->socket_ptr[(__force int)n]);
+		struct pfq_sock *so = (struct pfq_sock *)atomic_long_read(&global->socket_ptr[(__force int)n]);
                 struct pfq_stats stats;
 
 		if (!so)
 			continue;
 
-		core_kernel_stats_read(so->stats, &stats);
+		pfq_kernel_stats_read(so->stats, &stats);
 
 		seq_printf(m, "%6zu: %-9lu %-9lu %-9lu %-9lu %-9lu %-9lu %-9lu %-9lu\n", n,
 			   stats.recv,
@@ -147,13 +146,13 @@ static int pfq_proc_groups(struct seq_file *m, void *v)
 
 	seq_printf(m, " group: recv      lost      drop      sent      disc.     failed    forward   kernel    pol pid   def.    uplane   cplane    ctrl\n");
 
-	core_group_lock();
+	pfq_group_lock();
 
-	for(n = 0; n < Q_CORE_MAX_GID; n++)
+	for(n = 0; n < Q_MAX_GID; n++)
 	{
 		pfq_gid_t gid = (__force pfq_gid_t)n;
 
-		struct core_group *this_group = core_group_get(gid);
+		struct pfq_group *this_group = pfq_group_get(gid);
 		if (!this_group->enabled)
 			continue;
 
@@ -172,14 +171,14 @@ static int pfq_proc_groups(struct seq_file *m, void *v)
 		seq_printf(m, "%3d %3d ", this_group->policy, this_group->pid);
 
 		seq_printf(m, "%08lx %08lx %08lx %08lx \n",
-			   atomic_long_read(&this_group->sock_id[core_ctz(Q_CLASS_DEFAULT)]),
-			   atomic_long_read(&this_group->sock_id[core_ctz(Q_CLASS_USER_PLANE)]),
-			   atomic_long_read(&this_group->sock_id[core_ctz(Q_CLASS_CONTROL_PLANE)]),
+			   atomic_long_read(&this_group->sock_id[pfq_ctz(Q_CLASS_DEFAULT)]),
+			   atomic_long_read(&this_group->sock_id[pfq_ctz(Q_CLASS_USER_PLANE)]),
+			   atomic_long_read(&this_group->sock_id[pfq_ctz(Q_CLASS_CONTROL_PLANE)]),
 			   atomic_long_read(&this_group->sock_id[Q_CLASS_MAX-1]));
 
 	}
 
-	core_group_unlock();
+	pfq_group_unlock();
 	return 0;
 }
 
@@ -231,8 +230,8 @@ static int pfq_proc_memory(struct seq_file *m, void *v)
 		seq_printf(m, "CPU-%d:\n", i);
 		if (pool)
 		{
-			long int rx = core_spsc_len(pool->rx.fifo);
-			long int tx = core_spsc_len(pool->tx.fifo);
+			long int rx = pfq_spsc_len(pool->rx.fifo);
+			long int tx = pfq_spsc_len(pool->tx.fifo);
 
 			seq_printf(m, "     pool size   : %10ld %10ld\n", rx, tx);
 		}
@@ -311,7 +310,7 @@ static int pfq_proc_stats_open(struct inode *inode, struct file *file)
 static ssize_t
 pfq_proc_stats_reset(struct file *file, const char __user *buf, size_t length, loff_t *ppos)
 {
-	core_global_stats_reset(global->percpu_stats);
+	pfq_global_stats_reset(global->percpu_stats);
 	return 1;
 }
 

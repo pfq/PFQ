@@ -24,16 +24,173 @@
 #ifndef PFQ_SOCK_H
 #define PFQ_SOCK_H
 
-#include <pragma/diagnostic_push>
-#include <linux/wait.h>
-#include <pragma/diagnostic_pop>
-
+#include <pfq/atomic.h>
+#include <pfq/define.h>
+#include <pfq/endpoint.h>
+#include <pfq/kcompat.h>
 #include <pfq/pool.h>
+#include <pfq/shmem.h>
+#include <pfq/sock.h>
+#include <pfq/stats.h>
+#include <pfq/thread.h>
+#include <pfq/types.h>
+
+#include <linux/wait.h>
+
+#ifdef __KERNEL__
+#include <net/sock.h>
+#endif
+
 
 extern void pfq_sock_init_once(void);
 extern void pfq_sock_fini_once(void);
 extern void pfq_sock_init_waitqueue_head(wait_queue_head_t *queue);
 extern void pfq_sock_destruct(struct sock *sk);
+
+#define for_each_sk_mbuff(hdr, end, fix) \
+        for(; (hdr < (struct pfq_pkthdr *)end); \
+               hdr = PFQ_SHARED_QUEUE_NEXT_PKTHDR(hdr, fix))
+
+
+struct pfq_txq_info
+{
+	atomic_long_t		addr;			/* (pfq_shared_tx_queue *) */
+	void			*shmem_addr;
+	int			ifindex;		/* ifindex */
+	int			queue;			/* queue */
+};
+
+
+static inline
+void pfq_txq_info_init(struct pfq_txq_info *info)
+{
+	atomic_long_set(&info->addr, 0);
+	info->shmem_addr = NULL;
+	info->ifindex = -1;
+	info->queue = -1;
+}
+
+
+struct pfq_rxq_info
+{
+	atomic_long_t		addr;		/* (pfq_shared_rx_queue *) */
+	void			*shmem_addr;
+};
+
+
+static inline
+void pfq_rxq_info_init(struct pfq_rxq_info *info)
+{
+        atomic_long_set(&info->addr, 0);
+        info->shmem_addr = NULL;
+}
+
+
+struct pfq_sock_opt
+{
+	int			tstamp;
+	size_t			caplen;
+
+	size_t			rx_queue_len;
+	size_t			rx_slot_size;
+
+	size_t			tx_queue_len;
+	size_t			tx_slot_size;
+
+	wait_queue_head_t	waitqueue;
+
+        size_t			txq_num_async;
+
+	struct pfq_txq_info	txq_info_async[Q_MAX_TX_QUEUES];
+	struct pfq_txq_info	txq_info;
+	struct pfq_rxq_info	rxq_info;
+
+} ____pfq_cacheline_aligned;
+
+
+
+struct pfq_sock
+{
+        struct sock		sk;
+        pfq_id_t		id;
+
+	int			egress_type;
+        int			egress_index;
+        int			egress_queue;
+	int			weight;
+
+	struct pfq_shmem_descr  shmem;
+        struct pfq_sock_opt	opt;
+
+        pfq_sock_stats_t __percpu *stats;
+
+} ____pfq_cacheline_aligned;
+
+
+/* queue info */
+
+static inline
+struct pfq_rxq_info *
+pfq_sock_get_rx_queue_info(struct pfq_sock_opt *that)
+{
+	return &that->rxq_info;
+}
+
+static inline
+struct pfq_txq_info *
+pfq_sock_get_tx_queue_info(struct pfq_sock_opt *that, int index)
+{
+	if (index == -1)
+	    return &that->txq_info;
+	return &that->txq_info_async[index];
+}
+
+/* queues */
+
+static inline
+struct pfq_shared_rx_queue *
+pfq_sock_shared_rx_queue(struct pfq_sock_opt *that)
+{
+	return (struct pfq_shared_rx_queue *)atomic_long_read(&that->rxq_info.addr);
+}
+
+static inline
+struct pfq_shared_tx_queue *
+pfq_sock_shared_tx_queue(struct pfq_sock_opt *that, int index)
+{
+	if (index == -1)
+		return (struct pfq_shared_tx_queue *)atomic_long_read(&that->txq_info.addr);
+	return (struct pfq_shared_tx_queue *)atomic_long_read(&that->txq_info_async[index].addr);
+}
+
+/* memory mapped queues */
+
+static inline
+struct pfq_shared_queue *
+pfq_sock_shared_queue(struct pfq_sock *p)
+{
+        return (struct pfq_shared_queue *) p->shmem.addr;
+}
+
+
+static inline struct pfq_sock *
+pfq_sk(struct sock *sk)
+{
+        return (struct pfq_sock *)(sk);
+}
+
+
+extern pfq_id_t pfq_sock_get_free_id(struct pfq_sock * so);
+extern void	pfq_sock_opt_init(struct pfq_sock_opt *that, size_t caplen, size_t maxlen);
+extern int	pfq_sock_init(struct pfq_sock *so, pfq_id_t id);
+extern struct	pfq_sock * pfq_sock_get_by_id(pfq_id_t id);
+extern int	pfq_sock_counter(void);
+extern void	pfq_sock_release_id(pfq_id_t id);
+extern int	pfq_sock_tx_bind(struct pfq_sock *so, int tid, int if_index, int queue);
+extern int	pfq_sock_tx_unbind(struct pfq_sock *so);
+
+extern int	pfq_sock_enable(struct pfq_sock *so, struct pfq_so_enable *mem);
+extern int	pfq_sock_disable(struct pfq_sock *so);
 
 
 #endif /* PFQ_SOCK_H */

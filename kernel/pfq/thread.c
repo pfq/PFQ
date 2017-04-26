@@ -21,29 +21,26 @@
  *
  ****************************************************************/
 
-#include <pragma/diagnostic_push>
+#include <pfq/define.h>
+#include <pfq/io.h>
+#include <pfq/memory.h>
+#include <pfq/sock.h>
+#include <pfq/thread.h>
+
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/version.h>
 #include <linux/kthread.h>
 #include <linux/mutex.h>
 #include <linux/jiffies.h>
-#include <pragma/diagnostic_pop>
-
-#include <core/define.h>
-#include <core/sock.h>
-
-#include <pfq/thread.h>
-#include <pfq/memory.h>
-#include <pfq/io.h>
 
 
 static DEFINE_MUTEX(pfq_thread_tx_pool_lock);
 
 
-static struct pfq_thread_tx_data pfq_thread_tx_pool[Q_CORE_MAX_CPU] =
+static struct pfq_thread_tx_data pfq_thread_tx_pool[Q_MAX_CPU] =
 {
-	[0 ... Q_CORE_MAX_CPU-1] = {
+	[0 ... Q_MAX_CPU-1] = {
 		.id	= -1,
 		.cpu    = -1,
 		.task	= NULL,
@@ -93,7 +90,7 @@ pfq_tx_thread(void *_data)
 
 		for(n = 0; n < Q_MAX_TX_QUEUES; n++)
 		{
-			struct core_sock *sock;
+			struct pfq_sock *sock;
 			int sock_queue;
 			tx_response_t tx;
 
@@ -137,7 +134,7 @@ pfq_tx_thread(void *_data)
 
 
 int
-pfq_bind_tx_thread(int tid, struct core_sock *sock, int sock_queue)
+pfq_bind_tx_thread(int tid, struct pfq_sock *sock, int sock_queue)
 {
 	struct pfq_thread_tx_data *thread_data;
 	int n;
@@ -174,7 +171,7 @@ pfq_bind_tx_thread(int tid, struct core_sock *sock, int sock_queue)
 
 
 int
-pfq_unbind_tx_thread(struct core_sock *sock)
+pfq_unbind_tx_thread(struct pfq_sock *sock)
 {
 	int n, i;
 	mutex_lock(&pfq_thread_tx_pool_lock);
@@ -190,7 +187,7 @@ pfq_unbind_tx_thread(struct core_sock *sock)
 				if (data->sock[i] == sock) {
 					atomic_set(&data->sock_queue[i], -1);
 					smp_wmb();
-					msleep(Q_CORE_GRACE_PERIOD);
+					msleep(Q_GRACE_PERIOD);
 					data->sock[i] = NULL;
 				}
 			}
@@ -280,7 +277,7 @@ pfq_stop_tx_threads(void)
 int
 pfq_check_threads_affinity(void)
 {
-	bool inuse[Q_CORE_MAX_CPU] = {false};
+	bool inuse[Q_MAX_CPU] = {false};
 	int i, cpu;
 
 

@@ -22,15 +22,12 @@
  *
  ****************************************************************/
 
-#include <pragma/diagnostic_push>
+#include <pfq/global.h>
+#include <pfq/memory.h>
+
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/skbuff.h>
-#include <pragma/diagnostic_pop>
-
-#include <core/global.h>
-
-#include <pfq/memory.h>
 
 
 /* exported symbols */
@@ -41,7 +38,7 @@ __pfq_alloc_skb(unsigned int size, gfp_t priority, int fclone, int node)
 #ifdef PFQ_USE_SKB_POOL
         if (atomic_read(&global->pool_enabled)) {
 		struct pfq_percpu_pool *cpu_pool = this_cpu_ptr(global->percpu_pool);
-		struct core_spsc_fifo *fifo = cpu_pool->rx.fifo;
+		struct pfq_spsc_fifo *fifo = cpu_pool->rx.fifo;
                 return ____pfq_alloc_skb_pool(size, priority, fclone, node, 0, fifo);
 	}
 #endif
