@@ -73,7 +73,7 @@ configFiles = [ "/etc/pfq.conf.yaml"
               , "/root/pfq.conf"
               ]
 
-defaultDelay = 100000
+defaultDelay = 200000
 
 
 newtype OptString = OptString { getOptString :: String }
@@ -276,6 +276,7 @@ main = handle (\(SystemError msg code) -> putStrBoldLn msg *> exitWith code) $ d
         let rss = maybe [] (mkRssOption (drvmod drv) (instances drv)) (queues opt)
         unless (null $ drvmod drv) $
             loadModule InsertMod (drvmod drv) (drvopt drv ++ rss)
+        threadDelay defaultDelay
         forM_ (devices drv) $ setupDevice (queues opt)
 
     -- set interrupt affinity...

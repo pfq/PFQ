@@ -167,16 +167,26 @@ pfq_skb_recycle(struct sk_buff *skb)
 	struct skb_shared_info *shinfo;
 
 	shinfo = skb_shinfo(skb);
-
 	__builtin_memset(shinfo, 0, offsetof(struct skb_shared_info, dataref));
 	atomic_set(&shinfo->dataref,1);
-
 	// kmemcheck_annotate_variable(shinfo->destructor_arg);
 #if 1
 	__builtin_memcpy(skb, skb+2048, sizeof(struct sk_buff));
 #else
-	skb->data = skb->head + NET_SKB_PAD;
+	unsigned int size = 2048;
+	void *data;
+	data = skb->data;
+	size -= SKB_DATA_ALIGN(sizeof(struct skb_shared_info));
+	memset(skb, 0, offsetof(struct sk_buff, tail));
+
+	skb->truesize = SKB_TRUESIZE(size);
+	atomic_set(&skb->users, 1);
+	skb->head = data;
+	skb->data = data;
 	skb_reset_tail_pointer(skb);
+	skb->end = skb->tail + size;
+	skb->mac_header = (typeof(skb->mac_header))~0U;
+	skb->transport_header = (typeof(skb->transport_header))~0U;
 #endif
 
 	return skb;

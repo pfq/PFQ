@@ -410,7 +410,6 @@ pfq_sk_queue_xmit(struct core_sock *so,
 	ctx.jiffies = jiffies;
         ctx.node    = cpu == -1 ? NUMA_NO_NODE : cpu_to_node(cpu);
         ctx.stop    = stop;
-        // ctx.intr    = false;
 
 	/* lock the dev_queue */
 
@@ -476,9 +475,6 @@ pfq_sk_queue_xmit(struct core_sock *so,
 			/* update the return value */
 			ret.value += tmp.value;
 		}
-
-		// if (unlikely(ctx.intr))
-		// 	break;
 	}
 
 	/* unlock the current queue, enable bottom half */
