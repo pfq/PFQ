@@ -153,7 +153,6 @@ module Network.PFQ
        -- * Packet transmission
 
     ,  send
-    ,  sendTo
     ,  sendAsync
     ,  sendAt
 
@@ -1121,28 +1120,6 @@ send hdl xs copies fhint =
                         (fromIntegral copies) >>= throwPfqIf hdl (== -1)
 
 
--- |Store the packet and transmit the packets in the queue.
---
--- The queue is flushed every fhint packets.
-
-sendTo :: PfqHandlePtr
-       -> C.ByteString  -- ^ bytes of packet
-       -> Int           -- ^ ifindex
-       -> Int           -- ^ qindex
-       -> Int           -- ^ copies
-       -> Int           -- ^ fhint
-       -> IO Bool
-sendTo hdl xs ifindex qindex copies fhint =
-    unsafeUseAsCStringLen xs $ \(p, l) ->
-    fmap (> 0) $ pfq_send_to hdl
-                    p
-                    (fromIntegral l)
-                    (fromIntegral ifindex)
-                    (fromIntegral qindex)
-                    (fromIntegral fhint)
-                    (fromIntegral copies) >>= throwPfqIf hdl (== -1)
-
-
 -- |Transmit the packet asynchronously.
 --
 -- The transmission is handled by PFQ kernel threads.
@@ -1259,7 +1236,6 @@ foreign import ccall unsafe pfq_bind_tx             :: PfqHandlePtr -> CString -
 foreign import ccall unsafe pfq_unbind_tx           :: PfqHandlePtr -> IO CInt
 
 foreign import ccall unsafe pfq_send                :: PfqHandlePtr -> Ptr CChar -> CSize -> CSize -> CUInt -> IO CInt
-foreign import ccall unsafe pfq_send_to             :: PfqHandlePtr -> Ptr CChar -> CSize -> CInt -> CInt -> CSize -> CUInt -> IO CInt
 foreign import ccall unsafe pfq_send_raw            :: PfqHandlePtr -> Ptr CChar -> CSize -> CInt -> CInt -> CULLong -> CUInt -> CInt -> CInt -> IO CInt
 
 foreign import ccall unsafe pfq_sync_queue          :: PfqHandlePtr -> CInt -> IO CInt
