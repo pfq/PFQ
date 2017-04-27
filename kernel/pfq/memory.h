@@ -260,7 +260,6 @@ void pfq_free_skb_pool(struct sk_buff *skb, struct pfq_skb_pool *pool)
 
 				pfq_printk_skb("[PFQ] internal error", skb);
 				sparse_inc(global->percpu_memory, os_free);
-				kfree_skb(skb);
 				return;
 			}
 
