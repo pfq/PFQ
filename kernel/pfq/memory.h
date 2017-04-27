@@ -221,8 +221,10 @@ ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, 
 {
 #ifdef PFQ_USE_SKB_POOL
 	if (likely(pool)) {
-		struct sk_buff *skb = pfq_spsc_pop(pool);
+		struct sk_buff *skb = pfq_spsc_peek(pool);
 		if (likely(skb && pfq_skb_is_recycleable(skb))) {
+
+			pfq_spsc_consume(pool);
 
 			sparse_inc(global->percpu_memory, pool_pop[idx]);
 
