@@ -135,9 +135,7 @@ int pfq_process_batch(struct pfq_percpu_data *data,
 	/* setup parameters */
 
 	current_batch_len = GC_size(GC_ptr);
-
 	all_group_mask = 0;
-
 
         /* setup the qbuff in GC */
 
@@ -147,7 +145,6 @@ int pfq_process_batch(struct pfq_percpu_data *data,
 		unsigned long group_mask = pfq_devmap_get_groups(qbuff_get_ifindex(buff), queue);
 
 		all_group_mask |= group_mask;
-
 		buff->group_mask = group_mask;
 		buff->monad = &monad;
 		buff->counter = data->counter++;

@@ -121,7 +121,7 @@ get_HugePages(unsigned long user_addr, size_t user_size, size_t hugepage_size, s
 		}
 		else {
 			npages = PAGE_ALIGN(user_size) / PAGE_SIZE;
-			printk(KERN_INFO "[PFQ] %s HugePages: backted to %d 4k-pages.\n", __size_HugePage(hugepage_size), npages);
+			printk(KERN_INFO "[PFQ] %s HugePages: backed to %d 4k-pages.\n", __size_HugePage(hugepage_size), npages);
 		}
 
 
@@ -277,7 +277,6 @@ pfq_mmap(struct file *file, struct socket *sock, struct vm_area_struct *vma)
 int
 pfq_hugepages_map(struct pfq_shmem_descr *shmem, unsigned long user_addr, size_t user_size, size_t hugepage_size, size_t req_size)
 {
-
         struct pfq_hugepages_descr * hpages = get_HugePages(user_addr, user_size, hugepage_size, req_size);
 	if (!hpages) {
 		printk(KERN_INFO "[PFQ] mapping memory failure.\n");
