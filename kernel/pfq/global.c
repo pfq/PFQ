@@ -34,7 +34,9 @@ struct pfq_global_data default_global =
 
 	.vlan_untag		= 0,
 
-	.skb_pool_size		= 1024,
+	.skb_tx_pool_size	= 1024,
+	.skb_rx_pool_size	= 1024,
+
 	.tx_cpu			= {0},
 	.tx_cpu_nr		= 0,
 	.tx_retry		= 1,

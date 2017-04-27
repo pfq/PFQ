@@ -34,7 +34,8 @@ module_param_named(capt_slot_size,	 default_global.capt_slot_size,		int, 0644);
 module_param_named(xmit_slot_size,	 default_global.xmit_slot_size,		int, 0644);
 module_param_named(capt_batch_len,	 default_global.capt_batch_len,		int, 0644);
 module_param_named(xmit_batch_len,	 default_global.xmit_batch_len,		int, 0644);
-module_param_named(skb_pool_size,	 default_global.skb_pool_size,		int, 0644);
+module_param_named(skb_tx_pool_size,	 default_global.skb_tx_pool_size,	int, 0644);
+module_param_named(skb_rx_pool_size,	 default_global.skb_rx_pool_size,	int, 0644);
 module_param_named(vlan_untag,		 default_global.vlan_untag,		int, 0644);
 module_param_named(tx_retry,		 default_global.tx_retry,		int, 0644);
 
@@ -47,7 +48,8 @@ MODULE_PARM_DESC(xmit_batch_len,	" Transmit batch queue length");
 MODULE_PARM_DESC(vlan_untag,		" Enable vlan untagging (default=0)");
 
 #ifdef PFQ_USE_SKB_POOL
-MODULE_PARM_DESC(skb_pool_size,		" Socket buffer pool size (default=1024)");
+MODULE_PARM_DESC(skb_tx_pool_size,	" Socket buffer Tx pool size (default=1024)");
+MODULE_PARM_DESC(skb_rx_pool_size,	" Socket buffer Rx pool size (default=1024)");
 #endif
 
 MODULE_PARM_DESC(tx_cpu,		" Tx k-threads cpu");

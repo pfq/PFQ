@@ -212,10 +212,10 @@ int pfq_skb_pool_init_all(void)
 
 			spin_lock_init(&pool->tx_lock);
 
-			if ((n = pfq_skb_pool_init(&pool->rx, global->skb_pool_size, PFQ_POOL_SKB_SIZE, 0, cpu)) < 0)
+			if ((n = pfq_skb_pool_init(&pool->rx, global->skb_rx_pool_size, PFQ_POOL_SKB_SIZE, 0, cpu)) < 0)
 				return -ENOMEM;
 			total += n;
-			if ((n = pfq_skb_pool_init(&pool->tx, global->skb_pool_size, PFQ_POOL_SKB_SIZE, 1, cpu)) < 0)
+			if ((n = pfq_skb_pool_init(&pool->tx, global->skb_tx_pool_size, PFQ_POOL_SKB_SIZE, 1, cpu)) < 0)
 				return -ENOMEM;
 			total += n;
 		}
@@ -234,9 +234,9 @@ int pfq_skb_pool_free_all(void)
 	{
 		struct pfq_percpu_pool *pool = per_cpu_ptr(global->percpu_pool, cpu);
 		if (pool) {
-			total += pfq_skb_pool_free(&pool->rx, global->skb_pool_size);
+			total += pfq_skb_pool_free(&pool->rx, global->skb_rx_pool_size);
 			spin_lock(&pool->tx_lock);
-			total += pfq_skb_pool_free(&pool->tx, global->skb_pool_size);
+			total += pfq_skb_pool_free(&pool->tx, global->skb_tx_pool_size);
 			spin_unlock(&pool->tx_lock);
 		}
 	}

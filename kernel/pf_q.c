@@ -435,9 +435,14 @@ static int __init pfq_init_module(void)
                 return -EFAULT;
         }
 
-	if (global->skb_pool_size > Q_MAX_POOL_SIZE) {
-                printk(KERN_INFO "[PFQ] skb_pool_size=%d not allowed: valid range [0,%d]!\n",
-                       global->skb_pool_size, Q_MAX_POOL_SIZE);
+	if (global->skb_tx_pool_size > Q_MAX_POOL_SIZE) {
+                printk(KERN_INFO "[PFQ] skb_tx_pool_size=%d not allowed: valid range [0,%d]!\n",
+                       global->skb_tx_pool_size, Q_MAX_POOL_SIZE);
+		return -EFAULT;
+	}
+	if (global->skb_rx_pool_size > Q_MAX_POOL_SIZE) {
+                printk(KERN_INFO "[PFQ] skb_rx_pool_size=%d not allowed: valid range [0,%d]!\n",
+                       global->skb_rx_pool_size, Q_MAX_POOL_SIZE);
 		return -EFAULT;
 	}
 
@@ -515,7 +520,8 @@ static int __init pfq_init_module(void)
         printk(KERN_INFO "[PFQ] capt_batch_len  : %d\n", global->capt_batch_len);
         printk(KERN_INFO "[PFQ] xmit_batch_len  : %d\n", global->xmit_batch_len);
         printk(KERN_INFO "[PFQ] vlan_untag      : %d\n", global->vlan_untag);
-        printk(KERN_INFO "[PFQ] skb_pool_size   : %d\n", global->skb_pool_size);
+        printk(KERN_INFO "[PFQ] skb_tx_pool_size: %d\n", global->skb_tx_pool_size);
+        printk(KERN_INFO "[PFQ] skb_rx_pool_size: %d\n", global->skb_rx_pool_size);
         printk(KERN_INFO "[PFQ] skb_size        : %zu\n", sizeof(struct sk_buff));
         printk(KERN_INFO "[PFQ] ready!\n");
         return 0;

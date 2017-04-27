@@ -45,7 +45,9 @@ struct pfq_global_data
 
 	int xmit_batch_len;
 	int capt_batch_len;
-	int skb_pool_size;
+
+	int skb_tx_pool_size;
+	int skb_rx_pool_size;
 
 	int vlan_untag;
 
@@ -64,7 +66,7 @@ struct pfq_global_data
 	atomic_t	pool_enabled;
 
 	struct pfq_group groups[Q_MAX_GID];
-	struct mutex	  groups_lock;
+	struct mutex	 groups_lock;
 
 	struct pfq_kernel_stats	__percpu   * percpu_stats;
 	struct pfq_memory_stats	__percpu   * percpu_memory;
