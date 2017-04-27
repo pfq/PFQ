@@ -58,6 +58,19 @@ proc_cpuinfo = "/proc/cpuinfo"
 proc_modules = "/proc/modules"
 tmp_pfq      = "/tmp/pfq.opt"
 
+dmesg, pidof, ethtool, setpci, cpufreq_set, rmmod, insmod, modprobe, lsmod, ifconfig :: String
+
+dmesg       = "/bin/dmesg"
+pidof       = "/bin/pidof"
+ethtool     = "/sbin/ethtool"
+setpci      = "/usr/bin/setpci"
+cpufreq_set = "/usr/bin/cpufreq-set"
+rmmod       = "/sbin/rmmod"
+insmod      = "/sbin/insmod"
+modprobe    = "/sbin/modprobe"
+lsmod       = "/sbin/lsmod"
+ifconfig    = "/sbin/ifconfig"
+
 
 bold  = setSGRCode [SetConsoleIntensity BoldIntensity]
 red   = setSGRCode [SetColor Foreground Vivid Red]
@@ -72,7 +85,7 @@ configFiles = [ "/etc/pfq.conf.yaml"
               , "/root/.pfq.conf"
               , "/root/pfq.conf"
               ]
-
+ 
 defaultDelay = 200000
 
 
@@ -120,6 +133,7 @@ data Driver =
     Driver
     {   drvmod      :: String
     ,   drvopt      :: [String]
+    ,   pci         :: [(String, String)]
     ,   instances   :: Int
     ,   devices     :: [Device]
     } deriving (Show, Read, Eq)
@@ -130,6 +144,7 @@ instance FromJSON Driver where
     Driver <$>
         v .:   "drvmod"    <*>
         v .:   "drvopt"    <*>
+        v .:   "pci"       <*>
         v .:   "instances" <*>
         v .:   "devices"
   parseJSON _ = fail "Expected Object for Driver value"
@@ -250,15 +265,15 @@ main = handle (\(SystemError msg code) -> putStrBoldLn msg *> exitWith code) $ d
     -- set cpufreq governor...
     unless (null (cpu_governor conf)) $
         forM_ [0.. core-1] $ \n ->
-            runSystem ("/usr/bin/cpufreq-set -g " ++ cpu_governor conf ++ " -c " ++ show n) "*** cpufreq-set error! Make sure you have cpufrequtils installed! ***"
+            runSystem (cpufreq_set ++ " -g " ++ cpu_governor conf ++ " -c " ++ show n) "*** cpufreq-set error! Make sure you have cpufrequtils installed! ***"
 
     -- load PFQ (if required)...
     if pfqForceLoad
        then do
             putStrBoldLn (blue ++ "Loading pfq [" ++ pfqLoadCmd ++ "]")
-            system "/bin/dmesg --clear"
+            system $ dmesg ++ " --clear"
             runSystem pfqLoadCmd (red ++ "load pfq.ko error!")
-            xs <- lines <$> readProcess "/bin/dmesg" ["-t"] []
+            xs <- lines <$> readProcess dmesg ["-t"] []
             forM_ xs $ \x -> when ("pfq: unknown parameter" `isInfixOf` x) (throw $ SystemError (red ++ "load pfq.ko: " ++ x ++ "!") (ExitFailure 42))
 
        else putStrBoldLn $ red ++ "Using pfq.ko module already loaded (use --force to reload it)..."
@@ -278,6 +293,11 @@ main = handle (\(SystemError msg code) -> putStrBoldLn msg *> exitWith code) $ d
             loadModule InsertMod (drvmod drv) (drvopt drv ++ rss)
         threadDelay defaultDelay
         forM_ (devices drv) $ setupDevice (queues opt)
+
+    -- setup per-driver pci options..
+    forM_ (drivers conf) $  \drv -> do
+       setupPCI $ pci drv 
+                
 
     -- set interrupt affinity...
     putStrBoldLn "Setting irq affinity..."
@@ -360,7 +380,7 @@ rmmodFromProcMOdules name = filter (\(m,ds) -> m /= name )
 
 
 getProcessID :: String -> IO [ProcessID]
-getProcessID name = (map read . words) <$> catchIOError (readProcess "/bin/pidof" [name] "") (\_-> return [])
+getProcessID name = (map read . words) <$> catchIOError (readProcess pidof [name] "") (\_-> return [])
 
 
 moduleDependencies :: String -> ProcModules -> [String]
@@ -375,10 +395,10 @@ unloadDependencies rm name = do
     proc_mods <- get
     mapM_ (unloadDependencies True) (moduleDependencies name proc_mods)
     when (rm && isModuleLoaded name proc_mods) $ do
-        liftIO $ rmmod name
+        liftIO $ rmmod' name
         put $ rmmodFromProcMOdules name proc_mods
-        where rmmod name = putStrBoldLn ("Unloading " ++ name ++ "...") *>
-                            runSystem ("/sbin/rmmod " ++ name) ("rmmod " ++ name ++ " error.")
+        where rmmod' name = putStrBoldLn ("Unloading " ++ name ++ "...") *>
+                            runSystem (rmmod ++ " " ++ name) ("rmmod " ++ name ++ " error.")
               isModuleLoaded name =  any (\(mod,_) -> mod == name)
 
 
@@ -396,8 +416,8 @@ isLoaded mod = getProcModules >>= (\pmod -> return $ mod `elem` fmap fst pmod)
 mkLoadModuleCmd :: LoadMode -> String -> [String] -> String
 mkLoadModuleCmd mode name opts =
     tool ++ " " ++ name ++ " " ++ unwords opts
-    where tool = if mode == InsertMod then "/sbin/insmod"
-                                      else "/sbin/modprobe"
+    where tool = if mode == InsertMod then insmod
+                                      else modprobe
 
 
 loadModule :: LoadMode -> String -> [String] -> IO ()
@@ -411,7 +431,7 @@ setupDevice queues (Device dev speed channels fctrl opts) = do
 
     putStrBoldLn $ "Activating " ++ dev ++ "..."
 
-    runSystem ("/sbin/ifconfig " ++ dev ++ " up") "ifconfig error!"
+    runSystem (ifconfig ++ " " ++ dev ++ " up") "ifconfig error!"
 
     threadDelay defaultDelay
 
@@ -419,30 +439,34 @@ setupDevice queues (Device dev speed channels fctrl opts) = do
        then do
             let s = fromJust speed
             putStrBoldLn $ "Setting speed (" ++ show s ++ ") for " ++ dev ++ "..."
-            runSystem ("/sbin/ethtool -s " ++ dev ++ " speed " ++ show s ++ " duplex full autoneg off") "ethtool: set speed error!"
+            runSystem (ethtool ++ " -s " ++ dev ++ " speed " ++ show s ++ " duplex full autoneg off") "ethtool: set speed error!"
        else
             putStrBoldLn ("Auto-negotiating speed for " ++ dev ++ "...") *>
-            runSystem ("/sbin/ethtool -s " ++ dev ++ " duplex full autoneg off") "ethtool: auto-negotiation error!"
+            runSystem (ethtool ++ " -s " ++ dev ++ " duplex full autoneg off") "ethtool: auto-negotiation error!"
 
     threadDelay defaultDelay
 
     when (isJust fctrl) $ do
         let t = fromJust fctrl
         if t then putStrBoldLn ("Disabling flow control for " ++ dev ++ "...") *>
-                    runSystem ("/sbin/ethtool -A " ++ dev ++ " rx on tx on") "ethtool: enabling flow-ctrl error!"
+                    runSystem (ethtool ++ " -A " ++ dev ++ " rx on tx on") "ethtool: enabling flow-ctrl error!"
              else putStrBoldLn ("Enabling flow control for " ++ dev ++ "...") *>
-                    runSystem ("/sbin/ethtool -A " ++ dev ++ " autoneg off rx off tx off") "ethtool: disabling flow-ctrl error!"
+                    runSystem (ethtool ++ " -A " ++ dev ++ " autoneg off rx off tx off") "ethtool: disabling flow-ctrl error!"
 
     threadDelay defaultDelay
 
     when (isJust queues || isJust channels) $ do
         let c = fromJust (channels <|> queues)
         putStrBoldLn $ "Setting channels to " ++ show c ++ "..."
-        runSystem ("/sbin/ethtool -L " ++ dev ++ " combined " ++ show c) ""
+        runSystem (ethtool ++ " -L " ++ dev ++ " combined " ++ show c) ""
 
     forM_ opts $ \(opt, arg) ->
         threadDelay defaultDelay *>
-        runSystem ("/sbin/ethtool " ++ opt ++ " " ++ dev ++ " " ++ arg) ("ethtool:" ++ opt ++ " error!")
+        runSystem (ethtool ++ " " ++ opt ++ " " ++ dev ++ " " ++ arg) ("ethtool:" ++ opt ++ " error!")
+
+
+setupPCI :: [(String, String)] -> IO ()
+setupPCI = mapM_ (\(a, v) -> runSystem (setpci ++ " -v -d " ++ show a ++ " " ++ show v) (setpci ++ ": error!"))
 
 
 getDevices ::  Config -> [String]
