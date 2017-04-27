@@ -266,17 +266,29 @@ parse_size(const char *str)
 
 
 static
-size_t get_hugepage_size()
+size_t get_hugepage_size(size_t size)
 {
+#define HP_1G  (1048576*1024)
+#define HP_16M (16384*1024)
+#define HP_4M  (4096*1024)
+#define HP_2M  (2048*1024)
+
 	struct stat x;
-	if (stat("/sys/kernel/mm/hugepages/hugepages-1048576kB/nr_hugepages", &x) == 0)
-		return 1048576*1024;
-	if (stat("/sys/kernel/mm/hugepages/hugepages-16384kB/nr_hugepages", &x) == 0)
-		return 16384*1024;
-	if (stat("/sys/kernel/mm/hugepages/hugepages-4096kB/nr_hugepages", &x) == 0)
-		return 4096*1024;
-	if (stat("/sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages", &x) == 0)
+	if (stat("/sys/kernel/mm/hugepages/hugepages-1048576kB/nr_hugepages", &x) == 0) {
+		if ((size%HP_1G) == 0)
+			return HP_1G;
+	}
+	if (stat("/sys/kernel/mm/hugepages/hugepages-16384kB/nr_hugepages", &x) == 0) {
+		if ((size%HP_16M) == 0)
+			return HP_16M;
+	}
+	if (stat("/sys/kernel/mm/hugepages/hugepages-4096kB/nr_hugepages", &x) == 0) {
+		if ((size%HP_4M) == 0)
+			return HP_4M;
+	}
+	if (stat("/sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages", &x) == 0) {
 		return 2048*1024;
+	}
 	return 0;
 }
 
@@ -316,7 +328,6 @@ pfq_enable(pfq_t *q)
 		return Q_ERROR(q, "PFQ: queue memory error");
 	}
 
-
 	pfq_hugepages = getenv("PFQ_HUGEPAGES");
 
 	hugepages_mpoint = pfq_hugepages_mountpoint();
@@ -329,7 +340,7 @@ pfq_enable(pfq_t *q)
 	{
 		/* HugePages */
 
-		mem.hugepage_size = get_hugepage_size();
+		mem.hugepage_size = get_hugepage_size(mem.user_size);
 		if (!mem.hugepage_size) {
 			return Q_ERROR(q, "PFQ: HugePages not enabled!");
 		}
