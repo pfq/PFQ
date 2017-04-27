@@ -633,7 +633,7 @@ pfq_netif_receive_skb(struct sk_buff *skb)
 		/* skb is peeked (belongs to the pool), hence, nskb can be either a new skb or NULL */
 
 		pool = per_cpu_ptr(global->percpu_pool, smp_processor_id());
-		pfq_kfree_skb_pool(skb, &pool->rx);
+		pfq_free_skb_pool(skb, &pool->rx);
 	}
 
 	if (likely(nskb))
@@ -663,7 +663,7 @@ pfq_netif_rx(struct sk_buff *skb)
 		/* skb is peeked (belongs to the pool), hence, nskb can be either a new skb or NULL */
 
 		pool = per_cpu_ptr(global->percpu_pool, smp_processor_id());
-		pfq_kfree_skb_pool(skb, &pool->rx);
+		pfq_free_skb_pool(skb, &pool->rx);
 	}
 
 	if (likely(nskb))
@@ -693,7 +693,7 @@ pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
 		/* skb is peeked (belongs to the pool), hence, nskb can be either a new skb or NULL */
 
 		pool = per_cpu_ptr(global->percpu_pool, smp_processor_id());
-		pfq_kfree_skb_pool(skb, &pool->rx);
+		pfq_free_skb_pool(skb, &pool->rx);
 	}
 
 	if (likely(nskb))

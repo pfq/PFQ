@@ -233,10 +233,12 @@ ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, 
 			return pfq_skb_recycle(skb);
 		}
 		else {
-			if (skb)
+			if (skb) {
 				sparse_inc(global->percpu_memory, pool_norecycl[idx]);
-			else
+			}
+			else {
 				sparse_inc(global->percpu_memory, pool_empty[idx]);
+			}
 		}
 	}
 #endif
@@ -246,13 +248,14 @@ ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, 
 
 
 static inline
-void pfq_kfree_skb_pool(struct sk_buff *skb, struct pfq_skb_pool *pool)
+void pfq_free_skb_pool(struct sk_buff *skb, struct pfq_skb_pool *pool)
 {
 #ifdef PFQ_USE_SKB_POOL
 	if (likely(skb->peeked)) {
 		const int idx = PFQ_CB(skb)->pool;
 		if (likely(pool->fifo)) {
 			if (unlikely(!pfq_spsc_push(pool->fifo, skb))) {
+
 				pfq_printk_skb("[PFQ] internal error", skb);
 				sparse_inc(global->percpu_memory, os_free);
 				kfree_skb(skb);
@@ -294,7 +297,6 @@ struct sk_buff * pfq_alloc_skb_fclone(unsigned int size, gfp_t priority)
 
 
 /* explicit pool allocation/free: pool can be NULL */
-
 
 static inline
 struct sk_buff *

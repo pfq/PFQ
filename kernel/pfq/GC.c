@@ -42,18 +42,18 @@ void GC_reset(struct GC_data *gc)
 struct qbuff *
 GC_make_buff(struct GC_data *gc, void *addr)
 {
-	struct qbuff * ret;
+	struct qbuff * rc;
 
 	if (gc->pool.len >= Q_BUFF_QUEUE_LEN) {
-		ret = NULL;
+		rc = NULL;
 	}
 	else {
-		ret = & gc->pool.queue[gc->pool.len];
-		ret->addr = addr;
-                ret->log  = &gc->log[gc->pool.len++];
+		rc = & gc->pool.queue[gc->pool.len];
+		rc->addr = addr;
+                rc->log  = &gc->log[gc->pool.len++];
 	}
 
-	return ret;
+	return rc;
 }
 
 

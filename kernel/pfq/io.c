@@ -226,7 +226,7 @@ unsigned int dev_tx_max_skb_copies(struct net_device *dev, unsigned int req_copi
 static inline int
 __pfq_xmit(struct sk_buff *skb, struct net_device *dev, int xmit_more, int retry)
 {
-	int ret;
+	int rc;
 #if(LINUX_VERSION_CODE >= KERNEL_VERSION(3,18,0))
 	skb->xmit_more = xmit_more;
 #else
@@ -234,15 +234,15 @@ __pfq_xmit(struct sk_buff *skb, struct net_device *dev, int xmit_more, int retry
 #endif
 
 	do {
-		ret = dev->netdev_ops->ndo_start_xmit(skb, dev);
+		rc = dev->netdev_ops->ndo_start_xmit(skb, dev);
 	}
-	while (!dev_xmit_complete(ret) && retry-- > 0);
+	while ((rc != NETDEV_TX_OK) && retry-- > 0);
 
-	if (!dev_xmit_complete(ret)) {
+	if (!dev_xmit_complete(rc)) {
 		kfree_skb(skb);
 	}
 
-	return ret;
+	return rc;
 }
 
 
@@ -252,7 +252,7 @@ pfq_xmit(struct qbuff *buff, struct net_device *dev, int queue, int more)
 {
 	struct netdev_queue *txq;
 	struct sk_buff *skb = QBUFF_SKB(buff);
-	int ret = NETDEV_TX_BUSY;
+	int rc = NETDEV_TX_BUSY;
 
 	/* get txq and fix the queue for this batch.
 	 *
@@ -267,12 +267,12 @@ pfq_xmit(struct qbuff *buff, struct net_device *dev, int queue, int more)
 	local_bh_disable();
 	HARD_TX_LOCK(dev, txq, smp_processor_id());
 
-	ret = __pfq_xmit(skb, dev, more, global->tx_retry);
+	rc = __pfq_xmit(skb, dev, more, global->tx_retry);
 
 	HARD_TX_UNLOCK(dev, txq);
         local_bh_enable();
 
-	return ret;
+	return rc;
 }
 
 
@@ -288,7 +288,7 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr,
 		 struct pfq_mbuff_xmit_context *ctx)
 {
 	struct sk_buff *skb;
-        tx_response_t ret = { 0 };
+        tx_response_t rc = { 0 };
 
 	if (unlikely(!dev_queue->dev))
 		return (tx_response_t){.ok = 0, .fail = ctx->copies};
@@ -300,6 +300,7 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr,
 				, ctx->node
 				, 1
 				, ctx->tx);
+
 	if (unlikely(skb == NULL)) {
 		if (printk_ratelimit())
 			printk(KERN_INFO "[PFQ] Tx could not allocate an skb!\n");
@@ -309,8 +310,8 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr,
 	/* fill the socket buffer */
 
 	skb_reserve(skb, LL_RESERVED_SPACE(dev_queue->dev));
-
 	skb_reset_tail_pointer(skb);
+
 	skb->dev = dev_queue->dev;
 	skb->len = 0;
 
@@ -319,24 +320,20 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr,
 	/* set the Tx queue */
 
 	skb_set_queue_mapping(skb, dev_queue->mapping);
-
-	/* prepare the payload... */
-
 	skb_copy_to_linear_data(skb, buf, len);
 
 	/* transmit the packet + copies */
 
 	atomic_set(&skb->users, ctx->copies + 1);
 
-	do {
-		/* copies > 1 when the device support TX_SKB_SHARING */
+	do { /* copies > 1 when the device support TX_SKB_SHARING */
 
 		const bool xmit_more_ = ctx->xmit_more || ctx->copies != 1;
 
 		if (__pfq_xmit(skb, dev_queue->dev, xmit_more_, global->tx_retry) == NETDEV_TX_OK)
-			ret.ok++;
+			rc.ok++;
 		else
-			ret.fail++;
+			rc.fail++;
 
 		ctx->copies--;
 	}
@@ -344,17 +341,17 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr,
 
 	/* release the packet */
 
-	pfq_kfree_skb_pool(skb, ctx->tx);
+	pfq_free_skb_pool(skb, ctx->tx);
 
-	if (ret.ok)
+	if (rc.ok)
 	     dev_queue->queue->trans_start = ctx->jiffies;
 
-	return ret;
+	return rc;
 }
 
 
 /*
- * transmit a queue of packets (from socket queue)...
+ * transmit packets from a socket queue..
  */
 
 tx_response_t
@@ -372,23 +369,23 @@ pfq_sk_queue_xmit(struct pfq_sock *so,
 	struct pfq_pkthdr *hdr;
 	ptrdiff_t prod_off;
         char *begin, *end;
-        tx_response_t ret = {0};
+        tx_response_t rc = {0};
 
 	/* get the Tx queue descriptor */
 
 	tx_queue = pfq_sock_shared_tx_queue(&so->opt, sock_queue);
 	if (unlikely(tx_queue == NULL))
-		return ret; /* socket not enabled... */
+		return rc; /* socket not enabled... */
 
 	/* enable skb_pool for Tx threads */
 
 	pool = this_cpu_ptr(global->percpu_pool);
-
 	ctx.tx = &pool->tx;
 
 	/* lock the Tx pool */
 
 	spin_lock(&pool->tx_lock);
+	local_bh_disable();
 
 	if (cpu == Q_NO_KTHREAD) {
 		cpu = smp_processor_id();
@@ -411,13 +408,12 @@ pfq_sk_queue_xmit(struct pfq_sock *so,
 	/* lock the dev_queue */
 
 	if (pfq_dev_queue_get(ctx.net, txinfo->ifindex, txinfo->queue, &dev_queue) < 0) {
-
+		local_bh_enable();
 		spin_unlock(&pool->tx_lock);
 
 		if (printk_ratelimit())
 			printk(KERN_INFO "[PFQ] sk_queue_xmit: could not lock the dev_queue!\n");
-
-		return ret;
+		return rc;
 	}
 
 	/* prefetch packets... */
@@ -427,7 +423,6 @@ pfq_sk_queue_xmit(struct pfq_sock *so,
 
 	/* disable bottom half and lock the queue */
 
-	local_bh_disable();
 	HARD_TX_LOCK(dev_queue.dev, dev_queue.queue, cpu);
 
 	for_each_sk_mbuff(hdr, end, 0 /* dynamic slot size */)
@@ -459,11 +454,9 @@ pfq_sk_queue_xmit(struct pfq_sock *so,
 		if (likely(netif_running(dev_queue.dev) && netif_carrier_ok(dev_queue.dev))) {
 
 			size_t len = min_t(size_t, hdr->len, global->xmit_slot_size);
-
 			tmp = __pfq_mbuff_xmit(hdr, hdr+1, len, &dev_queue, &ctx);
 
-			/* update the return value */
-			ret.value += tmp.value;
+			rc.value += tmp.value;
 		}
 	}
 
@@ -472,12 +465,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so,
 	HARD_TX_UNLOCK(dev_queue.dev, dev_queue.queue);
 	local_bh_enable();
 
-	/* release the dev_queue */
-
 	pfq_dev_queue_put(&dev_queue);
-
-	/* unlock the Tx pool... */
-
 	spin_unlock(&pool->tx_lock);
 
 	/* update the local consumer offset */
@@ -486,15 +474,14 @@ pfq_sk_queue_xmit(struct pfq_sock *so,
 
 	/* count the packets left in the shared queue */
 
-	for_each_sk_mbuff(hdr, end, 0)
-	{
+	for_each_sk_mbuff(hdr, end, 0) {
 		/* dynamic slot size: ensure the caplen is not zero! */
 		if (unlikely(!hdr->caplen))
 			break;
-		ret.fail++;
+		rc.fail++;
 	}
 
-	return ret;
+	return rc;
 }
 
 
@@ -508,7 +495,7 @@ pfq_qbuff_queue_xmit(struct pfq_qbuff_queue *buffs, unsigned long long mask, str
 	struct netdev_queue *txq;
 	struct qbuff *buff;
 	int n, last_idx;
-	tx_response_t ret = {0};
+	tx_response_t rc = {0};
 
 	/* get txq and fix the queue for this batch.
 	 *
@@ -530,32 +517,32 @@ pfq_qbuff_queue_xmit(struct pfq_qbuff_queue *buffs, unsigned long long mask, str
 		if (likely(!netif_xmit_frozen_or_drv_stopped(txq))) {
 
 			if (__pfq_xmit(QBUFF_SKB(buff), dev, !( n == last_idx || ((mask & (mask-1)) == 0)), global->tx_retry) == NETDEV_TX_OK)
-				++ret.ok;
+				++rc.ok;
 			else
-				++ret.fail;
+				++rc.fail;
 		}
 		else {
-			++ret.fail;
+			++rc.fail;
 			goto intr;
 		}
 	}
 
 	HARD_TX_UNLOCK(dev, txq);
 	local_bh_enable();
-	return ret;
+	return rc;
 
 intr:
-	/* the ret-i packet is already freed by the driver */
+	/* the rc-i packet is already freed by the driver */
 
-	for_each_qbuff_from(ret.ok + 1, buffs, buff, n) {
+	for_each_qbuff_from(rc.ok + 1, buffs, buff, n) {
 		sparse_inc(global->percpu_memory, os_free);
 		kfree_skb(QBUFF_SKB(buff));
-		++ret.fail;
+		++rc.fail;
 	}
 
 	HARD_TX_UNLOCK(dev, txq);
 	local_bh_enable();
-	return ret;
+	return rc;
 }
 
 /*
@@ -675,7 +662,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb)
 		if (skb) {
 			sparse_inc(global->percpu_memory, os_free);
 			pool = per_cpu_ptr(global->percpu_pool, cpu);
-			pfq_kfree_skb_pool(skb, &pool->rx);
+			pfq_free_skb_pool(skb, &pool->rx);
 		}
 		return 0;
 	}
@@ -707,7 +694,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb)
 			__sparse_inc(global->percpu_stats, lost, cpu);
 			__sparse_inc(global->percpu_memory, os_free, cpu);
 			pool = per_cpu_ptr(global->percpu_pool, cpu);
-			pfq_kfree_skb_pool(skb, &pool->rx);
+			pfq_free_skb_pool(skb, &pool->rx);
 			return 0;
 		}
 

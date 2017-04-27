@@ -133,7 +133,7 @@ PFQ_DEFINE_QUEUE_REF(pfq_ref_long_queue,  Q_BUFF_QUEUE_LEN);
 bool qbuff_ingress(struct qbuff const *buff, struct iphdr const *ip);
 
 
-#define qbuff_free(buff, ...)	pfq_kfree_skb_pool(QBUFF_SKB(buff), __VA_ARGS__)
+#define qbuff_free(buff, ...)	pfq_free_skb_pool(QBUFF_SKB(buff), __VA_ARGS__)
 
 
 static inline

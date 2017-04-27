@@ -160,7 +160,7 @@ int pfq_percpu_GC_reset(void)
 
 		for_each_qbuff(&data->GC->pool, buff, n)
 		{
-			pfq_kfree_skb_pool(QBUFF_SKB(buff), &pool->rx);
+			pfq_free_skb_pool(QBUFF_SKB(buff), &pool->rx);
 		}
 
                 total += data->GC->pool.len;

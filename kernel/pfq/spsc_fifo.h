@@ -88,11 +88,11 @@ void pfq_spsc_dump(const char *msg, struct pfq_spsc_fifo const *fifo)
 static inline
 size_t pfq_spsc_next_index(struct pfq_spsc_fifo *fifo, size_t value)
 {
-	size_t ret = value + 1;
-	while (unlikely(ret >= fifo->size)) {
-		ret -= fifo->size;
+	size_t rc = value + 1;
+	while (unlikely(rc >= fifo->size)) {
+		rc -= fifo->size;
 	}
-	return ret;
+	return rc;
 }
 
 
@@ -174,7 +174,7 @@ void *pfq_spsc_pop(struct pfq_spsc_fifo *fifo)
         size_t w = fifo->consumer.head_cache;
         size_t r = __atomic_load_n(&fifo->tail, __ATOMIC_RELAXED);
         size_t next;
-        void *ret;
+        void *rc;
 
 	if (w == r) {
 		w = fifo->consumer.head_cache = __atomic_load_n(&fifo->head, __ATOMIC_ACQUIRE);
@@ -182,10 +182,10 @@ void *pfq_spsc_pop(struct pfq_spsc_fifo *fifo)
 			return NULL;
 	}
 
-	ret = fifo->ring[r];
+	rc = fifo->ring[r];
 	next = pfq_spsc_next_index(fifo, r);
         __atomic_store_n(&fifo->tail, next, __ATOMIC_RELEASE);
-	return ret;
+	return rc;
 }
 
 

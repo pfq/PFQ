@@ -398,7 +398,7 @@ int
 pfq_group_join(pfq_gid_t gid, pfq_id_t id, unsigned long class_mask, int policy)
 {
         struct pfq_group * group;
-        int ret;
+        int rc;
 
 	group = pfq_group_get(gid);
         if (group == NULL)
@@ -406,10 +406,10 @@ pfq_group_join(pfq_gid_t gid, pfq_id_t id, unsigned long class_mask, int policy)
 
         mutex_lock(&global->groups_lock);
 
-        ret = __pfq_group_join(gid, id, class_mask, policy);
+        rc = __pfq_group_join(gid, id, class_mask, policy);
 
         mutex_unlock(&global->groups_lock);
-        return ret;
+        return rc;
 }
 
 
@@ -438,16 +438,16 @@ int
 pfq_group_leave(pfq_gid_t gid, pfq_id_t id)
 {
         struct pfq_group * group;
-        int ret;
+        int rc;
 
 	group = pfq_group_get(gid);
         if (group == NULL)
                 return -EINVAL;
 
         mutex_lock(&global->groups_lock);
-        ret = __pfq_group_leave(gid,id);
+        rc = __pfq_group_leave(gid,id);
         mutex_unlock(&global->groups_lock);
-        return ret;
+        return rc;
 }
 
 
@@ -471,7 +471,7 @@ pfq_group_leave_all(pfq_id_t id)
 unsigned long
 pfq_group_get_groups(pfq_id_t id)
 {
-        unsigned long ret = 0;
+        unsigned long rc = 0;
         int n = 0;
         mutex_lock(&global->groups_lock);
         for(; n < Q_MAX_ID; n++)
@@ -480,10 +480,10 @@ pfq_group_get_groups(pfq_id_t id)
                 unsigned long mask = pfq_group_get_all_groups_mask(gid);
 
                 if(mask & (1UL << (__force int)id))
-                        ret |= (1UL << n);
+                        rc |= (1UL << n);
         }
         mutex_unlock(&global->groups_lock);
-        return ret;
+        return rc;
 }
 
 
