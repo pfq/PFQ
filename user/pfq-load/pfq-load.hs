@@ -85,7 +85,7 @@ configFiles = [ "/etc/pfq.conf.yaml"
               , "/root/.pfq.conf"
               , "/root/pfq.conf"
               ]
- 
+
 defaultDelay = 200000
 
 
@@ -295,9 +295,8 @@ main = handle (\(SystemError msg code) -> putStrBoldLn msg *> exitWith code) $ d
         forM_ (devices drv) $ setupDevice (queues opt)
 
     -- setup per-driver pci options..
-    forM_ (drivers conf) $  \drv -> do
-       setupPCI $ pci drv 
-                
+    forM_ (drivers conf) $  setupPCI . pci
+
 
     -- set interrupt affinity...
     putStrBoldLn "Setting irq affinity..."
