@@ -41,7 +41,7 @@ pfq_shared_queue_enable(struct pfq_sock *so, unsigned long user_addr, size_t use
 
 		/* alloc queue memory */
 
-		if (pfq_shared_memory_alloc(&so->shmem, user_addr, user_size, hugepage_size, pfq_total_queue_mem_aligned(so)) < 0)
+		if (pfq_shared_memory_alloc(so->id, &so->shmem, user_addr, user_size, hugepage_size, pfq_total_queue_mem_aligned(so)) < 0)
 		{
 			return -ENOMEM;
 		}

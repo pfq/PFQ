@@ -270,8 +270,8 @@ pfq_sock_enable(struct pfq_sock *so, struct pfq_so_enable *mem)
 {
         int err;
 
-	printk(KERN_INFO "[PFQ|%d] enable: user_addr=%lu user_size=%zu hugepage_size=%zu...\n", so->id,
-		mem->user_addr, mem->user_size, mem->hugepage_size);
+	printk(KERN_INFO "[PFQ|%d] enable: mapping user_addr=%p user_size=%zu hugepage_size=%zu...\n", so->id,
+		(void *)mem->user_addr, mem->user_size, mem->hugepage_size);
 
         err = pfq_shared_queue_enable(so, mem->user_addr, mem->user_size, mem->hugepage_size);
         if (err < 0) {
@@ -284,8 +284,6 @@ pfq_sock_enable(struct pfq_sock *so, struct pfq_so_enable *mem)
 			printk(KERN_INFO "[PFQ|%d] enable error (null HugePages descriptor)!\n", so->id);
 			return -EFAULT;
 		}
-
-		mem->user_addr = (unsigned long)(mem->user_addr + so->shmem.hugepages_descr->offset - so->shmem.size);
 	}
 
 	return 0;
