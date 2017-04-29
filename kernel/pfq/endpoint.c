@@ -33,10 +33,10 @@
 
 
 void
-pfq_get_lazy_endpoints(struct pfq_qbuff_queue *qb, struct pfq_endpoint_info *ts)
+pfq_get_lazy_endpoints( struct pfq_qbuff_queue *qb
+		      , struct pfq_endpoint_info *ts)
 {
 	size_t n, i;
-
 	ts->num = 0;
         ts->cnt_total = 0;
 
@@ -51,7 +51,8 @@ pfq_get_lazy_endpoints(struct pfq_qbuff_queue *qb, struct pfq_endpoint_info *ts)
 
 
 void
-pfq_add_dev_to_endpoints(struct net_device *dev, struct pfq_endpoint_info *ts)
+pfq_add_dev_to_endpoints( struct net_device *dev
+			, struct pfq_endpoint_info *ts)
 {
 	size_t n = 0;
 
@@ -76,8 +77,10 @@ pfq_add_dev_to_endpoints(struct net_device *dev, struct pfq_endpoint_info *ts)
 
 
 static inline
-size_t copy_to_user_qbuffs(struct pfq_sock *so, struct pfq_qbuff_queue *buffs,
-			   unsigned long long mask, int cpu)
+size_t copy_to_user_qbuffs( struct pfq_sock *so
+			  , struct pfq_qbuff_queue *buffs
+			  , unsigned __int128 mask
+			  , int cpu)
 {
         size_t cpy, len = pfq_popcount(mask);
 
@@ -101,8 +104,10 @@ size_t copy_to_user_qbuffs(struct pfq_sock *so, struct pfq_qbuff_queue *buffs,
 
 
 static inline
-size_t copy_to_dev_qbuffs(struct pfq_sock *so, struct pfq_qbuff_queue *buffs,
-			 unsigned long long mask, int cpu)
+size_t copy_to_dev_qbuffs( struct pfq_sock *so
+			 , struct pfq_qbuff_queue *buffs
+			 , unsigned __int128 mask
+			 , int cpu)
 {
 	struct net_device *dev;
 	size_t sent;
@@ -127,9 +132,10 @@ size_t copy_to_dev_qbuffs(struct pfq_sock *so, struct pfq_qbuff_queue *buffs,
 
 
 size_t
-pfq_copy_to_endpoint_qbuffs(struct pfq_sock *so,
-			     struct pfq_qbuff_queue *buffs,
-			     unsigned long long mask, int cpu)
+pfq_copy_to_endpoint_qbuffs( struct pfq_sock *so
+			   , struct pfq_qbuff_queue *buffs
+			   , unsigned __int128 mask
+			   , int cpu)
 {
 	switch(so->egress_type)
 	{

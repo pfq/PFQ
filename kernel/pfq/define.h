@@ -28,7 +28,7 @@
 
 #define Q_MAX_ID			((int)sizeof(long)<<3)
 #define Q_MAX_GID			((int)sizeof(long)<<3)
-#define Q_BUFF_BATCH_LEN		((int)sizeof(long)<<3)
+#define Q_BUFF_BATCH_LEN		((int)sizeof(__int128)<<3)
 
 #define Q_BUFF_LOG_LEN			16
 #define Q_BUFF_QUEUE_LEN		512

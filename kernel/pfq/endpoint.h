@@ -56,7 +56,7 @@ extern void pfq_add_dev_to_endpoints(struct net_device *dev, struct pfq_endpoint
 
 extern size_t pfq_copy_to_endpoint_qbuffs( struct pfq_sock *so
 					 , struct pfq_qbuff_queue *buffs
-					 , unsigned long long mask
+					 , unsigned __int128 mask
 					 , int cpu);
 
 extern void pfq_get_lazy_endpoints(struct pfq_qbuff_queue *qb, struct pfq_endpoint_info *ts);

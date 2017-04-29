@@ -489,7 +489,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so,
  */
 
 tx_response_t
-pfq_qbuff_queue_xmit(struct pfq_qbuff_queue *buffs, unsigned long long mask, struct net_device *dev, int queue)
+pfq_qbuff_queue_xmit(struct pfq_qbuff_queue *buffs, unsigned __int128 mask, struct net_device *dev, int queue)
 {
 	struct netdev_queue *txq;
 	struct qbuff *buff;
@@ -638,18 +638,6 @@ pfq_qbuff_lazy_xmit_run(struct pfq_qbuff_queue *buffs, struct pfq_endpoint_info 
 
 
 ///////////////////////////////////////////////////////////////////////////////
-
-
-static inline
-void mask_to_sock_queue(unsigned long n, unsigned long mask, unsigned long long *sock_queue)
-{
-	unsigned long int bit;
-        pfq_bitwise_foreach(mask, bit,
-	{
-	        int index = (int)pfq_ctz(bit);
-                sock_queue[index] |= 1UL << n;
-        })
-}
 
 /*
  * Find the next power of two.
@@ -915,7 +903,7 @@ int pfq_receive_run( struct pfq_percpu_data *data
 		   , struct pfq_percpu_pool *pool
 		   , int cpu)
 {
-	unsigned long long socket_mask[Q_MAX_ID] = { 0 };
+	unsigned __int128 socket_mask[Q_MAX_ID] = { 0 };
 	unsigned long long all_fwd_mask = 0;
 	size_t n, len = data->qbuff_queue->len;
 	struct pfq_endpoint_info endpoints;
@@ -932,7 +920,7 @@ int pfq_receive_run( struct pfq_percpu_data *data
 		pfq_bitwise_foreach(buff->fwd_mask, bit,
 		{
 			int index = (int)pfq_ctz(bit);
-			socket_mask[index] |= 1UL << n;
+			socket_mask[index] |= (unsigned __int128)1 << n;
 		})
 	}
 
@@ -1012,7 +1000,7 @@ int pfq_copy_bits(const struct sk_buff *skb, int offset, void *to, int len)
 
 size_t pfq_sk_queue_recv(struct pfq_sock_opt *opt,
 			 struct pfq_qbuff_queue *buffs,
-			 unsigned long long mask,
+			 unsigned __int128 mask,
 			 int burst_len)
 {
 	struct pfq_shared_rx_queue *rx_queue = pfq_sock_shared_rx_queue(opt);

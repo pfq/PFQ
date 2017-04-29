@@ -29,7 +29,7 @@
 
 
 #define pfq_qbuff_queue_lazy_xmit(buffs, mask, dev, queue_index) ({ \
-		int check = STATIC_TYPE(unsigned long long, mask) && \
+		int check = STATIC_TYPE(unsigned __int128, mask) && \
 			    STATIC_TYPE(struct net_device *, dev) && \
 			    STATIC_TYPE(int, queue_index); \
 		struct qbuff * buff; \
@@ -62,7 +62,7 @@ struct napi_struct;
 
 extern size_t pfq_sk_queue_recv( struct pfq_sock_opt *opt
 			       , struct pfq_qbuff_queue *buffs
-			       , unsigned long long buffs_mask
+			       , unsigned __int128 buffs_mask
 			       , int burst_len
 			       );
 
@@ -105,7 +105,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int qindex, int cpu, atomic_t const *stop
 extern int pfq_xmit(struct qbuff *buff, struct net_device *dev, int queue, int more);
 
 extern tx_response_t
-pfq_qbuff_queue_xmit(struct pfq_qbuff_queue *buff, unsigned long long buffs_mask, struct net_device *dev, int queue_index);
+pfq_qbuff_queue_xmit(struct pfq_qbuff_queue *buff, unsigned __int128 buffs_mask, struct net_device *dev, int queue_index);
 
 /* skb lazy xmit */
 
