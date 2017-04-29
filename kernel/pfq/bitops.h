@@ -24,17 +24,32 @@
 #ifndef PFQ_BITOPS_H
 #define PFQ_BITOPS_H
 
+static inline
+int __128bit_popcount(unsigned __int128 x)
+{
+	return  __builtin_popcountll((unsigned long long)x) +
+		__builtin_popcountll((unsigned long long)(x >> 64));
+}
+
+static inline
+int __128bit_ctz(unsigned __int128 x)
+{
+	int a = __builtin_ctzll((unsigned long long)x);
+	int b = __builtin_ctzll((unsigned long long)(x >> 64));
+	return (unsigned long long)x ? a : (b+64);
+}
+
 
 #define pfq_ctz(n) \
 	__builtin_choose_expr(__builtin_types_compatible_p(typeof(n),unsigned int),        (unsigned int)__builtin_ctz((unsigned int)(n)), \
         __builtin_choose_expr(__builtin_types_compatible_p(typeof(n),unsigned long),       (unsigned int)__builtin_ctzl((unsigned long)(n)), \
-        __builtin_choose_expr(__builtin_types_compatible_p(typeof(n),unsigned __int128),   (unsigned int)__builtin_ctzl((unsigned __int128)(n)), \
+        __builtin_choose_expr(__builtin_types_compatible_p(typeof(n),unsigned __int128),   (unsigned int)__128bit_ctz((unsigned __int128)(n)), \
         __builtin_choose_expr(__builtin_types_compatible_p(typeof(n),unsigned long long),  (unsigned int)__builtin_ctzll((unsigned long long)(n)), (void)0 ))))
 
 #define pfq_popcount(n) \
         __builtin_choose_expr(__builtin_types_compatible_p(typeof(n),unsigned int),        (unsigned int)__builtin_popcount((unsigned int)(n)), \
         __builtin_choose_expr(__builtin_types_compatible_p(typeof(n),unsigned long),       (unsigned int)__builtin_popcountl((unsigned long)(n)), \
-        __builtin_choose_expr(__builtin_types_compatible_p(typeof(n),unsigned __int128),   (unsigned int)__builtin_popcountll((unsigned __int128)(n)), \
+        __builtin_choose_expr(__builtin_types_compatible_p(typeof(n),unsigned __int128),   (unsigned int)__128bit_popcount((unsigned __int128)(n)), \
         __builtin_choose_expr(__builtin_types_compatible_p(typeof(n),unsigned long long),  (unsigned int)__builtin_popcountll((unsigned long long)(n)), (void)0))))
 
 
