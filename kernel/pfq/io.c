@@ -869,6 +869,8 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb)
 			 		buff.fwd_mask |= elig_mask;
 			 	}
 
+			} else {
+				buff.fwd_mask |= (unsigned long)atomic_long_read(&this_group->sock_id[0]);
 			}
 		}
 		);
