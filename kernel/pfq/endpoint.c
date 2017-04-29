@@ -29,6 +29,25 @@
 #include <pfq/printk.h>
 #include <pfq/queue.h>
 #include <pfq/sparse.h>
+#include <pfq/qbuff.h>
+
+
+void
+pfq_get_lazy_endpoints(struct pfq_qbuff_queue *qb, struct pfq_endpoint_info *ts)
+{
+	size_t n, i;
+
+	ts->num = 0;
+        ts->cnt_total = 0;
+
+	for(n = 0; n < qb->len; ++n)
+	{
+		for(i = 0; i < qb->queue[n].fwd_dev_num; i++)
+		{
+			pfq_add_dev_to_endpoints(qb->queue[n].fwd_dev[i], ts);
+		}
+	}
+}
 
 
 void

@@ -918,6 +918,7 @@ int pfq_receive_run( struct pfq_percpu_data *data
 	unsigned long long socket_mask[Q_MAX_ID] = { 0 };
 	unsigned long long all_fwd_mask = 0;
 	size_t n, len = data->qbuff_queue->len;
+	struct pfq_endpoint_info endpoints;
         struct qbuff *buff;
         unsigned int bit;
 
@@ -947,6 +948,13 @@ int pfq_receive_run( struct pfq_percpu_data *data
 
 	/* forward packets to device */
 
+	pfq_get_lazy_endpoints(PFQ_QBUFF_QUEUE(data->qbuff_queue), &endpoints);
+	if (endpoints.cnt_total)
+	{
+		size_t total = (size_t)pfq_qbuff_lazy_xmit_run(PFQ_QBUFF_QUEUE(data->qbuff_queue), &endpoints);
+		__sparse_add(global->percpu_stats, frwd, total, cpu);
+		__sparse_add(global->percpu_stats, disc, endpoints.cnt_total - total, cpu);
+	}
 
 	/* forward packats to kernel and release them */
 
@@ -979,9 +987,9 @@ int pfq_receive_run( struct pfq_percpu_data *data
 		qbuff_free(buff, &pool->rx);
 	}
 
-	data->qbuff_queue->len = 0;
 #endif
 
+	data->qbuff_queue->len = 0;
 	return 0;
 }
 

@@ -59,4 +59,6 @@ extern size_t pfq_copy_to_endpoint_qbuffs( struct pfq_sock *so
 					 , unsigned long long mask
 					 , int cpu);
 
+extern void pfq_get_lazy_endpoints(struct pfq_qbuff_queue *qb, struct pfq_endpoint_info *ts);
+
 #endif /* PFQ_ENDPOINT_H */
