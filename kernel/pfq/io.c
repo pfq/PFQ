@@ -730,7 +730,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb)
 	{
 		struct pfq_lang_monad monad;
 		unsigned long group_mask;
-		struct qbuff buff;
+		struct qbuff *buff;
 
 		/* if required, timestamp the packet now */
 		if (skb->tstamp.tv64 == 0)
@@ -753,15 +753,17 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb)
 
 		/* initialize the qbuff */
 
-		qbuff_init(&buff
+		buff = &data->qbuff_queue->queue[data->qbuff_queue->len];
+
+		qbuff_init(buff
 			  , skb
 			  , &monad
 			  , data->counter++);
 
 		/* get the eligible groups */
 
-		group_mask = pfq_devmap_get_groups( qbuff_get_ifindex(&buff)
-						  , qbuff_get_rx_queue(&buff));
+		group_mask = pfq_devmap_get_groups( qbuff_get_ifindex(buff)
+						  , qbuff_get_rx_queue(buff));
 
 
 		/* process all groups for this qbuff */
@@ -780,7 +782,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb)
 			/* check if bp filter is enabled */
 
 			if (atomic_long_read(&this_group->bp_filter)) {
-				if (!qbuff_run_bp_filter(&buff, this_group)) {
+				if (!qbuff_run_bp_filter(buff, this_group)) {
 					__sparse_inc(this_group->stats, drop, cpu);
 					continue;
 				}
@@ -789,7 +791,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb)
 			/* check vlan filter */
 
 			if (pfq_group_vlan_filters_enabled(gid)) {
-				if (!qbuff_run_vlan_filter(&buff, (pfq_gid_t)gid)) {
+				if (!qbuff_run_vlan_filter(buff, (pfq_gid_t)gid)) {
 					__sparse_inc(this_group->stats, drop, cpu);
 					continue;
 				}
@@ -800,8 +802,8 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb)
 			prg = (struct pfq_lang_computation_tree *)atomic_long_read(&this_group->comp);
 			if (prg) {
 				unsigned long cbit, elig_mask = 0;
-				size_t to_kernel = buff.to_kernel;
-				size_t num_fwd = buff.fwd_dev_num;
+				size_t to_kernel = buff->to_kernel;
+				size_t num_fwd = buff->fwd_dev_num;
 
 			 	/* setup monad for this computation */
 
@@ -816,15 +818,15 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb)
 
 			 	/* run the functional program */
 
-			 	if (!pfq_lang_run(&buff, prg).qbuff) {
+			 	if (!pfq_lang_run(buff, prg).qbuff) {
 			 		__sparse_inc(this_group->stats, drop, cpu);
 			 		continue;
 			 	}
 
 			 	/* update stats */
 
-                                 __sparse_add(this_group->stats, frwd, buff.fwd_dev_num - num_fwd, cpu);
-                                 __sparse_add(this_group->stats, kern, buff.to_kernel - to_kernel, cpu);
+                                 __sparse_add(this_group->stats, frwd, buff->fwd_dev_num - num_fwd, cpu);
+                                 __sparse_add(this_group->stats, kern, buff->to_kernel - to_kernel, cpu);
 
 			 	/* skip this packet? */
 
@@ -859,41 +861,39 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb)
 			 			 	steer_mask[steer_mask_numb++] = sbit;
 			 		});
 
-			 		buff.fwd_mask |= steer_mask[pfq_fold(prefold(monad.fanout.hash), (unsigned int)steer_mask_numb)];
+			 		buff->fwd_mask |= steer_mask[pfq_fold(prefold(monad.fanout.hash), (unsigned int)steer_mask_numb)];
 
 			 		if (is_double_steering(monad.fanout))
-			 			buff.fwd_mask |= steer_mask[pfq_fold(prefold(monad.fanout.hash2), (unsigned int)steer_mask_numb)];
+			 			buff->fwd_mask |= steer_mask[pfq_fold(prefold(monad.fanout.hash2), (unsigned int)steer_mask_numb)];
 			 	}
 			 	else {  /* broadcast */
 
-			 		buff.fwd_mask |= elig_mask;
+			 		buff->fwd_mask |= elig_mask;
 			 	}
 
 			} else {
-				buff.fwd_mask |= (unsigned long)atomic_long_read(&this_group->sock_id[0]);
+				buff->fwd_mask |= (unsigned long)atomic_long_read(&this_group->sock_id[0]);
 			}
 		}
 		);
 
 		/* this packet is ready to be enqued for transmission or dropped */
 
-		if (buff.fwd_mask || buff.fwd_dev_num || buff.to_kernel)
+		if (buff->fwd_mask || buff->fwd_dev_num || buff->to_kernel)
 		{
-			/* append this buff to the queue */
+			/* commit this buff to the queue */
 
-			__builtin_memcpy( &data->qbuff_queue->queue[data->qbuff_queue->len++]
-					, &buff
-					, sizeof(buff));
+			data->qbuff_queue->len++;
 		}
 
 		/* transmit the queue or wait for the next packet? */
 
 		if (data->qbuff_queue->len < (size_t)global->capt_batch_len &&
-		     ktime_to_ns(ktime_sub(qbuff_get_ktime(&buff), data->last_rx)) < 1000000) {
+		     ktime_to_ns(ktime_sub(qbuff_get_ktime(buff), data->last_rx)) < 1000000) {
 			return 0;
 		}
 
-		data->last_rx = qbuff_get_ktime(&buff);
+		data->last_rx = qbuff_get_ktime(buff);
 	}
 	else {
 		if (data->qbuff_queue->len == 0)
