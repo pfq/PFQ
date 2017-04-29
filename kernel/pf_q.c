@@ -62,7 +62,6 @@
 #include <pfq/queue.h>
 #include <pfq/endpoint.h>
 #include <pfq/define.h>
-#include <pfq/GC.h>
 
 #include <pfq/percpu.h>
 #include <pfq/shmem.h>

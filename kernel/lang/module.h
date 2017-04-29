@@ -27,7 +27,6 @@
 #include <lang/monad.h>
 #include <lang/maybe.h>
 
-#include <pfq/GC.h>
 #include <pfq/sparse.h>
 #include <pfq/kcompat.h>
 
@@ -215,7 +214,7 @@ is_double_steering(fanout_t a)
 static inline
 bool fwd_to_kernel(struct qbuff *buff)
 {
-	return buff->log->to_kernel;
+	return buff->to_kernel;
 }
 
 

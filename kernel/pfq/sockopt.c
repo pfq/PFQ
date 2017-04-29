@@ -547,17 +547,18 @@ int pfq_setsockopt(struct socket *sock,
                 if (copy_from_user(&weight, optval, optlen))
                         return -EFAULT;
 
-		if (weight < 1 || weight > (Q_MAX_SOCK_MASK/Q_MAX_ID)) {
+		if (weight < 1 || weight > (Q_MAX_STEERING_MASK/Q_MAX_ID)) {
                         printk(KERN_INFO "[PFQ|%d] weight=%d: invalid range (min 1, max %d)\n", so->id, weight,
-                               Q_MAX_SOCK_MASK/Q_MAX_ID);
+                               Q_MAX_STEERING_MASK/Q_MAX_ID);
                         return -EPERM;
 		}
 
                 so->weight = weight;
 
-		/* invalidate per-cpu sock mask cache */
-
-		pfq_invalidate_percpu_eligible_mask(so->id);
+		/* invalidate per-cpu sock mask cache
+                 *
+		 * pfq_invalidate_percpu_eligible_mask(so->id);
+                 */
 
                 pr_devel("[PFQ|%d] new weight set to %d.\n", so->id, weight);
 

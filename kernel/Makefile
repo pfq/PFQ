@@ -21,7 +21,7 @@ obj-m := $(TARGET).o
 pfq-y := pf_q.o pfq/proc.o pfq/shmem.o pfq/memory.o pfq/pool.o pfq/bpf.o pfq/vlan.o \
 				pfq/sock.o pfq/thread.o pfq/netdev.o pfq/global.o \
 		 		pfq/param.o pfq/timer.o pfq/io.o pfq/percpu.o pfq/qbuff.o \
-		 		pfq/core.o pfq/sockopt.o pfq/queue.o pfq/GC.o pfq/global.o pfq/percpu.o pfq/devmap.o \
+		 		pfq/sockopt.o pfq/queue.o pfq/global.o pfq/percpu.o pfq/devmap.o \
 		 		pfq/sock.o pfq/group.o pfq/endpoint.o pfq/stats.o pfq/printk.o \
 		 		lang/engine.o lang/signature.o lang/symtable.o \
 		 		lang/filter.o lang/steering.o lang/forward.o \

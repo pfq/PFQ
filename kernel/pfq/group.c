@@ -175,8 +175,6 @@ __pfq_group_init(struct pfq_group *group, pfq_gid_t gid)
                 atomic_long_set(&group->sock_id[i], 0);
         }
 
-	pfq_invalidate_percpu_eligible_mask((pfq_id_t __force)0);
-
         atomic_long_set(&group->bp_filter,0L);
         atomic_long_set(&group->comp,     0L);
         atomic_long_set(&group->comp_ctx, 0L);
@@ -273,8 +271,6 @@ __pfq_group_join(pfq_gid_t gid, pfq_id_t id, unsigned long class_mask, int polic
 			 atomic_long_set(&group->sock_id[class], tmp);
 		});
 
-		pfq_invalidate_percpu_eligible_mask(id);
-
 		if (group->owner == Q_INVALID_ID)
 			group->owner = id;
 		if (group->pid == 0)
@@ -311,8 +307,6 @@ __pfq_group_leave(pfq_gid_t gid, pfq_id_t id)
                 tmp &= ~(1L << (__force int)id);
                 atomic_long_set(&group->sock_id[i], tmp);
         }
-
-	pfq_invalidate_percpu_eligible_mask(id);
 
 	if (group->enabled && __pfq_group_is_empty(gid))
 		__pfq_group_free(group, gid);

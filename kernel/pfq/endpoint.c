@@ -57,8 +57,8 @@ pfq_add_dev_to_endpoints(struct net_device *dev, struct pfq_endpoint_info *ts)
 
 
 static inline
-size_t copy_to_user_qbuffs(struct pfq_sock *so, struct pfq_qbuff_refs *buffs,
-			 unsigned long long mask, int cpu, pfq_gid_t gid)
+size_t copy_to_user_qbuffs(struct pfq_sock *so, struct pfq_qbuff_queue *buffs,
+			   unsigned long long mask, int cpu)
 {
         size_t cpy, len = pfq_popcount(mask);
 
@@ -68,7 +68,7 @@ size_t copy_to_user_qbuffs(struct pfq_sock *so, struct pfq_qbuff_refs *buffs,
 
 		smp_rmb();
 
-                cpy = pfq_sk_queue_recv(&so->opt, buffs, mask, (int)len, gid);
+                cpy = pfq_sk_queue_recv(&so->opt, buffs, mask, (int)len);
 		if (len > cpy)
 			__sparse_add(so->stats, lost, len - cpy, cpu);
 
@@ -82,8 +82,8 @@ size_t copy_to_user_qbuffs(struct pfq_sock *so, struct pfq_qbuff_refs *buffs,
 
 
 static inline
-size_t copy_to_dev_qbuffs(struct pfq_sock *so, struct pfq_qbuff_refs *buffs,
-			 unsigned long long mask, int cpu, pfq_gid_t gid)
+size_t copy_to_dev_qbuffs(struct pfq_sock *so, struct pfq_qbuff_queue *buffs,
+			 unsigned long long mask, int cpu)
 {
 	struct net_device *dev;
 	size_t sent;
@@ -109,16 +109,16 @@ size_t copy_to_dev_qbuffs(struct pfq_sock *so, struct pfq_qbuff_refs *buffs,
 
 size_t
 pfq_copy_to_endpoint_qbuffs(struct pfq_sock *so,
-			     struct pfq_qbuff_refs *buffs,
-			     unsigned long long mask, int cpu, pfq_gid_t gid)
+			     struct pfq_qbuff_queue *buffs,
+			     unsigned long long mask, int cpu)
 {
 	switch(so->egress_type)
 	{
 	case Q_ENDPOINT_SOCKET:
-		return copy_to_user_qbuffs(so, buffs, mask, cpu, gid);
+		return copy_to_user_qbuffs(so, buffs, mask, cpu);
 
 	case Q_ENDPOINT_DEVICE:
-		return copy_to_dev_qbuffs(so, buffs, mask, cpu, gid);
+		return copy_to_dev_qbuffs(so, buffs, mask, cpu);
 	}
 
 	return false;

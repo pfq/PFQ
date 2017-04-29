@@ -26,6 +26,7 @@
 #include <pfq/percpu.h>
 #include <pfq/qbuff.h>
 #include <pfq/memory.h>
+#include <pfq/define.h>
 
 int pfq_percpu_alloc(void)
 {
@@ -71,8 +72,7 @@ void pfq_percpu_free(void)
 	for_each_present_cpu(cpu) {
 
 		struct pfq_percpu_data *data = per_cpu_ptr(global->percpu_data, cpu);
-
-		kfree(data->GC);
+		kfree(data->qbuff_queue);
 	}
 
 	free_percpu(global->percpu_stats);
@@ -84,28 +84,7 @@ void pfq_percpu_free(void)
 
 int pfq_percpu_init(void)
 {
-	struct GC_data **GCptrs;
-	int cpu, i;
-
-	GCptrs = (struct GC_data **)kzalloc(sizeof(struct GC_data *) * Q_MAX_CPU, GFP_KERNEL);
-	if (!GCptrs) {
-		printk(KERN_ERR "[PFQ] percpu: out of memory!\n");
-		return -ENOMEM;
-	}
-
-	for_each_present_cpu(cpu)
-	{
-		if (cpu >= Q_MAX_CPU) {
-			printk(KERN_ERR "[PFQ] percpu: maximum number of cpu reached (%d)!\n", Q_MAX_CPU);
-			goto err;
-		}
-
-		GCptrs[cpu] = (struct GC_data *)kmalloc_node(sizeof(struct GC_data), GFP_KERNEL, cpu_to_node(cpu));
-		if (!GCptrs[cpu]) {
-			printk(KERN_ERR "[PFQ] percpu: could not allocate GC[%d]!\n", cpu);
-			goto err;
-		}
-	}
+	int cpu;
 
         for_each_present_cpu(cpu)
         {
@@ -119,27 +98,22 @@ int pfq_percpu_init(void)
                 data = per_cpu_ptr(global->percpu_data, cpu);
 
 		data->counter = 0;
-		data->GC = GCptrs[cpu];
 
-		GC_data_init(data->GC);
+		data->qbuff_queue = (struct pfq_qbuff_long_queue *) kmalloc_node(sizeof(struct pfq_qbuff_long_queue), GFP_KERNEL, cpu_to_node(cpu));
+		if (!data->qbuff_queue)
+			return -ENOMEM;
+
+		data->qbuff_queue->len = 0;
 
 		preempt_enable();
 	}
 
-	kfree(GCptrs);
 	return 0;
-
-err:
-	for(i = 0; i < Q_MAX_CPU; i++)
-		kfree(GCptrs[i]);
-
-	kfree(GCptrs);
-	return -ENOMEM;
 }
 
 
 
-int pfq_percpu_GC_reset(void)
+int pfq_percpu_qbuff_queue_reset(void)
 {
         int cpu;
         int total = 0;
@@ -158,14 +132,14 @@ int pfq_percpu_GC_reset(void)
                 data = per_cpu_ptr(global->percpu_data, cpu);
                 pool = per_cpu_ptr(global->percpu_pool, cpu);
 
-		for_each_qbuff(&data->GC->pool, buff, n)
+		for(n = 0; n < data->qbuff_queue->len; n++)
 		{
+			buff = &data->qbuff_queue->queue[n];
 			pfq_free_skb_pool(QBUFF_SKB(buff), &pool->rx);
 		}
 
-                total += data->GC->pool.len;
-
-		GC_reset(data->GC);
+                total += data->qbuff_queue->len;
+		data->qbuff_queue->len = 0;
 
 		preempt_enable();
         }
@@ -190,15 +164,8 @@ int pfq_percpu_destruct(void)
 
                 data = per_cpu_ptr(global->percpu_data, cpu);
 
-		// for_each_qbuff(&data->GC->pool, buff, n)
-		// {
-		// 	sparse_inc(global->percpu_memory, os_free);
-		// 	kfree_skb(QBUFF_SKB(buff));
-		// }
-
-                total += data->GC->pool.len;
-
-		GC_reset(data->GC);
+                total += data->qbuff_queue->len;
+		data->qbuff_queue->len = 0;
 
 		preempt_enable();
         }

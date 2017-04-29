@@ -28,7 +28,6 @@
 #include <pfq/group.h>
 #include <pfq/sock.h>
 #include <pfq/define.h>
-#include <pfq/GC.h>
 
 #include <pfq/kcompat.h>
 

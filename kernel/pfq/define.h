@@ -30,10 +30,10 @@
 #define Q_MAX_GID			((int)sizeof(long)<<3)
 #define Q_BUFF_BATCH_LEN		((int)sizeof(long)<<3)
 
-#define Q_BUFF_QUEUE_LEN		512
 #define Q_BUFF_LOG_LEN			16
+#define Q_BUFF_QUEUE_LEN		512
 
-#define Q_MAX_SOCK_MASK			1024
+#define Q_MAX_STEERING_MASK	        512
 
 #define Q_MAX_DEVICE			4096
 #define Q_MAX_DEVICE_MASK		(Q_MAX_DEVICE-1)

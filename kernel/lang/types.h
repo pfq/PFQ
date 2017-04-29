@@ -27,9 +27,6 @@
 
 #include <pfq/kcompat.h>
 
-#ifndef __GC
-#define __GC __attribute__((address_space(7)))
-#endif
 
 /* CIDR notation */
 

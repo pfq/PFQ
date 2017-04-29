@@ -184,12 +184,11 @@ trace(arguments_t args, struct qbuff * buff)
 
 	if (printk_ratelimit())
 	{
-		printk(KERN_INFO "[pfq-lang] TRACE SKB: counter:%u state:%u group_mask:%lx (num_devs=%zu kernel:%d)\n"
+		printk(KERN_INFO "[pfq-lang] TRACE SKB: counter:%u fwd_mask:%lx (num_devs=%zu kernel:%d)\n"
 					, buff->counter
-					, buff->state
-					, buff->group_mask
-					, buff->log->num_devs
-					, buff->log->to_kernel
+					, buff->fwd_mask
+					, buff->fwd_dev_num
+					, buff->to_kernel
 					);
 
 		printk(KERN_INFO "[pfq-lang]     MONAD: state:%u fanout:{cl=%lx h1=%u h2=%u tp=%u} shift:%d ipoff:%d ipproto:%d ep_ctx:%d\n"

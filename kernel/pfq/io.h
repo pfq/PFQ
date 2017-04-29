@@ -24,7 +24,6 @@
 #ifndef PFQ_IO_H
 #define PFQ_IO_H
 
-#include <pfq/GC.h>
 #include <pfq/sock.h>
 #include <pfq/types.h>
 
@@ -62,10 +61,10 @@ struct napi_struct;
 
 
 extern size_t pfq_sk_queue_recv( struct pfq_sock_opt *opt
-			       , struct pfq_qbuff_refs *buffs
+			       , struct pfq_qbuff_queue *buffs
 			       , unsigned long long buffs_mask
 			       , int burst_len
-			       , pfq_gid_t gid);
+			       );
 
 
 struct pfq_mbuff_xmit_context
@@ -80,6 +79,19 @@ struct pfq_mbuff_xmit_context
 	bool			*intr;
 	bool			xmit_more;
 };
+
+
+static inline size_t
+pfq_count_fwd_devs(struct net_device *dev, struct net_device **devs, size_t num_devs)
+{
+	size_t n, ret = 0;
+	for(n = 0; n < num_devs; n++)
+	{
+		if (dev == devs[n])
+			ret++;
+	}
+	return ret;
+}
 
 
 /* socket queues */
@@ -104,6 +116,7 @@ extern int pfq_qbuff_lazy_xmit_run(struct pfq_qbuff_queue *queue, struct pfq_end
 /* receive */
 
 extern int pfq_receive(struct napi_struct *napi, struct sk_buff * skb);
+extern int pfq_receive_run( struct pfq_percpu_data *data , struct pfq_percpu_pool *pool , int cpu);
 
 #endif /* PFQ_IO_H */
 

@@ -36,28 +36,39 @@
 
 struct pfq_lang_monad;
 
+
 struct qbuff
 {
-	void		       *addr;		/* struct sk_buff * */
+	void		       *addr;				/* struct sk_buff * */
 	struct pfq_lang_monad  *monad;
-	struct GC_log	       *log;
-        unsigned long		group_mask;
-        uint32_t		counter;
-        uint32_t		state;
+	struct net_device      *fwd_dev[Q_BUFF_QUEUE_LEN];	/* fwd to devs */
+	size_t			fwd_dev_num;
+        unsigned long		fwd_mask;			/* fwd to sockets */
+        uint32_t		counter;			/* unique id */
+        bool			to_kernel;			/* fwd to kernel */
 };
 
 
+
+static inline void
+qbuff_init( struct qbuff *buff
+	      , void *addr
+	      , struct pfq_lang_monad *monad
+	      , size_t id)
+{
+	buff->addr = addr;
+	buff->monad = monad;
+	buff->fwd_dev_num = 0;
+	buff->counter = id;
+	buff->fwd_mask = 0;
+	buff->to_kernel = false;
+}
+
+
 #define PFQ_DEFINE_QUEUE(name, size) \
-	struct name {  \
+	name {  \
 		size_t len; \
 		struct qbuff queue[size]; \
-	}
-
-
-#define PFQ_DEFINE_QUEUE_REF(name, size) \
-	struct name {  \
-		size_t len; \
-		struct qbuff *ref[size]; \
 	}
 
 
@@ -68,38 +79,20 @@ struct pfq_qbuff_queue
 };
 
 
-struct pfq_qbuff_refs
-{
-	size_t len;
-	struct qbuff *queue[];
-};
 
-
-PFQ_DEFINE_QUEUE(pfq_qbuff_batch, Q_BUFF_BATCH_LEN);
-PFQ_DEFINE_QUEUE(pfq_qbuff_long_queue,  Q_BUFF_QUEUE_LEN);
-
-
-PFQ_DEFINE_QUEUE_REF(pfq_ref_batch, Q_BUFF_BATCH_LEN);
-PFQ_DEFINE_QUEUE_REF(pfq_ref_long_queue,  Q_BUFF_QUEUE_LEN);
+PFQ_DEFINE_QUEUE(struct pfq_qbuff_batch_queue, Q_BUFF_BATCH_LEN);
+PFQ_DEFINE_QUEUE(struct pfq_qbuff_long_queue,  Q_BUFF_QUEUE_LEN);
 
 
 #define PFQ_QBUFF_QUEUE(q) \
-	__builtin_choose_expr(__builtin_types_compatible_p(typeof(q),struct pfq_qbuff_batch *),      (struct pfq_qbuff_queue *)(q), \
+	__builtin_choose_expr(__builtin_types_compatible_p(typeof(q),struct pfq_qbuff_batch_queue *),(struct pfq_qbuff_queue *)(q), \
 	__builtin_choose_expr(__builtin_types_compatible_p(typeof(q),struct pfq_qbuff_long_queue *), (struct pfq_qbuff_queue *)(q), (void)0))
 
 
-#define PFQ_QBUFF_REFS(q) \
-	__builtin_choose_expr(__builtin_types_compatible_p(typeof(q),struct pfq_ref_batch *),	    (struct pfq_qbuff_refs *)(q), \
-	__builtin_choose_expr(__builtin_types_compatible_p(typeof(q),struct pfq_ref_long_queue *), (struct pfq_qbuff_refs *)(q), (void)0))
-
-
 #define PFQ_QBUFF_QUEUE_AT(q, n) \
-	__builtin_choose_expr(__builtin_types_compatible_p(typeof(q),struct pfq_qbuff_batch *),       (struct qbuff  *)(&((q)->queue[n])), \
+	__builtin_choose_expr(__builtin_types_compatible_p(typeof(q),struct pfq_qbuff_batch_queue *), (struct qbuff  *)(&((q)->queue[n])), \
 	__builtin_choose_expr(__builtin_types_compatible_p(typeof(q),struct pfq_qbuff_long_queue *),  (struct qbuff  *)(&((q)->queue[n])), \
-	__builtin_choose_expr(__builtin_types_compatible_p(typeof(q),struct pfq_qbuff_queue *),       (struct qbuff  *)(&((q)->queue[n])), \
-	__builtin_choose_expr(__builtin_types_compatible_p(typeof(q),struct pfq_ref_batch *),	      *(struct qbuff **)(&((q)->queue[n])), \
-	__builtin_choose_expr(__builtin_types_compatible_p(typeof(q),struct pfq_ref_long_queue *),   *(struct qbuff **)(&((q)->queue[n])), \
-	__builtin_choose_expr(__builtin_types_compatible_p(typeof(q),struct pfq_qbuff_refs *),	      *(struct qbuff **)(&((q)->queue[n])), (void)0))))))
+	__builtin_choose_expr(__builtin_types_compatible_p(typeof(q),struct pfq_qbuff_queue *),       (struct qbuff  *)(&((q)->queue[n])),  (void)0)))
 
 
 #define STATIC_TYPE(typ, val) __builtin_choose_expr(__builtin_types_compatible_p(typ, typeof((val))), 0, (void)0)

@@ -26,7 +26,6 @@
 
 #include <pfq/group.h>
 #include <pfq/define.h>
-#include <pfq/GC.h>
 
 #include <pfq/sparse.h>
 #include <pfq/kcompat.h>
@@ -149,7 +148,7 @@ static inline
 struct qbuff *
 to_kernel(struct qbuff * buff)
 {
-        buff->log->to_kernel = true;
+        buff->to_kernel = true;
         return buff;
 }
 

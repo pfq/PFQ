@@ -266,8 +266,7 @@ struct pfq_pkthdr_info
                 uint16_t     tci;
         } vlan;
 
-        uint8_t      gid;			/* group id */
-        uint8_t      queue;			/* hardware queue */
+        uint16_t      queue;			/* hardware queue */
         uint32_t     commit;                    /* commit round */
 };
 

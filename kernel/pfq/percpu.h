@@ -25,7 +25,6 @@
 #define PFQ_PERCPU_H
 
 
-#include <pfq/GC.h>
 #include <pfq/define.h>
 #include <pfq/global.h>
 #include <pfq/kcompat.h>
@@ -33,11 +32,12 @@
 #include <pfq/printk.h>
 #include <pfq/spsc_fifo.h>
 #include <pfq/timer.h>
+#include <pfq/qbuff.h>
 
 #include <linux/spinlock.h>
 
 extern int  pfq_percpu_init(void);
-extern int  pfq_percpu_GC_reset(void);
+extern int  pfq_percpu_qbuff_queue_reset(void);
 extern int  pfq_percpu_destruct(void);
 
 
@@ -57,32 +57,14 @@ void pfq_percpu_free(void);
 
 struct pfq_percpu_data
 {
-	struct GC_data		*GC;
+	struct pfq_qbuff_long_queue  *qbuff_queue;
 
 	ktime_t			last_rx;
 	struct timer_list	timer;
 	uint32_t		counter;
 
-        unsigned long		sock_eligible_mask;
-	unsigned long           sock_mask[Q_MAX_SOCK_MASK];
-        int                     sock_cnt;
-
 } ____pfq_cacheline_aligned;
 
-
-static inline void
-pfq_invalidate_percpu_eligible_mask(pfq_id_t id)
-{
-	int cpu;
-
-	(void)id;
-	for_each_present_cpu(cpu)
-	{
-		struct pfq_percpu_data * this_data = per_cpu_ptr(global->percpu_data, cpu);
-		this_data->sock_eligible_mask = 0;
-		this_data->sock_cnt = 0;
-	}
-}
 
 
 #endif /* PFQ_PERCPU_H */

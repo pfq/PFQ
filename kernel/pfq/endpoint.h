@@ -30,6 +30,7 @@
 #include <pfq/kcompat.h>
 
 
+struct pfq_qbuff_queue;
 struct pfq_sock;
 struct net_device;
 struct qbuff;
@@ -54,9 +55,8 @@ struct pfq_endpoint_info
 extern void pfq_add_dev_to_endpoints(struct net_device *dev, struct pfq_endpoint_info *ts);
 
 extern size_t pfq_copy_to_endpoint_qbuffs( struct pfq_sock *so
-					 , struct pfq_qbuff_refs *buffs
+					 , struct pfq_qbuff_queue *buffs
 					 , unsigned long long mask
-					 , int cpu
-					 , pfq_gid_t gid);
+					 , int cpu);
 
 #endif /* PFQ_ENDPOINT_H */
