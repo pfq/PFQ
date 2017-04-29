@@ -917,15 +917,16 @@ int pfq_receive_run( struct pfq_percpu_data *data
 {
 	unsigned long long socket_mask[Q_MAX_ID] = { 0 };
 	unsigned long long all_fwd_mask = 0;
-
 	size_t n, len = data->qbuff_queue->len;
+        struct qbuff *buff;
         unsigned int bit;
 
+#if 1
 	/* transpose the forward matrix */
 
 	for(n = 0; n < len; n++)
 	{
-		struct qbuff *buff = &data->qbuff_queue->queue[n];
+		buff = &data->qbuff_queue->queue[n];
 		all_fwd_mask |= buff->fwd_mask;
 		pfq_bitwise_foreach(buff->fwd_mask, bit,
 		{
@@ -944,7 +945,32 @@ int pfq_receive_run( struct pfq_percpu_data *data
 		pfq_copy_to_endpoint_qbuffs(so, PFQ_QBUFF_QUEUE(data->qbuff_queue), socket_mask[(int __force)id], cpu);
 	});
 
+	/* forward packets to device */
 
+
+	/* forward packats to kernel and release them */
+
+	for_each_qbuff(PFQ_QBUFF_QUEUE(data->qbuff_queue), buff, n)
+	{
+		if (fwd_to_kernel(buff)) {
+
+			bool peeked = QBUFF_SKB(buff)->peeked;
+
+			qbuff_move_or_copy_to_kernel(buff, GFP_KERNEL);
+
+			/* only if peeked we need to free/recycle the qbuff/skb */
+			if (peeked)
+				qbuff_free(buff, &pool->rx);
+
+			__sparse_inc(global->percpu_stats, kern, cpu);
+		}
+		else {
+			/* Peeked or not, always free the qbuff/skb here */
+			qbuff_free(buff, &pool->rx);
+		}
+	}
+
+#else
 	/* release the qbuff */
 
 	for(n = 0; n < len; n++)
@@ -954,6 +980,8 @@ int pfq_receive_run( struct pfq_percpu_data *data
 	}
 
 	data->qbuff_queue->len = 0;
+#endif
+
 	return 0;
 }
 
