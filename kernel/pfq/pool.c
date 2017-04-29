@@ -72,19 +72,6 @@ pfq_skb_pool_flush(struct pfq_skb_pool *pool)
 	pfq_free_pages(pool->base, pool->base_size);
 	pfq_free_pages(pool->data, pool->data_size);
 
-#if 0
-	while ((skb = pfq_spsc_pop(pool->fifo)))
-	{
-		sparse_inc(global->percpu_memory, os_free);
-		if (atomic_read(&skb->users) > 1) {
-			in_use++;
-		}
-		kfree(PFQ_CB(skb)->skb_orig);
-		kfree_skb(skb);
-		total++;
-	}
-#endif
-
 	if (in_use)
 		printk(KERN_WARNING "[PFQ] error: pfq_skb_pool_flush: pool@%p -> %zu buffers still in use!!\n", pool, in_use);
 
