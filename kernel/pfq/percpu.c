@@ -72,7 +72,7 @@ void pfq_percpu_free(void)
 	for_each_present_cpu(cpu) {
 
 		struct pfq_percpu_data *data = per_cpu_ptr(global->percpu_data, cpu);
-		kfree(data->qbuff_queue);
+		pfq_free_pages(data->qbuff_queue, sizeof(struct pfq_qbuff_long_queue));
 	}
 
 	free_percpu(global->percpu_stats);
@@ -99,7 +99,7 @@ int pfq_percpu_init(void)
 
 		data->counter = 0;
 
-		data->qbuff_queue = (struct pfq_qbuff_long_queue *) kmalloc_node(sizeof(struct pfq_qbuff_long_queue), GFP_KERNEL, cpu_to_node(cpu));
+		data->qbuff_queue = pfq_malloc_pages(sizeof(struct pfq_qbuff_long_queue), GFP_KERNEL);
 		if (!data->qbuff_queue)
 			return -ENOMEM;
 
