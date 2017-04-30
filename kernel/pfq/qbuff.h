@@ -104,7 +104,7 @@ PFQ_DEFINE_QUEUE(struct pfq_qbuff_long_queue,  Q_BUFF_QUEUE_LEN);
 
 #define for_each_qbuff_with_mask(mask, q, buff, n) \
         for((n) = pfq_ctz(mask); ((n) < (q)->len) && (mask) && ((buff) = PFQ_QBUFF_QUEUE_AT((q),n)); \
-                (mask) ^=(1ULL << (n)), n = pfq_ctz(mask))
+                (mask) ^=(((unsigned __int128)1) << (n)), n = pfq_ctz(mask))
 
 
 #define for_each_qbuff_from(x, q, buff, n) \
