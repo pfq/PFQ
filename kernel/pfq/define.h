@@ -54,7 +54,7 @@
 #define Q_GROUP_PERSIST_MEM		64
 #define Q_GROUP_PERSIST_DATA		1024
 
-#define Q_MAX_POOL_SIZE			16384
+#define Q_MAX_POOL_SIZE			2048
 #define Q_MAX_SOCKQUEUE_LEN		262144
 
 #define Q_INVALID_ID			(__force pfq_id_t)-1

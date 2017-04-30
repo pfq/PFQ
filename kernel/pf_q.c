@@ -422,25 +422,25 @@ static int __init pfq_init_module(void)
 
 	/* check options */
 
-        if (global->capt_batch_len <= 0 || global->capt_batch_len > Q_BUFF_BATCH_LEN) {
-                printk(KERN_INFO "[PFQ] capt_batch_len=%d not allowed: valid range (0,%d]!\n",
+        if (global->capt_batch_len <= 0 || global->capt_batch_len >= Q_BUFF_BATCH_LEN) {
+                printk(KERN_INFO "[PFQ] capt_batch_len=%d not allowed: valid range (0,%d)!\n",
                        global->capt_batch_len, Q_BUFF_BATCH_LEN);
                 return -EFAULT;
         }
 
-        if (global->xmit_batch_len <= 0 || global->xmit_batch_len > (Q_BUFF_BATCH_LEN*4)) {
-                printk(KERN_INFO "[PFQ] xmit_batch_len=%d not allowed: valid range (0,%d]!\n",
-                       global->xmit_batch_len, Q_BUFF_BATCH_LEN * 4);
+        if (global->xmit_batch_len <= 0 || global->xmit_batch_len >= Q_BUFF_BATCH_LEN) {
+                printk(KERN_INFO "[PFQ] xmit_batch_len=%d not allowed: valid range (0,%d)!\n",
+                       global->xmit_batch_len, Q_BUFF_BATCH_LEN);
                 return -EFAULT;
         }
 
-	if (global->skb_tx_pool_size > Q_MAX_POOL_SIZE) {
-                printk(KERN_INFO "[PFQ] skb_tx_pool_size=%d not allowed: valid range [0,%d]!\n",
+	if (global->skb_tx_pool_size >= Q_MAX_POOL_SIZE) {
+                printk(KERN_INFO "[PFQ] skb_tx_pool_size=%d not allowed: valid range (0,%d)!\n",
                        global->skb_tx_pool_size, Q_MAX_POOL_SIZE);
 		return -EFAULT;
 	}
-	if (global->skb_rx_pool_size > Q_MAX_POOL_SIZE) {
-                printk(KERN_INFO "[PFQ] skb_rx_pool_size=%d not allowed: valid range [0,%d]!\n",
+	if (global->skb_rx_pool_size >= Q_MAX_POOL_SIZE) {
+                printk(KERN_INFO "[PFQ] skb_rx_pool_size=%d not allowed: valid range (0,%d)!\n",
                        global->skb_rx_pool_size, Q_MAX_POOL_SIZE);
 		return -EFAULT;
 	}
