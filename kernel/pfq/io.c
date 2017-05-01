@@ -1023,7 +1023,6 @@ size_t pfq_sk_queue_recv(struct pfq_sock_opt *opt,
 	for_each_qbuff_with_mask(mask, buffs, buff, n)
 	{
 		struct sk_buff *skb = QBUFF_SKB(buff);
-		struct pfq_pkthdr lhdr;
 		size_t bytes, slot_index;
 		char *pkt;
 
@@ -1033,7 +1032,6 @@ size_t pfq_sk_queue_recv(struct pfq_sock_opt *opt,
 		pkt = (char *)(hdr+1);
 		slot_index = qlen + copied;
 
-		prefetch_r2(skb->data);
 		prefetch_w0(hdr);
 		prefetch_w0((char *)hdr + 64);
 
@@ -1063,26 +1061,25 @@ size_t pfq_sk_queue_recv(struct pfq_sock_opt *opt,
 		if (likely(opt->tstamp != 0)) {
 			struct timespec ts;
 			skb_get_timestampns(skb, &ts);
-			lhdr.tstamp.tv.sec  = (uint32_t)ts.tv_sec;
-			lhdr.tstamp.tv.nsec = (uint32_t)ts.tv_nsec;
+			hdr->tstamp.tv.sec  = (uint32_t)ts.tv_sec;
+			hdr->tstamp.tv.nsec = (uint32_t)ts.tv_nsec;
 		}
 
-		lhdr.caplen = (uint16_t)bytes;
-		lhdr.len = (uint16_t)skb->len;
+		hdr->caplen = (uint16_t)bytes;
+		hdr->len = (uint16_t)skb->len;
 
 		/* copy state from pfq_cb annotation */
 
-		lhdr.info.data.mark  = skb->mark;
+		hdr->info.data.mark  = skb->mark;
 
 		/* setup the header */
 
-		lhdr.info.ifindex = skb->dev->ifindex;
-		lhdr.info.vlan.tci = skb->vlan_tci & ~VLAN_TAG_PRESENT;
-		lhdr.info.queue	= skb_rx_queue_recorded(skb) ? (uint16_t)skb_get_rx_queue(skb) : 0;
+		hdr->info.ifindex = skb->dev->ifindex;
+		hdr->info.vlan.tci = skb->vlan_tci & ~VLAN_TAG_PRESENT;
+		hdr->info.queue	= skb_rx_queue_recorded(skb) ? (uint16_t)skb_get_rx_queue(skb) : 0;
 
 		/* commit the slot (release semantic) */
 
-                __builtin_memcpy(hdr, &lhdr, sizeof(struct pfq_pkthdr));
 		__atomic_store_n(&hdr->info.commit, qver, __ATOMIC_RELEASE);
 
 		/* check for pending waitqueue... */
