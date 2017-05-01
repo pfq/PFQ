@@ -1124,7 +1124,7 @@ namespace pfq {
                 if (async != no_kthread) {
                     if (unlikely(data_->tx_num_async == 0))
                         throw system_error("PFQ: send: socket not bound to async threads");
-                    tss = static_cast<int>(fold(async == any_kthread ? 
+                    tss = static_cast<int>(fold(async == any_kthread ?
                                                 symmetric_hash(buf) : static_cast<uint32_t>(async), static_cast<uint32_t>(data_->tx_num_async)));
                     return &static_cast<struct pfq_shared_queue *>(data_->shm_addr)->tx_async[tss];
                 }
@@ -1196,7 +1196,7 @@ namespace pfq {
         void
         sync_queue(int queue = 0)
         {
-            
+
 #if 1
             if (::setsockopt(data()->fd, PF_Q, Q_SO_TX_QUEUE_XMIT, &queue, sizeof(queue)) == -1)
                 throw system_error(errno, "PFQ: Tx queue");
