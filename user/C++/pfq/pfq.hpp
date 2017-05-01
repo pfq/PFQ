@@ -1165,7 +1165,7 @@ namespace pfq {
 
             // compute the current dynamic slot_size:
             //
-            auto this_slot_size = align<64>(sizeof(struct pfq_pkthdr) + caplen);
+            auto this_slot_size = align<PFQ_SLOT_ALIGNMENT>(sizeof(struct pfq_pkthdr) + caplen);
 
             // ensure there's enough space for the current this_slot_size + the next header:
             //

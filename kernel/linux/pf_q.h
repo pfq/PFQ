@@ -83,16 +83,18 @@ typedef uint8_t  pfq_qver_t;
 #define PFQ_SHARED_QUEUE_VER(shinfo)		((shinfo) >> (PFQ_SHARED_QUEUE_LEN_SIZE<<3))
 #define PFQ_SHARED_QUEUE_LEN(shinfo)		((shinfo) & PFQ_SHARED_QUEUE_LEN_MASK)
 
-#define PFQ_SHARED_QUEUE_SLOT_SIZE(x)		ALIGN(sizeof(struct pfq_pkthdr) + x, 64)
+#define PFQ_SLOT_ALIGNMENT			32
+
+#define PFQ_SHARED_QUEUE_SLOT_SIZE(x)		ALIGN(sizeof(struct pfq_pkthdr) + x, PFQ_SLOT_ALIGNMENT)
 
 #define PFQ_SHARED_QUEUE_NEXT_PKTHDR(hdr, fix)	((struct pfq_pkthdr *)\
 						 (fix ? \
 						  (char *)(hdr) + fix :\
-						  (char *)(hdr) + ALIGN(sizeof(struct pfq_pkthdr) + hdr->caplen, 64)))
+						  (char *)(hdr) + ALIGN(sizeof(struct pfq_pkthdr) + hdr->caplen, PFQ_SLOT_ALIGNMENT)))
 
 
 #define PFQ_SHARED_QUEUE_NEXT_FIX_PKTHDR(hdr, fix) ((struct pfq_pkthdr *)((char *)(hdr) + fix))
-#define PFQ_SHARED_QUEUE_NEXT_VAR_PKTHDR(hdr)	   ((struct pfq_pkthdr *)((char *)(hdr) + ALIGN(sizeof(struct pfq_pkthdr) + hdr->caplen, 64)))
+#define PFQ_SHARED_QUEUE_NEXT_VAR_PKTHDR(hdr)	   ((struct pfq_pkthdr *)((char *)(hdr) + ALIGN(sizeof(struct pfq_pkthdr) + hdr->caplen, PFQ_SLOT_ALIGNMENT)))
 
 
 
