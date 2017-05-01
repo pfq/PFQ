@@ -5,7 +5,7 @@
 TARGET = pfq
 
 EXTRA_CFLAGS += -I$(obj)
-EXTRA_CFLAGS += -g -O3 -march=native -fomit-frame-pointer -Wno-attributes
+EXTRA_CFLAGS += -g -O3 -march=native -Wno-attributes
 EXTRA_CFLAGS += -DEXPORT_SYMTAB
 
 EXTRA_CFLAGS += -DPFQ_USE_PREFETCH
