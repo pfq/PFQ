@@ -39,7 +39,7 @@ endif()
 # C++ compiler-specific options
 #
 
-set(CMAKE_CXX_FLAGS                "${CMAKE_CXX_FLAGS} ${CXX_FLAGS_COMPAT} -O3 -march=native -Wall -Wextra")
+set(CMAKE_CXX_FLAGS                "${CMAKE_CXX_FLAGS} ${CXX_FLAGS_COMPAT} -O3 -march=native -fomit-frame-pointer -Wall -Wextra")
 
 if (COMP_VERSION VERSION_EQUAL 4.8 OR COMP_VERSION VERSION_GREATER 4.8)
     set(CMAKE_CXX_FLAGS_DEBUG      "${CMAKE_CXX_FLAGS_DEBUG} ${CXX_FLAGS_COMPAT} -Wall -Wextra -Wconversion -Wsign-conversion -fsanitize=address")
@@ -54,7 +54,7 @@ set(CMAKE_CXX_FLAGS_RELEASE        "${CMAKE_CXX_FLAGS_RELEASE} ${CXX_FLAGS_COMPA
 # C compiler-specific options
 #
 
-set(CMAKE_C_FLAGS                   "${CMAKE_C_FLAGS} -O3 -march=native -Wall -Wextra")
+set(CMAKE_C_FLAGS                   "${CMAKE_C_FLAGS} -O3 -march=native -fomit-frame-pointer -Wall -Wextra")
 set(CMAKE_C_FLAGS_DEBUG             "${CMAKE_C_FLAGS_DEBUG} -Wall -Wextra -Wconversion -Wsign-conversion -Wshadow")
 set(CMAKE_C_FLAGS_MINSIZEREL        "${CMAKE_C_FLAGS_MINSIZEREL} -Wall -Wextra")
 set(CMAKE_C_FLAGS_RELEASE           "${CMAKE_C_FLAGS_RELEASE} -Wall -Wextra")
