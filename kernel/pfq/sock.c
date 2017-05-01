@@ -300,13 +300,13 @@ pfq_sock_disable(struct pfq_sock *so)
 		pr_devel("[PFQ|%d] unbinding Tx threads...\n", so->id);
 		pfq_sock_tx_unbind(so);
 
-		pr_devel("[PFQ|%d] unlinking shared queue...\n", so->id);
-		pfq_shared_queue_unlink(so);
+		pr_devel("[PFQ|%d] leaving all groups...\n", so->id);
+		pfq_group_leave_all(so->id);
 
 		msleep(Q_GRACE_PERIOD);
 
-		pr_devel("[PFQ|%d] leaving all groups...\n", so->id);
-		pfq_group_leave_all(so->id);
+		pr_devel("[PFQ|%d] unlinking shared queue...\n", so->id);
+		pfq_shared_queue_unlink(so);
 
 		msleep(Q_GRACE_PERIOD);
 
