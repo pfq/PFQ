@@ -106,8 +106,7 @@ pfq_sock_get_by_id(pfq_id_t id)
                 pr_devel("[PFQ] pfq_get_sock_by_id: bad id=%d!\n", id);
                 return NULL;
         }
-	so = (struct pfq_sock *)atomic_long_read(&global->socket_ptr[(__force int)id]);
-	return so;
+	return (struct pfq_sock *)atomic_long_read(&global->socket_ptr[(__force int)id]);
 }
 
 

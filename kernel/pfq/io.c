@@ -844,9 +844,11 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb)
 			 			pfq_id_t id = (__force pfq_id_t)pfq_ctz(sbit);
 			 			struct pfq_sock * so = pfq_sock_get_by_id(id);
                                                 int i;
-
-			 			for(i = 0; i < so->weight; ++i)
-			 			 	steer_mask[steer_mask_numb++] = sbit;
+						if (likely(so))
+						{
+							for(i = 0; i < so->weight; ++i)
+								steer_mask[steer_mask_numb++] = sbit;
+						}
 			 		});
 
 			 		buff->fwd_mask |= steer_mask[pfq_fold(prefold(monad.fanout.hash), (unsigned int)steer_mask_numb)];
@@ -930,8 +932,10 @@ int pfq_receive_run( struct pfq_percpu_data *data
 	{
 		pfq_id_t id = (__force pfq_id_t)pfq_ctz(bit);
 		struct pfq_sock *so = pfq_sock_get_by_id(id);
-
-		pfq_copy_to_endpoint_qbuffs(so, PFQ_QBUFF_QUEUE(data->qbuff_queue), socket_mask[(int __force)id], cpu);
+		if (likely(so))
+		{
+			pfq_copy_to_endpoint_qbuffs(so, PFQ_QBUFF_QUEUE(data->qbuff_queue), socket_mask[(int __force)id], cpu);
+		}
 	});
 
 	/* forward packets to device */
