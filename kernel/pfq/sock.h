@@ -155,7 +155,7 @@ static inline
 struct pfq_shared_queue *
 pfq_sock_shared_queue(struct pfq_sock *p)
 {
-        return (struct pfq_shared_queue *) p->shmem.addr;
+        return (struct pfq_shared_queue *) atomic_long_read(&p->shmem.addr);
 }
 
 

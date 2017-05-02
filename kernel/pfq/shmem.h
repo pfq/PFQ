@@ -26,6 +26,7 @@
 
 #include <linux/vmalloc.h>
 #include <linux/net.h>
+#include <linux/atomic.h>
 
 struct pfq_sock;
 
@@ -49,7 +50,7 @@ struct pfq_pages_descr
 struct pfq_shmem_descr
 {
 	int			id;
-	void *			addr;
+	atomic_long_t		addr;
 	size_t			size;
 	enum pfq_shmem_kind     kind;
 	struct pfq_pages_descr *hugepages_descr;

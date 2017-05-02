@@ -165,7 +165,7 @@ int pfq_sock_init(struct pfq_sock *so, pfq_id_t id, size_t caplen, size_t maxlen
 
 	so->weight = 1;
 
-        so->shmem.addr = NULL;
+        atomic_long_set(&so->shmem.addr,0);
         so->shmem.size = 0;
         so->shmem.kind = 0;
         so->shmem.hugepages_descr = NULL;
@@ -285,7 +285,7 @@ pfq_sock_enable(struct pfq_sock *so, struct pfq_so_enable *mem)
 int
 pfq_sock_disable(struct pfq_sock *so)
 {
-	if (so->shmem.addr) {
+	if (atomic_long_read(&so->shmem.addr)) {
 
 		/* unbind Tx threads */
 
