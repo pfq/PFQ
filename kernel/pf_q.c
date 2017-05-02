@@ -78,7 +78,6 @@
 #include <pfq/io.h>
 
 
-
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Nicola Bonelli <nicola@pfq.io>");
 MODULE_DESCRIPTION("Functional Networking Framework for Multi-core Architectures");
@@ -177,8 +176,7 @@ static int pfq_ioctl(struct socket *sock, unsigned int cmd, unsigned long arg)
 		}
 
 		if (likely(arg == 0)) { /* transmit Tx queue */
-			atomic_t stop = {0};
-			tx_response_t tx = pfq_sk_queue_xmit(so, -1, Q_NO_KTHREAD, &stop);
+			tx_response_t tx = pfq_sk_queue_xmit(so, -1, Q_NO_KTHREAD);
 
 			sparse_add(so->stats, sent, tx.ok);
 			sparse_add(so->stats, fail, tx.fail);

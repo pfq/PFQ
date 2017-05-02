@@ -42,10 +42,12 @@
 #endif
 
 
-extern void pfq_sock_init_once(void);
-extern void pfq_sock_fini_once(void);
-extern void pfq_sock_init_waitqueue_head(wait_queue_head_t *queue);
-extern void pfq_sock_destruct(struct sock *sk);
+static inline struct pfq_sock *
+pfq_sk(struct sock *sk)
+{
+        return (struct pfq_sock *)(sk);
+}
+
 
 #define for_each_sk_mbuff(hdr, end, fix) \
         for(; (hdr < (struct pfq_pkthdr *)end); \
@@ -54,20 +56,17 @@ extern void pfq_sock_destruct(struct sock *sk);
 
 struct pfq_queue_info
 {
-	void			*shmem_addr;
-	int			ifindex;		/* ifindex */
-	int			queue;			/* queue */
+	int	ifindex;
+	int	queue;
 };
 
 
 static inline
 void pfq_queue_info_init(struct pfq_queue_info *info)
 {
-	info->shmem_addr = NULL;
 	info->ifindex = -1;
 	info->queue = -1;
 }
-
 
 
 struct pfq_sock
@@ -159,13 +158,10 @@ pfq_sock_tx_shared_queue(struct pfq_sock *so, int index)
 }
 
 
-
-static inline struct pfq_sock *
-pfq_sk(struct sock *sk)
-{
-        return (struct pfq_sock *)(sk);
-}
-
+extern void     pfq_sock_init_once(void);
+extern void     pfq_sock_fini_once(void);
+extern void     pfq_sock_init_waitqueue_head(wait_queue_head_t *queue);
+extern void     pfq_sock_destruct(struct sock *sk);
 
 extern pfq_id_t pfq_sock_get_free_id(struct pfq_sock * so);
 extern int	pfq_sock_init(struct pfq_sock *so, pfq_id_t id, size_t caplen, size_t maxlen);

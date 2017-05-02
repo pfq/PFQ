@@ -42,7 +42,7 @@
 
 #define Q_MAX_TX_SKB_COPY		256
 
-#define Q_GRACE_PERIOD			300 /* msec */
+#define Q_GRACE_PERIOD			200 /* msec */
 
 #define Q_FUN_SYMB_LEN			256
 #define Q_FUN_SIGN_LEN			1024

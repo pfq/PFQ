@@ -56,8 +56,6 @@ pfq_shared_queue_enable(struct pfq_sock *so, unsigned long user_addr, size_t use
 		mapped_queue->rx.size      = (unsigned int)pfq_mpsc_queue_mem(so)/2;
 		mapped_queue->rx.slot_size = (unsigned int)so->rx_slot_size;
 
-		so->rx.shmem_addr = so->shmem.addr + sizeof(struct pfq_shared_queue);
-
 		/* reset Rx slots */
 
 		for(i = 0; i < 2; i++)
@@ -79,9 +77,6 @@ pfq_shared_queue_enable(struct pfq_sock *so, unsigned long user_addr, size_t use
 		mapped_queue->tx.cons.index = 0;
 		mapped_queue->tx.cons.off   = 0;
 
-		so->tx.shmem_addr = so->shmem.addr + sizeof(struct pfq_shared_queue) + pfq_mpsc_queue_mem(so);
-
-
 		/* initialize TX async queues */
 
 		for(n = 0; n < Q_MAX_TX_QUEUES; n++)
@@ -93,10 +88,6 @@ pfq_shared_queue_enable(struct pfq_sock *so, unsigned long user_addr, size_t use
 			mapped_queue->tx_async[n].prod.off1  = 0;
 			mapped_queue->tx_async[n].cons.index = 0;
 			mapped_queue->tx_async[n].cons.off   = 0;
-
-			so->tx_async[n].shmem_addr = so->shmem.addr + sizeof(struct pfq_shared_queue)
-				+ pfq_mpsc_queue_mem(so)
-				+ pfq_spsc_queue_mem(so) * (1 + n);
 		}
 
 		/* commit queues */
@@ -134,10 +125,9 @@ pfq_shared_queue_enable(struct pfq_sock *so, unsigned long user_addr, size_t use
 int
 pfq_shared_queue_unmap(struct pfq_sock *so)
 {
-	if (atomic_long_read(&so->shmem_addr)) {
-		atomic_long_set(&so->shmem_addr,0);
-		// TODO sleep here...?
+	if (so->shmem.addr) {
 		pfq_shared_memory_free(&so->shmem);
+		so->shmem.addr = NULL;
 	}
 
 	pr_devel("[PFQ|%d] Rx/Tx shared queues unmapped.\n", so->id);

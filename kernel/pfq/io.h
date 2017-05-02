@@ -75,7 +75,6 @@ struct pfq_mbuff_xmit_context
 	unsigned long		jiffies;
 	int			node;
 	int			copies;
-	atomic_t const		*stop;
 	bool			*intr;
 	bool			xmit_more;
 };
@@ -97,7 +96,7 @@ pfq_count_fwd_devs(struct net_device *dev, struct net_device **devs, size_t num_
 /* socket queues */
 
 extern tx_response_t
-pfq_sk_queue_xmit(struct pfq_sock *so, int qindex, int cpu, atomic_t const *stop);
+pfq_sk_queue_xmit(struct pfq_sock *so, int qindex, int cpu);
 
 
 /* skb queues */

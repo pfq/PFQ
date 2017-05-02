@@ -100,7 +100,7 @@ pfq_tx_thread(void *_data)
 
 			if (sock_queue != -1 && sock != NULL) {
 				reg = true;
-				tx = pfq_sk_queue_xmit(sock, sock_queue, data->cpu, &data->sock_queue[n]);
+				tx = pfq_sk_queue_xmit(sock, sock_queue, data->cpu);
 				total_sent += tx.ok;
 
 				sparse_add(sock->stats,	  sent, tx.ok);

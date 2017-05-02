@@ -350,10 +350,9 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr,
  */
 
 tx_response_t
-pfq_sk_queue_xmit(struct pfq_sock *so,
-		  int sock_queue,
-		  int cpu,
-		  atomic_t const *stop)
+pfq_sk_queue_xmit( struct pfq_sock *so
+		 , int sock_queue
+		 , int cpu)
 {
 	struct pfq_queue_info const * txinfo = pfq_sock_get_tx_queue_info(so, sock_queue);
 	struct pfq_dev_queue dev_queue = {.dev = NULL, .queue = NULL, .mapping = 0};
@@ -364,6 +363,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so,
 	struct pfq_pkthdr *hdr;
 	ptrdiff_t prod_off;
         char *begin, *end;
+        void *tx_queue_mem;
         tx_response_t rc = {0};
 
 	/* get the Tx queue descriptor */
@@ -371,6 +371,10 @@ pfq_sk_queue_xmit(struct pfq_sock *so,
 	tx_queue = pfq_sock_tx_shared_queue(so, sock_queue);
 	if (unlikely(tx_queue == NULL))
 		return rc; /* socket not enabled... */
+
+	tx_queue_mem = pfq_sock_tx_queue_mem(so,sock_queue);
+	BUG_ON(tx_queue_mem == NULL);
+
 
 	/* enable skb_pool for Tx threads */
 
@@ -389,8 +393,8 @@ pfq_sk_queue_xmit(struct pfq_sock *so,
 	/* initialize the boundaries of this queue */
 
 	prod_off = maybe_swap_sk_tx_queue(tx_queue, &cons_idx);
-	begin    = txinfo->shmem_addr + (cons_idx & 1) * tx_queue->size + tx_queue->cons.off;
-	end      = txinfo->shmem_addr + (cons_idx & 1) * tx_queue->size + prod_off;
+	begin    = tx_queue_mem + (cons_idx & 1) * tx_queue->size + tx_queue->cons.off;
+	end      = tx_queue_mem + (cons_idx & 1) * tx_queue->size + prod_off;
 
         /* setup the context */
 
@@ -398,7 +402,6 @@ pfq_sk_queue_xmit(struct pfq_sock *so,
 	ctx.now	    = ktime_get_real();
 	ctx.jiffies = jiffies;
         ctx.node    = cpu == -1 ? NUMA_NO_NODE : cpu_to_node(cpu);
-        ctx.stop    = stop;
 
 	/* lock the dev_queue */
 
@@ -702,15 +705,16 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb)
 	/* if no socket is open drop the packet */
 
         cpu = smp_processor_id();
+	pool = per_cpu_ptr(global->percpu_pool, cpu);
 
 	if (unlikely(pfq_sock_counter() == 0)) {
 		if (skb) {
 			sparse_inc(global->percpu_memory, os_free);
-			pool = per_cpu_ptr(global->percpu_pool, cpu);
 			pfq_free_skb_pool(skb, &pool->rx);
 		}
 		return 0;
 	}
+
 
 	data = per_cpu_ptr(global->percpu_data, cpu);
 
@@ -719,6 +723,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb)
 		struct pfq_lang_monad monad;
 		unsigned long group_mask;
 		struct qbuff *buff;
+		ktime_t current_rx;
 
 		/* if required, timestamp the packet now */
 		if (skb->tstamp.tv64 == 0)
@@ -743,7 +748,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb)
 
 		buff = &data->qbuff_queue->queue[data->qbuff_queue->len];
 
-		qbuff_init(buff
+		qbuff_init( buff
 			  , skb
 			  , &monad
 			  , data->counter++);
@@ -760,8 +765,10 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb)
 		{
 			pfq_gid_t gid = (__force pfq_gid_t)pfq_ctz(bit);
 			struct pfq_group * this_group = pfq_group_get(gid);
-
 			struct pfq_lang_computation_tree *prg;
+
+			if (!this_group)
+				continue;
 
 			/* increment counter for this group */
 
@@ -837,24 +844,27 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb)
 			 		unsigned long steer_mask[Q_MAX_STEERING_MASK];
 			 		unsigned int sbit, steer_mask_numb = 0;
 
-					/* compute the load balacing mask list */
+					/* compute the load balancing mask list */
 
 			 		pfq_bitwise_foreach(elig_mask, sbit,
 			 		{
 			 			pfq_id_t id = (__force pfq_id_t)pfq_ctz(sbit);
 			 			struct pfq_sock * so = pfq_sock_get_by_id(id);
-                                                int i;
 						if (likely(so))
 						{
+							int i;
 							for(i = 0; i < so->weight; ++i)
 								steer_mask[steer_mask_numb++] = sbit;
 						}
 			 		});
 
-			 		buff->fwd_mask |= steer_mask[pfq_fold(prefold(monad.fanout.hash), (unsigned int)steer_mask_numb)];
+					if (steer_mask_numb)
+					{
+						buff->fwd_mask |= steer_mask[pfq_fold(prefold(monad.fanout.hash), (unsigned int)steer_mask_numb)];
 
-			 		if (is_double_steering(monad.fanout))
-			 			buff->fwd_mask |= steer_mask[pfq_fold(prefold(monad.fanout.hash2), (unsigned int)steer_mask_numb)];
+						if (is_double_steering(monad.fanout))
+							buff->fwd_mask |= steer_mask[pfq_fold(prefold(monad.fanout.hash2), (unsigned int)steer_mask_numb)];
+					}
 			 	}
 			 	else {  /* broadcast */
 
@@ -867,23 +877,28 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb)
 		}
 		);
 
-		/* this packet is ready to be enqued for transmission or dropped */
+		/* get the current timestamp */
 
-		if (buff->fwd_mask || buff->fwd_dev_num || buff->to_kernel)
-		{
+		current_rx = qbuff_get_ktime(buff);
+
+		/* this packet is ready to be enqueued for transmission or possibly dropped */
+
+		if (buff->fwd_mask || buff->fwd_dev_num || buff->to_kernel) {
 			/* commit this buff to the queue */
-
 			data->qbuff_queue->len++;
+		}
+		else {  /* or drop and release it */
+			qbuff_free(buff, &pool->rx);
 		}
 
 		/* transmit the queue or wait for the next packet? */
 
 		if (data->qbuff_queue->len < (size_t)global->capt_batch_len &&
-		     ktime_to_ns(ktime_sub(qbuff_get_ktime(buff), data->last_rx)) < 1000000) {
+		     ktime_to_ns(ktime_sub(current_rx, data->last_rx)) < 1000000) {
 			return 0;
 		}
 
-		data->last_rx = qbuff_get_ktime(buff);
+		data->last_rx = current_rx;
 	}
 	else {
 		if (data->qbuff_queue->len == 0)
@@ -895,7 +910,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb)
 	__sparse_add(global->percpu_stats, recv, data->qbuff_queue->len, cpu);
 
 	return pfq_receive_run( data
-			      , per_cpu_ptr(global->percpu_pool, cpu)
+			      , pool
 			      , cpu);
 }
 
@@ -907,15 +922,25 @@ int pfq_receive_run( struct pfq_percpu_data *data
 {
 	unsigned __int128 socket_mask[Q_MAX_ID] = { 0 };
 	unsigned long long all_fwd_mask = 0;
-	size_t n, len = data->qbuff_queue->len;
 	struct pfq_endpoint_info endpoints;
         struct qbuff *buff;
         unsigned int bit;
+	size_t n;
 
-#if 1
+#if 0
+	for(n = 0; n < data->qbuff_queue->len; n++)
+	{
+		struct qbuff *buff = &data->qbuff_queue->queue[n];
+		qbuff_free(buff, &pool->rx);
+	}
+	data->qbuff_queue->len = 0;
+
+	return 0;
+#endif
+
 	/* transpose the forward matrix */
 
-	for(n = 0; n < len; n++)
+	for(n = 0; n < data->qbuff_queue->len; n++)
 	{
 		buff = &data->qbuff_queue->queue[n];
 		all_fwd_mask |= buff->fwd_mask;
@@ -948,38 +973,27 @@ int pfq_receive_run( struct pfq_percpu_data *data
 		__sparse_add(global->percpu_stats, disc, endpoints.cnt_total - total, cpu);
 	}
 
-	/* forward packats to kernel and release them */
+ 	/* forward packats to kernel and release them */
 
-	for_each_qbuff(PFQ_QBUFF_QUEUE(data->qbuff_queue), buff, n)
-	{
-		if (fwd_to_kernel(buff)) {
+ 	for_each_qbuff(PFQ_QBUFF_QUEUE(data->qbuff_queue), buff, n)
+ 	{
+ 		if (fwd_to_kernel(buff)) {
 
-			bool peeked = QBUFF_SKB(buff)->peeked;
+ 			bool peeked = QBUFF_SKB(buff)->peeked;
 
 			qbuff_move_or_copy_to_kernel(buff, GFP_KERNEL);
 
-			/* only if peeked we need to free/recycle the qbuff/skb */
-			if (peeked)
-				qbuff_free(buff, &pool->rx);
+ 			/* only if peeked we need to free/recycle the qbuff/skb */
+ 			if (peeked)
+ 				qbuff_free(buff, &pool->rx);
 
-			__sparse_inc(global->percpu_stats, kern, cpu);
-		}
-		else {
-			/* Peeked or not, always free the qbuff/skb here */
-			qbuff_free(buff, &pool->rx);
-		}
-	}
-
-#else
-	/* release the qbuff */
-
-	for(n = 0; n < len; n++)
-	{
-		struct qbuff *buff = &data->qbuff_queue->queue[n];
-		qbuff_free(buff, &pool->rx);
-	}
-
-#endif
+ 			__sparse_inc(global->percpu_stats, kern, cpu);
+ 		}
+ 		else {
+ 			/* Peeked or not, always free the qbuff here...*/
+ 			qbuff_free(buff, &pool->rx);
+ 		}
+ 	}
 
 	data->qbuff_queue->len = 0;
 	return 0;
@@ -1022,7 +1036,9 @@ size_t pfq_sk_queue_recv(struct pfq_sock *so,
 	qlen = PFQ_SHARED_QUEUE_LEN(data);
 	qver = PFQ_SHARED_QUEUE_VER(data);
 
-	hdr  = (struct pfq_pkthdr *) pfq_mpsc_slot_ptr(so, rx_queue, qver, qlen);
+	hdr  = (struct pfq_pkthdr *) pfq_mpsc_slot_ptr(so, qver, qlen);
+	if (unlikely(hdr == NULL))
+		return 0;
 
 	for_each_qbuff_with_mask(mask, buffs, buff, n)
 	{

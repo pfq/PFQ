@@ -288,8 +288,6 @@ pfq_sock_disable(struct pfq_sock *so)
 {
 	if (atomic_long_read(&so->shmem_addr)) {
 
-		atomic_long_set(&so->shmem_addr, 0);
-
 		/* unbind Tx threads */
 
 		pr_devel("[PFQ|%d] unbinding Tx threads...\n", so->id);
@@ -298,10 +296,12 @@ pfq_sock_disable(struct pfq_sock *so)
 		pr_devel("[PFQ|%d] leaving all groups...\n", so->id);
 		pfq_group_leave_all(so->id);
 
-		// pr_devel("[PFQ|%d] unlinking shared queue...\n", so->id);
-		// pfq_shared_queue_unlink(so);
+		msleep(Q_GRACE_PERIOD);
 
-		msleep(Q_GRACE_PERIOD * 4);
+		pr_devel("[PFQ|%d] disabling shared queue...\n", so->id);
+		atomic_long_set(&so->shmem_addr, 0);
+
+		msleep(Q_GRACE_PERIOD);
 
 		pr_devel("[PFQ|%d] unmapping shared queue...\n", so->id);
 		pfq_shared_queue_unmap(so);

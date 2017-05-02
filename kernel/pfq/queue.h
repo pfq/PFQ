@@ -71,13 +71,40 @@ int pfq_mpsc_queue_index(struct pfq_sock *p)
 }
 
 
+
 static inline
-char *pfq_mpsc_slot_ptr(struct pfq_sock *so, struct pfq_shared_rx_queue *qd, size_t qindex, size_t slot)
+void * pfq_sock_rx_queue_mem(struct pfq_sock *so)
 {
-	(void)qd;
-	return (char *)(so->rx.shmem_addr) + (so->rx_queue_len * (qindex & 1) + slot) * so->rx_slot_size;
+	struct pfq_shared_queue *sq = pfq_sock_shared_queue(so);
+	if (unlikely(sq == NULL))
+		return NULL;
+
+	return (void *)sq + sizeof(struct pfq_shared_queue);
 }
 
+
+static inline
+void *pfq_sock_tx_queue_mem(struct pfq_sock *so, int index)
+{
+	struct pfq_shared_queue *sq = pfq_sock_shared_queue(so);
+	if (unlikely(sq == NULL))
+		return NULL;
+
+	return (void *)sq + sizeof(struct pfq_shared_queue)
+			  + pfq_mpsc_queue_mem(so)
+			  + pfq_spsc_queue_mem(so) * (1 + index);
+}
+
+
+static inline
+char *pfq_mpsc_slot_ptr(struct pfq_sock *so, size_t qindex, size_t slot)
+{
+	void *rx_mem = pfq_sock_rx_queue_mem(so);
+	if (!rx_mem)
+		return NULL;
+
+	return (char *)rx_mem + (so->rx_queue_len * (qindex & 1) + slot) * so->rx_slot_size;
+}
 
 
 #endif /* PFQ_QUEUE_H */
