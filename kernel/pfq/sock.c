@@ -181,7 +181,7 @@ int pfq_sock_init(struct pfq_sock *so, pfq_id_t id, size_t caplen, size_t maxlen
 
 	/* Rx queue setup */
 
-	pfq_rxq_info_init(&so->rxq_info);
+	pfq_rxq_info_init(&so->rx);
 
         so->caplen = caplen;
         so->rx_queue_len = 0;
@@ -189,7 +189,7 @@ int pfq_sock_init(struct pfq_sock *so, pfq_id_t id, size_t caplen, size_t maxlen
 
 	/* Tx queues setup */
 
-	pfq_txq_info_init(&so->txq_info);
+	pfq_txq_info_init(&so->tx);
 
         so->tx_queue_len  = 0;
         so->tx_slot_size  = PFQ_SHARED_QUEUE_SLOT_SIZE(maxlen);
@@ -199,7 +199,7 @@ int pfq_sock_init(struct pfq_sock *so, pfq_id_t id, size_t caplen, size_t maxlen
 
 	for(i = 0; i < Q_MAX_TX_QUEUES; ++i)
 	{
-		pfq_txq_info_init(&so->txq_info_async[i]);
+		pfq_txq_info_init(&so->tx_async[i]);
 	}
         return 0;
 }
@@ -216,16 +216,16 @@ pfq_sock_tx_bind(struct pfq_sock *so, int tid, int ifindex, int qindex)
 		return -EPERM;
 	}
 
-	so->txq_info_async[queue].ifindex = ifindex;
-	so->txq_info_async[queue].queue = qindex;
+	so->tx_async[queue].ifindex = ifindex;
+	so->tx_async[queue].queue = qindex;
 	so->txq_num_async++;
 
 	smp_wmb();
 
 	if ((err = pfq_bind_tx_thread(tid, so, queue)) < 0)
 	{
-		so->txq_info_async[queue].ifindex = -1;
-		so->txq_info_async[queue].queue = -1;
+		so->tx_async[queue].ifindex = -1;
+		so->tx_async[queue].queue = -1;
 		so->txq_num_async--;
 		return err;
 	}
@@ -239,8 +239,8 @@ pfq_sock_tx_unbind(struct pfq_sock *so)
 {
 	size_t n;
 
-	so->txq_info.ifindex = -1;
-	so->txq_info.queue = -1;
+	so->tx.ifindex = -1;
+	so->tx.queue = -1;
 
 	/* unbind async Tx queue */
 
@@ -249,8 +249,8 @@ pfq_sock_tx_unbind(struct pfq_sock *so)
 
 	for(n = 0; n < Q_MAX_TX_QUEUES; ++n)
 	{
-		so->txq_info_async[n].ifindex = -1;
-		so->txq_info_async[n].queue = -1;
+		so->tx_async[n].ifindex = -1;
+		so->tx_async[n].queue = -1;
 	}
 
 	return 0;
