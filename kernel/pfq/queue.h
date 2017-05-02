@@ -79,17 +79,5 @@ char *pfq_mpsc_slot_ptr(struct pfq_sock *so, struct pfq_shared_rx_queue *qd, siz
 }
 
 
-static inline
-void pfq_shared_queue_unlink(struct pfq_sock *so)
-{
-	int n;
-	atomic_long_set(&so->rx.addr, 0);
-	atomic_long_set(&so->tx.addr, 0);
-	for(n = 0; n < Q_MAX_TX_QUEUES; n++)
-	{
-		atomic_long_set(&so->tx_async[n].addr, 0);
-	}
-}
-
 
 #endif /* PFQ_QUEUE_H */

@@ -368,7 +368,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so,
 
 	/* get the Tx queue descriptor */
 
-	tx_queue = pfq_sock_shared_tx_queue(so, sock_queue);
+	tx_queue = pfq_sock_tx_shared_queue(so, sock_queue);
 	if (unlikely(tx_queue == NULL))
 		return rc; /* socket not enabled... */
 
@@ -1007,7 +1007,7 @@ size_t pfq_sk_queue_recv(struct pfq_sock *so,
 			 unsigned __int128 mask,
 			 int burst_len)
 {
-	struct pfq_shared_rx_queue *rx_queue = pfq_sock_shared_rx_queue(so);
+	struct pfq_shared_rx_queue *rx_queue = pfq_sock_rx_shared_queue(so);
 	struct pfq_pkthdr *hdr;
 	struct qbuff *buff;
 	unsigned long data;

@@ -165,11 +165,12 @@ int pfq_sock_init(struct pfq_sock *so, pfq_id_t id, size_t caplen, size_t maxlen
 
 	so->weight = 1;
 
-        atomic_long_set(&so->shmem.addr,0);
+        so->shmem.addr = NULL;
         so->shmem.size = 0;
         so->shmem.kind = 0;
         so->shmem.hugepages_descr = NULL;
 
+        atomic_long_set(&so->shmem_addr,0);
 
         /* disable tiemstamping by default */
 
@@ -181,7 +182,7 @@ int pfq_sock_init(struct pfq_sock *so, pfq_id_t id, size_t caplen, size_t maxlen
 
 	/* Rx queue setup */
 
-	pfq_rxq_info_init(&so->rx);
+	pfq_queue_info_init(&so->rx);
 
         so->caplen = caplen;
         so->rx_queue_len = 0;
@@ -189,7 +190,7 @@ int pfq_sock_init(struct pfq_sock *so, pfq_id_t id, size_t caplen, size_t maxlen
 
 	/* Tx queues setup */
 
-	pfq_txq_info_init(&so->tx);
+	pfq_queue_info_init(&so->tx);
 
         so->tx_queue_len  = 0;
         so->tx_slot_size  = PFQ_SHARED_QUEUE_SLOT_SIZE(maxlen);
@@ -199,7 +200,7 @@ int pfq_sock_init(struct pfq_sock *so, pfq_id_t id, size_t caplen, size_t maxlen
 
 	for(i = 0; i < Q_MAX_TX_QUEUES; ++i)
 	{
-		pfq_txq_info_init(&so->tx_async[i]);
+		pfq_queue_info_init(&so->tx_async[i]);
 	}
         return 0;
 }
@@ -285,7 +286,9 @@ pfq_sock_enable(struct pfq_sock *so, struct pfq_so_enable *mem)
 int
 pfq_sock_disable(struct pfq_sock *so)
 {
-	if (atomic_long_read(&so->shmem.addr)) {
+	if (atomic_long_read(&so->shmem_addr)) {
+
+		atomic_long_set(&so->shmem_addr, 0);
 
 		/* unbind Tx threads */
 
@@ -295,8 +298,8 @@ pfq_sock_disable(struct pfq_sock *so)
 		pr_devel("[PFQ|%d] leaving all groups...\n", so->id);
 		pfq_group_leave_all(so->id);
 
-		pr_devel("[PFQ|%d] unlinking shared queue...\n", so->id);
-		pfq_shared_queue_unlink(so);
+		// pr_devel("[PFQ|%d] unlinking shared queue...\n", so->id);
+		// pfq_shared_queue_unlink(so);
 
 		msleep(Q_GRACE_PERIOD * 4);
 

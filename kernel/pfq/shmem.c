@@ -206,7 +206,7 @@ pfq_mmap(struct file *file, struct socket *sock, struct vm_area_struct *vma)
 
 	printk(KERN_INFO "[PFQ] memory user memory: %lu bytes...\n", size);
 
-        return pfq_memory_map(vma, size, (char *)atomic_long_read(&so->shmem.addr), VM_LOCKED, so->shmem.kind);
+        return pfq_memory_map(vma, size, so->shmem.addr, VM_LOCKED, so->shmem.kind);
 }
 
 
@@ -220,7 +220,7 @@ pfq_hugepages_map(pfq_id_t id, struct pfq_shmem_descr *shmem, unsigned long user
 		return -EPERM;
 	}
 
-	atomic_long_set(&shmem->addr,(unsigned long)hpages->addr);
+	shmem->addr = hpages->addr;
 	shmem->id   = (int)id;
         shmem->size = req_size;
 	shmem->kind = pfq_shmem_user;
@@ -240,7 +240,7 @@ pfq_hugepages_unmap(struct pfq_shmem_descr *shmem)
         if (rc < 0)
 		return rc;
 
-	atomic_long_set(&shmem->addr, 0);
+	shmem->addr = NULL;
 	shmem->hugepages_descr = NULL;
 	shmem->size = 0;
 	return 0;
@@ -261,12 +261,11 @@ pfq_vmalloc_user(pfq_id_t id, struct pfq_shmem_descr *shmem, size_t mem_size)
 		return -ENOMEM;
 	}
 
+	shmem->addr = addr;
 	shmem->id   = (int)id;
         shmem->size = tot_mem;
 	shmem->kind = pfq_shmem_virt;
         shmem->hugepages_descr = NULL;
-
-        atomic_long_set(&shmem->addr, (unsigned long)addr);
 
 	pr_devel("[PFQ] total shared memory: %zu bytes.\n", tot_mem);
 	return 0;
@@ -292,15 +291,15 @@ pfq_shared_memory_alloc(pfq_id_t id, struct pfq_shmem_descr *shmem, unsigned lon
 void
 pfq_shared_memory_free(struct pfq_shmem_descr *shmem)
 {
-	if (atomic_long_read(&shmem->addr)) {
+	if (shmem->addr) {
 
 		switch(shmem->kind)
 		{
-			case pfq_shmem_virt: vfree((void *)atomic_long_read(&shmem->addr)); break;
+			case pfq_shmem_virt: vfree(shmem->addr); break;
 			case pfq_shmem_user: pfq_hugepages_unmap(shmem); break;
 		}
 
-		atomic_long_set(&shmem->addr, 0);
+		shmem->addr = NULL;
 		shmem->hugepages_descr = NULL;
 		shmem->size = 0;
 

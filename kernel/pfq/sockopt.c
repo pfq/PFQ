@@ -136,7 +136,7 @@ int pfq_getsockopt(struct socket *sock,
                 if (len != sizeof(int))
                         return -EINVAL;
 
-                enabled = atomic_long_read(&so->shmem.addr) ? 0 : 1;
+                enabled = atomic_long_read(&so->shmem_addr) ? 0 : 1;
 
                 if (copy_to_user(optval, &enabled, sizeof(enabled)))
                         return -EFAULT;
@@ -775,7 +775,7 @@ int pfq_setsockopt(struct socket *sock,
 		if (copy_from_user(&queue, optval, optlen))
 			return -EFAULT;
 
-		if (pfq_sock_shared_tx_queue(so, -1) == NULL) {
+		if (pfq_sock_tx_shared_queue(so, -1) == NULL) {
 			printk(KERN_INFO "[PFQ|%d] Tx queue: socket not enabled!\n", so->id);
 			return -EPERM;
 		}

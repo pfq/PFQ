@@ -86,7 +86,7 @@ size_t copy_to_user_qbuffs( struct pfq_sock *so
 
 	__sparse_add(so->stats, recv, len, cpu);
 
-        if (likely(pfq_sock_shared_rx_queue(so) != NULL)) {
+        if (likely(pfq_sock_rx_shared_queue(so) != NULL)) {
 
 		smp_rmb();
 

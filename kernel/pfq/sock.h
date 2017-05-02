@@ -54,7 +54,6 @@ extern void pfq_sock_destruct(struct sock *sk);
 
 struct pfq_queue_info
 {
-	atomic_long_t		addr;			/* (pfq_shared_tx_queue *) */
 	void			*shmem_addr;
 	int			ifindex;		/* ifindex */
 	int			queue;			/* queue */
@@ -62,21 +61,13 @@ struct pfq_queue_info
 
 
 static inline
-void pfq_txq_info_init(struct pfq_queue_info *info)
+void pfq_queue_info_init(struct pfq_queue_info *info)
 {
-	atomic_long_set(&info->addr, 0);
 	info->shmem_addr = NULL;
 	info->ifindex = -1;
 	info->queue = -1;
 }
 
-
-static inline
-void pfq_rxq_info_init(struct pfq_queue_info *info)
-{
-        atomic_long_set(&info->addr, 0);
-        info->shmem_addr = NULL;
-}
 
 
 struct pfq_sock
@@ -108,12 +99,14 @@ struct pfq_sock
 
 	struct pfq_shmem_descr  shmem;
 
+	atomic_long_t		shmem_addr;
+
         pfq_sock_stats_t __percpu *stats;
 
 } ____pfq_cacheline_aligned;
 
 
-/* queue info */
+/* get queue info */
 
 static inline
 struct pfq_queue_info *
@@ -131,32 +124,40 @@ pfq_sock_get_tx_queue_info(struct pfq_sock *so, int index)
 	return &so->tx_async[index];
 }
 
-/* queues */
 
-static inline
-struct pfq_shared_rx_queue *
-pfq_sock_shared_rx_queue(struct pfq_sock *so)
-{
-	return (struct pfq_shared_rx_queue *)atomic_long_read(&so->rx.addr);
-}
-
-static inline
-struct pfq_shared_tx_queue *
-pfq_sock_shared_tx_queue(struct pfq_sock *so, int index)
-{
-	if (index == -1)
-		return (struct pfq_shared_tx_queue *)atomic_long_read(&so->tx.addr);
-	return (struct pfq_shared_tx_queue *)atomic_long_read(&so->tx_async[index].addr);
-}
-
-/* memory mapped queues */
+/* get queues headers */
 
 static inline
 struct pfq_shared_queue *
-pfq_sock_shared_queue(struct pfq_sock *p)
+pfq_sock_shared_queue(struct pfq_sock *so)
 {
-        return (struct pfq_shared_queue *) atomic_long_read(&p->shmem.addr);
+        return (struct pfq_shared_queue *) atomic_long_read(&so->shmem_addr);
 }
+
+
+static inline
+struct pfq_shared_rx_queue *
+pfq_sock_rx_shared_queue(struct pfq_sock *so)
+{
+	struct pfq_shared_queue *sq = pfq_sock_shared_queue(so);
+	if (unlikely(sq == NULL))
+		return NULL;
+	return &sq->rx;
+}
+
+
+static inline
+struct pfq_shared_tx_queue *
+pfq_sock_tx_shared_queue(struct pfq_sock *so, int index)
+{
+	struct pfq_shared_queue *sq = pfq_sock_shared_queue(so);
+	if (unlikely(sq == NULL))
+		return NULL;
+	if (index == -1)
+		return (struct pfq_shared_tx_queue *)&sq->tx;
+	return (struct pfq_shared_tx_queue *)&sq->tx_async[index];
+}
+
 
 
 static inline struct pfq_sock *
