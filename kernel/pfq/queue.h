@@ -38,12 +38,12 @@ extern int pfq_shared_queue_unmap(struct pfq_sock *so);
 
 static inline size_t pfq_mpsc_queue_mem(struct pfq_sock *so)
 {
-        return so->opt.rx_queue_len * so->opt.rx_slot_size * 2;
+        return so->rx_queue_len * so->rx_slot_size * 2;
 }
 
 static inline size_t pfq_spsc_queue_mem(struct pfq_sock *so)
 {
-        return so->opt.tx_queue_len * so->opt.tx_slot_size * 2;
+        return so->tx_queue_len * so->tx_slot_size * 2;
 }
 
 
@@ -72,10 +72,10 @@ int pfq_mpsc_queue_index(struct pfq_sock *p)
 
 
 static inline
-char *pfq_mpsc_slot_ptr(struct pfq_sock_opt *opt, struct pfq_shared_rx_queue *qd, size_t qindex, size_t slot)
+char *pfq_mpsc_slot_ptr(struct pfq_sock *so, struct pfq_shared_rx_queue *qd, size_t qindex, size_t slot)
 {
 	(void)qd;
-	return (char *)(opt->rxq_info.shmem_addr) + (opt->rx_queue_len * (qindex & 1) + slot) * opt->rx_slot_size;
+	return (char *)(so->rxq_info.shmem_addr) + (so->rx_queue_len * (qindex & 1) + slot) * so->rx_slot_size;
 }
 
 
@@ -83,11 +83,11 @@ static inline
 void pfq_shared_queue_unlink(struct pfq_sock *so)
 {
 	int n;
-	atomic_long_set(&so->opt.rxq_info.addr, 0);
-	atomic_long_set(&so->opt.txq_info.addr, 0);
+	atomic_long_set(&so->rxq_info.addr, 0);
+	atomic_long_set(&so->txq_info.addr, 0);
 	for(n = 0; n < Q_MAX_TX_QUEUES; n++)
 	{
-		atomic_long_set(&so->opt.txq_info_async[n].addr, 0);
+		atomic_long_set(&so->txq_info_async[n].addr, 0);
 	}
 }
 

@@ -355,7 +355,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so,
 		  int cpu,
 		  atomic_t const *stop)
 {
-	struct pfq_txq_info const * txinfo = pfq_sock_get_tx_queue_info(&so->opt, sock_queue);
+	struct pfq_txq_info const * txinfo = pfq_sock_get_tx_queue_info(so, sock_queue);
 	struct pfq_dev_queue dev_queue = {.dev = NULL, .queue = NULL, .mapping = 0};
 	struct pfq_mbuff_xmit_context ctx;
 	struct pfq_percpu_pool *pool;
@@ -368,7 +368,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so,
 
 	/* get the Tx queue descriptor */
 
-	tx_queue = pfq_sock_shared_tx_queue(&so->opt, sock_queue);
+	tx_queue = pfq_sock_shared_tx_queue(so, sock_queue);
 	if (unlikely(tx_queue == NULL))
 		return rc; /* socket not enabled... */
 
@@ -1002,12 +1002,12 @@ int pfq_copy_bits(const struct sk_buff *skb, int offset, void *to, int len)
 }
 
 
-size_t pfq_sk_queue_recv(struct pfq_sock_opt *opt,
+size_t pfq_sk_queue_recv(struct pfq_sock *so,
 			 struct pfq_qbuff_queue *buffs,
 			 unsigned __int128 mask,
 			 int burst_len)
 {
-	struct pfq_shared_rx_queue *rx_queue = pfq_sock_shared_rx_queue(opt);
+	struct pfq_shared_rx_queue *rx_queue = pfq_sock_shared_rx_queue(so);
 	struct pfq_pkthdr *hdr;
 	struct qbuff *buff;
 	unsigned long data;
@@ -1022,7 +1022,7 @@ size_t pfq_sk_queue_recv(struct pfq_sock_opt *opt,
 	qlen = PFQ_SHARED_QUEUE_LEN(data);
 	qver = PFQ_SHARED_QUEUE_VER(data);
 
-	hdr  = (struct pfq_pkthdr *) pfq_mpsc_slot_ptr(opt, rx_queue, qver, qlen);
+	hdr  = (struct pfq_pkthdr *) pfq_mpsc_slot_ptr(so, rx_queue, qver, qlen);
 
 	for_each_qbuff_with_mask(mask, buffs, buff, n)
 	{
@@ -1032,17 +1032,17 @@ size_t pfq_sk_queue_recv(struct pfq_sock_opt *opt,
 
 		/* compute the boundaries */
 
-		bytes = min_t(size_t, skb->len, opt->caplen);
+		bytes = min_t(size_t, skb->len, so->caplen);
 		pkt = (char *)(hdr+1);
 		slot_index = qlen + copied;
 
 		prefetch_w0(hdr);
 		prefetch_w0((char *)hdr + 64);
 
-		if (unlikely(slot_index >= opt->rx_queue_len)) {
+		if (unlikely(slot_index >= so->rx_queue_len)) {
 #ifdef PFQ_USE_POLL
-			if (waitqueue_active(&opt->waitqueue)) {
-				wake_up_interruptible(&opt->waitqueue);
+			if (waitqueue_active(&so->waitqueue)) {
+				wake_up_interruptible(&so->waitqueue);
 			}
 #endif
 			return copied;
@@ -1062,7 +1062,7 @@ size_t pfq_sk_queue_recv(struct pfq_sock_opt *opt,
 
 		/* fill pkt header */
 
-		if (likely(opt->tstamp != 0)) {
+		if (likely(so->tstamp != 0)) {
 			struct timespec ts;
 			skb_get_timestampns(skb, &ts);
 			hdr->tstamp.tv.sec  = (uint32_t)ts.tv_sec;
@@ -1090,14 +1090,14 @@ size_t pfq_sk_queue_recv(struct pfq_sock_opt *opt,
 
 #ifdef PFQ_USE_POLL
 		if ((slot_index & 127) == 0 &&
-		    waitqueue_active(&opt->waitqueue)) {
-			wake_up_interruptible(&opt->waitqueue);
+		    waitqueue_active(&so->waitqueue)) {
+			wake_up_interruptible(&so->waitqueue);
 		}
 #endif
 
 		copied++;
 
-		hdr = PFQ_SHARED_QUEUE_NEXT_FIX_PKTHDR(hdr, opt->rx_slot_size);
+		hdr = PFQ_SHARED_QUEUE_NEXT_FIX_PKTHDR(hdr, so->rx_slot_size);
 	}
 
 	return copied;

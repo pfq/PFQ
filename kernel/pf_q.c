@@ -154,9 +154,9 @@ pfq_poll(struct file *file, struct socket *sock, poll_table * wait)
         struct pfq_sock *so = pfq_sk(sk);
         unsigned int mask = 0;
 
-	poll_wait(file, &so->opt.waitqueue, wait);
+	poll_wait(file, &so->waitqueue, wait);
 
-        if(!pfq_sock_shared_rx_queue(&so->opt))
+        if(!pfq_sock_shared_rx_queue(so))
                 return mask;
 
         if (pfq_mpsc_queue_len(so) > 0)
@@ -171,7 +171,7 @@ static int pfq_ioctl(struct socket *sock, unsigned int cmd, unsigned long arg)
         switch (cmd) {
 	case QIOCTX:
 	{
-		if (pfq_sock_shared_tx_queue(&so->opt, -1) == NULL) {
+		if (pfq_sock_shared_tx_queue(so, -1) == NULL) {
 			printk(KERN_INFO "[PFQ|%d] Tx queue: socket not enabled!\n", so->id);
 			return -EPERM;
 		}
@@ -368,16 +368,12 @@ pfq_create(
 
         /* initialize sock */
 
-	if (pfq_sock_init(so, id) < 0) {
+	if (pfq_sock_init(so, id, global->capt_slot_size, global->xmit_slot_size) < 0) {
                 printk(KERN_WARNING "[PFQ] error: pfq_sock_init: no memory!\n");
 		sk_free(sk);
 		mutex_unlock(&global->socket_lock);
 		return -EINVAL;
 	}
-
-        /* initialize sock opt */
-
-        pfq_sock_opt_init(&so->opt, global->capt_slot_size, global->xmit_slot_size);
 
         /* initialize socket */
 

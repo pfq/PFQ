@@ -86,9 +86,17 @@ void pfq_rxq_info_init(struct pfq_rxq_info *info)
 }
 
 
-struct pfq_sock_opt
+struct pfq_sock
 {
+        struct sock		sk;
+        pfq_id_t		id;
+
+	int			egress_type;
+        int			egress_index;
+        int			egress_queue;
+	int			weight;
 	int			tstamp;
+
 	size_t			caplen;
 
 	size_t			rx_queue_len;
@@ -104,23 +112,7 @@ struct pfq_sock_opt
 	struct pfq_txq_info	txq_info_async[Q_MAX_TX_QUEUES];
 	struct pfq_txq_info	txq_info;
 	struct pfq_rxq_info	rxq_info;
-
-} ____pfq_cacheline_aligned;
-
-
-
-struct pfq_sock
-{
-        struct sock		sk;
-        pfq_id_t		id;
-
-	int			egress_type;
-        int			egress_index;
-        int			egress_queue;
-	int			weight;
-
 	struct pfq_shmem_descr  shmem;
-        struct pfq_sock_opt	opt;
 
         pfq_sock_stats_t __percpu *stats;
 
@@ -131,36 +123,36 @@ struct pfq_sock
 
 static inline
 struct pfq_rxq_info *
-pfq_sock_get_rx_queue_info(struct pfq_sock_opt *that)
+pfq_sock_get_rx_queue_info(struct pfq_sock *so)
 {
-	return &that->rxq_info;
+	return &so->rxq_info;
 }
 
 static inline
 struct pfq_txq_info *
-pfq_sock_get_tx_queue_info(struct pfq_sock_opt *that, int index)
+pfq_sock_get_tx_queue_info(struct pfq_sock *so, int index)
 {
 	if (index == -1)
-	    return &that->txq_info;
-	return &that->txq_info_async[index];
+	    return &so->txq_info;
+	return &so->txq_info_async[index];
 }
 
 /* queues */
 
 static inline
 struct pfq_shared_rx_queue *
-pfq_sock_shared_rx_queue(struct pfq_sock_opt *that)
+pfq_sock_shared_rx_queue(struct pfq_sock *so)
 {
-	return (struct pfq_shared_rx_queue *)atomic_long_read(&that->rxq_info.addr);
+	return (struct pfq_shared_rx_queue *)atomic_long_read(&so->rxq_info.addr);
 }
 
 static inline
 struct pfq_shared_tx_queue *
-pfq_sock_shared_tx_queue(struct pfq_sock_opt *that, int index)
+pfq_sock_shared_tx_queue(struct pfq_sock *so, int index)
 {
 	if (index == -1)
-		return (struct pfq_shared_tx_queue *)atomic_long_read(&that->txq_info.addr);
-	return (struct pfq_shared_tx_queue *)atomic_long_read(&that->txq_info_async[index].addr);
+		return (struct pfq_shared_tx_queue *)atomic_long_read(&so->txq_info.addr);
+	return (struct pfq_shared_tx_queue *)atomic_long_read(&so->txq_info_async[index].addr);
 }
 
 /* memory mapped queues */
@@ -181,8 +173,7 @@ pfq_sk(struct sock *sk)
 
 
 extern pfq_id_t pfq_sock_get_free_id(struct pfq_sock * so);
-extern void	pfq_sock_opt_init(struct pfq_sock_opt *that, size_t caplen, size_t maxlen);
-extern int	pfq_sock_init(struct pfq_sock *so, pfq_id_t id);
+extern int	pfq_sock_init(struct pfq_sock *so, pfq_id_t id, size_t caplen, size_t maxlen);
 extern struct	pfq_sock * pfq_sock_get_by_id(pfq_id_t id);
 extern int	pfq_sock_counter(void);
 extern void	pfq_sock_release_id(pfq_id_t id);

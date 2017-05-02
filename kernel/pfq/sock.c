@@ -100,7 +100,6 @@ int pfq_sock_counter(void)
 struct pfq_sock *
 pfq_sock_get_by_id(pfq_id_t id)
 {
-        struct pfq_sock *so;
         if ((__force int)id >= Q_MAX_ID ||
             (__force int)id < 0) {
                 pr_devel("[PFQ] pfq_get_sock_by_id: bad id=%d!\n", id);
@@ -128,44 +127,7 @@ void pfq_sock_release_id(pfq_id_t id)
 }
 
 
-void pfq_sock_opt_init(struct pfq_sock_opt *that, size_t caplen, size_t maxlen)
-{
-        int n;
-
-        /* disable tiemstamping by default */
-
-        that->tstamp = false;
-
-        /* initialize waitqueue */
-
-        pfq_sock_init_waitqueue_head(&that->waitqueue);
-
-	/* Rx queue setup */
-
-	pfq_rxq_info_init(&that->rxq_info);
-
-        that->caplen = caplen;
-        that->rx_queue_len = 0;
-        that->rx_slot_size = 0;
-
-	/* Tx queues setup */
-
-	pfq_txq_info_init(&that->txq_info);
-
-        that->tx_queue_len  = 0;
-        that->tx_slot_size  = PFQ_SHARED_QUEUE_SLOT_SIZE(maxlen);
-	that->txq_num_async = 0;
-
-	/* Tx async queues setup */
-
-	for(n = 0; n < Q_MAX_TX_QUEUES; ++n)
-	{
-		pfq_txq_info_init(&that->txq_info_async[n]);
-	}
-}
-
-
-int pfq_sock_init(struct pfq_sock *so, pfq_id_t id)
+int pfq_sock_init(struct pfq_sock *so, pfq_id_t id, size_t caplen, size_t maxlen)
 {
 	int i;
 
@@ -208,6 +170,37 @@ int pfq_sock_init(struct pfq_sock *so, pfq_id_t id)
         so->shmem.kind = 0;
         so->shmem.hugepages_descr = NULL;
 
+
+        /* disable tiemstamping by default */
+
+        so->tstamp = false;
+
+        /* initialize waitqueue */
+
+        pfq_sock_init_waitqueue_head(&so->waitqueue);
+
+	/* Rx queue setup */
+
+	pfq_rxq_info_init(&so->rxq_info);
+
+        so->caplen = caplen;
+        so->rx_queue_len = 0;
+        so->rx_slot_size = 0;
+
+	/* Tx queues setup */
+
+	pfq_txq_info_init(&so->txq_info);
+
+        so->tx_queue_len  = 0;
+        so->tx_slot_size  = PFQ_SHARED_QUEUE_SLOT_SIZE(maxlen);
+	so->txq_num_async = 0;
+
+	/* Tx async queues setup */
+
+	for(i = 0; i < Q_MAX_TX_QUEUES; ++i)
+	{
+		pfq_txq_info_init(&so->txq_info_async[i]);
+	}
         return 0;
 }
 
@@ -215,7 +208,7 @@ int pfq_sock_init(struct pfq_sock *so, pfq_id_t id)
 int
 pfq_sock_tx_bind(struct pfq_sock *so, int tid, int ifindex, int qindex)
 {
-	int queue = (int)so->opt.txq_num_async;
+	int queue = (int)so->txq_num_async;
 	int err = 0;
 
 	if (queue >= Q_MAX_TX_QUEUES) {
@@ -223,17 +216,17 @@ pfq_sock_tx_bind(struct pfq_sock *so, int tid, int ifindex, int qindex)
 		return -EPERM;
 	}
 
-	so->opt.txq_info_async[queue].ifindex = ifindex;
-	so->opt.txq_info_async[queue].queue = qindex;
-	so->opt.txq_num_async++;
+	so->txq_info_async[queue].ifindex = ifindex;
+	so->txq_info_async[queue].queue = qindex;
+	so->txq_num_async++;
 
 	smp_wmb();
 
 	if ((err = pfq_bind_tx_thread(tid, so, queue)) < 0)
 	{
-		so->opt.txq_info_async[queue].ifindex = -1;
-		so->opt.txq_info_async[queue].queue = -1;
-		so->opt.txq_num_async--;
+		so->txq_info_async[queue].ifindex = -1;
+		so->txq_info_async[queue].queue = -1;
+		so->txq_num_async--;
 		return err;
 	}
 
@@ -246,8 +239,8 @@ pfq_sock_tx_unbind(struct pfq_sock *so)
 {
 	size_t n;
 
-	so->opt.txq_info.ifindex = -1;
-	so->opt.txq_info.queue = -1;
+	so->txq_info.ifindex = -1;
+	so->txq_info.queue = -1;
 
 	/* unbind async Tx queue */
 
@@ -256,8 +249,8 @@ pfq_sock_tx_unbind(struct pfq_sock *so)
 
 	for(n = 0; n < Q_MAX_TX_QUEUES; ++n)
 	{
-		so->opt.txq_info_async[n].ifindex = -1;
-		so->opt.txq_info_async[n].queue = -1;
+		so->txq_info_async[n].ifindex = -1;
+		so->txq_info_async[n].queue = -1;
 	}
 
 	return 0;

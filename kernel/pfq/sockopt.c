@@ -158,9 +158,9 @@ int pfq_getsockopt(struct socket *sock,
 
         case Q_SO_GET_RX_TSTAMP:
         {
-                if (len != sizeof(so->opt.tstamp))
+                if (len != sizeof(so->tstamp))
                         return -EINVAL;
-                if (copy_to_user(optval, &so->opt.tstamp, sizeof(so->opt.tstamp)))
+                if (copy_to_user(optval, &so->tstamp, sizeof(so->tstamp)))
                         return -EFAULT;
         } break;
 
@@ -177,9 +177,9 @@ int pfq_getsockopt(struct socket *sock,
 
         case Q_SO_GET_RX_CAPLEN:
         {
-                if (len != sizeof(so->opt.caplen))
+                if (len != sizeof(so->caplen))
                         return -EINVAL;
-                if (copy_to_user(optval, &so->opt.caplen, sizeof(so->opt.caplen)))
+                if (copy_to_user(optval, &so->caplen, sizeof(so->caplen)))
                         return -EFAULT;
         } break;
 
@@ -193,17 +193,17 @@ int pfq_getsockopt(struct socket *sock,
 
         case Q_SO_GET_RX_SLOTS:
         {
-                if (len != sizeof(so->opt.rx_queue_len))
+                if (len != sizeof(so->rx_queue_len))
                         return -EINVAL;
-                if (copy_to_user(optval, &so->opt.rx_queue_len, sizeof(so->opt.rx_queue_len)))
+                if (copy_to_user(optval, &so->rx_queue_len, sizeof(so->rx_queue_len)))
                         return -EFAULT;
         } break;
 
         case Q_SO_GET_TX_SLOTS:
         {
-                if (len != sizeof(so->opt.tx_queue_len))
+                if (len != sizeof(so->tx_queue_len))
                         return -EINVAL;
-                if (copy_to_user(optval, &so->opt.tx_queue_len, sizeof(so->opt.tx_queue_len)))
+                if (copy_to_user(optval, &so->tx_queue_len, sizeof(so->tx_queue_len)))
                         return -EFAULT;
         } break;
 
@@ -463,21 +463,21 @@ int pfq_setsockopt(struct socket *sock,
         case Q_SO_SET_RX_TSTAMP:
         {
                 int tstamp;
-                if (optlen != sizeof(so->opt.tstamp))
+                if (optlen != sizeof(so->tstamp))
                         return -EINVAL;
 
                 if (copy_from_user(&tstamp, optval, optlen))
                         return -EFAULT;
 
                 tstamp = tstamp ? 1 : 0;
-                so->opt.tstamp = tstamp;
+                so->tstamp = tstamp;
 
                 pr_devel("[PFQ|%d] timestamp enabled.\n", so->id);
         } break;
 
         case Q_SO_SET_RX_CAPLEN:
         {
-                typeof(so->opt.caplen) caplen;
+                typeof(so->caplen) caplen;
 
                 if (optlen != sizeof(caplen))
                         return -EINVAL;
@@ -489,16 +489,16 @@ int pfq_setsockopt(struct socket *sock,
                         return -EPERM;
                 }
 
-                so->opt.caplen = caplen;
-                so->opt.rx_slot_size = PFQ_SHARED_QUEUE_SLOT_SIZE(so->opt.caplen);
+                so->caplen = caplen;
+                so->rx_slot_size = PFQ_SHARED_QUEUE_SLOT_SIZE(so->caplen);
 
                 pr_devel("[PFQ|%d] caplen=%zu, slot_size=%zu\n",
-                                so->id, so->opt.caplen, so->opt.rx_slot_size);
+                                so->id, so->caplen, so->rx_slot_size);
         } break;
 
         case Q_SO_SET_RX_SLOTS:
         {
-                typeof(so->opt.rx_queue_len) slots;
+                typeof(so->rx_queue_len) slots;
 
                 if (optlen != sizeof(slots))
                         return -EINVAL;
@@ -512,14 +512,14 @@ int pfq_setsockopt(struct socket *sock,
                         return -EPERM;
                 }
 
-                so->opt.rx_queue_len = slots;
+                so->rx_queue_len = slots;
 
-                pr_devel("[PFQ|%d] rx_queue slots=%zu\n", so->id, so->opt.rx_queue_len);
+                pr_devel("[PFQ|%d] rx_queue slots=%zu\n", so->id, so->rx_queue_len);
         } break;
 
         case Q_SO_SET_TX_SLOTS:
         {
-                typeof (so->opt.tx_queue_len) slots;
+                typeof (so->tx_queue_len) slots;
 
                 if (optlen != sizeof(slots))
                         return -EINVAL;
@@ -532,9 +532,9 @@ int pfq_setsockopt(struct socket *sock,
                         return -EPERM;
                 }
 
-                so->opt.tx_queue_len = slots;
+                so->tx_queue_len = slots;
 
-                pr_devel("[PFQ|%d] tx_queue slots=%zu\n", so->id, so->opt.tx_queue_len);
+                pr_devel("[PFQ|%d] tx_queue slots=%zu\n", so->id, so->tx_queue_len);
         } break;
 
         case Q_SO_SET_WEIGHT:
@@ -721,7 +721,7 @@ int pfq_setsockopt(struct socket *sock,
 		}
 
 		if (bind.tid >= 0 &&
-		    so->opt.txq_num_async >= Q_MAX_TX_QUEUES) {
+		    so->txq_num_async >= Q_MAX_TX_QUEUES) {
 			printk(KERN_INFO "[PFQ|%d] Tx thread: max number of sock queues exceeded!\n", so->id);
 			return -EPERM;
 		}
@@ -751,11 +751,11 @@ int pfq_setsockopt(struct socket *sock,
 		}
 		else /* sync queue */
 		{
-			so->opt.txq_info.ifindex = bind.ifindex;
-			so->opt.txq_info.queue = bind.qindex;
+			so->txq_info.ifindex = bind.ifindex;
+			so->txq_info.queue = bind.qindex;
 			pr_devel("[PFQ|%d] Tx bind: if_index=%d qindex=%d\n", so->id,
-				so->opt.txq_info.ifindex,
-				so->opt.txq_info.queue);
+				so->txq_info.ifindex,
+				so->txq_info.queue);
 		}
 
         } break;
@@ -775,7 +775,7 @@ int pfq_setsockopt(struct socket *sock,
 		if (copy_from_user(&queue, optval, optlen))
 			return -EFAULT;
 
-		if (pfq_sock_shared_tx_queue(&so->opt, -1) == NULL) {
+		if (pfq_sock_shared_tx_queue(so, -1) == NULL) {
 			printk(KERN_INFO "[PFQ|%d] Tx queue: socket not enabled!\n", so->id);
 			return -EPERM;
 		}

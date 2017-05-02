@@ -60,7 +60,7 @@ struct napi_struct;
 struct napi_struct;
 
 
-extern size_t pfq_sk_queue_recv( struct pfq_sock_opt *opt
+extern size_t pfq_sk_queue_recv( struct pfq_sock *so
 			       , struct pfq_qbuff_queue *buffs
 			       , unsigned __int128 buffs_mask
 			       , int burst_len
