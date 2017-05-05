@@ -42,7 +42,7 @@ void send_packets_async(pfq::socket &q, int64_t num)
     std::cout << "sending " << num << " packets (async):" << std::endl;
     for(int64_t n = 0; n < num;)
     {
-        if (q.send_async(pfq::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping))))
+        if (q.send_async(pfq::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping)), 1))
             n++;
     }
 }

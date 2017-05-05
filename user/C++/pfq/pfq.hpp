@@ -1076,7 +1076,7 @@ namespace pfq {
          */
 
         bool
-        send_async(const_buffer pkt, unsigned int copies, int async = any_kthread)
+        send_async(const_buffer pkt, unsigned int copies = 1, int async = any_kthread)
         {
             return send_raw(pkt.first, pkt.second, 0, copies, async);
         }

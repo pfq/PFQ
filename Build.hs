@@ -61,14 +61,13 @@ script = do
     DistClean "pfq-haskell-lib" *>>  into "user/Haskell/"   $ cabalDistClean
 
 
-    -- PFQ pcap library 1.7.4
+    -- PFQ pcap library 1.8.1
 
-    Configure "pfq-pcap-1.7.4"  *>>  into "user/libpcap/libpcap-1.7.4/"  $ do cmd "autoconf" `requires` [ Install "pfq-clib" ]
-                                                                              cmd "./configure --enable-pfq"
-    Build     "pfq-pcap-1.7.4"  *>>  into "user/libpcap/libpcap-1.7.4/"  $ make              `requires` [ Install "pfq.ko", Configure "pfq-pcap-1.7.4" ]
-    Install   "pfq-pcap-1.7.4"  *>>  into "user/libpcap/libpcap-1.7.4/"  $ empty             `requires` [ Build "pfq-pcap-1.7.4" ]
-    Clean     "pfq-pcap-1.7.4"  *>>  into "user/libpcap/libpcap-1.7.4/"  $ make_clean
-    DistClean "pfq-pcap-1.7.4"  *>>  into "user/libpcap/libpcap-1.7.4/"  $ make_distclean
+    Configure "pfq-pcap-1.8.1-fanout"  *>>  into "user/libpcap/libpcap-1.8.1-fanout/"  $ do cmd "autoconf" `requires` [ Install "pfq-clib" ]
+    Build     "pfq-pcap-1.8.1-fanout"  *>>  into "user/libpcap/libpcap-1.8.1-fanout/"  $ make              `requires` [ Install "pfq.ko", Configure "pfq-pcap-1.8.1-fanout" ]
+    Install   "pfq-pcap-1.8.1-fanout"  *>>  into "user/libpcap/libpcap-1.8.1-fanout/"  $ empty             `requires` [ Build "pfq-pcap-1.8.1-fanout" ]
+    Clean     "pfq-pcap-1.8.1-fanout"  *>>  into "user/libpcap/libpcap-1.8.1-fanout/"  $ make_clean
+    DistClean "pfq-pcap-1.8.1-fanout"  *>>  into "user/libpcap/libpcap-1.8.1-fanout/"  $ make_distclean
 
     -- PFQ hcounters (exmaple)
 
