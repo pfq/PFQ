@@ -843,13 +843,24 @@ namespace pfq {
         net_queue
         read(long int microseconds = -1)
         {
-            if (unlikely(!data()->shm_addr))
+            auto q = static_cast<struct pfq_shared_queue *>(data()->shm_addr);
+            if (unlikely(!q))
                 throw system_error("PFQ: read: socket not enabled");
 
-            auto q = static_cast<struct pfq_shared_queue *>(data()->shm_addr);
             unsigned long int data, qver;
 
             data = __atomic_load_n(&q->rx.shinfo, __ATOMIC_RELAXED);
+            if (PFQ_SHARED_QUEUE_LEN(data) == 0)
+            {
+#ifdef PFQ_USE_POLL
+                this->poll(microseconds);
+#else
+                usleep(10);
+                (void)microseconds;
+                return net_queue();
+#endif
+            }
+
             qver = PFQ_SHARED_QUEUE_VER(data);
 
             // at wrap-around reset Rx slots...
@@ -868,16 +879,6 @@ namespace pfq {
             //
 
             data = __atomic_exchange_n(&q->rx.shinfo, ((qver+1) << (PFQ_SHARED_QUEUE_LEN_SIZE<<3)), __ATOMIC_RELAXED);
-
-            if (unlikely(PFQ_SHARED_QUEUE_LEN(data) == 0))
-            {
-#ifdef PFQ_USE_POLL
-                this->poll(microseconds);
-#else
-                (void)microseconds;
-                return net_queue();
-#endif
-            }
 
             auto queue_len = std::min( static_cast<size_t>(PFQ_SHARED_QUEUE_LEN(data))
                                       , data_->rx_slots);

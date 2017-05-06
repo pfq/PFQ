@@ -1506,19 +1506,29 @@ int pfq_vlan_reset_filter(pfq_t *q, int gid, int vid)
 int
 pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 {
-	struct pfq_shared_queue * qd;
+	struct pfq_shared_queue * qd = (struct pfq_shared_queue *)(q->shm_addr);
 	unsigned long int data, qver;
 
-        if (unlikely(q->shm_addr == NULL)) {
+        if (unlikely(qd == NULL)) {
 		return Q_ERROR(q, "PFQ: read: socket not enabled");
 	}
 
-	qd = (struct pfq_shared_queue *)(q->shm_addr);
-
 	data = __atomic_load_n(&qd->rx.shinfo, __ATOMIC_RELAXED);
-	qver = PFQ_SHARED_QUEUE_VER(data);
+
+	if (unlikely(PFQ_SHARED_QUEUE_LEN(data) == 0)) {
+#ifdef PFQ_USE_POLL
+		if (pfq_poll(q, microseconds) < 0)
+			return Q_ERROR(q, "PFQ: poll error");
+#else
+		(void)microseconds;
+		nq->len = 0;
+		return Q_VALUE(q, (int)0);
+#endif
+	}
 
         /* at wrap-around reset Rx slots... */
+
+	qver = PFQ_SHARED_QUEUE_VER(data);
 
         if (unlikely(((qver+1) & (PFQ_SHARED_QUEUE_VER_MASK^1))== 0))
         {
@@ -1532,17 +1542,6 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 	/* swap the queue... */
 
         data = __atomic_exchange_n(&qd->rx.shinfo, ((qver+1) << (PFQ_SHARED_QUEUE_LEN_SIZE<<3)), __ATOMIC_RELAXED);
-
-	if (unlikely(PFQ_SHARED_QUEUE_LEN(data) == 0)) {
-#ifdef PFQ_USE_POLL
-		if (pfq_poll(q, microseconds) < 0)
-			return Q_ERROR(q, "PFQ: poll error");
-#else
-		(void)microseconds;
-		nq->len = 0;
-		return Q_VALUE(q, (int)0);
-#endif
-	}
 
 	size_t queue_len = min(PFQ_SHARED_QUEUE_LEN(data), q->rx_slots);
 
