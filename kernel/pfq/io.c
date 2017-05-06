@@ -674,7 +674,7 @@ static inline
 unsigned int pfq_fold(unsigned int a, unsigned int b)
 {
 	unsigned int c;
-	if (b == 1)
+	if (b <= 1)
 		return 0;
         c = b - 1;
         if (likely((b & c) == 0))
@@ -767,7 +767,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb)
 			struct pfq_group * this_group = pfq_group_get(gid);
 			struct pfq_lang_computation_tree *prg;
 
-			if (!this_group)
+			if (unlikely(!this_group))
 				continue;
 
 			/* increment counter for this group */
@@ -850,21 +850,17 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb)
 			 		{
 			 			pfq_id_t id = (__force pfq_id_t)pfq_ctz(sbit);
 			 			struct pfq_sock * so = pfq_sock_get_by_id(id);
-						if (likely(so))
-						{
-							int i;
-							for(i = 0; i < so->weight; ++i)
-								steer_mask[steer_mask_numb++] = sbit;
-						}
+
+						int i, end = so ? so->weight : 1;
+						for(i = 0; i < end; ++i)
+							steer_mask[steer_mask_numb++] = sbit;
 			 		});
 
-					if (steer_mask_numb)
-					{
-						buff->fwd_mask |= steer_mask[pfq_fold(prefold(monad.fanout.hash), (unsigned int)steer_mask_numb)];
+					buff->fwd_mask |= steer_mask[pfq_fold(prefold(monad.fanout.hash), (unsigned int)steer_mask_numb)];
 
-						if (is_double_steering(monad.fanout))
-							buff->fwd_mask |= steer_mask[pfq_fold(prefold(monad.fanout.hash2), (unsigned int)steer_mask_numb)];
-					}
+					if (is_double_steering(monad.fanout))
+						buff->fwd_mask |= steer_mask[pfq_fold(prefold(monad.fanout.hash2), (unsigned int)steer_mask_numb)];
+
 			 	}
 			 	else {  /* broadcast */
 
@@ -946,8 +942,7 @@ int pfq_receive_run( struct pfq_percpu_data *data
 		all_fwd_mask |= buff->fwd_mask;
 		pfq_bitwise_foreach(buff->fwd_mask, bit,
 		{
-			int index = (int)pfq_ctz(bit);
-			socket_mask[index] |= (unsigned __int128)1 << n;
+			socket_mask[pfq_ctz(bit)] |= (unsigned __int128)1 << n;
 		})
 	}
 
