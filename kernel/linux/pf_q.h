@@ -43,10 +43,12 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#define likely(x)				__builtin_expect((x),1)
+#define unlikely(x)				__builtin_expect((x),0)
+#define barrier()				asm volatile("" ::: "memory")
 
-#define likely(x)	__builtin_expect((x),1)
-#define unlikely(x)     __builtin_expect((x),0)
-#define barrier()	asm volatile("" ::: "memory")
+#define ALIGN(x, a)				ALIGN_MASK(x, (__typeof__(x))(a) - 1)
+#define ALIGN_MASK(x, mask)			(((x) + (mask)) & ~(mask))
 
 #endif /* __KERNEL__ */
 
@@ -59,7 +61,6 @@
 
 #define	QIOCTX					_IOR('Q', 0, int) /* flush Tx */
 
-
 #define PFQ_VERSION(a,b,c)			(((a) << 16) + ((b) << 8) + (c))
 #define PFQ_MAJOR(a)				((a >> 16) & 0xff)
 #define PFQ_MINOR(a)				((a >> 8) & 0xff)
@@ -67,6 +68,7 @@
 
 #define PFQ_VERSION_CODE			PFQ_VERSION(6,0,0)
 #define PFQ_VERSION_STRING			"6.0.0"
+
 
 #ifdef __x86_64__
 typedef uint32_t pfq_qver_t;

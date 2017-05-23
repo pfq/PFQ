@@ -68,6 +68,9 @@ struct pfq_data_int
         size_t tx_slots;
 	size_t tx_slot_size;
 
+	size_t tx_len;
+	size_t rx_len;
+
 	size_t tx_attempt;
 	size_t tx_num_async;
 

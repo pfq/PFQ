@@ -57,9 +57,6 @@
 
 /* macros */
 
-#define ALIGN(x, a)            ALIGN_MASK(x, (__typeof__(x))(a) - 1)
-#define ALIGN_MASK(x, mask)    (((x) + (mask)) & ~(mask))
-
 
 #define Q_VALUE(q,value)  \
 	__builtin_choose_expr(__builtin_types_compatible_p(__typeof__(q), pfq_t *), (((pfq_t *)q)->error = NULL, (value)), \
@@ -589,11 +586,17 @@ pfq_get_maxlen(pfq_t const *q)
 {
 	int ret; socklen_t size = sizeof(ret);
 
+
+size_t
+pfq_get_rx_slots(pfq_t const *q)
+{
+	return q->rx_slots;
 	if (getsockopt(q->fd, PF_Q, Q_SO_GET_TX_MAXLEN, &ret, &size) == -1) {
 		return Q_ERROR(q, "PFQ: get maxlen error");
 	}
 	return Q_VALUE(q, (ssize_t)ret);
 }
+
 
 
 int
@@ -609,13 +612,6 @@ pfq_set_rx_slots(pfq_t *q, size_t value)
 
 	q->rx_slots = value;
 	return Q_OK(q);
-}
-
-
-size_t
-pfq_get_rx_slots(pfq_t const *q)
-{
-	return q->rx_slots;
 }
 
 

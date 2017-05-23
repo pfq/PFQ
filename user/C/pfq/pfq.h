@@ -369,7 +369,7 @@ extern int pfq_set_rx_slots(pfq_t *q, size_t value);
 extern size_t pfq_get_rx_slots(pfq_t const *q);
 
 
-/*! Return the length of a Rx slot, in bytes. */
+/*! Return the size of a Rx slot, in bytes. */
 
 extern size_t pfq_get_rx_slot_size(pfq_t const *q);
 
@@ -598,7 +598,7 @@ extern int pfq_sync_queue(pfq_t *q, int queue);
 
 /*! Schedule packet transmission. */
 /*!
- * The packet is copied into a Tx queue. 
+ * The packet is copied into a Tx queue.
  */
 
 extern int pfq_send_raw(pfq_t *q, const void *ptr, size_t len, uint64_t nsec, unsigned int copies, int async);
