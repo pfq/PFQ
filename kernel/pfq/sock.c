@@ -287,15 +287,17 @@ pfq_sock_enable(struct pfq_sock *so, struct pfq_so_enable *mem)
 int
 pfq_sock_disable(struct pfq_sock *so)
 {
+	pr_devel("[PFQ|%d] leaving all groups...\n", so->id);
+	pfq_group_leave_all(so->id);
+
+	msleep(Q_GRACE_PERIOD);
+
 	if (atomic_long_read(&so->shmem_addr)) {
 
 		/* unbind Tx threads */
 
 		pr_devel("[PFQ|%d] unbinding Tx threads...\n", so->id);
 		pfq_sock_tx_unbind(so);
-
-		pr_devel("[PFQ|%d] leaving all groups...\n", so->id);
-		pfq_group_leave_all(so->id);
 
 		msleep(Q_GRACE_PERIOD);
 
