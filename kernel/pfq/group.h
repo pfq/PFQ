@@ -70,7 +70,7 @@ extern int  pfq_group_set_prog(pfq_gid_t gid, struct pfq_lang_computation_tree *
 extern void pfq_group_leave_all(pfq_id_t id);
 
 extern unsigned long pfq_group_get_groups(pfq_id_t id);
-extern unsigned long pfq_group_get_all_groups_mask(pfq_gid_t gid);
+extern unsigned long pfq_group_get_all_sock_mask(pfq_gid_t gid);
 
 extern int  pfq_group_get_context(pfq_gid_t gid, int level, int size, void __user *context);
 extern void pfq_group_set_filter(pfq_gid_t gid, struct sk_filter *filter);
@@ -94,7 +94,7 @@ extern void pfq_groups_destruct(void);
 static inline
 bool pfq_group_has_joined(pfq_gid_t gid, pfq_id_t id)
 {
-        return (pfq_group_get_all_groups_mask(gid) & (1UL << (__force int)id));
+        return (pfq_group_get_all_sock_mask(gid) & (1UL << (__force int)id));
 }
 
 static inline

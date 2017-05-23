@@ -103,7 +103,7 @@ pfq_groups_destruct(void)
 static inline
 bool __pfq_group_is_empty(pfq_gid_t gid)
 {
-        return pfq_group_get_all_groups_mask(gid) == 0;
+        return pfq_group_get_all_sock_mask(gid) == 0;
 }
 
 
@@ -316,7 +316,7 @@ __pfq_group_leave(pfq_gid_t gid, pfq_id_t id)
 
 
 unsigned long
-pfq_group_get_all_groups_mask(pfq_gid_t gid)
+pfq_group_get_all_sock_mask(pfq_gid_t gid)
 {
         struct pfq_group * group;
         long mask = 0;
@@ -471,7 +471,7 @@ pfq_group_get_groups(pfq_id_t id)
         for(; n < Q_MAX_ID; n++)
         {
 		pfq_gid_t gid = (__force pfq_gid_t)n;
-                unsigned long mask = pfq_group_get_all_groups_mask(gid);
+                unsigned long mask = pfq_group_get_all_sock_mask(gid);
 
                 if(mask & (1UL << (__force int)id))
                         rc |= (1UL << n);
