@@ -40,8 +40,7 @@ struct pfq_percpu_pool   __percpu;
 
 struct pfq_global_data
 {
-	int capt_slot_size;
-	int xmit_slot_size;
+	int max_slot_size;
 
 	int xmit_batch_len;
 	int capt_batch_len;

@@ -366,7 +366,7 @@ pfq_create(
 
         /* initialize sock */
 
-	if (pfq_sock_init(so, id, global->capt_slot_size, global->xmit_slot_size) < 0) {
+	if (pfq_sock_init(so, id, global->max_slot_size-sizeof(struct pfq_pkthdr), global->max_slot_size-sizeof(struct pfq_pkthdr)) < 0) {
                 printk(KERN_WARNING "[PFQ] error: pfq_sock_init: no memory!\n");
 		sk_free(sk);
 		mutex_unlock(&global->socket_lock);
@@ -508,8 +508,7 @@ static int __init pfq_init_module(void)
                PFQ_MINOR(PFQ_VERSION_CODE),
                PFQ_PATCHLEVEL(PFQ_VERSION_CODE));
 
-        printk(KERN_INFO "[PFQ] capt_slot_size  : %d\n", global->capt_slot_size);
-        printk(KERN_INFO "[PFQ] xmit_slot_size  : %d\n", global->xmit_slot_size);
+        printk(KERN_INFO "[PFQ] max_slot_size   : %d\n", global->max_slot_size);
         printk(KERN_INFO "[PFQ] capt_batch_len  : %d\n", global->capt_batch_len);
         printk(KERN_INFO "[PFQ] xmit_batch_len  : %d\n", global->xmit_batch_len);
         printk(KERN_INFO "[PFQ] vlan_untag      : %d\n", global->vlan_untag);

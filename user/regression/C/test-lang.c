@@ -11,7 +11,7 @@ main(int argc, char *argv[])
 	(void)argc;
 	(void)argv;
 
-        pfq_t *q = pfq_open(64, 4096, 1024);
+        pfq_t *q = pfq_open(64, 4096, 64, 1024);
         if (q == NULL) {
                 printf("error: %s\n", pfq_error(q));
                 return -1;

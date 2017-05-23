@@ -260,7 +260,7 @@ extern int pfq_set_promisc(pfq_t const *q, const char *dev, int value);
  * Q_POLICY_GROUP_PRIVATE, respectively.
  */
 
-extern pfq_t *pfq_open(size_t caplen, size_t rx_slots, size_t tx_slots);
+extern pfq_t *pfq_open(size_t caplen, size_t rx_slots, size_t xmitlen, size_t tx_slots);
 
 
 /*! Open the socket. No group is joined or created. */
@@ -268,7 +268,7 @@ extern pfq_t *pfq_open(size_t caplen, size_t rx_slots, size_t tx_slots);
  * Groups can later be joined by means of 'pfq_join_group' function.
  */
 
-extern pfq_t* pfq_open_nogroup(size_t caplen, size_t rx_slots, size_t tx_slots);
+extern pfq_t* pfq_open_nogroup(size_t caplen, size_t rx_slots, size_t xmitlen, size_t tx_slots);
 
 
 /*! Open the socket and create a new group with the specified parameters. */
@@ -277,7 +277,7 @@ extern pfq_t* pfq_open_nogroup(size_t caplen, size_t rx_slots, size_t tx_slots);
  */
 
 extern pfq_t* pfq_open_group(unsigned long class_mask, int group_policy,
-                size_t caplen, size_t rx_slots, size_t tx_slots);
+                size_t caplen, size_t rx_slots, size_t xmitlen, size_t tx_slots);
 
 
 /*! Close the socket. */
@@ -348,15 +348,22 @@ extern int pfq_get_weight(pfq_t const *q);
 
 extern int pfq_set_caplen(pfq_t *q, size_t value);
 
+/*! Specify the transmission length of packets, in bytes. */
+/*!
+ * Transmission length must be set before the socket is enabled.
+ */
+
+extern int pfq_set_xmitlen(pfq_t *q, size_t value);
+
 
 /*! Return the capture length of packets, in bytes. */
 
-extern ssize_t pfq_get_caplen(pfq_t const *q);
+extern size_t pfq_get_caplen(pfq_t const *q);
 
 
 /*! Return the max transmission length of packets, in bytes. */
 
-extern ssize_t pfq_get_maxlen(pfq_t const *q);
+extern size_t pfq_get_xmitlen(pfq_t const *q);
 
 
 /*! Specify the length of the Rx queue, in number of packets. */
@@ -382,6 +389,12 @@ extern int pfq_set_tx_slots(pfq_t *q, size_t value);
 /*! Return the length of the Tx queue, in number of packets. */
 
 extern size_t pfq_get_tx_slots(pfq_t const *q);
+
+
+/*! Return the size of a Tx slot, in bytes. */
+
+extern size_t pfq_get_tx_slots(pfq_t const *q);
+
 
 
 /*! Bind the main group of the socket to the given device/queue. */

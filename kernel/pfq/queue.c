@@ -100,21 +100,21 @@ pfq_shared_queue_enable(struct pfq_sock *so, unsigned long user_addr, size_t use
 			 so->id,
 			 so->rx_queue_len,
 			 so->rx_slot_size,
-			 so->caplen,
+			 so->rx_len,
 			 pfq_mpsc_queue_mem(so));
 
-		pr_devel("[PFQ|%d] Tx queue: len=%zu slot_size=%zu maxlen=%d, mem=%zu bytes\n",
+		pr_devel("[PFQ|%d] Tx queue: len=%zu slot_size=%zu xmitlen=%zu, mem=%zu bytes\n",
 			 so->id,
 			 so->tx_queue_len,
 			 so->tx_slot_size,
-			 global->xmit_slot_size,
+			 so->tx_len,
 			 pfq_spsc_queue_mem(so));
 
-		pr_devel("[PFQ|%d] Tx async queues: len=%zu slot_size=%zu maxlen=%d, mem=%zu bytes (%d queues)\n",
+		pr_devel("[PFQ|%d] Tx async queues: len=%zu slot_size=%zu xmitlen=%zu, mem=%zu bytes (%d queues)\n",
 			 so->id,
 			 so->tx_queue_len,
 			 so->tx_slot_size,
-			 global->xmit_slot_size,
+			 so->tx_len,
 			 pfq_spsc_queue_mem(so) * Q_MAX_TX_QUEUES, Q_MAX_TX_QUEUES);
 	}
 

@@ -66,7 +66,7 @@ main(int argc, char *argv[])
         int kthread = atoi(argv[3]);
         unsigned long long num = atoll(argv[4]);
 
-        pfq_t * q= pfq_open(64, 1024, 1024);
+        pfq_t * q= pfq_open(64, 1024, 64, 1024);
 
         if (pfq_bind_tx(q, dev, queue, kthread) < 0) {
 		fprintf(stderr, "%s\n", pfq_error(q));

@@ -139,14 +139,14 @@ auto g = Group("PFQ")
     })
 
 
-    .Single("maxlen", []
+    .Single("xmitlen", []
     {
         pfq::socket x;
-        AssertThrow(x.maxlen());
+        AssertThrow(x.xmitlen());
 
         x.open(pfq::group_policy::undefined, 64);
 
-        Assert(x.maxlen(), is_equal_to(1514UL));
+        Assert(x.xmitlen(), is_equal_to(64));
     })
 
     .Single("rx_slots", []

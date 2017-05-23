@@ -120,15 +120,18 @@ namespace pfq {
         struct policy   { group_policy value; };
 
         struct caplen   { size_t value; };
+        struct xmitlen  { size_t value; };
+
         struct rx_slots { size_t value; };
         struct tx_slots { size_t value; };
 
-        using types = std::tuple<caplen, rx_slots, tx_slots, policy, class_>;
+        using types = std::tuple<caplen, xmitlen, rx_slots, tx_slots, policy, class_>;
 
         inline
         types make_default()
         {
             return std::make_tuple(param::caplen   {1514},
+                                   param::xmitlen  {1514},
                                    param::rx_slots {1024},
                                    param::tx_slots {1024},
                                    param::policy   {group_policy::priv},
@@ -178,6 +181,7 @@ namespace pfq {
                        param::get<param::policy>(def).value,
                        param::get<param::caplen>(def).value,
                        param::get<param::rx_slots>(def).value,
+                       param::get<param::xmitlen>(def).value,
                        param::get<param::tx_slots>(def).value);
         }
 
@@ -188,10 +192,11 @@ namespace pfq {
          * group_policy::priv, respectively.
          */
 
-        socket(size_t caplen, size_t rx_slots = 1024, size_t tx_slots = 1024)
+        socket(size_t caplen, size_t rx_slots = 1024, size_t xmitlen = 0, size_t tx_slots = 1024)
         : data_()
         {
-            this->open(class_mask::default_, group_policy::priv, caplen, rx_slots, tx_slots);
+            if (!xmitlen) xmitlen = caplen;
+            this->open(class_mask::default_, group_policy::priv, caplen, rx_slots , xmitlen, tx_slots);
         }
 
         //! Constructor
@@ -200,10 +205,11 @@ namespace pfq {
          * The default class used is class_mask::default_.
          */
 
-        socket(group_policy policy, size_t caplen, size_t rx_slots = 1024, size_t tx_slots = 1024)
+        socket(group_policy policy, size_t caplen, size_t rx_slots = 1024, size_t xmitlen = 0, size_t tx_slots = 1024)
         : data_()
         {
-            this->open(class_mask::default_, policy, caplen, rx_slots, tx_slots);
+            if (!xmitlen) xmitlen = caplen;
+            this->open(class_mask::default_, policy, caplen, rx_slots, xmitlen, tx_slots);
         }
 
         //! Constructor
@@ -212,10 +218,11 @@ namespace pfq {
          * All the possible parameters are specifiable.
          */
 
-        socket(class_mask mask, group_policy policy, size_t caplen, size_t rx_slots = 1024, size_t tx_slots = 1024)
+        socket(class_mask mask, group_policy policy, size_t caplen, size_t rx_slots = 1024, size_t xmitlen = 0, size_t tx_slots = 1024)
         : data_()
         {
-            this->open(mask, policy, caplen, rx_slots, tx_slots);
+            if (!xmitlen) xmitlen = caplen;
+            this->open(mask, policy, caplen, rx_slots, xmitlen, tx_slots);
         }
 
         //! Destructor: close the socket
@@ -275,9 +282,10 @@ namespace pfq {
          */
 
         void
-        open(group_policy policy, size_t caplen, size_t rx_slots = 1024, size_t tx_slots = 1024)
+        open(group_policy policy, size_t caplen, size_t rx_slots = 1024, size_t xmitlen = 0, size_t tx_slots = 1024)
         {
-            this->open(class_mask::default_, policy, caplen, rx_slots, tx_slots);
+            if (!xmitlen) xmitlen = caplen;
+            this->open(class_mask::default_, policy, caplen, rx_slots, xmitlen, tx_slots);
         }
 
         //! Open the socket with the given class mask and group policy.
@@ -287,15 +295,17 @@ namespace pfq {
          */
 
         void
-        open(class_mask mask, group_policy policy, size_t caplen, size_t rx_slots = 1024, size_t tx_slots = 1024)
+        open(class_mask mask, group_policy policy, size_t caplen, size_t rx_slots = 1024, size_t xmitlen = 0, size_t tx_slots = 1024)
         {
             if (data_)
                 throw system_error("PFQ: socket already open");
 
+            if (!xmitlen) xmitlen = caplen;
             auto ptr = pfq_open_group(static_cast<unsigned long>(mask),
                                       static_cast<int>(policy),
                                       caplen,
                                       rx_slots,
+                                      xmitlen,
                                       tx_slots);
 
             if (!ptr)
@@ -322,6 +332,7 @@ namespace pfq {
                        param::get<param::policy>(def).value,
                        param::get<param::caplen>(def).value,
                        param::get<param::rx_slots>(def).value,
+                       param::get<param::xmitlen>(def).value,
                        param::get<param::tx_slots>(def).value);
         }
 
@@ -504,10 +515,10 @@ namespace pfq {
         //! Return the max transmission length of packets, in bytes.
 
         size_t
-        maxlen() const
+        xmitlen() const
         {
             auto q = this->data();
-            return as<size_t>(q, pfq_get_maxlen(q));
+            return as<size_t>(q, pfq_get_xmitlen(q));
         }
 
         //! Specify the length of the Rx queue, in number of packets.
@@ -1158,7 +1169,7 @@ namespace pfq {
             //
             auto offset = __atomic_load_n(poff_addr, __ATOMIC_RELAXED);
 
-            // cut the packet to maxlen:
+            // cut the packet to xmitlen:
             //
 
             caplen = static_cast<uint16_t>(

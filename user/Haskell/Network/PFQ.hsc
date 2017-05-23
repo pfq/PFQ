@@ -131,7 +131,8 @@ module Network.PFQ
 
     ,  getTxSlots
     ,  setTxSlots
-    ,  getMaxlen
+    ,  getXmitlen
+    ,  setXmitlen
 
        -- * Packet capture
 
@@ -655,10 +656,21 @@ getCaplen hdl =
 
 -- |Return the max transmission length of packets, in bytes.
 
-getMaxlen :: PfqHandlePtr
+getXmitlen :: PfqHandlePtr
           -> IO Int
-getMaxlen hdl =
-    fmap fromIntegral (pfq_get_maxlen hdl >>= throwPfqIf hdl (== -1))
+getXmitlen hdl =
+    fmap fromIntegral (pfq_get_xmitlen hdl >>= throwPfqIf hdl (== -1))
+
+-- |Specify the transmission length of packets, in bytes.
+--
+-- Transmission length must be set before the socket is enabled.
+
+setXmitlen :: PfqHandlePtr
+           -> Int        -- ^ xmitlen (bytes)
+           -> IO ()
+setXmitlen hdl value =
+    pfq_set_xmitlen hdl (fromIntegral value)
+        >>= throwPfqIf_ hdl (== -1)
 
 
 -- |Specify the length of the Rx queue, in number of packets.
@@ -1194,7 +1206,8 @@ foreign import ccall unsafe pfq_get_caplen          :: PfqHandlePtr -> IO CPtrdi
 foreign import ccall unsafe pfq_set_weight          :: PfqHandlePtr -> CInt -> IO CInt
 foreign import ccall unsafe pfq_get_weight          :: PfqHandlePtr -> IO CInt
 
-foreign import ccall unsafe pfq_get_maxlen          :: PfqHandlePtr -> IO CPtrdiff
+foreign import ccall unsafe pfq_set_xmitlen         :: PfqHandlePtr -> CSize -> IO CInt
+foreign import ccall unsafe pfq_get_xmitlen         :: PfqHandlePtr -> IO CPtrdiff
 
 foreign import ccall unsafe pfq_set_tx_slots        :: PfqHandlePtr -> CSize -> IO CInt
 foreign import ccall unsafe pfq_get_tx_slots        :: PfqHandlePtr -> IO CSize

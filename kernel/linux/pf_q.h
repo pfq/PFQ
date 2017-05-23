@@ -89,26 +89,20 @@ typedef uint8_t  pfq_qver_t;
 
 #define PFQ_SHARED_QUEUE_SLOT_SIZE(x)		ALIGN(sizeof(struct pfq_pkthdr) + x, PFQ_SLOT_ALIGNMENT)
 
-#define PFQ_SHARED_QUEUE_NEXT_PKTHDR(hdr, fix)	((struct pfq_pkthdr *)\
-						 (fix ? \
-						  (char *)(hdr) + fix :\
-						  (char *)(hdr) + ALIGN(sizeof(struct pfq_pkthdr) + hdr->caplen, PFQ_SLOT_ALIGNMENT)))
-
-
-#define PFQ_SHARED_QUEUE_NEXT_FIX_PKTHDR(hdr, fix) ((struct pfq_pkthdr *)((char *)(hdr) + fix))
-#define PFQ_SHARED_QUEUE_NEXT_VAR_PKTHDR(hdr)	   ((struct pfq_pkthdr *)((char *)(hdr) + ALIGN(sizeof(struct pfq_pkthdr) + hdr->caplen, PFQ_SLOT_ALIGNMENT)))
-
+#define PFQ_SHARED_QUEUE_NEXT_PKTHDR(hdr, fix) ((struct pfq_pkthdr *)((char *)(hdr) + fix))
 
 
 /* PFQ socket options */
+
 
 #define Q_SO_DISABLE			0
 #define Q_SO_ENABLE			1
 
 #define Q_SO_SET_RX_TSTAMP		2
-#define Q_SO_SET_RX_CAPLEN		3
+#define Q_SO_SET_RX_LEN			3
 #define Q_SO_SET_RX_SLOTS		4
 #define Q_SO_SET_RX_OFFSET		5
+#define Q_SO_SET_TX_LEN			6
 #define Q_SO_SET_TX_SLOTS		7
 #define Q_SO_SET_WEIGHT			8
 
@@ -129,10 +123,10 @@ typedef uint8_t  pfq_qver_t;
 #define Q_SO_GET_STATS			22
 #define Q_SO_GET_SHMEM_SIZE		23      /* size of the shared memory in (bytes) */
 #define Q_SO_GET_RX_TSTAMP		24
-#define Q_SO_GET_RX_CAPLEN		25
+#define Q_SO_GET_RX_SLOT_SIZE		25
 #define Q_SO_GET_RX_SLOTS		26
 #define Q_SO_GET_RX_OFFSET		27
-#define Q_SO_GET_TX_MAXLEN		28
+#define Q_SO_GET_TX_SLOT_SIZE		28
 #define Q_SO_GET_TX_SLOTS		29
 #define Q_SO_GET_GROUPS			30
 #define Q_SO_GET_GROUP_STATS		31

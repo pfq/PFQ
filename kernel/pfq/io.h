@@ -44,6 +44,12 @@
 		n; \
 	})
 
+
+#define for_each_sk_slot(hdr, end, fix) \
+        for(; (hdr < (struct pfq_pkthdr *)end); \
+               hdr = PFQ_SHARED_QUEUE_NEXT_PKTHDR(hdr, fix))
+
+
 typedef union
 {
 	uint64_t value;

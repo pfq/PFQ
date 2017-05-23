@@ -424,18 +424,18 @@ pfq_sk_queue_xmit( struct pfq_sock *so
 
 	HARD_TX_LOCK(dev_queue.dev, dev_queue.queue, cpu);
 
-	for_each_sk_mbuff(hdr, end, 0 /* dynamic slot size */)
+	for_each_sk_slot(hdr, end, so->tx_slot_size)
 	{
 		struct pfq_pkthdr *next;
                 tx_response_t tmp = {0};
 
-		next = PFQ_SHARED_QUEUE_NEXT_VAR_PKTHDR(hdr);
+		next = PFQ_SHARED_QUEUE_NEXT_PKTHDR(hdr, so->tx_slot_size);
 		prefetch_r3(next);
 		prefetch_r3((char *)next+64);
 
 		/* because of dynamic slot size, ensure the caplen is not set to 0 */
 
-		if (unlikely(!hdr->len)) {
+		if (unlikely(!hdr->caplen)) {
 			if (printk_ratelimit())
 				printk(KERN_INFO "[PFQ] sk_queue_xmit: zero caplen (BUG!)\n");
 			break;
@@ -449,14 +449,14 @@ pfq_sk_queue_xmit( struct pfq_sock *so
                 /* set the xmit_more bit */
 
 		ctx.xmit_more = batch_cntr < global->xmit_batch_len ?
-				PFQ_SHARED_QUEUE_NEXT_VAR_PKTHDR(hdr) < (struct pfq_pkthdr *)end : (batch_cntr = 0, false);
+				PFQ_SHARED_QUEUE_NEXT_PKTHDR(hdr, so->tx_slot_size) < (struct pfq_pkthdr *)end : (batch_cntr = 0, false);
 
 		/* transmit this packet */
 
 		if (likely(netif_running(dev_queue.dev) && netif_carrier_ok(dev_queue.dev))) {
 
-			size_t len = min_t(size_t, hdr->len, global->xmit_slot_size);
-			tmp = __pfq_mbuff_xmit(hdr, hdr+1, len, &dev_queue, &ctx);
+			size_t len = min_t(size_t, hdr->caplen, so->tx_slot_size);
+			tmp = __pfq_slot_xmit(hdr, hdr+1, len, &dev_queue, &ctx);
 
 			rc.value += tmp.value;
 		}
@@ -476,7 +476,7 @@ pfq_sk_queue_xmit( struct pfq_sock *so
 
 	/* count the packets left in the shared queue */
 
-	for_each_sk_mbuff(hdr, end, 0) {
+	for_each_sk_slot(hdr, end, so->tx_slot_size) {
 		/* dynamic slot size: ensure the caplen is not zero! */
 		if (unlikely(!hdr->caplen))
 			break;
@@ -1043,7 +1043,7 @@ size_t pfq_sk_queue_recv(struct pfq_sock *so,
 
 		/* compute the boundaries */
 
-		bytes = min_t(size_t, skb->len, so->caplen);
+		bytes = min_t(size_t, skb->len, so->tx_len);
 		pkt = (char *)(hdr+1);
 		slot_index = qlen + copied;
 
@@ -1108,7 +1108,7 @@ size_t pfq_sk_queue_recv(struct pfq_sock *so,
 
 		copied++;
 
-		hdr = PFQ_SHARED_QUEUE_NEXT_FIX_PKTHDR(hdr, so->rx_slot_size);
+		hdr = PFQ_SHARED_QUEUE_NEXT_PKTHDR(hdr, so->rx_slot_size);
 	}
 
 	return copied;

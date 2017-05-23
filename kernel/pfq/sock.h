@@ -49,11 +49,6 @@ pfq_sk(struct sock *sk)
 }
 
 
-#define for_each_sk_mbuff(hdr, end, fix) \
-        for(; (hdr < (struct pfq_pkthdr *)end); \
-               hdr = PFQ_SHARED_QUEUE_NEXT_PKTHDR(hdr, fix))
-
-
 struct pfq_queue_info
 {
 	int	ifindex;
@@ -80,7 +75,8 @@ struct pfq_sock
 	int			weight;
 	int			tstamp;
 
-	size_t			caplen;
+	size_t			rx_len;
+	size_t			tx_len;
 
 	size_t			rx_queue_len;
 	size_t			rx_slot_size;
@@ -164,7 +160,7 @@ extern void     pfq_sock_init_waitqueue_head(wait_queue_head_t *queue);
 extern void     pfq_sock_destruct(struct sock *sk);
 
 extern pfq_id_t pfq_sock_get_free_id(struct pfq_sock * so);
-extern int	pfq_sock_init(struct pfq_sock *so, pfq_id_t id, size_t caplen, size_t maxlen);
+extern int	pfq_sock_init(struct pfq_sock *so, pfq_id_t id, size_t caplen, size_t xmitlen);
 extern struct	pfq_sock * pfq_sock_get_by_id(pfq_id_t id);
 extern int	pfq_sock_counter(void);
 extern void	pfq_sock_release_id(pfq_id_t id);

@@ -605,6 +605,7 @@ pfq_activate_socket_for_device(pcap_t *handle, const char *device)
 
 		handlep->q = pfq_open_nogroup(min(handle->snapshot, handle->opt.config.caplen),
 					      handle->opt.config.pfq_rx_slots,
+					      min(handle->snapshot, handle->opt.config.caplen),
 					      handle->opt.config.pfq_tx_slots);
 		if (handlep->q == NULL) {
 			snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "%s", pfq_error(handlep->q));
@@ -641,6 +642,7 @@ pfq_activate_socket_for_device(pcap_t *handle, const char *device)
 		handlep->q = pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_SHARED,
 						  min(handle->snapshot, handle->opt.config.caplen),
 						  handle->opt.config.pfq_rx_slots,
+						  min(handle->snapshot, handle->opt.config.caplen),
 						  handle->opt.config.pfq_tx_slots);
 		if (handlep->q == NULL) {
 			snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "%s", pfq_error(handlep->q));

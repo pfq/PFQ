@@ -175,19 +175,19 @@ int pfq_getsockopt(struct socket *sock,
                         return -EFAULT;
         } break;
 
-        case Q_SO_GET_RX_CAPLEN:
+        case Q_SO_GET_RX_SLOT_SIZE:
         {
-                if (len != sizeof(so->caplen))
+                if (len != sizeof(so->rx_slot_size))
                         return -EINVAL;
-                if (copy_to_user(optval, &so->caplen, sizeof(so->caplen)))
+                if (copy_to_user(optval, &so->rx_slot_size, sizeof(so->rx_slot_size)))
                         return -EFAULT;
         } break;
 
-        case Q_SO_GET_TX_MAXLEN:
+        case Q_SO_GET_TX_SLOT_SIZE:
         {
-                if (len != sizeof(global->xmit_slot_size))
+                if (len != sizeof(so->tx_slot_size))
                         return -EINVAL;
-                if (copy_to_user(optval, &global->xmit_slot_size, sizeof(global->xmit_slot_size)))
+                if (copy_to_user(optval, &so->tx_slot_size, sizeof(so->tx_slot_size)))
                         return -EFAULT;
         } break;
 
@@ -477,25 +477,27 @@ int pfq_setsockopt(struct socket *sock,
                 pr_devel("[PFQ|%d] timestamp enabled.\n", so->id);
         } break;
 
-        case Q_SO_SET_RX_CAPLEN:
+        case Q_SO_SET_RX_LEN:
         {
-                typeof(so->caplen) caplen;
+                typeof(so->rx_len) caplen;
+                size_t rx_slot_size;
 
                 if (optlen != sizeof(caplen))
                         return -EINVAL;
                 if (copy_from_user(&caplen, optval, optlen))
                         return -EFAULT;
 
-                if (caplen > (size_t)global->capt_slot_size) {
-                        printk(KERN_INFO "[PFQ|%d] invalid caplen=%zu (max %d)\n", so->id, caplen, global->capt_slot_size);
+		rx_slot_size = PFQ_SHARED_QUEUE_SLOT_SIZE(caplen);
+
+                if (rx_slot_size > (size_t)global->max_slot_size) {
+                        printk(KERN_INFO "[PFQ|%d] invalid caplen=%zu (max slot size = %d)\n", so->id, caplen, global->max_slot_size);
                         return -EPERM;
                 }
 
-                so->caplen = caplen;
-                so->rx_slot_size = PFQ_SHARED_QUEUE_SLOT_SIZE(so->caplen);
+                so->rx_len = caplen;
+                so->rx_slot_size = rx_slot_size;
 
-                pr_devel("[PFQ|%d] caplen=%zu, slot_size=%zu\n",
-                                so->id, so->caplen, so->rx_slot_size);
+                pr_devel("[PFQ|%d] caplen=%zu, rx_slot_size=%zu\n", so->id, so->rx_len, so->rx_slot_size);
         } break;
 
         case Q_SO_SET_RX_SLOTS:
@@ -516,7 +518,7 @@ int pfq_setsockopt(struct socket *sock,
 
                 so->rx_queue_len = slots;
 
-                pr_devel("[PFQ|%d] rx_queue slots=%zu\n", so->id, so->rx_queue_len);
+                pr_devel("[PFQ|%d] rx_queue: slots=%zu\n", so->id, so->rx_queue_len);
         } break;
 
         case Q_SO_SET_TX_SLOTS:
@@ -536,8 +538,32 @@ int pfq_setsockopt(struct socket *sock,
 
                 so->tx_queue_len = slots;
 
-                pr_devel("[PFQ|%d] tx_queue slots=%zu\n", so->id, so->tx_queue_len);
+                pr_devel("[PFQ|%d] tx_queue: slots=%zu\n", so->id, so->tx_queue_len);
         } break;
+
+        case Q_SO_SET_TX_LEN:
+        {
+                typeof(so->tx_len) xmitlen;
+                size_t tx_slot_size;
+
+                if (optlen != sizeof(xmitlen))
+                        return -EINVAL;
+                if (copy_from_user(&xmitlen, optval, optlen))
+                        return -EFAULT;
+
+		tx_slot_size = PFQ_SHARED_QUEUE_SLOT_SIZE(xmitlen);
+
+                if (tx_slot_size > (size_t)global->max_slot_size) {
+                        printk(KERN_INFO "[PFQ|%d] invalid xmitlen=%zu (max slot size = %d)\n", so->id, xmitlen, global->max_slot_size);
+                        return -EPERM;
+                }
+
+                so->tx_len = xmitlen;
+                so->tx_slot_size = tx_slot_size;
+
+                pr_devel("[PFQ|%d] xmitlen=%zu, tx_slot_size=%zu\n", so->id, so->tx_len, so->tx_slot_size);
+        } break;
+
 
         case Q_SO_SET_WEIGHT:
         {

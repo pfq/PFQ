@@ -127,7 +127,7 @@ void pfq_sock_release_id(pfq_id_t id)
 }
 
 
-int pfq_sock_init(struct pfq_sock *so, pfq_id_t id, size_t caplen, size_t maxlen)
+int pfq_sock_init(struct pfq_sock *so, pfq_id_t id, size_t caplen, size_t xmitlen)
 {
 	int i;
 
@@ -184,16 +184,17 @@ int pfq_sock_init(struct pfq_sock *so, pfq_id_t id, size_t caplen, size_t maxlen
 
 	pfq_queue_info_init(&so->rx);
 
-        so->caplen = caplen;
+        so->rx_len = caplen;
         so->rx_queue_len = 0;
-        so->rx_slot_size = 0;
+        so->rx_slot_size  = PFQ_SHARED_QUEUE_SLOT_SIZE(caplen);
 
 	/* Tx queues setup */
 
 	pfq_queue_info_init(&so->tx);
 
+        so->tx_len = xmitlen;
         so->tx_queue_len  = 0;
-        so->tx_slot_size  = PFQ_SHARED_QUEUE_SLOT_SIZE(maxlen);
+        so->tx_slot_size  = PFQ_SHARED_QUEUE_SLOT_SIZE(xmitlen);
 	so->txq_num_async = 0;
 
 	/* Tx async queues setup */

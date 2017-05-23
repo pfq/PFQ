@@ -79,9 +79,9 @@ namespace more
 static int
 in_cksum(u_short *addr, int len)
 {
-    register int nleft = len;
-    register u_short *w = addr;
-    register int sum = 0;
+    int nleft = len;
+    u_short *w = addr;
+    int sum = 0;
     u_short answer = 0;
 
     /*

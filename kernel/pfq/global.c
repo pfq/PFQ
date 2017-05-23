@@ -27,8 +27,8 @@
 
 struct pfq_global_data default_global =
 {
-	.capt_slot_size		= 1514,
-	.xmit_slot_size		= 1514,
+	.max_slot_size		= 2048,
+
 	.xmit_batch_len		= 1,
 	.capt_batch_len		= 1,
 
