@@ -136,7 +136,7 @@ int pfq_getsockopt(struct socket *sock,
                 if (len != sizeof(int))
                         return -EINVAL;
 
-                enabled = atomic_long_read(&so->shmem_addr) ? 0 : 1;
+                enabled = atomic_long_read(&so->shmem_addr) ? 1 : 0;
 
                 if (copy_to_user(optval, &enabled, sizeof(enabled)))
                         return -EFAULT;
