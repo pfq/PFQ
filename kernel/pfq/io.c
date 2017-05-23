@@ -276,11 +276,11 @@ pfq_xmit(struct qbuff *buff, struct net_device *dev, int queue, int more)
  */
 
 static tx_response_t
-__pfq_mbuff_xmit(struct pfq_pkthdr *hdr,
-		 const void *buf,
-		 size_t len,
-		 struct pfq_dev_queue *dev_queue,
-		 struct pfq_mbuff_xmit_context *ctx)
+__pfq_slot_xmit(struct pfq_pkthdr *hdr,
+		const void *buf,
+		size_t len,
+		struct pfq_dev_queue *dev_queue,
+		struct pfq_xmit_context *ctx)
 {
 	struct sk_buff *skb;
         tx_response_t rc = { 0 };
@@ -356,7 +356,7 @@ pfq_sk_queue_xmit( struct pfq_sock *so
 {
 	struct pfq_queue_info const * txinfo = pfq_sock_get_tx_queue_info(so, sock_queue);
 	struct pfq_dev_queue dev_queue = {.dev = NULL, .queue = NULL, .mapping = 0};
-	struct pfq_mbuff_xmit_context ctx;
+	struct pfq_xmit_context ctx;
 	struct pfq_percpu_pool *pool;
 	int batch_cntr = 0, cons_idx;
 	struct pfq_shared_tx_queue *tx_queue;

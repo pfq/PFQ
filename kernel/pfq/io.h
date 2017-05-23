@@ -67,7 +67,7 @@ extern size_t pfq_sk_queue_recv( struct pfq_sock *so
 			       );
 
 
-struct pfq_mbuff_xmit_context
+struct pfq_xmit_context
 {
 	struct pfq_skb_pool	*tx;
 	struct net		*net;
