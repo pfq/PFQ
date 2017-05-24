@@ -64,18 +64,22 @@ static
 size_t
 pfq_skb_pool_flush(struct pfq_skb_pool *pool)
 {
-	size_t total = 0, in_use = 0;
-
 	printk(KERN_INFO "[PFQ] pool: releasing base@%p (%zu bytes)...\n", pool->base, pool->base_size);
 	printk(KERN_INFO "[PFQ] pool: releasing data@%p (%zu bytes)...\n", pool->data, pool->data_size);
 
-	pfq_free_pages(pool->base, pool->base_size);
-	pfq_free_pages(pool->data, pool->data_size);
+	if (pool->base) {
+		pfq_free_pages(pool->base, pool->base_size);
+		pool->base = NULL;
+		pool->base_size = 0;
+	}
 
-	if (in_use)
-		printk(KERN_WARNING "[PFQ] error: pfq_skb_pool_flush: pool@%p -> %zu buffers still in use!!\n", pool, in_use);
+	if (pool->data) {
+		pfq_free_pages(pool->data, pool->data_size);
+		pool->data = NULL;
+		pool->data_size = 0;
+	}
 
-	return total;
+	return 0;
 }
 
 
@@ -97,15 +101,14 @@ int pfq_skb_pool_init(struct pfq_skb_pool *pool, size_t pool_size, size_t skb_le
 	pool->base_size = pool->base ? Q_MAX_POOL_SIZE * 2 * sizeof(struct sk_buff) :  0;
 	if (!pool->base) {
 		printk(KERN_ERR "[PFQ] pfq_skb_pool_init(base): could not allocate memory!\n");
-		return -ENOMEM;
+		goto err;
 	}
-
 
 	pool->data = pfq_malloc_pages( Q_MAX_POOL_SIZE * global->max_slot_size, GFP_KERNEL);
 	pool->data_size = pool->data ? Q_MAX_POOL_SIZE * global->max_slot_size: 0;
-	if (!pool->base) {
+	if (!pool->data) {
 		printk(KERN_ERR "[PFQ] pfq_skb_pool_init(data): could not allocate memory!\n");
-		return -ENOMEM;
+		goto err;
 	}
 
 	printk(KERN_INFO "[PFQ] pool: base@%p (%zu bytes).\n", pool->base, pool->base_size);
@@ -114,8 +117,8 @@ int pfq_skb_pool_init(struct pfq_skb_pool *pool, size_t pool_size, size_t skb_le
 	/* one slot is added by the queue to distinguish between full and empty state */
 	pool->fifo = pfq_spsc_init(pool_size + PFQ_POOL_CACHELINE_PAD-1, cpu);
 	if (!pool->fifo) {
-		printk(KERN_ERR "[PFQ] pfq_skb_pool_init: out of memory!\n");
-		return -ENOMEM;
+		printk(KERN_ERR "[PFQ] pfq_skb_pool_init(fifo): out of memory!\n");
+		goto err;
 	}
 
 	for(; total < pool_size; total++)
@@ -140,6 +143,9 @@ int pfq_skb_pool_init(struct pfq_skb_pool *pool, size_t pool_size, size_t skb_le
 	}
 
 	return pool_size;
+err:
+	pfq_skb_pool_flush(pool);
+	return -ENOMEM;
 }
 
 
@@ -147,13 +153,12 @@ int pfq_skb_pool_init(struct pfq_skb_pool *pool, size_t pool_size, size_t skb_le
 static size_t
 pfq_skb_pool_free(struct pfq_skb_pool *pool, size_t pool_size)
 {
-	size_t total = 0;
 	if (pool) {
-		total = pfq_skb_pool_flush(pool);
+		pfq_skb_pool_flush(pool);
 		pfq_spsc_free(pool_size, pool->fifo, NULL);
 		pool->fifo = NULL;
 	}
-	return total;
+	return 0;
 }
 
 
@@ -199,46 +204,44 @@ pfq_get_skb_pool_stats(void)
 
 int pfq_skb_pool_init_all(void)
 {
-	int cpu, total = 0;
+	int cpu;
 	for_each_present_cpu(cpu)
 	{
 		struct pfq_percpu_pool *pool = per_cpu_ptr(global->percpu_pool, cpu);
-		if (pool) {
-                        int n;
-
+		if (pool)
+		{
 			spin_lock_init(&pool->tx_lock);
 
-			if ((n = pfq_skb_pool_init(&pool->rx, global->skb_rx_pool_size, global->max_slot_size, 0, cpu)) < 0)
-				return -ENOMEM;
-			total += n;
-			if ((n = pfq_skb_pool_init(&pool->tx, global->skb_tx_pool_size, global->max_slot_size, 1, cpu)) < 0)
-				return -ENOMEM;
-			total += n;
+			if (pfq_skb_pool_init(&pool->rx, global->skb_rx_pool_size, global->max_slot_size, 0, cpu) < 0)
+				goto err;
+			if (pfq_skb_pool_init(&pool->tx, global->skb_tx_pool_size, global->max_slot_size, 1, cpu) < 0)
+				goto err;
 		}
 	}
 
-	// printk(KERN_INFO "[PFQ] %d sk_buff allocated!\n", total);
 	return 0;
+err:
+	pfq_skb_pool_free_all();
+	return -ENOMEM;
 }
 
 
 int pfq_skb_pool_free_all(void)
 {
-	int cpu, total = 0;
+	int cpu;
 
 	for_each_present_cpu(cpu)
 	{
 		struct pfq_percpu_pool *pool = per_cpu_ptr(global->percpu_pool, cpu);
 		if (pool) {
-			total += pfq_skb_pool_free(&pool->rx, global->skb_rx_pool_size);
 			spin_lock(&pool->tx_lock);
-			total += pfq_skb_pool_free(&pool->tx, global->skb_tx_pool_size);
+			pfq_skb_pool_free(&pool->rx, global->skb_rx_pool_size);
+			pfq_skb_pool_free(&pool->tx, global->skb_tx_pool_size);
 			spin_unlock(&pool->tx_lock);
 		}
 	}
 
-	// printk(KERN_INFO "[PFQ] %d sk_buff freed!\n", total);
-	return total;
+	return 0;
 }
 
 
