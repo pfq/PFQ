@@ -28,7 +28,6 @@
 
 #include <pfq/define.h>
 #include <pfq/group.h>
-#include <pfq/thread.h>
 
 #include <linux/pf_q.h>
 

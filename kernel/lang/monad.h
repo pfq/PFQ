@@ -27,6 +27,7 @@
 #include <pfq/group.h>
 #include <pfq/define.h>
 
+#include <pfq/stats.h>
 #include <pfq/sparse.h>
 #include <pfq/kcompat.h>
 #include <pfq/qbuff.h>

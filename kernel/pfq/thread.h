@@ -24,7 +24,6 @@
 #ifndef PFQ_THREAD_H
 #define PFQ_THREAD_H
 
-#include <pfq/sock.h>
 #include <pfq/define.h>
 
 #include <linux/kthread.h>

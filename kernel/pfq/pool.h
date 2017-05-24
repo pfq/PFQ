@@ -21,13 +21,10 @@
  *
  ****************************************************************/
 
-#ifndef PFQ_SKBUFF_POOL_H
-#define PFQ_SKBUFF_POOL_H
+#ifndef PFQ_POOL_H
+#define PFQ_POOL_H
 
-#include <pfq/spsc_fifo.h>
 #include <pfq/global.h>
-#include <pfq/stats.h>
-
 #include <linux/skbuff.h>
 
 
@@ -59,4 +56,4 @@ struct pfq_spsc_fifo *pfq_skb_pool_get(struct pfq_skb_pool *pool, size_t size)
 }
 
 
-#endif /* PFQ_SKBUFF_POOL_H */
+#endif /* PFQ_POOL_H */

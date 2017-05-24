@@ -32,6 +32,7 @@
 #include <pfq/printk.h>
 #include <pfq/proc.h>
 #include <pfq/sparse.h>
+#include <pfq/sock.h>
 
 #include <linux/kernel.h>
 #include <linux/module.h>

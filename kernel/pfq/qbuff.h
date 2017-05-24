@@ -23,7 +23,6 @@
 #ifndef PFQ_QBUFF_H
 #define PFQ_QBUFF_H
 
-#include <pfq/qbuff.h>
 #include <pfq/global.h>
 #include <pfq/vlan.h>
 #include <pfq/types.h>

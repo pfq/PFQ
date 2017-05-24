@@ -24,7 +24,7 @@
 #ifndef PFQ_PRINTK_H
 #define PFQ_PRINTK_H
 
-#include <pfq/group.h>
+#include <pfq/types.h>
 
 #include <linux/printk.h>
 

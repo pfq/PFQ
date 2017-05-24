@@ -21,7 +21,6 @@
  *
  ****************************************************************/
 
-
 #ifndef PFQ_LANG_SIGNATURE_H
 #define PFQ_LANG_SIGNATURE_H
 
