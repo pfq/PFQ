@@ -64,6 +64,7 @@ script = do
     -- PFQ pcap library 1.8.1
 
     Configure "pfq-pcap-1.8.1-fanout"  *>>  into "user/libpcap/libpcap-1.8.1-fanout/"  $ do cmd "autoconf" `requires` [ Install "pfq-clib" ]
+                                                                                            configure
     Build     "pfq-pcap-1.8.1-fanout"  *>>  into "user/libpcap/libpcap-1.8.1-fanout/"  $ make              `requires` [ Install "pfq.ko", Configure "pfq-pcap-1.8.1-fanout" ]
     Install   "pfq-pcap-1.8.1-fanout"  *>>  into "user/libpcap/libpcap-1.8.1-fanout/"  $ empty             `requires` [ Build "pfq-pcap-1.8.1-fanout" ]
     Clean     "pfq-pcap-1.8.1-fanout"  *>>  into "user/libpcap/libpcap-1.8.1-fanout/"  $ make_clean
