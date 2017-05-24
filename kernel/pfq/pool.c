@@ -101,8 +101,8 @@ int pfq_skb_pool_init(struct pfq_skb_pool *pool, size_t pool_size, size_t skb_le
 	}
 
 
-	pool->data = pfq_malloc_pages( Q_MAX_POOL_SIZE * PFQ_POOL_SKB_SIZE, GFP_KERNEL);
-	pool->data_size = pool->data ? Q_MAX_POOL_SIZE * PFQ_POOL_SKB_SIZE : 0;
+	pool->data = pfq_malloc_pages( Q_MAX_POOL_SIZE * global->max_slot_size, GFP_KERNEL);
+	pool->data_size = pool->data ? Q_MAX_POOL_SIZE * global->max_slot_size: 0;
 	if (!pool->base) {
 		printk(KERN_ERR "[PFQ] pfq_skb_pool_init(data): could not allocate memory!\n");
 		return -ENOMEM;
@@ -123,9 +123,9 @@ int pfq_skb_pool_init(struct pfq_skb_pool *pool, size_t pool_size, size_t skb_le
                 void *buf, *data;
 
                 buf  = pool->base + total * sizeof(struct sk_buff);
-		data = pool->data + total * PFQ_POOL_SKB_SIZE;
+		data = pool->data + total * global->max_slot_size;
 
-		skb = pfq_build_skb(buf, data, PFQ_POOL_SKB_SIZE);
+		skb = pfq_build_skb(buf, data, global->max_slot_size);
 
 		skb->peeked = 1;
 
@@ -208,10 +208,10 @@ int pfq_skb_pool_init_all(void)
 
 			spin_lock_init(&pool->tx_lock);
 
-			if ((n = pfq_skb_pool_init(&pool->rx, global->skb_rx_pool_size, PFQ_POOL_SKB_SIZE, 0, cpu)) < 0)
+			if ((n = pfq_skb_pool_init(&pool->rx, global->skb_rx_pool_size, global->max_slot_size, 0, cpu)) < 0)
 				return -ENOMEM;
 			total += n;
-			if ((n = pfq_skb_pool_init(&pool->tx, global->skb_tx_pool_size, PFQ_POOL_SKB_SIZE, 1, cpu)) < 0)
+			if ((n = pfq_skb_pool_init(&pool->tx, global->skb_tx_pool_size, global->max_slot_size, 1, cpu)) < 0)
 				return -ENOMEM;
 			total += n;
 		}

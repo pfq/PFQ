@@ -28,7 +28,6 @@
 #include <linux/skbuff.h>
 
 
-#define PFQ_POOL_SKB_SIZE		2048
 #define PFQ_POOL_CACHELINE_PAD		(64/sizeof(void *))
 
 
@@ -50,7 +49,7 @@ extern struct pfq_pool_stats pfq_get_skb_pool_stats(void);
 static inline
 struct pfq_spsc_fifo *pfq_skb_pool_get(struct pfq_skb_pool *pool, size_t size)
 {
-	if (likely(size <= PFQ_POOL_SKB_SIZE))
+	if (likely(size <= global->max_slot_size))
 		return pool->fifo;
 	return NULL;
 }
