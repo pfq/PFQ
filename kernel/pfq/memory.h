@@ -166,7 +166,7 @@ pfq_skb_recycle(struct sk_buff *skb)
 	atomic_set(&shinfo->dataref,1);
 	// kmemcheck_annotate_variable(shinfo->destructor_arg);
 #if 1
-	__builtin_memcpy(skb, skb+Q_MAX_POOL_SIZE, sizeof(struct sk_buff));
+	__builtin_memcpy(skb, skb+global->max_pool_size, sizeof(struct sk_buff));
 #else
 	unsigned int size = 2048;
 	void *data;

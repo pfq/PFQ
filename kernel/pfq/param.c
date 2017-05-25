@@ -31,6 +31,8 @@ extern struct pfq_global_data default_global;
 
 
 module_param_named(max_slot_size,	 default_global.max_slot_size,		int, 0644);
+module_param_named(max_pool_size,	 default_global.max_pool_size,		int, 0644);
+
 module_param_named(capt_batch_len,	 default_global.capt_batch_len,		int, 0644);
 module_param_named(xmit_batch_len,	 default_global.xmit_batch_len,		int, 0644);
 module_param_named(skb_tx_pool_size,	 default_global.skb_tx_pool_size,	int, 0644);
@@ -41,6 +43,7 @@ module_param_named(tx_retry,		 default_global.tx_retry,		int, 0644);
 module_param_array_named(tx_cpu,	 default_global.tx_cpu,	  int, &default_global.tx_cpu_nr, 0644);
 
 MODULE_PARM_DESC(max_slot_size,		" Maximum socket slot size (default=2048 bytes)");
+MODULE_PARM_DESC(max_pool_size,		" Maximum socket buffer pool size (default=2048)");
 MODULE_PARM_DESC(capt_batch_len,	" Capture batch queue length");
 MODULE_PARM_DESC(xmit_batch_len,	" Transmit batch queue length");
 MODULE_PARM_DESC(vlan_untag,		" Enable vlan untagging (default=0)");

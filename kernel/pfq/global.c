@@ -28,6 +28,7 @@
 struct pfq_global_data default_global =
 {
 	.max_slot_size		= 2048,
+	.max_pool_size		= 2048,
 
 	.xmit_batch_len		= 1,
 	.capt_batch_len		= 1,

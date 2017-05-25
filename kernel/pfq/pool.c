@@ -97,15 +97,15 @@ int pfq_skb_pool_init(struct pfq_skb_pool *pool, size_t pool_size, size_t skb_le
 
 	/* allocate pages for skb */
 
-	pool->base = pfq_malloc_pages( Q_MAX_POOL_SIZE * 2 * sizeof(struct sk_buff), GFP_KERNEL);
-	pool->base_size = pool->base ? Q_MAX_POOL_SIZE * 2 * sizeof(struct sk_buff) :  0;
+	pool->base = pfq_malloc_pages( global->max_pool_size * 2 * sizeof(struct sk_buff), GFP_KERNEL);
+	pool->base_size = pool->base ? global->max_pool_size * 2 * sizeof(struct sk_buff) :  0;
 	if (!pool->base) {
 		printk(KERN_ERR "[PFQ] pfq_skb_pool_init(base): could not allocate memory!\n");
 		goto err;
 	}
 
-	pool->data = pfq_malloc_pages( Q_MAX_POOL_SIZE * global->max_slot_size, GFP_KERNEL);
-	pool->data_size = pool->data ? Q_MAX_POOL_SIZE * global->max_slot_size: 0;
+	pool->data = pfq_malloc_pages( global->max_pool_size * global->max_slot_size, GFP_KERNEL);
+	pool->data_size = pool->data ? global->max_pool_size * global->max_slot_size: 0;
 	if (!pool->data) {
 		printk(KERN_ERR "[PFQ] pfq_skb_pool_init(data): could not allocate memory!\n");
 		goto err;
@@ -136,7 +136,7 @@ int pfq_skb_pool_init(struct pfq_skb_pool *pool, size_t pool_size, size_t skb_le
 		PFQ_CB(skb)->pool = idx;
 		PFQ_CB(skb)->head = skb->head;
 
-		memcpy(skb + Q_MAX_POOL_SIZE, skb, sizeof(struct sk_buff));
+		memcpy(skb + global->max_pool_size, skb, sizeof(struct sk_buff));
 
 		pfq_spsc_push(pool->fifo, skb);
 		sparse_inc(global->percpu_memory, os_alloc);

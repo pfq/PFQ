@@ -34,12 +34,13 @@
 struct pfq_kernel_stats __percpu;
 struct pfq_memory_stats __percpu;
 struct pfq_percpu_data  __percpu;
-struct pfq_percpu_pool   __percpu;
+struct pfq_percpu_pool  __percpu;
 
 
 struct pfq_global_data
 {
 	int max_slot_size;
+	int max_pool_size;
 
 	int xmit_batch_len;
 	int capt_batch_len;
