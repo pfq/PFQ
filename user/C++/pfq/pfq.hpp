@@ -1175,13 +1175,10 @@ namespace pfq {
             caplen = static_cast<uint16_t>(
                     std::min(len, data_->tx_slot_size - sizeof(struct pfq_pkthdr)));
 
-            // compute the current dynamic slot_size:
-            //
-            auto this_slot_size = align<PFQ_SLOT_ALIGNMENT>(sizeof(struct pfq_pkthdr) + caplen);
 
-            // ensure there's enough space for the current this_slot_size + the next header:
+            // ensure there's enough space for the current packet
             //
-            if (likely((static_cast<size_t>(offset) + this_slot_size) < data_->tx_queue_size))
+            if (likely((static_cast<size_t>(offset) + data_->tx_slot_size) < data_->tx_queue_size))
             {
                 auto hdr = (struct pfq_pkthdr *)(base_addr + offset);
 
@@ -1192,7 +1189,7 @@ namespace pfq {
 
 			    memcpy(hdr+1, buf, caplen);
 
-                __atomic_store_n(poff_addr, offset + static_cast<ptrdiff_t>(this_slot_size), __ATOMIC_RELEASE);
+                __atomic_store_n(poff_addr, offset + static_cast<ptrdiff_t>(data_->tx_slot_size), __ATOMIC_RELEASE);
                 return true;
             }
 

@@ -1653,7 +1653,6 @@ pfq_send_raw( pfq_t *q
         struct pfq_shared_queue *sh_queue = (struct pfq_shared_queue *)(q->shm_addr);
         struct pfq_shared_tx_queue *tx;
         unsigned int index;
-        size_t this_slot_size;
         ptrdiff_t offset, *poff_addr;
         uint16_t caplen;
         char *base_addr;
@@ -1691,16 +1690,16 @@ pfq_send_raw( pfq_t *q
         offset = __atomic_load_n(poff_addr, __ATOMIC_RELAXED);
 	caplen = (uint16_t)min(len, q->tx_slot_size - sizeof(struct pfq_pkthdr));
 
-	this_slot_size = ALIGN(sizeof(struct pfq_pkthdr) + caplen, PFQ_SLOT_ALIGNMENT);
+        /* ensure there's enough space for the current packet */
 
-	if (likely(((size_t)(offset) + this_slot_size) < q->tx_queue_size)) {
+	if (likely(((size_t)(offset) + q->tx_slot_size) < q->tx_queue_size)) {
 		struct pfq_pkthdr *hdr = (struct pfq_pkthdr *)(base_addr + offset);
 		hdr->tstamp.tv64       = nsec;
 		hdr->len	       = (uint16_t)len;
 		hdr->caplen	       = (uint16_t)caplen;
 		hdr->info.data.copies  = copies;
 		__builtin_memcpy(hdr+1, buf, caplen);
-                __atomic_store_n(poff_addr, offset + (ptrdiff_t)this_slot_size, __ATOMIC_RELEASE);
+                __atomic_store_n(poff_addr, offset + (ptrdiff_t)q->tx_slot_size, __ATOMIC_RELEASE);
 		return Q_VALUE(q, (int)len);
 	}
 
