@@ -276,8 +276,7 @@ pfq_xmit(struct qbuff *buff, struct net_device *dev, int queue, int more)
  */
 
 static tx_response_t
-__pfq_slot_xmit(struct pfq_pkthdr *hdr,
-		const void *buf,
+__pfq_slot_xmit(const void *buf,
 		size_t len,
 		struct pfq_dev_queue *dev_queue,
 		struct pfq_xmit_context *ctx)
@@ -290,8 +289,8 @@ __pfq_slot_xmit(struct pfq_pkthdr *hdr,
 
 	/* allocate a new socket buffer */
 
-	skb = pfq_alloc_skb_pool( len
-				, GFP_ATOMIC
+	skb = pfq_alloc_skb_pool( len + LL_RESERVED_SPACE(dev_queue->dev)
+				, GFP_KERNEL
 				, ctx->node
 				, 1
 				, ctx->tx);
@@ -315,7 +314,7 @@ __pfq_slot_xmit(struct pfq_pkthdr *hdr,
 	/* set the Tx queue */
 
 	skb_set_queue_mapping(skb, dev_queue->mapping);
-	skb_copy_to_linear_data(skb, buf, len);
+	skb_store_bits(skb, 0, buf, len);
 
 	/* transmit the packet + copies */
 
@@ -436,8 +435,14 @@ pfq_sk_queue_xmit( struct pfq_sock *so
 		/* because of dynamic slot size, ensure the caplen is not set to 0 */
 
 		if (unlikely(!hdr->caplen)) {
-			if (printk_ratelimit())
-				printk(KERN_INFO "[PFQ] sk_queue_xmit: zero caplen (BUG!)\n");
+			if (printk_ratelimit()) {
+				printk(KERN_INFO "[PFQ] sk_queue_xmit: zero caplen! len:%u queue:%u commit:%u copies:%u\n"
+						      , hdr->len
+						      , hdr->info.queue
+						      , hdr->info.commit
+						      , hdr->info.data.copies);
+			}
+
 			break;
 		}
 
@@ -455,8 +460,11 @@ pfq_sk_queue_xmit( struct pfq_sock *so
 
 		if (likely(netif_running(dev_queue.dev) && netif_carrier_ok(dev_queue.dev))) {
 
-			size_t len = min_t(size_t, hdr->caplen, so->tx_slot_size);
-			tmp = __pfq_slot_xmit(hdr, hdr+1, len, &dev_queue, &ctx);
+			size_t len = min_t( size_t
+					  , hdr->caplen
+					  , so->tx_slot_size - sizeof(struct pfq_pkthdr) - LL_RESERVED_SPACE(dev_queue.dev));
+
+			tmp = __pfq_slot_xmit(hdr+1, len, &dev_queue, &ctx);
 
 			rc.value += tmp.value;
 		}
