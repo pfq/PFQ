@@ -94,8 +94,9 @@ struct pfq_lang_function_descr;
 struct pfq_lang_exec;
 struct symtable;
 
-extern int pfq_lang_symtable_register_functions  (const char *module, struct symtable *table, struct pfq_lang_function_descr *fun);
-extern void pfq_lang_symtable_unregister_functions(const char *module, struct symtable *table, struct pfq_lang_function_descr *fun);
+
+extern void pfq_lang_unregister_functions(const char *module, struct pfq_lang_function_descr *fun);
+extern int pfq_lang_register_functions(const char *module, struct pfq_lang_function_descr *fun);
 
 
 struct pfq_lang_functional_arg
@@ -237,19 +238,5 @@ eval_function(function_t f, struct qbuff * buff)
 
 	return Pass(buff);
 }
-
-
-extern struct pfq_lang_function_descr  filter_functions[];
-extern struct pfq_lang_function_descr  bloom_functions[];
-extern struct pfq_lang_function_descr  vlan_functions[];
-extern struct pfq_lang_function_descr  forward_functions[];
-extern struct pfq_lang_function_descr  steering_functions[];
-extern struct pfq_lang_function_descr  predicate_functions[];
-extern struct pfq_lang_function_descr  combinator_functions[];
-extern struct pfq_lang_function_descr  property_functions[];
-extern struct pfq_lang_function_descr  control_functions[];
-extern struct pfq_lang_function_descr  misc_functions[];
-extern struct pfq_lang_function_descr  dummy_functions[];
-
 
 #endif /* PFQ_LANG_MODULE_H */

@@ -31,6 +31,19 @@
 #include <pfq/printk.h>
 
 
+extern struct pfq_lang_function_descr  filter_functions[];
+extern struct pfq_lang_function_descr  bloom_functions[];
+extern struct pfq_lang_function_descr  vlan_functions[];
+extern struct pfq_lang_function_descr  forward_functions[];
+extern struct pfq_lang_function_descr  steering_functions[];
+extern struct pfq_lang_function_descr  predicate_functions[];
+extern struct pfq_lang_function_descr  combinator_functions[];
+extern struct pfq_lang_function_descr  property_functions[];
+extern struct pfq_lang_function_descr  control_functions[];
+extern struct pfq_lang_function_descr  misc_functions[];
+extern struct pfq_lang_function_descr  dummy_functions[];
+
+
 static void
 __pfq_lang_symtable_free(struct symtable *table)
 {
@@ -148,10 +161,16 @@ int
 pfq_lang_symtable_register_functions(const char *module, struct symtable *table, struct pfq_lang_function_descr *fun)
 {
 	int i = 0;
+
 	for(; fun[i].symbol != NULL; i++)
 	{
-		if (pfq_lang_symtable_register_function(module, table, fun[i].symbol, fun[i].ptr,
-							fun[i].init, fun[i].fini, fun[i].signature) < 0)
+		if (pfq_lang_symtable_register_function( module
+						       , table
+						       , fun[i].symbol
+						       , fun[i].ptr
+						       , fun[i].init
+						       , fun[i].fini
+						       , fun[i].signature) < 0)
 		{
                         int j = 0;
                         for(; j < i; j++)
@@ -198,17 +217,17 @@ pfq_lang_symtable_init(void)
 {
 	size_t numfun;
 
-        pfq_lang_symtable_register_functions(NULL, &global->functions, (struct pfq_lang_function_descr *)filter_functions);
-        pfq_lang_symtable_register_functions(NULL, &global->functions, (struct pfq_lang_function_descr *)forward_functions);
-        pfq_lang_symtable_register_functions(NULL, &global->functions, (struct pfq_lang_function_descr *)steering_functions);
-        pfq_lang_symtable_register_functions(NULL, &global->functions, (struct pfq_lang_function_descr *)bloom_functions);
-        pfq_lang_symtable_register_functions(NULL, &global->functions, (struct pfq_lang_function_descr *)control_functions);
-        pfq_lang_symtable_register_functions(NULL, &global->functions, (struct pfq_lang_function_descr *)vlan_functions);
-        pfq_lang_symtable_register_functions(NULL, &global->functions, (struct pfq_lang_function_descr *)misc_functions);
-        pfq_lang_symtable_register_functions(NULL, &global->functions, (struct pfq_lang_function_descr *)dummy_functions);
-        pfq_lang_symtable_register_functions(NULL, &global->functions, (struct pfq_lang_function_descr *)predicate_functions);
-        pfq_lang_symtable_register_functions(NULL, &global->functions, (struct pfq_lang_function_descr *)combinator_functions);
-        pfq_lang_symtable_register_functions(NULL, &global->functions, (struct pfq_lang_function_descr *)property_functions);
+        pfq_lang_symtable_register_functions(NULL, &global->functions, filter_functions);
+        pfq_lang_symtable_register_functions(NULL, &global->functions, forward_functions);
+        pfq_lang_symtable_register_functions(NULL, &global->functions, steering_functions);
+        pfq_lang_symtable_register_functions(NULL, &global->functions, bloom_functions);
+        pfq_lang_symtable_register_functions(NULL, &global->functions, control_functions);
+        pfq_lang_symtable_register_functions(NULL, &global->functions, vlan_functions);
+        pfq_lang_symtable_register_functions(NULL, &global->functions, misc_functions);
+        pfq_lang_symtable_register_functions(NULL, &global->functions, dummy_functions);
+        pfq_lang_symtable_register_functions(NULL, &global->functions, predicate_functions);
+        pfq_lang_symtable_register_functions(NULL, &global->functions, combinator_functions);
+        pfq_lang_symtable_register_functions(NULL, &global->functions, property_functions);
 
 	numfun = pfq_lang_symtable_pr_devel("pfq-lang functions",   &global->functions);
 

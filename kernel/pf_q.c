@@ -701,12 +701,26 @@ pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
 }
 
 
+int
+pfq_lang_register_functions(const char *module, struct pfq_lang_function_descr *fun)
+{
+	return pfq_lang_symtable_register_functions(module, &global->functions, fun);
+}
+
+void
+pfq_lang_unregister_functions(const char *module, struct pfq_lang_function_descr *fun)
+{
+	pfq_lang_symtable_unregister_functions(module, &global->functions, fun);
+}
+
+
+
 EXPORT_SYMBOL_GPL(pfq_netif_rx);
 EXPORT_SYMBOL_GPL(pfq_netif_receive_skb);
 EXPORT_SYMBOL_GPL(pfq_gro_receive);
 
-EXPORT_SYMBOL(pfq_lang_symtable_register_functions);
-EXPORT_SYMBOL(pfq_lang_symtable_unregister_functions);
+EXPORT_SYMBOL(pfq_lang_register_functions);
+EXPORT_SYMBOL(pfq_lang_unregister_functions);
 
 module_init(pfq_init_module);
 module_exit(pfq_exit_module);
