@@ -2,7 +2,7 @@
 #
 
 
-TARGET = pfq-RTP
+TARGET = RTP
 
 EXTRA_CFLAGS += -I/usr/include/ -I$(src)/../../
 EXTRA_CFLAGS += -Ofast -march=native -Wno-attributes
