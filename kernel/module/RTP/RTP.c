@@ -27,10 +27,11 @@
 
 #include <linux/pf_q.h>
 
-#include "../../core/lang/symtable.h"
-#include "../../core/lang/module.h"
+#include "../../lang/symtable.h"
+#include "../../lang/module.h"
 
 #include "../../pfq/nethdr.h"
+#include "../../pfq/qbuff.h"
 
 MODULE_LICENSE("GPL");
 
@@ -111,11 +112,11 @@ heuristic_voip(struct qbuff * buff, bool steer)
 
                 uint16_t source,dest;
 
-		ip = qbuff_header_pointer(qbuff, QBUFF_SKB(buff)->mac_len, sizeof(_iph), &_iph);
+		ip = qbuff_header_pointer(buff, QBUFF_SKB(buff)->mac_len, sizeof(_iph), &_iph);
 		if (ip == NULL)
 			return ret;
 
-		hdr = qbuff_header_pointer(qbuff, QBUFF_SKB(buff)->mac_len + (ip->ihl<<2), sizeof(_hdr), &_hdr);
+		hdr = qbuff_header_pointer(buff, QBUFF_SKB(buff)->mac_len + (ip->ihl<<2), sizeof(_hdr), &_hdr);
 		if (hdr == NULL)
 			return ret;
 
@@ -260,34 +261,35 @@ steering_voip(arguments_t arg, struct qbuff * buff)
 }
 
 
-static struct pfq_lang_function_descr hooks_f[] = {
+static struct pfq_lang_function_descr rtp_hooks[] = {
 
-	{ "rtp",       "Qbuff -> Action Qbuff",	filter_rtp	},
-	{ "rtcp",      "Qbuff -> Action Qbuff",	filter_rtcp	},
-	{ "sip",       "Qbuff -> Action Qbuff",	filter_sip	},
-	{ "voip",      "Qbuff -> Action Qbuff",	filter_voip	},
-	{ "steer_rtp", "Qbuff -> Action Qbuff",	steering_rtp	},
-	{ "steer_voip","Qbuff -> Action Qbuff",	steering_voip	},
-	{ NULL, NULL}};
+	{ "rtp"		, "Qbuff -> Action Qbuff", filter_rtp    , NULL, NULL},
+	{ "rtcp"	, "Qbuff -> Action Qbuff", filter_rtcp   , NULL, NULL},
+	{ "sip"		, "Qbuff -> Action Qbuff", filter_sip    , NULL, NULL},
+	{ "voip"	, "Qbuff -> Action Qbuff", filter_voip   , NULL, NULL},
+	{ "steer_rtp"	, "Qbuff -> Action Qbuff", steering_rtp  , NULL, NULL},
+	{ "steer_voip"	, "Qbuff -> Action Qbuff", steering_voip , NULL, NULL},
 
+	{ "is_rtp"	, "Qbuff -> Bool"	 , is_rtp	 , NULL, NULL},
+	{ "is_rtcp"	, "Qbuff -> Bool"	 , is_rtcp	 , NULL, NULL},
+	{ "is_sip"	, "Qbuff -> Bool"	 , is_sip	 , NULL, NULL},
+	{ "is_voip"	, "Qbuff -> Bool"	 , is_voip	 , NULL, NULL},
 
-static struct pfq_lang_function_descr hooks_p[] = {
-
-	{ "is_rtp",     "Qbuff -> Bool",	is_rtp	},
-	{ "is_rtcp",    "Qbuff -> Bool",	is_rtcp	},
-	{ "is_sip",     "Qbuff -> Bool",	is_sip	},
-	{ "is_voip",    "Qbuff -> Bool",	is_voip	},
-	{ NULL, NULL}};
+	{ NULL }};
 
 
 static int __init usr_init_module(void)
 {
-	if (pfq_lang_symtable_register_functions("[RTP]", &pfq_lang_functions, hooks_f) < 0)
-		return -EPERM;
-
-	if (pfq_lang_symtable_register_functions("[RTP]", &pfq_lang_functions, hooks_p) < 0)
+	int i = 0;
+	for(; rtp_hooks[i].symbol; i++)
 	{
-		pfq_lang_symtable_unregister_functions("[RTP]", &pfq_lang_functions, hooks_f);
+		printk(KERN_INFO "[RTp] registiering %s\n", rtp_hooks[i].symbol);
+	}
+
+	printk(KERN_INFO "[RTR] registeering@%p...\n", rtp_hooks);
+
+	if (pfq_lang_register_functions("[RTP]", rtp_hooks) < 0)
+	{
 		return -EPERM;
 	}
 
@@ -297,8 +299,7 @@ static int __init usr_init_module(void)
 
 static void __exit usr_exit_module(void)
 {
-	pfq_lang_symtable_unregister_functions("[RTP]", &pfq_lang_functions, hooks_f);
-	pfq_lang_symtable_unregister_functions("[RTP]", &pfq_lang_functions, hooks_p);
+	pfq_lang_unregister_functions("[RTP]", rtp_hooks);
 }
 
 
