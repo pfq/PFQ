@@ -150,7 +150,12 @@ pfq_skb_release_data(struct sk_buff *skb)
 #ifdef PFQ_USE_EXTRA_COUNTERS
                 sparse_inc(global->percpu_memory, dbg_skb_free_frag);
 #endif
+
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(4,1,0)
+		put_page(virt_to_head_page(head));
+#else
                 skb_free_frag(head);
+#endif
 	}
 }
 
