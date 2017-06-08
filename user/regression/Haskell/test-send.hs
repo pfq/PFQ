@@ -74,7 +74,7 @@ sender xs = do
     let kthread= read (xs !! 2) :: Int
     let num    = read (xs !! 3) :: Int
 
-    fp <- Q.open 64 1024 1024
+    fp <- Q.open 64 1024 64 1024
 
     Q.withPfq fp  $ \q -> do
             Q.enable q

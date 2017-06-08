@@ -41,6 +41,7 @@
 --
 ------------------------------------------------------------------------------
 
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE CPP #-}
@@ -235,17 +236,16 @@ data NetQueue = NetQueue {
 -- |PFQ packet header.
 
 data PktHdr = PktHdr {
-      hMark     :: {-# UNPACK #-} !Word32   -- ^ skb 32-bits mark
-    , hState    :: {-# UNPACK #-} !Word32   -- ^ opaque 32-bits state
-    , hSec      :: {-# UNPACK #-} !Word32   -- ^ timestamp (seconds)
+      hSec      :: {-# UNPACK #-} !Word32   -- ^ timestamp (seconds)
     , hNsec     :: {-# UNPACK #-} !Word32   -- ^ timestamp (nanoseconds)
-    , hIfIndex  :: {-# UNPACK #-} !Word32   -- ^ interface index
-    , hGid      :: {-# UNPACK #-} !Word32   -- ^ group id
-    , hLen      :: {-# UNPACK #-} !Word16   -- ^ packet length (wire size)
     , hCapLen   :: {-# UNPACK #-} !Word16   -- ^ capture length
+    , hLen      :: {-# UNPACK #-} !Word16   -- ^ packet length (wire size)
+    , hIfIndex  :: {-# UNPACK #-} !Word32   -- ^ interface index
+    , hMark     :: {-# UNPACK #-} !Word32   -- ^ skb 32-bits mark
+    , hState    :: {-# UNPACK #-} !Word32   -- ^ opaque 32-bits state
     , hTci      :: {-# UNPACK #-} !Word16   -- ^ vlan tci
-    , hHwQueue  :: {-# UNPACK #-} !Word8    -- ^ hardware queue index
-    , hCommit   :: {-# UNPACK #-} !Word8    -- ^ commit bit
+    , hHwQueue  :: {-# UNPACK #-} !Word16    -- ^ hardware queue index
+    , hCommit   :: {-# UNPACK #-} !Word32   -- ^ commit bit
     } deriving (Eq, Show)
 
 -- |PFQ statistics.
@@ -283,6 +283,7 @@ data Packet = Packet {
 data SocketParams = SocketParams {
         parCaplen     :: Int            -- ^ capture len
     ,   parRxSlots    :: Int            -- ^ socket Rx queue length
+    ,   parXmitLen    :: Int            -- ^ xmit len
     ,   parTxSlots    :: Int            -- ^ socket Tx queue length
     ,   parPolicy     :: GroupPolicy    -- ^ default group policy: policy_undefined means no group
     ,   parClass      :: ClassMask      -- ^ socket class
@@ -293,8 +294,9 @@ data SocketParams = SocketParams {
 
 defaultSocketParams :: SocketParams
 defaultSocketParams = SocketParams {
-        parCaplen  = 1514
+        parCaplen  = 1520
     ,   parRxSlots = 4096
+    ,   parXmitLen = 1520
     ,   parTxSlots = 4096
     ,   parPolicy  = policy_priv
     ,   parClass   = class_default
@@ -368,31 +370,28 @@ version :: String
 version = #{const_str PFQ_VERSION_STRING }
 
 
-toPktHdr :: Ptr PktHdr
-         -> IO PktHdr
+toPktHdr :: Ptr PktHdr -> IO PktHdr
 toPktHdr hdr = do
-    _mark  <- (`peekByteOff` 0)  hdr
-    _state <- (`peekByteOff` 4)  hdr
-    _sec   <- (`peekByteOff` 8)  hdr
-    _nsec  <- (`peekByteOff` 12) hdr
-    _ifidx <- (`peekByteOff` 16) hdr
-    _gid   <- (`peekByteOff` 20) hdr
-    _len   <- (`peekByteOff` 24) hdr
-    _cap   <- (`peekByteOff` 26) hdr
-    _tci   <- (`peekByteOff` 28) hdr
-    _hwq   <- (`peekByteOff` 30) hdr
-    _com   <- (`peekByteOff` 31) hdr
+    _sec   <- (`peekByteOff` 0)  hdr
+    _nsec  <- (`peekByteOff` 4)  hdr
+    _capl  <- (`peekByteOff` 8)  hdr
+    _len   <- (`peekByteOff` 10) hdr
+    _ifidx <- (`peekByteOff` 12) hdr
+    _mark  <- (`peekByteOff` 16) hdr
+    _state <- (`peekByteOff` 20) hdr
+    _tci   <- (`peekByteOff` 24) hdr
+    _hwq   <- (`peekByteOff` 26) hdr
+    _com   <- (`peekByteOff` 28) hdr
     return PktHdr {  hMark     = fromIntegral (_mark :: Word32)
                   ,  hState    = fromIntegral (_state:: Word32)
                   ,  hSec      = fromIntegral (_sec  :: Word32)
                   ,  hNsec     = fromIntegral (_nsec :: Word32)
                   ,  hIfIndex  = fromIntegral (_ifidx:: CInt)
-                  ,  hGid      = fromIntegral (_gid  :: CInt)
                   ,  hLen      = fromIntegral (_len  :: CUShort)
-                  ,  hCapLen   = fromIntegral (_cap  :: CUShort)
+                  ,  hCapLen   = fromIntegral (_capl :: CUShort)
                   ,  hTci      = fromIntegral (_tci  :: CUShort)
-                  ,  hHwQueue  = fromIntegral (_hwq  :: CUChar)
-                  ,  hCommit   = fromIntegral (_com  :: CUChar)
+                  ,  hHwQueue  = fromIntegral (_hwq  :: CUShort)
+                  ,  hCommit   = fromIntegral (_com  :: Word32)
                   }
 
 -- | The type of the callback function passed to 'dispatch'.
@@ -454,7 +453,7 @@ getPackets' index cur end slotSize
 
 isPacketReady :: Packet -> IO Bool
 isPacketReady p = do
-    !_com  <- (`peekByteOff` (#{size struct pfq_pkthdr}-1)) (pHdr p)
+    !_com  <- pHdr p `peekByteOff` (#{size struct pfq_pkthdr}-1)
     return ((_com :: CUChar) == fromIntegral (pIndex p))
 
 {-# INLINE isPacketReady #-}
@@ -470,9 +469,9 @@ waitForPacket p = do
 {-# INLINE waitForPacket #-}
 
 -- |Return the 'PktHdr' of the given 'Packet'.
-getPacketHeader :: Packet
-          -> IO PktHdr
+getPacketHeader :: Packet -> IO PktHdr
 getPacketHeader p = waitForPacket p >> toPktHdr (pHdr p)
+
 
 {-# INLINE getPacketHeader #-}
 
@@ -485,10 +484,11 @@ getPacketHeader p = waitForPacket p >> toPktHdr (pHdr p)
 
 open  :: Int  -- ^ caplen
       -> Int  -- ^ number of Rx slots
+      -> Int  -- ^ xmitlen
       -> Int  -- ^ number of Tx slots
       -> IO PfqHandle
-open  caplen rx_slots tx_slots =
-        pfq_open (fromIntegral caplen) (fromIntegral rx_slots) (fromIntegral tx_slots) >>=
+open  caplen rx_slots xmitlen tx_slots =
+    pfq_open (fromIntegral caplen) (fromIntegral rx_slots) (fromIntegral xmitlen) (fromIntegral tx_slots) >>=
             throwPfqIf nullPtr (== nullPtr) >>= \ptr ->
                 PfqHandle <$> C.newForeignPtr ptr (void $ pfq_close ptr)
 
@@ -499,10 +499,11 @@ open  caplen rx_slots tx_slots =
 
 openNoGroup  :: Int  -- ^ caplen
              -> Int  -- ^ number of Rx slots
+             -> Int  -- ^ xmitlen
              -> Int  -- ^ number of Tx slots
              -> IO PfqHandle
-openNoGroup  caplen rx_slots tx_slots =
-        pfq_open_nogroup (fromIntegral caplen) (fromIntegral rx_slots) (fromIntegral tx_slots) >>=
+openNoGroup  caplen rx_slots xmitlen tx_slots =
+    pfq_open_nogroup (fromIntegral caplen) (fromIntegral rx_slots) (fromIntegral xmitlen) (fromIntegral tx_slots) >>=
             throwPfqIf nullPtr (== nullPtr) >>= \ptr ->
                 PfqHandle <$> C.newForeignPtr ptr (void $ pfq_close ptr)
 
@@ -515,12 +516,13 @@ openGroup :: ClassMask    -- ^ ClassMask (e.g., class_default `mappend` class_co
           -> GroupPolicy  -- ^ policy for the group
           -> Int          -- ^ caplen
           -> Int          -- ^ number of Rx slots
+          -> Int          -- ^ xmitlen
           -> Int          -- ^ number of Tx slots
           -> IO PfqHandle
-openGroup ms policy caplen rx_slots tx_slots =
+openGroup ms policy caplen rx_slots xmitlen tx_slots =
         pfq_open_group (getClassMask ms) (getGroupPolicy policy)
-            (fromIntegral caplen) (fromIntegral rx_slots)
-            (fromIntegral tx_slots) >>=
+                       (fromIntegral caplen) (fromIntegral rx_slots)
+                       (fromIntegral xmitlen) (fromIntegral tx_slots) >>=
             throwPfqIf nullPtr (== nullPtr) >>= \ptr ->
                 PfqHandle <$> C.newForeignPtr ptr (void $ pfq_close ptr)
 
@@ -534,11 +536,17 @@ openParam :: SocketParams  -- ^ parameters
 openParam  SocketParams
           {   parCaplen     = caplen
           ,   parRxSlots    = rx_slots
+            , parXmitLen    = xmitlen
           ,   parTxSlots    = tx_slots
           ,   parPolicy     = policy
           ,   parClass      = cmask
           } =
-          pfq_open_group (getClassMask cmask) (getGroupPolicy policy) (fromIntegral caplen) (fromIntegral rx_slots) (fromIntegral tx_slots) >>=
+          pfq_open_group (getClassMask cmask)
+                         (getGroupPolicy policy)
+                         (fromIntegral caplen)
+                         (fromIntegral rx_slots)
+                         (fromIntegral xmitlen)
+                         (fromIntegral tx_slots) >>=
             throwPfqIf nullPtr (== nullPtr) >>= \ptr ->
                 PfqHandle <$> C.newForeignPtr ptr (void $ pfq_close ptr)
 
@@ -1182,9 +1190,9 @@ sendAt hdl xs ts copies =
 -- C functions from libpfq
 --
 
-foreign import ccall unsafe pfq_open                :: CSize -> CSize -> CSize -> IO PfqHandlePtr
-foreign import ccall unsafe pfq_open_nogroup        :: CSize -> CSize -> CSize -> IO PfqHandlePtr
-foreign import ccall unsafe pfq_open_group          :: CULong -> CInt  -> CSize -> CSize -> CSize -> IO PfqHandlePtr
+foreign import ccall unsafe pfq_open                :: CSize -> CSize -> CSize -> CSize -> IO PfqHandlePtr
+foreign import ccall unsafe pfq_open_nogroup        :: CSize -> CSize -> CSize -> CSize -> IO PfqHandlePtr
+foreign import ccall unsafe pfq_open_group          :: CULong -> CInt  -> CSize -> CSize -> CSize -> CSize -> IO PfqHandlePtr
 
 foreign import ccall unsafe pfq_close               :: PfqHandlePtr -> IO CInt
 foreign import ccall unsafe pfq_error               :: PfqHandlePtr -> IO CString

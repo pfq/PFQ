@@ -70,7 +70,7 @@ recvLoop q = do
 dumper :: String -> IO ()
 dumper dev = do
     putStrLn  $ "dumping " ++ dev  ++ "..."
-    fp <- Q.open 64 4096 4096
+    fp <- Q.open 64 4096 64 4096
     withPfq fp  $ \q -> do
         Q.timestampingEnable q True
 

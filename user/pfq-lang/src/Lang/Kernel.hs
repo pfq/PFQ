@@ -34,7 +34,7 @@ import Data.Maybe
 load :: Q.Function (Qbuff -> Action Qbuff) -> OptionT IO String
 load comp = do
     gid' <- fmap (fromJust . gid) ask
-    lift $ Q.openNoGroup 64 4096 4096 >>= \handle ->
+    lift $ Q.openNoGroup 64 4096 64 4096 >>= \handle ->
         withPfq handle $ \handlePtr -> do
             Q.joinGroup handlePtr gid' class_control policy_shared
             Q.setGroupComputation handlePtr gid' comp

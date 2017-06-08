@@ -113,7 +113,7 @@ main :: IO ()
 main = do
     opt <- cmdArgsRun options
     putStrLn $ "[pfq] " ++ show opt
-    cs  <- runThreads opt 
+    cs  <- runThreads opt
     t   <- getClockTime
     dumpStat cs t
 
@@ -143,7 +143,7 @@ runThreads Options{..} =
         f <- newMVar 0
         _ <- forkOn (coreNum binding) (
                  handle ((\e -> M.void (putStrLn ("[pfq] Exception: " ++ show e) >> swapMVar c (-1))) :: SomeException -> IO ()) $ do
-                 hq <- Q.openNoGroup caplen slots 1024
+                 hq <- Q.openNoGroup caplen slots caplen 1024
                  Q.withPfq hq $ \q -> do
                      Q.joinGroup q (groupId binding) Q.class_default Q.policy_shared
                      forM_ (netDevs binding) $ \dev ->
