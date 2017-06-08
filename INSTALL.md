@@ -9,7 +9,7 @@ This guide covers the following topics:
 
 1. What is PFQ.
 2. HW and SW Requirements.
-3. Linux Distributions.
+3. Haskell and Linux Distributions.
 4. Obtaining source codes.
 5. Satisfy library dependencies.
 6. Build the software.
@@ -17,57 +17,38 @@ This guide covers the following topics:
 
 ## What is PFQ
 
-PFQ is a multi-language network monitoring framework designed for the Linux Kernel 3.x (or higher). It is highly optimized for multi-core processors, as well as for network devices equipped with multiple hardware queues (i.e. Intel 82599 10G).
+PFQ is a multi-language network framework designed for the Linux Operating System and the Linux Kernel 3.x (or higher). It is highly optimized for multi-core processors, 
+as well as for network devices equipped with multiple hardware queues (i.e. Intel 82599 10G).
 
-PFQ consists in a Linux Kernel module and user-space libraries, for the C, C++11/14 and Haskell languages.
+PFQ consists in a Linux Kernel module, user-space libraries, for the C, C++11/14, Haskell languages and native support for accelerated libpcap library 
+with programmable fanout.
+
 
 ## HW and SW Requirements
 
-* A 32/64-bit Linux operating system (Intel/AMD architectures are currently supported).
-* Linux kernel 3.0 or higher.
+* A 32/64-bit Linux operating system (Intel/AMD architectures are supported).
+* Linux Kernel 3.5 or higher.
 * Kernel headers, required to compile modules for your kernel.
 * A gcc compiler, the one used to compile the kernel in use.
-* A g++ compiler (g++-4.8/clang-3.4 or higher), required to compile user-space tools and libraries.
-* GHC Glasgow Haskell Compiler 7.8 or higher.
+* A g++ compiler (g++-4.8/clang-3.4 or higher), for user-space tools and libraries.
+* GHC Glasgow Haskell Compiler (tested with GHC 8.0.2).
 * Alex and happy tool.
 * CMake and make.
 
-## Linux distributions (GHC notes)
 
-PFQ is developed and tested on a Linux Debian Jessie. 
+### Haskell and Linux Distributions (PIE)
 
+We recommend you to install GHC compiler following the instructions at [Stackage](http://www.stackage.org/install) site.
 
-### Debian Stable (Jessie)
+If you plan to install the Haskell platform from [Haskell-Platform](https://www.haskell.org/platform/), you may enconter compilation problems if you have
+a system with PIE (position independent executables) enabled by default (such as Ubuntu, Debian etc).
 
-Debian Jessie is the current stable distribution. 
-Accidentally the GHC 7.8 Haskell compiler (or higher) is required to build the framework and is not yet available from the `stable` repository. 
-Hence it is recommended to either manually compile/install GHC or obtain it from a different repository. At the time of writing GHC 7.10 is available from `jessie-backports`.  
+If it is your case, you have to edit the GHC settings file at:
 
-Note: To get a package from a different repository you can use APT pinning, which allows to install packages
-from one version (stable, testing, unstable) without the necessity of upgrading the entire system. 
-More information is available on [Debian](https://wiki.debian.org/AptPreferences) site.
+`usr/local/haskell/ghc-___/lib/ghc-___/settings`
 
-### Ubuntu 14.04.1 LTS (Trusty Tahr)
+and change the `compiler supports -no-pie` flag from "NO" to "YES".
 
-Use Hebert's PPA to install GHC and cabal-install as described at [Stackage](http://www.stackage.org/install):
-
-```
-sudo apt-get update
-sudo apt-get install -y software-properties-common
-sudo add-apt-repository -y ppa:hvr/ghc
-sudo apt-get update
-sudo apt-get install -y cabal-install-1.20 ghc-7.8.4
-cat >> ~/.bashrc <<EOF
-export PATH=~/.cabal/bin:/opt/cabal/1.20/bin:/opt/ghc/7.8.4/bin:$PATH
-EOF
-export PATH=~/.cabal/bin:/opt/cabal/1.20/bin:/opt/ghc/7.8.4/bin:$PATH
-cabal update
-cabal install alex happy
-```
-
-### Other Linux distributions
-
-Follow the instructions at [Stackage](http://www.stackage.org/install) site.
 
 ## Obtaining Source Codes
 
@@ -75,11 +56,10 @@ Clone the source codes from the GitHub repository with the following command:
  
 `git clone https://github.com/pfq/PFQ.git`
 
-The _master_ brach is the stable one, while the _experimental_ is the branch of the most recent version (possibly untested).
 
 ## Satisfy Library Dependencies
 
-Before building the framework ensure the Haskell libraries upon which it depends are installed. You can use the cabal tool to install them. 
+Before building the framework ensure the required Haskell libraries are installed. You can use the cabal tool to install them. 
 
 From the base directory launch the command:
 
@@ -92,7 +72,7 @@ From the base directory launch the command:
 
 `runhaskell Build.hs install --build-type=Release`
 
-The command configures, compiles and installs PFQ framework satisfying the dependencies and the correct order of build of various components.
+The command configures, compiles and installs PFQ framework satisfying the dependencies and the correct order for building the components.
 
 * Alternatively, you can specify the list of components you want to build from the command line. The following command shows the targets available:
 
@@ -104,16 +84,16 @@ targets:
     pfq-clib
     pfq-cpplib
     pfq-haskell-lib
-    pfq-pcap-1.3.0
-    pfq-pcap-1.7.4
+    pfq-pcap-1.8.1-fanout
     pfq-hcounters
-    pfq-htest
-    irq-affinity
+    pfq-lang
+    pfq-affinity
     pfq-omatic
     pfq-load
     pfq-stress
     pfqd
-    tests
+    regression
+    h-regression
     tools
 ```
 
@@ -121,9 +101,10 @@ For example, to install pfq.ko and pfqd:
 
 `runhaskell Build.hs install pfq.ko pfqd --build-type=Release`
 
+
 ## Build the software in sandbox!
 
-To avoid Cabal Hell, SimpleBuilder does support building Haskell packages in a shared cabal sandbox.
+SimpleBuilder does support building Haskell packages in a shared cabal sandbox.
 
 First, create and initialize a cabal sandbox with the commands:
 
@@ -134,15 +115,17 @@ cabal sandbox init --sandbox=shared-sandbox
 
 Then, to satisfy the the dependencies run:
 
-`cabal install --only-dep --allow-newer -j4 pfq-framework.cabal`
+`cabal install --only-dep --allow-newer pfq-framework.cabal`
 
-All the required libraries will be installed in the newly sandbox created.
+All the required libraries will be installed in the newly created sandbox.
 
 After this you can simply build the framework with:
 
 `cabal exec -- runhaskell Build.hs install --build-type=Release --sandbox=shared-sandbox`
 
+
 The PFQ Haskell library and packages will be installed in isolation within the specified sandbox folder.
+
 
 ## Software Components
 
@@ -152,13 +135,15 @@ The following components are currently part of the framework:
 * pfq-clib
 * pfq-cpplib
 * pfq-haskell-lib
+* pfq-pcap-1.8.1-fanout
 * pfq-hcounters
-* pfq-htest
-* irq-affinity
+* pfq-lang
+* pfq-affinity
 * pfq-omatic
 * pfq-load
 * pfq-stress
 * pfqd
-* tests
+* regression
+* h-regression
 * tools
 
