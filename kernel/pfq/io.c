@@ -734,7 +734,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb)
 		ktime_t current_rx;
 
 		/* if required, timestamp the packet now */
-		if (skb->tstamp.tv64 == 0)
+		if (ktime_to_ns(skb->tstamp) == 0)
 			__net_timestamp(skb);
 
 		/* if vlan header is present, remove it */
