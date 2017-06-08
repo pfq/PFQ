@@ -13,7 +13,7 @@ main(int argc, char *argv[])
     if (argc < 2)
         throw std::runtime_error(std::string("usage: ").append(argv[0]).append(" dev"));
 
-    pfq::socket r(1514);
+    pfq::socket r(1520);
 
     r.bind(argv[1], pfq::any_queue);
 

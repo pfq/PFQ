@@ -673,7 +673,7 @@ pfq_activate_linux(pcap_t *handle)
 	struct pcap_pfq_linux *handlep = handle->priv;
 
 	char *device = NULL, *config = NULL;
-        const int maxlen = 1514;
+        const int maxlen = 1520;
 	char *first_dev;
 	int group;
 

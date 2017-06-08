@@ -130,8 +130,8 @@ namespace pfq {
         inline
         types make_default()
         {
-            return std::make_tuple(param::caplen   {1514},
-                                   param::xmitlen  {1514},
+            return std::make_tuple(param::caplen   {1520},
+                                   param::xmitlen  {1520},
                                    param::rx_slots {1024},
                                    param::tx_slots {1024},
                                    param::policy   {group_policy::priv},

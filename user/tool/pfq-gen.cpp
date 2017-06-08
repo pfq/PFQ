@@ -110,7 +110,7 @@ in_cksum(u_short *addr, int len)
 namespace opt
 {
     size_t queue_sync   = 1;
-    size_t len          = 1514;
+    size_t len          = 1520;
     size_t slots        = 8192;
     size_t npackets     = std::numeric_limits<size_t>::max();
     size_t seconds      = std::numeric_limits<size_t>::max();
