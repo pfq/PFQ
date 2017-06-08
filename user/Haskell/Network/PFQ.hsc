@@ -41,8 +41,8 @@
 --
 ------------------------------------------------------------------------------
 
-{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE CPP #-}
 
@@ -430,10 +430,12 @@ throwPfqIf_ hdl p v = void (throwPfqIf hdl p v)
 -- |Return the list of 'Packet' stored in the 'NetQueue'.
 getPackets :: NetQueue
            -> IO [Packet]
-getPackets nq = getPackets' (qIndex nq) (qPtr nq) (qPtr nq `plusPtr` _size) (fromIntegral $ qSlotSize nq)
-                    where _slot = fromIntegral $ qSlotSize nq
-                          _len  = fromIntegral $ qLen nq
-                          _size = _slot * _len
+getPackets nq =
+    getPackets' (qIndex nq) (qPtr nq) (qPtr nq `plusPtr` _size) (fromIntegral $ qSlotSize nq)
+    where _slot = fromIntegral $ qSlotSize nq
+          _len  = fromIntegral $ qLen nq
+          _size = _slot * _len
+
 
 getPackets' :: Word32
             -> Ptr PktHdr
@@ -460,8 +462,7 @@ isPacketReady p = do
 
 
 -- |Wait until the 'Packet' is ready.
-waitForPacket :: Packet
-              -> IO ()
+waitForPacket :: Packet -> IO ()
 waitForPacket p = do
     !ready <- isPacketReady p
     unless ready $ yield >> waitForPacket p
@@ -533,22 +534,16 @@ openGroup ms policy caplen rx_slots xmitlen tx_slots =
 
 openParam :: SocketParams  -- ^ parameters
           -> IO PfqHandle
-openParam  SocketParams
-          {   parCaplen     = caplen
-          ,   parRxSlots    = rx_slots
-            , parXmitLen    = xmitlen
-          ,   parTxSlots    = tx_slots
-          ,   parPolicy     = policy
-          ,   parClass      = cmask
-          } =
-          pfq_open_group (getClassMask cmask)
-                         (getGroupPolicy policy)
-                         (fromIntegral caplen)
-                         (fromIntegral rx_slots)
-                         (fromIntegral xmitlen)
-                         (fromIntegral tx_slots) >>=
-            throwPfqIf nullPtr (== nullPtr) >>= \ptr ->
-                PfqHandle <$> C.newForeignPtr ptr (void $ pfq_close ptr)
+openParam  SocketParams{..} =
+    pfq_open_group (getClassMask parClass)
+                   (getGroupPolicy parPolicy)
+                   (fromIntegral parCaplen)
+                   (fromIntegral parRxSlots)
+                   (fromIntegral parXmitLen)
+                   (fromIntegral parTxSlots) >>=
+        throwPfqIf nullPtr (== nullPtr) >>= \ptr ->
+            PfqHandle <$> C.newForeignPtr ptr (void $ pfq_close ptr)
+
 
 -- |Close the socket.
 --
@@ -714,7 +709,7 @@ setTxSlots :: PfqHandlePtr
            -> IO ()
 setTxSlots hdl value =
     pfq_set_tx_slots hdl (fromIntegral value)
-    >>= throwPfqIf_ hdl (== -1)
+        >>= throwPfqIf_ hdl (== -1)
 
 
 -- |Return the length of the Tx queue, in number of packets.
@@ -1055,9 +1050,9 @@ setGroupComputation hdl gid comp =
 --
 
 setGroupComputationFromFile :: PfqHandlePtr
-                              -> Int       -- ^ group id
-                              -> FilePath  -- ^ pfq-lang file
-                              -> IO ()
+                            -> Int       -- ^ group id
+                            -> FilePath  -- ^ pfq-lang file
+                            -> IO ()
 
 setGroupComputationFromFile hdl gid file =
   readFile file >>= \str -> length str `seq` setGroupComputationFromString hdl gid str
@@ -1091,7 +1086,6 @@ setGroupComputationFromJSON hdl gid comp =
 --
 -- The functional computation is specified as a list of FuncitonDescr.
 --
-
 
 setGroupComputationFromDescr :: PfqHandlePtr
                              -> Int                  -- ^ group id
