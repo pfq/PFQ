@@ -119,15 +119,17 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq_1_1param_1_1tx__slots.html">tx_slots</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq_1_1param_1_1xmitlen.html">xmitlen</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
 Typedefs</h2></td></tr>
-<tr class="memitem:a287394f9fea16ebb76e770334aedd2d5"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1param.html#a287394f9fea16ebb76e770334aedd2d5">types</a> = std::tuple&lt; <a class="el" href="structpfq_1_1param_1_1caplen.html">caplen</a>, <a class="el" href="structpfq_1_1param_1_1rx__slots.html">rx_slots</a>, <a class="el" href="structpfq_1_1param_1_1tx__slots.html">tx_slots</a>, <a class="el" href="structpfq_1_1param_1_1policy.html">policy</a>, <a class="el" href="structpfq_1_1param_1_1class__.html">class_</a> &gt;</td></tr>
-<tr class="separator:a287394f9fea16ebb76e770334aedd2d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adbf782e10a59b40189d34c425ff8218e"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1param.html#adbf782e10a59b40189d34c425ff8218e">types</a> = std::tuple&lt; <a class="el" href="structpfq_1_1param_1_1caplen.html">caplen</a>, <a class="el" href="structpfq_1_1param_1_1xmitlen.html">xmitlen</a>, <a class="el" href="structpfq_1_1param_1_1rx__slots.html">rx_slots</a>, <a class="el" href="structpfq_1_1param_1_1tx__slots.html">tx_slots</a>, <a class="el" href="structpfq_1_1param_1_1policy.html">policy</a>, <a class="el" href="structpfq_1_1param_1_1class__.html">class_</a> &gt;</td></tr>
+<tr class="separator:adbf782e10a59b40189d34c425ff8218e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:af1fd1aeb980688527db587b35f55abf2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepfq_1_1param.html#a287394f9fea16ebb76e770334aedd2d5">types</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1param.html#af1fd1aeb980688527db587b35f55abf2">make_default</a> ()</td></tr>
+<tr class="memitem:af1fd1aeb980688527db587b35f55abf2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacepfq_1_1param.html#adbf782e10a59b40189d34c425ff8218e">types</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1param.html#af1fd1aeb980688527db587b35f55abf2">make_default</a> ()</td></tr>
 <tr class="separator:af1fd1aeb980688527db587b35f55abf2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a26825d94a20bcf1cc8353307ea00f5b7"><td class="memTemplParams" colspan="2">template&lt;typename T , typename ... Ts&gt; </td></tr>
 <tr class="memitem:a26825d94a20bcf1cc8353307ea00f5b7"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1param.html#a26825d94a20bcf1cc8353307ea00f5b7">get</a> (std::tuple&lt; Ts... &gt; &amp;tup) -&gt; decltype(std::get&lt; <a class="el" href="structpfq_1_1param_1_1details_1_1type__index.html">details::type_index</a>&lt; T, Ts... &gt;::value &gt;(tup))</td></tr>
@@ -139,14 +141,14 @@ Functions</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>open parameters. </p>
 </div><h2 class="groupheader">Typedef Documentation</h2>
-<a id="a287394f9fea16ebb76e770334aedd2d5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a287394f9fea16ebb76e770334aedd2d5">&#9670;&nbsp;</a></span>types</h2>
+<a id="adbf782e10a59b40189d34c425ff8218e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adbf782e10a59b40189d34c425ff8218e">&#9670;&nbsp;</a></span>types</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">using <a class="el" href="namespacepfq_1_1param.html#a287394f9fea16ebb76e770334aedd2d5">pfq::param::types</a> = typedef std::tuple&lt;<a class="el" href="structpfq_1_1param_1_1caplen.html">caplen</a>, <a class="el" href="structpfq_1_1param_1_1rx__slots.html">rx_slots</a>, <a class="el" href="structpfq_1_1param_1_1tx__slots.html">tx_slots</a>, <a class="el" href="structpfq_1_1param_1_1policy.html">policy</a>, <a class="el" href="structpfq_1_1param_1_1class__.html">class_</a>&gt;</td>
+          <td class="memname">using <a class="el" href="namespacepfq_1_1param.html#adbf782e10a59b40189d34c425ff8218e">pfq::param::types</a> = typedef std::tuple&lt;<a class="el" href="structpfq_1_1param_1_1caplen.html">caplen</a>, <a class="el" href="structpfq_1_1param_1_1xmitlen.html">xmitlen</a>, <a class="el" href="structpfq_1_1param_1_1rx__slots.html">rx_slots</a>, <a class="el" href="structpfq_1_1param_1_1tx__slots.html">tx_slots</a>, <a class="el" href="structpfq_1_1param_1_1policy.html">policy</a>, <a class="el" href="structpfq_1_1param_1_1class__.html">class_</a>&gt;</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -215,7 +217,7 @@ template&lt;typename Tup , typename ... Ts&gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="namespacepfq_1_1param.html#a287394f9fea16ebb76e770334aedd2d5">types</a> pfq::param::make_default </td>
+          <td class="memname"><a class="el" href="namespacepfq_1_1param.html#adbf782e10a59b40189d34c425ff8218e">types</a> pfq::param::make_default </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -236,7 +238,7 @@ template&lt;typename Tup , typename ... Ts&gt; </div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="namespacepfq.html">pfq</a></li><li class="navelem"><a class="el" href="namespacepfq_1_1param.html">param</a></li>
-    <li class="footer">Generated on Sun Feb 5 2017 23:36:33 for PFQ C++ library by
+    <li class="footer">Generated on Thu Jun 8 2017 17:54:17 for PFQ C++ library by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.13 </li>
   </ul>

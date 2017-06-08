@@ -5,5 +5,6 @@ var namespacepfq_1_1param =
     [ "class_", "structpfq_1_1param_1_1class__.html", "structpfq_1_1param_1_1class__" ],
     [ "policy", "structpfq_1_1param_1_1policy.html", "structpfq_1_1param_1_1policy" ],
     [ "rx_slots", "structpfq_1_1param_1_1rx__slots.html", "structpfq_1_1param_1_1rx__slots" ],
-    [ "tx_slots", "structpfq_1_1param_1_1tx__slots.html", "structpfq_1_1param_1_1tx__slots" ]
+    [ "tx_slots", "structpfq_1_1param_1_1tx__slots.html", "structpfq_1_1param_1_1tx__slots" ],
+    [ "xmitlen", "structpfq_1_1param_1_1xmitlen.html", "structpfq_1_1param_1_1xmitlen" ]
 ];

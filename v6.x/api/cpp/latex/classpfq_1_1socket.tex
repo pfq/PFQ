@@ -16,11 +16,11 @@ P\+FQ\+: the socket.
 \begin{DoxyCompactList}\small\item\em Default constructor. \end{DoxyCompactList}\item 
 {\footnotesize template$<$typename ... Ts$>$ }\\\hyperlink{classpfq_1_1socket_aa53695f39b45a0fa9520d52a1a35d2bf}{socket} (param\+::list\+\_\+t, Ts \&\&...args)
 \begin{DoxyCompactList}\small\item\em Constructor with named-\/parameter idiom (make use of C++14 std\+::get) \end{DoxyCompactList}\item 
-\hyperlink{classpfq_1_1socket_ad0e09474a9919723dfdf142e2b1e5386}{socket} (size\+\_\+t \hyperlink{classpfq_1_1socket_ab68dbba5ef01041b9c96758c4a9f0a6c}{caplen}, size\+\_\+t \hyperlink{classpfq_1_1socket_a5cf700fc12d67b91df3d669ac4aa737a}{rx\+\_\+slots}=1024, size\+\_\+t \hyperlink{classpfq_1_1socket_a019d15a072c043d6a1333ca0c836da4c}{tx\+\_\+slots}=1024)
+\hyperlink{classpfq_1_1socket_af2e952a1d5933ea76db2fbbba0fdf92a}{socket} (size\+\_\+t \hyperlink{classpfq_1_1socket_ab68dbba5ef01041b9c96758c4a9f0a6c}{caplen}, size\+\_\+t \hyperlink{classpfq_1_1socket_a5cf700fc12d67b91df3d669ac4aa737a}{rx\+\_\+slots}=1024, size\+\_\+t \hyperlink{classpfq_1_1socket_a142d9760fcef01b426c3afb4005400d9}{xmitlen}=0, size\+\_\+t \hyperlink{classpfq_1_1socket_a019d15a072c043d6a1333ca0c836da4c}{tx\+\_\+slots}=1024)
 \begin{DoxyCompactList}\small\item\em Constructor. \end{DoxyCompactList}\item 
-\hyperlink{classpfq_1_1socket_a419985e445525a7dbfae6d9ace452427}{socket} (\hyperlink{namespacepfq_ac41249c8510558905b01fa4d866a38d7}{group\+\_\+policy} policy, size\+\_\+t \hyperlink{classpfq_1_1socket_ab68dbba5ef01041b9c96758c4a9f0a6c}{caplen}, size\+\_\+t \hyperlink{classpfq_1_1socket_a5cf700fc12d67b91df3d669ac4aa737a}{rx\+\_\+slots}=1024, size\+\_\+t \hyperlink{classpfq_1_1socket_a019d15a072c043d6a1333ca0c836da4c}{tx\+\_\+slots}=1024)
+\hyperlink{classpfq_1_1socket_ab502dbc0907cbbe0168ea0837178d86a}{socket} (\hyperlink{namespacepfq_ac41249c8510558905b01fa4d866a38d7}{group\+\_\+policy} policy, size\+\_\+t \hyperlink{classpfq_1_1socket_ab68dbba5ef01041b9c96758c4a9f0a6c}{caplen}, size\+\_\+t \hyperlink{classpfq_1_1socket_a5cf700fc12d67b91df3d669ac4aa737a}{rx\+\_\+slots}=1024, size\+\_\+t \hyperlink{classpfq_1_1socket_a142d9760fcef01b426c3afb4005400d9}{xmitlen}=0, size\+\_\+t \hyperlink{classpfq_1_1socket_a019d15a072c043d6a1333ca0c836da4c}{tx\+\_\+slots}=1024)
 \begin{DoxyCompactList}\small\item\em Constructor. \end{DoxyCompactList}\item 
-\hyperlink{classpfq_1_1socket_abad0a4046d6af6c5b0b9b9759af6ff0a}{socket} (\hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbb}{class\+\_\+mask} mask, \hyperlink{namespacepfq_ac41249c8510558905b01fa4d866a38d7}{group\+\_\+policy} policy, size\+\_\+t \hyperlink{classpfq_1_1socket_ab68dbba5ef01041b9c96758c4a9f0a6c}{caplen}, size\+\_\+t \hyperlink{classpfq_1_1socket_a5cf700fc12d67b91df3d669ac4aa737a}{rx\+\_\+slots}=1024, size\+\_\+t \hyperlink{classpfq_1_1socket_a019d15a072c043d6a1333ca0c836da4c}{tx\+\_\+slots}=1024)
+\hyperlink{classpfq_1_1socket_a6cee87008b62d69f564743e63938e017}{socket} (\hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbb}{class\+\_\+mask} mask, \hyperlink{namespacepfq_ac41249c8510558905b01fa4d866a38d7}{group\+\_\+policy} policy, size\+\_\+t \hyperlink{classpfq_1_1socket_ab68dbba5ef01041b9c96758c4a9f0a6c}{caplen}, size\+\_\+t \hyperlink{classpfq_1_1socket_a5cf700fc12d67b91df3d669ac4aa737a}{rx\+\_\+slots}=1024, size\+\_\+t \hyperlink{classpfq_1_1socket_a142d9760fcef01b426c3afb4005400d9}{xmitlen}=0, size\+\_\+t \hyperlink{classpfq_1_1socket_a019d15a072c043d6a1333ca0c836da4c}{tx\+\_\+slots}=1024)
 \begin{DoxyCompactList}\small\item\em Constructor. \end{DoxyCompactList}\item 
 \hyperlink{classpfq_1_1socket_a08fbdcc1736de36d205282ce20ffbaa3}{$\sim$socket} ()
 \begin{DoxyCompactList}\small\item\em Destructor\+: close the socket. \end{DoxyCompactList}\item 
@@ -34,9 +34,9 @@ P\+FQ\+: the socket.
 \begin{DoxyCompactList}\small\item\em Move assignment operator. \end{DoxyCompactList}\item 
 void \hyperlink{classpfq_1_1socket_ac80ebddf3a94f7964c74bf02954704ce}{swap} (\hyperlink{classpfq_1_1socket}{socket} \&other)
 \begin{DoxyCompactList}\small\item\em Swap two sockets. \end{DoxyCompactList}\item 
-void \hyperlink{classpfq_1_1socket_a432ea40ac382d251b105e3d5987b9b4a}{open} (\hyperlink{namespacepfq_ac41249c8510558905b01fa4d866a38d7}{group\+\_\+policy} policy, size\+\_\+t \hyperlink{classpfq_1_1socket_ab68dbba5ef01041b9c96758c4a9f0a6c}{caplen}, size\+\_\+t \hyperlink{classpfq_1_1socket_a5cf700fc12d67b91df3d669ac4aa737a}{rx\+\_\+slots}=1024, size\+\_\+t \hyperlink{classpfq_1_1socket_a019d15a072c043d6a1333ca0c836da4c}{tx\+\_\+slots}=1024)
+void \hyperlink{classpfq_1_1socket_ae9ed7e81f5aaa789417fe4eff43a1f5a}{open} (\hyperlink{namespacepfq_ac41249c8510558905b01fa4d866a38d7}{group\+\_\+policy} policy, size\+\_\+t \hyperlink{classpfq_1_1socket_ab68dbba5ef01041b9c96758c4a9f0a6c}{caplen}, size\+\_\+t \hyperlink{classpfq_1_1socket_a5cf700fc12d67b91df3d669ac4aa737a}{rx\+\_\+slots}=1024, size\+\_\+t \hyperlink{classpfq_1_1socket_a142d9760fcef01b426c3afb4005400d9}{xmitlen}=0, size\+\_\+t \hyperlink{classpfq_1_1socket_a019d15a072c043d6a1333ca0c836da4c}{tx\+\_\+slots}=1024)
 \begin{DoxyCompactList}\small\item\em Open the socket with the given group policy. \end{DoxyCompactList}\item 
-void \hyperlink{classpfq_1_1socket_ab86880ccdfdd9f875e376c6c8d22a2bb}{open} (\hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbb}{class\+\_\+mask} mask, \hyperlink{namespacepfq_ac41249c8510558905b01fa4d866a38d7}{group\+\_\+policy} policy, size\+\_\+t \hyperlink{classpfq_1_1socket_ab68dbba5ef01041b9c96758c4a9f0a6c}{caplen}, size\+\_\+t \hyperlink{classpfq_1_1socket_a5cf700fc12d67b91df3d669ac4aa737a}{rx\+\_\+slots}=1024, size\+\_\+t \hyperlink{classpfq_1_1socket_a019d15a072c043d6a1333ca0c836da4c}{tx\+\_\+slots}=1024)
+void \hyperlink{classpfq_1_1socket_a192d3e67f6943f71ed3d7e4012eb29ee}{open} (\hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbb}{class\+\_\+mask} mask, \hyperlink{namespacepfq_ac41249c8510558905b01fa4d866a38d7}{group\+\_\+policy} policy, size\+\_\+t \hyperlink{classpfq_1_1socket_ab68dbba5ef01041b9c96758c4a9f0a6c}{caplen}, size\+\_\+t \hyperlink{classpfq_1_1socket_a5cf700fc12d67b91df3d669ac4aa737a}{rx\+\_\+slots}=1024, size\+\_\+t \hyperlink{classpfq_1_1socket_a142d9760fcef01b426c3afb4005400d9}{xmitlen}=0, size\+\_\+t \hyperlink{classpfq_1_1socket_a019d15a072c043d6a1333ca0c836da4c}{tx\+\_\+slots}=1024)
 \begin{DoxyCompactList}\small\item\em Open the socket with the given class mask and group policy. \end{DoxyCompactList}\item 
 {\footnotesize template$<$typename ... Ts$>$ }\\void \hyperlink{classpfq_1_1socket_a33c3e305c62f5a9f8a0ef74f69097ecf}{open} (param\+::list\+\_\+t, Ts \&\&...args)
 \begin{DoxyCompactList}\small\item\em Open the socket with the named-\/parameter idiom. \end{DoxyCompactList}\item 
@@ -66,7 +66,7 @@ void \hyperlink{classpfq_1_1socket_ab68dbba5ef01041b9c96758c4a9f0a6c}{caplen} (s
 \begin{DoxyCompactList}\small\item\em Specify the capture length of packets, in bytes. \end{DoxyCompactList}\item 
 size\+\_\+t \hyperlink{classpfq_1_1socket_aa0052a8337748212d02fadb229d71108}{caplen} () const
 \begin{DoxyCompactList}\small\item\em Return the capture length of packets, in bytes. \end{DoxyCompactList}\item 
-size\+\_\+t \hyperlink{classpfq_1_1socket_ad2dd981ceb46a6b38caab3cf821e6d46}{maxlen} () const
+size\+\_\+t \hyperlink{classpfq_1_1socket_a142d9760fcef01b426c3afb4005400d9}{xmitlen} () const
 \begin{DoxyCompactList}\small\item\em Return the max transmission length of packets, in bytes. \end{DoxyCompactList}\item 
 void \hyperlink{classpfq_1_1socket_a5cf700fc12d67b91df3d669ac4aa737a}{rx\+\_\+slots} (size\+\_\+t value)
 \begin{DoxyCompactList}\small\item\em Specify the length of the Rx queue, in number of packets. \end{DoxyCompactList}\item 
@@ -146,15 +146,13 @@ size\+\_\+t \hyperlink{classpfq_1_1socket_af4e748efa70a0b0c80eb5abf6a0d0277}{mem
 \begin{DoxyCompactList}\small\item\em Return the memory size of the Rx queue. \end{DoxyCompactList}\item 
 const void $\ast$ \hyperlink{classpfq_1_1socket_aac25000416bf154eb0e3d632e051a202}{mem\+\_\+addr} () const
 \begin{DoxyCompactList}\small\item\em Return the address of the Rx queue. \end{DoxyCompactList}\item 
-bool \hyperlink{classpfq_1_1socket_a2d80378cecae811bedc0ae8ff9412e62}{send} (\hyperlink{namespacepfq_ac835a1bd09b4cbaba61c100b50d0a99f}{const\+\_\+buffer} pkt, size\+\_\+t fhint=1, unsigned int copies=1)
+bool \hyperlink{classpfq_1_1socket_a6571d1041154d567abe1304e9decf656}{send} (\hyperlink{namespacepfq_ac835a1bd09b4cbaba61c100b50d0a99f}{const\+\_\+buffer} pkt, size\+\_\+t fsync=1, unsigned int copies=1)
 \begin{DoxyCompactList}\small\item\em Store the packet and transmit the packets in the queue. \end{DoxyCompactList}\item 
-bool \hyperlink{classpfq_1_1socket_a3fddba43aa4da1f30fc04cdc3556054a}{send\+\_\+to} (\hyperlink{namespacepfq_ac835a1bd09b4cbaba61c100b50d0a99f}{const\+\_\+buffer} pkt, int \hyperlink{namespacepfq_a251ac5cc269aa123009754edf62ab8b4}{ifindex}, int qindex, size\+\_\+t fhint=1, unsigned int copies=1)
-\begin{DoxyCompactList}\small\item\em Store the packet and transmit the packets in the queue. \end{DoxyCompactList}\item 
-bool \hyperlink{classpfq_1_1socket_a16f84967f992ee861e5f18d5e29a3275}{send\+\_\+async} (\hyperlink{namespacepfq_ac835a1bd09b4cbaba61c100b50d0a99f}{const\+\_\+buffer} pkt, unsigned int copies=1)
+bool \hyperlink{classpfq_1_1socket_a7aabeecfa3112bc2b2fa54ac6a59357a}{send\+\_\+async} (\hyperlink{namespacepfq_ac835a1bd09b4cbaba61c100b50d0a99f}{const\+\_\+buffer} pkt, unsigned int copies=1, int async=any\+\_\+kthread)
 \begin{DoxyCompactList}\small\item\em Transmit the packet asynchronously. \end{DoxyCompactList}\item 
-{\footnotesize template$<$typename Clock , typename Duration $>$ }\\bool \hyperlink{classpfq_1_1socket_a730cae7c25a32b22cc79615cbf3f86aa}{send\+\_\+at} (\hyperlink{namespacepfq_ac835a1bd09b4cbaba61c100b50d0a99f}{const\+\_\+buffer} pkt, std\+::chrono\+::time\+\_\+point$<$ Clock, Duration $>$ const \&tp, unsigned int copies=1)
+{\footnotesize template$<$typename Clock , typename Duration $>$ }\\bool \hyperlink{classpfq_1_1socket_aeaaf63387599e9bb3d7d03258f125513}{send\+\_\+at} (\hyperlink{namespacepfq_ac835a1bd09b4cbaba61c100b50d0a99f}{const\+\_\+buffer} pkt, std\+::chrono\+::time\+\_\+point$<$ Clock, Duration $>$ const \&tp, unsigned int copies=1, int async=any\+\_\+kthread)
 \item 
-bool \hyperlink{classpfq_1_1socket_a577512e9c6241ea233c867da14c0e9ae}{send\+\_\+raw} (const char $\ast$buf, size\+\_\+t len, int \hyperlink{namespacepfq_a251ac5cc269aa123009754edf62ab8b4}{ifindex}, int qindex, uint64\+\_\+t nsec, unsigned int copies, bool async, int queue=any\+\_\+queue)
+bool \hyperlink{classpfq_1_1socket_a32bc4849b022ac9c0e8b3a7d44985bc2}{send\+\_\+raw} (const char $\ast$buf, size\+\_\+t len, uint64\+\_\+t nsec, unsigned int copies, int async)
 \begin{DoxyCompactList}\small\item\em Schedule a packet transmission. \end{DoxyCompactList}\item 
 void \hyperlink{classpfq_1_1socket_ab1739b5779cb85f3e7669883af892828}{sync\+\_\+queue} (int queue=0)
 \begin{DoxyCompactList}\small\item\em Transmit the packets in the queue. \end{DoxyCompactList}\end{DoxyCompactItemize}
@@ -187,31 +185,31 @@ pfq\+::socket\+::socket (\begin{DoxyParamCaption}\item[{param\+::list\+\_\+t}]{,
 
 Constructor with named-\/parameter idiom (make use of C++14 std\+::get) 
 
-\mbox{\Hypertarget{classpfq_1_1socket_ad0e09474a9919723dfdf142e2b1e5386}\label{classpfq_1_1socket_ad0e09474a9919723dfdf142e2b1e5386}} 
+\mbox{\Hypertarget{classpfq_1_1socket_af2e952a1d5933ea76db2fbbba0fdf92a}\label{classpfq_1_1socket_af2e952a1d5933ea76db2fbbba0fdf92a}} 
 \index{pfq\+::socket@{pfq\+::socket}!socket@{socket}}
 \index{socket@{socket}!pfq\+::socket@{pfq\+::socket}}
 \subsubsection{\texorpdfstring{socket()}{socket()}\hspace{0.1cm}{\footnotesize\ttfamily [3/7]}}
-{\footnotesize\ttfamily pfq\+::socket\+::socket (\begin{DoxyParamCaption}\item[{size\+\_\+t}]{caplen,  }\item[{size\+\_\+t}]{rx\+\_\+slots = {\ttfamily 1024},  }\item[{size\+\_\+t}]{tx\+\_\+slots = {\ttfamily 1024} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+{\footnotesize\ttfamily pfq\+::socket\+::socket (\begin{DoxyParamCaption}\item[{size\+\_\+t}]{caplen,  }\item[{size\+\_\+t}]{rx\+\_\+slots = {\ttfamily 1024},  }\item[{size\+\_\+t}]{xmitlen = {\ttfamily 0},  }\item[{size\+\_\+t}]{tx\+\_\+slots = {\ttfamily 1024} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
 
 
 
 Constructor. 
 
-Create a socket and join a new private group. The default values for class mask and group policy are \hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbba172b03053216c6158fe380805998ad6c}{class\+\_\+mask\+::default\+\_\+} and \hyperlink{namespacepfq_ac41249c8510558905b01fa4d866a38d7a908b453051b556e053731714a5193921}{group\+\_\+policy\+::priv}, respectively. \mbox{\Hypertarget{classpfq_1_1socket_a419985e445525a7dbfae6d9ace452427}\label{classpfq_1_1socket_a419985e445525a7dbfae6d9ace452427}} 
+Create a socket and join a new private group. The default values for class mask and group policy are \hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbba172b03053216c6158fe380805998ad6c}{class\+\_\+mask\+::default\+\_\+} and \hyperlink{namespacepfq_ac41249c8510558905b01fa4d866a38d7a908b453051b556e053731714a5193921}{group\+\_\+policy\+::priv}, respectively. \mbox{\Hypertarget{classpfq_1_1socket_ab502dbc0907cbbe0168ea0837178d86a}\label{classpfq_1_1socket_ab502dbc0907cbbe0168ea0837178d86a}} 
 \index{pfq\+::socket@{pfq\+::socket}!socket@{socket}}
 \index{socket@{socket}!pfq\+::socket@{pfq\+::socket}}
 \subsubsection{\texorpdfstring{socket()}{socket()}\hspace{0.1cm}{\footnotesize\ttfamily [4/7]}}
-{\footnotesize\ttfamily pfq\+::socket\+::socket (\begin{DoxyParamCaption}\item[{\hyperlink{namespacepfq_ac41249c8510558905b01fa4d866a38d7}{group\+\_\+policy}}]{policy,  }\item[{size\+\_\+t}]{caplen,  }\item[{size\+\_\+t}]{rx\+\_\+slots = {\ttfamily 1024},  }\item[{size\+\_\+t}]{tx\+\_\+slots = {\ttfamily 1024} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+{\footnotesize\ttfamily pfq\+::socket\+::socket (\begin{DoxyParamCaption}\item[{\hyperlink{namespacepfq_ac41249c8510558905b01fa4d866a38d7}{group\+\_\+policy}}]{policy,  }\item[{size\+\_\+t}]{caplen,  }\item[{size\+\_\+t}]{rx\+\_\+slots = {\ttfamily 1024},  }\item[{size\+\_\+t}]{xmitlen = {\ttfamily 0},  }\item[{size\+\_\+t}]{tx\+\_\+slots = {\ttfamily 1024} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
 
 
 
 Constructor. 
 
-Create a socket with the given group policy. The default class used is \hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbba172b03053216c6158fe380805998ad6c}{class\+\_\+mask\+::default\+\_\+}. \mbox{\Hypertarget{classpfq_1_1socket_abad0a4046d6af6c5b0b9b9759af6ff0a}\label{classpfq_1_1socket_abad0a4046d6af6c5b0b9b9759af6ff0a}} 
+Create a socket with the given group policy. The default class used is \hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbba172b03053216c6158fe380805998ad6c}{class\+\_\+mask\+::default\+\_\+}. \mbox{\Hypertarget{classpfq_1_1socket_a6cee87008b62d69f564743e63938e017}\label{classpfq_1_1socket_a6cee87008b62d69f564743e63938e017}} 
 \index{pfq\+::socket@{pfq\+::socket}!socket@{socket}}
 \index{socket@{socket}!pfq\+::socket@{pfq\+::socket}}
 \subsubsection{\texorpdfstring{socket()}{socket()}\hspace{0.1cm}{\footnotesize\ttfamily [5/7]}}
-{\footnotesize\ttfamily pfq\+::socket\+::socket (\begin{DoxyParamCaption}\item[{\hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbb}{class\+\_\+mask}}]{mask,  }\item[{\hyperlink{namespacepfq_ac41249c8510558905b01fa4d866a38d7}{group\+\_\+policy}}]{policy,  }\item[{size\+\_\+t}]{caplen,  }\item[{size\+\_\+t}]{rx\+\_\+slots = {\ttfamily 1024},  }\item[{size\+\_\+t}]{tx\+\_\+slots = {\ttfamily 1024} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+{\footnotesize\ttfamily pfq\+::socket\+::socket (\begin{DoxyParamCaption}\item[{\hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbb}{class\+\_\+mask}}]{mask,  }\item[{\hyperlink{namespacepfq_ac41249c8510558905b01fa4d866a38d7}{group\+\_\+policy}}]{policy,  }\item[{size\+\_\+t}]{caplen,  }\item[{size\+\_\+t}]{rx\+\_\+slots = {\ttfamily 1024},  }\item[{size\+\_\+t}]{xmitlen = {\ttfamily 0},  }\item[{size\+\_\+t}]{tx\+\_\+slots = {\ttfamily 1024} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
 
 
 
@@ -483,16 +481,6 @@ If the policy is not specified, \hyperlink{namespacepfq_ac41249c8510558905b01fa4
 
 Leave the group specified by the group id. 
 
-\mbox{\Hypertarget{classpfq_1_1socket_ad2dd981ceb46a6b38caab3cf821e6d46}\label{classpfq_1_1socket_ad2dd981ceb46a6b38caab3cf821e6d46}} 
-\index{pfq\+::socket@{pfq\+::socket}!maxlen@{maxlen}}
-\index{maxlen@{maxlen}!pfq\+::socket@{pfq\+::socket}}
-\subsubsection{\texorpdfstring{maxlen()}{maxlen()}}
-{\footnotesize\ttfamily size\+\_\+t pfq\+::socket\+::maxlen (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
-
-
-
-Return the max transmission length of packets, in bytes. 
-
 \mbox{\Hypertarget{classpfq_1_1socket_aac25000416bf154eb0e3d632e051a202}\label{classpfq_1_1socket_aac25000416bf154eb0e3d632e051a202}} 
 \index{pfq\+::socket@{pfq\+::socket}!mem\+\_\+addr@{mem\+\_\+addr}}
 \index{mem\+\_\+addr@{mem\+\_\+addr}!pfq\+::socket@{pfq\+::socket}}
@@ -513,21 +501,21 @@ Return the address of the Rx queue.
 
 Return the memory size of the Rx queue. 
 
-\mbox{\Hypertarget{classpfq_1_1socket_a432ea40ac382d251b105e3d5987b9b4a}\label{classpfq_1_1socket_a432ea40ac382d251b105e3d5987b9b4a}} 
+\mbox{\Hypertarget{classpfq_1_1socket_ae9ed7e81f5aaa789417fe4eff43a1f5a}\label{classpfq_1_1socket_ae9ed7e81f5aaa789417fe4eff43a1f5a}} 
 \index{pfq\+::socket@{pfq\+::socket}!open@{open}}
 \index{open@{open}!pfq\+::socket@{pfq\+::socket}}
 \subsubsection{\texorpdfstring{open()}{open()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
-{\footnotesize\ttfamily void pfq\+::socket\+::open (\begin{DoxyParamCaption}\item[{\hyperlink{namespacepfq_ac41249c8510558905b01fa4d866a38d7}{group\+\_\+policy}}]{policy,  }\item[{size\+\_\+t}]{caplen,  }\item[{size\+\_\+t}]{rx\+\_\+slots = {\ttfamily 1024},  }\item[{size\+\_\+t}]{tx\+\_\+slots = {\ttfamily 1024} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+{\footnotesize\ttfamily void pfq\+::socket\+::open (\begin{DoxyParamCaption}\item[{\hyperlink{namespacepfq_ac41249c8510558905b01fa4d866a38d7}{group\+\_\+policy}}]{policy,  }\item[{size\+\_\+t}]{caplen,  }\item[{size\+\_\+t}]{rx\+\_\+slots = {\ttfamily 1024},  }\item[{size\+\_\+t}]{xmitlen = {\ttfamily 0},  }\item[{size\+\_\+t}]{tx\+\_\+slots = {\ttfamily 1024} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
 
 
 
 Open the socket with the given group policy. 
 
-If the policy is not \hyperlink{namespacepfq_ac41249c8510558905b01fa4d866a38d7a5e543256c480ac577d30f76f9120eb74}{group\+\_\+policy\+::undefined}, also join a new group with \hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbba172b03053216c6158fe380805998ad6c}{class\+\_\+mask\+::default\+\_\+} and the given policy. \mbox{\Hypertarget{classpfq_1_1socket_ab86880ccdfdd9f875e376c6c8d22a2bb}\label{classpfq_1_1socket_ab86880ccdfdd9f875e376c6c8d22a2bb}} 
+If the policy is not \hyperlink{namespacepfq_ac41249c8510558905b01fa4d866a38d7a5e543256c480ac577d30f76f9120eb74}{group\+\_\+policy\+::undefined}, also join a new group with \hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbba172b03053216c6158fe380805998ad6c}{class\+\_\+mask\+::default\+\_\+} and the given policy. \mbox{\Hypertarget{classpfq_1_1socket_a192d3e67f6943f71ed3d7e4012eb29ee}\label{classpfq_1_1socket_a192d3e67f6943f71ed3d7e4012eb29ee}} 
 \index{pfq\+::socket@{pfq\+::socket}!open@{open}}
 \index{open@{open}!pfq\+::socket@{pfq\+::socket}}
 \subsubsection{\texorpdfstring{open()}{open()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
-{\footnotesize\ttfamily void pfq\+::socket\+::open (\begin{DoxyParamCaption}\item[{\hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbb}{class\+\_\+mask}}]{mask,  }\item[{\hyperlink{namespacepfq_ac41249c8510558905b01fa4d866a38d7}{group\+\_\+policy}}]{policy,  }\item[{size\+\_\+t}]{caplen,  }\item[{size\+\_\+t}]{rx\+\_\+slots = {\ttfamily 1024},  }\item[{size\+\_\+t}]{tx\+\_\+slots = {\ttfamily 1024} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+{\footnotesize\ttfamily void pfq\+::socket\+::open (\begin{DoxyParamCaption}\item[{\hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbb}{class\+\_\+mask}}]{mask,  }\item[{\hyperlink{namespacepfq_ac41249c8510558905b01fa4d866a38d7}{group\+\_\+policy}}]{policy,  }\item[{size\+\_\+t}]{caplen,  }\item[{size\+\_\+t}]{rx\+\_\+slots = {\ttfamily 1024},  }\item[{size\+\_\+t}]{xmitlen = {\ttfamily 0},  }\item[{size\+\_\+t}]{tx\+\_\+slots = {\ttfamily 1024} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
 
 
 
@@ -638,56 +626,46 @@ Specify the length of the Rx queue, in number of packets.
 
 Return the length of the Rx queue, in number of packets. 
 
-\mbox{\Hypertarget{classpfq_1_1socket_a2d80378cecae811bedc0ae8ff9412e62}\label{classpfq_1_1socket_a2d80378cecae811bedc0ae8ff9412e62}} 
+\mbox{\Hypertarget{classpfq_1_1socket_a6571d1041154d567abe1304e9decf656}\label{classpfq_1_1socket_a6571d1041154d567abe1304e9decf656}} 
 \index{pfq\+::socket@{pfq\+::socket}!send@{send}}
 \index{send@{send}!pfq\+::socket@{pfq\+::socket}}
 \subsubsection{\texorpdfstring{send()}{send()}}
-{\footnotesize\ttfamily bool pfq\+::socket\+::send (\begin{DoxyParamCaption}\item[{\hyperlink{namespacepfq_ac835a1bd09b4cbaba61c100b50d0a99f}{const\+\_\+buffer}}]{pkt,  }\item[{size\+\_\+t}]{fhint = {\ttfamily 1},  }\item[{unsigned int}]{copies = {\ttfamily 1} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+{\footnotesize\ttfamily bool pfq\+::socket\+::send (\begin{DoxyParamCaption}\item[{\hyperlink{namespacepfq_ac835a1bd09b4cbaba61c100b50d0a99f}{const\+\_\+buffer}}]{pkt,  }\item[{size\+\_\+t}]{fsync = {\ttfamily 1},  }\item[{unsigned int}]{copies = {\ttfamily 1} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
 
 
 
 Store the packet and transmit the packets in the queue. 
 
-The queue is flushed every fhint packets. Requires the socket is bound for transmission to a net device and queue. See \textquotesingle{}bind\+\_\+tx\textquotesingle{}. \mbox{\Hypertarget{classpfq_1_1socket_a16f84967f992ee861e5f18d5e29a3275}\label{classpfq_1_1socket_a16f84967f992ee861e5f18d5e29a3275}} 
+The queue is flushed every fsync packets. Requires the socket is bound for transmission to a net device and queue. See \textquotesingle{}bind\+\_\+tx\textquotesingle{}. \mbox{\Hypertarget{classpfq_1_1socket_a7aabeecfa3112bc2b2fa54ac6a59357a}\label{classpfq_1_1socket_a7aabeecfa3112bc2b2fa54ac6a59357a}} 
 \index{pfq\+::socket@{pfq\+::socket}!send\+\_\+async@{send\+\_\+async}}
 \index{send\+\_\+async@{send\+\_\+async}!pfq\+::socket@{pfq\+::socket}}
 \subsubsection{\texorpdfstring{send\+\_\+async()}{send\_async()}}
-{\footnotesize\ttfamily bool pfq\+::socket\+::send\+\_\+async (\begin{DoxyParamCaption}\item[{\hyperlink{namespacepfq_ac835a1bd09b4cbaba61c100b50d0a99f}{const\+\_\+buffer}}]{pkt,  }\item[{unsigned int}]{copies = {\ttfamily 1} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+{\footnotesize\ttfamily bool pfq\+::socket\+::send\+\_\+async (\begin{DoxyParamCaption}\item[{\hyperlink{namespacepfq_ac835a1bd09b4cbaba61c100b50d0a99f}{const\+\_\+buffer}}]{pkt,  }\item[{unsigned int}]{copies = {\ttfamily 1},  }\item[{int}]{async = {\ttfamily any\+\_\+kthread} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
 
 
 
 Transmit the packet asynchronously. 
 
-The transmission is handled by P\+FQ kernel threads. Requires the socket is bound for transmission to one (or multiple) P\+FQ kernel threads. See \textquotesingle{}bind\+\_\+tx\textquotesingle{}. \mbox{\Hypertarget{classpfq_1_1socket_a730cae7c25a32b22cc79615cbf3f86aa}\label{classpfq_1_1socket_a730cae7c25a32b22cc79615cbf3f86aa}} 
+The transmission is handled by P\+FQ kernel threads. Requires the socket is bound for transmission to one (or multiple) P\+FQ kernel threads. See \textquotesingle{}bind\+\_\+tx\textquotesingle{}. \mbox{\Hypertarget{classpfq_1_1socket_aeaaf63387599e9bb3d7d03258f125513}\label{classpfq_1_1socket_aeaaf63387599e9bb3d7d03258f125513}} 
 \index{pfq\+::socket@{pfq\+::socket}!send\+\_\+at@{send\+\_\+at}}
 \index{send\+\_\+at@{send\+\_\+at}!pfq\+::socket@{pfq\+::socket}}
 \subsubsection{\texorpdfstring{send\+\_\+at()}{send\_at()}}
 {\footnotesize\ttfamily template$<$typename Clock , typename Duration $>$ \\
-bool pfq\+::socket\+::send\+\_\+at (\begin{DoxyParamCaption}\item[{\hyperlink{namespacepfq_ac835a1bd09b4cbaba61c100b50d0a99f}{const\+\_\+buffer}}]{pkt,  }\item[{std\+::chrono\+::time\+\_\+point$<$ Clock, Duration $>$ const \&}]{tp,  }\item[{unsigned int}]{copies = {\ttfamily 1} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+bool pfq\+::socket\+::send\+\_\+at (\begin{DoxyParamCaption}\item[{\hyperlink{namespacepfq_ac835a1bd09b4cbaba61c100b50d0a99f}{const\+\_\+buffer}}]{pkt,  }\item[{std\+::chrono\+::time\+\_\+point$<$ Clock, Duration $>$ const \&}]{tp,  }\item[{unsigned int}]{copies = {\ttfamily 1},  }\item[{int}]{async = {\ttfamily any\+\_\+kthread} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
 
 Transmit the packet asynchronously.
 
-The transmission takes place asynchronously at the given timespec time, specified as a generic chrono\+::time\+\_\+point. Requires the socket is bound for transmission to one (or multiple) P\+FQ kernel threads. See \textquotesingle{}bind\+\_\+tx\textquotesingle{}. \mbox{\Hypertarget{classpfq_1_1socket_a577512e9c6241ea233c867da14c0e9ae}\label{classpfq_1_1socket_a577512e9c6241ea233c867da14c0e9ae}} 
+The transmission takes place asynchronously at the given timespec time, specified as a generic chrono\+::time\+\_\+point. Requires the socket is bound for transmission to one (or multiple) P\+FQ kernel threads. See \textquotesingle{}bind\+\_\+tx\textquotesingle{}. \mbox{\Hypertarget{classpfq_1_1socket_a32bc4849b022ac9c0e8b3a7d44985bc2}\label{classpfq_1_1socket_a32bc4849b022ac9c0e8b3a7d44985bc2}} 
 \index{pfq\+::socket@{pfq\+::socket}!send\+\_\+raw@{send\+\_\+raw}}
 \index{send\+\_\+raw@{send\+\_\+raw}!pfq\+::socket@{pfq\+::socket}}
 \subsubsection{\texorpdfstring{send\+\_\+raw()}{send\_raw()}}
-{\footnotesize\ttfamily bool pfq\+::socket\+::send\+\_\+raw (\begin{DoxyParamCaption}\item[{const char $\ast$}]{buf,  }\item[{size\+\_\+t}]{len,  }\item[{int}]{ifindex,  }\item[{int}]{qindex,  }\item[{uint64\+\_\+t}]{nsec,  }\item[{unsigned int}]{copies,  }\item[{bool}]{async,  }\item[{int}]{queue = {\ttfamily any\+\_\+queue} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+{\footnotesize\ttfamily bool pfq\+::socket\+::send\+\_\+raw (\begin{DoxyParamCaption}\item[{const char $\ast$}]{buf,  }\item[{size\+\_\+t}]{len,  }\item[{uint64\+\_\+t}]{nsec,  }\item[{unsigned int}]{copies,  }\item[{int}]{async }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
 
 
 
 Schedule a packet transmission. 
 
-The packet is copied into a Tx queue. If \textquotesingle{}async\textquotesingle{} is true and \textquotesingle{}queue\textquotesingle{} is set to any\+\_\+queue, a T\+SS symmetric hash function is used to select the Tx queue. The packet is transmitted at the given timestamp by a P\+FQ kernel thread. Otherwise the queue is flushed every \textquotesingle{}fhint\textquotesingle{} packets. A timestamp of 0 nanoseconds means immediate transmission. \mbox{\Hypertarget{classpfq_1_1socket_a3fddba43aa4da1f30fc04cdc3556054a}\label{classpfq_1_1socket_a3fddba43aa4da1f30fc04cdc3556054a}} 
-\index{pfq\+::socket@{pfq\+::socket}!send\+\_\+to@{send\+\_\+to}}
-\index{send\+\_\+to@{send\+\_\+to}!pfq\+::socket@{pfq\+::socket}}
-\subsubsection{\texorpdfstring{send\+\_\+to()}{send\_to()}}
-{\footnotesize\ttfamily bool pfq\+::socket\+::send\+\_\+to (\begin{DoxyParamCaption}\item[{\hyperlink{namespacepfq_ac835a1bd09b4cbaba61c100b50d0a99f}{const\+\_\+buffer}}]{pkt,  }\item[{int}]{ifindex,  }\item[{int}]{qindex,  }\item[{size\+\_\+t}]{fhint = {\ttfamily 1},  }\item[{unsigned int}]{copies = {\ttfamily 1} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
-
-
-
-Store the packet and transmit the packets in the queue. 
-
-The queue is flushed every fhint packets. \mbox{\Hypertarget{classpfq_1_1socket_a5cb37765ffcb1b78c5d61211f9e806df}\label{classpfq_1_1socket_a5cb37765ffcb1b78c5d61211f9e806df}} 
+The packet is copied into a Tx queue. If \textquotesingle{}async\textquotesingle{} is true and \textquotesingle{}queue\textquotesingle{} is set to any\+\_\+queue, a T\+SS symmetric hash function is used to select the Tx queue. The packet is transmitted at the given timestamp by a P\+FQ kernel thread. Otherwise the queue is flushed every \textquotesingle{}fhint\textquotesingle{} packets. A timestamp of 0 nanoseconds means immediate transmission. \mbox{\Hypertarget{classpfq_1_1socket_a5cb37765ffcb1b78c5d61211f9e806df}\label{classpfq_1_1socket_a5cb37765ffcb1b78c5d61211f9e806df}} 
 \index{pfq\+::socket@{pfq\+::socket}!set\+\_\+group\+\_\+computation@{set\+\_\+group\+\_\+computation}}
 \index{set\+\_\+group\+\_\+computation@{set\+\_\+group\+\_\+computation}!pfq\+::socket@{pfq\+::socket}}
 \subsubsection{\texorpdfstring{set\+\_\+group\+\_\+computation()}{set\_group\_computation()}\hspace{0.1cm}{\footnotesize\ttfamily [1/4]}}
@@ -909,6 +887,16 @@ Set the weight of the socket for the steering phase.
 
 
 Return the weight of the socket. 
+
+\mbox{\Hypertarget{classpfq_1_1socket_a142d9760fcef01b426c3afb4005400d9}\label{classpfq_1_1socket_a142d9760fcef01b426c3afb4005400d9}} 
+\index{pfq\+::socket@{pfq\+::socket}!xmitlen@{xmitlen}}
+\index{xmitlen@{xmitlen}!pfq\+::socket@{pfq\+::socket}}
+\subsubsection{\texorpdfstring{xmitlen()}{xmitlen()}}
+{\footnotesize\ttfamily size\+\_\+t pfq\+::socket\+::xmitlen (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Return the max transmission length of packets, in bytes. 
 
 
 
