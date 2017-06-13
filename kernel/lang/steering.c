@@ -42,7 +42,6 @@ steering_key(arguments_t args, struct qbuff * buff)
 	uint64_t key = GET_ARG_0(uint64_t, args);
         uint32_t hash, src_hash, dst_hash;
 	uint64_t field;
-        bool symmetric = false;
 
 	struct iphdr   _ip;    struct iphdr const *ip;
 	struct udphdr  _udp;   struct udphdr const *udp;
@@ -50,7 +49,7 @@ steering_key(arguments_t args, struct qbuff * buff)
 
 	switch(key)
 	{
-	case Q_KEY_IP_SRC|Q_KEY_IP_DST|Q_KEY_IP_PROTO|Q_KEY_SYMMETRIC: {
+	case Q_KEY_IP_SRC|Q_KEY_IP_DST|Q_KEY_IP_PROTO: {
 
 		ip = qbuff_ip_header_pointer(buff, 0, sizeof(_ip), &_ip);
 		if (ip == NULL)
@@ -59,7 +58,7 @@ steering_key(arguments_t args, struct qbuff * buff)
 		return Steering(buff, (__force uint32_t)(ip->saddr ^ ip->daddr));
 
 	}
-	case Q_KEY_IP_SRC|Q_KEY_IP_DST|Q_KEY_SRC_PORT|Q_KEY_DST_PORT|Q_KEY_IP_PROTO|Q_KEY_SYMMETRIC: {
+	case Q_KEY_IP_SRC|Q_KEY_IP_DST|Q_KEY_SRC_PORT|Q_KEY_DST_PORT|Q_KEY_IP_PROTO: {
 
 		ip = qbuff_ip_header_pointer(buff, 0, sizeof(_ip), &_ip);
 		if (ip == NULL)
@@ -86,15 +85,10 @@ steering_key(arguments_t args, struct qbuff * buff)
         {
                 switch(field)
                 {
-                case Q_KEY_SYMMETRIC:
-                {
-                        symmetric = true;
-                } break;
-
                 case Q_KEY_ETH_TYPE:
                 {
 	                uint16_t * w = (uint16_t *)qbuff_eth_hdr(buff);
-	                hash = (hash * 2654435761) + w[6];
+	                hash = ((hash << 5) + hash) + w[6];
 
                 } break;
 
@@ -206,11 +200,7 @@ steering_key(arguments_t args, struct qbuff * buff)
         });
 
 
-        if (symmetric)
-	        return Steering(buff, hash ^ src_hash ^ dst_hash);
-	else
-	        return Steering(buff, hash ^ (src_hash * 2654435761 + dst_hash));
-
+        return Steering(buff, hash ^ src_hash ^ dst_hash);
 }
 
 

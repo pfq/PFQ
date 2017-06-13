@@ -89,11 +89,8 @@ module Network.PFQ
 
     ,  FlowKey(..)
     ,  key_5tuple
-    ,  key_5tuple'
     ,  key_3tuple
-    ,  key_3tuple'
 
-    , key_symmetric
     , key_eth_type
     , key_eth_src
     , key_eth_dst
@@ -393,7 +390,6 @@ newtype FlowKey = FlowKey { getFlowKey:: Word64 }
 }
 
 #{enum FlowKey, FlowKey
-  , key_symmetric          = Q_KEY_SYMMETRIC
   , key_eth_type           = Q_KEY_ETH_TYPE
   , key_eth_src            = Q_KEY_ETH_SRC
   , key_eth_dst            = Q_KEY_ETH_DST
@@ -419,11 +415,8 @@ instance Storable FlowKey where
     poke      = Store.poke getFlowKey
 
 
-key_5tuple  = key_symmetric <> key_ip_src <> key_ip_dst <> key_src_port <> key_dst_port <> key_ip_proto
-key_5tuple' = key_ip_src <> key_ip_dst <> key_src_port <> key_dst_port <> key_ip_proto
-
-key_3tuple  = key_symmetric <> key_ip_src <> key_ip_dst <> key_ip_proto
-key_3tuple' = key_ip_src <> key_ip_dst <> key_ip_proto
+key_5tuple  = key_ip_src <> key_ip_dst <> key_src_port <> key_dst_port <> key_ip_proto
+key_3tuple  = key_ip_src <> key_ip_dst <> key_ip_proto
 
 
 version :: String

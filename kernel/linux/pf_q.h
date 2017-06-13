@@ -187,23 +187,21 @@ typedef uint8_t  pfq_qver_t;
 
 /* default flow key constants */
 
-#define Q_KEY_SYMMETRIC			(1ULL << 0)
+#define Q_KEY_ETH_TYPE			(1ULL << 0)
+#define Q_KEY_ETH_SRC	     		(1ULL << 1)
+#define Q_KEY_ETH_DST	     		(1ULL << 2)
 
-#define Q_KEY_ETH_TYPE			(1ULL << 1)
-#define Q_KEY_ETH_SRC	     		(1ULL << 2)
-#define Q_KEY_ETH_DST	     		(1ULL << 3)
+#define	Q_KEY_IP_SRC	     		(1ULL << 3)
+#define	Q_KEY_IP_DST	     		(1ULL << 4)
+#define	Q_KEY_IP_PROTO	     		(1ULL << 5)
+#define	Q_KEY_IP_ECN	     		(1ULL << 6)
+#define	Q_KEY_IP_DSCP	     		(1ULL << 7)
 
-#define	Q_KEY_IP_SRC	     		(1ULL << 4)
-#define	Q_KEY_IP_DST	     		(1ULL << 5)
-#define	Q_KEY_IP_PROTO	     		(1ULL << 6)
-#define	Q_KEY_IP_ECN	     		(1ULL << 7)
-#define	Q_KEY_IP_DSCP	     		(1ULL << 8)
+#define	Q_KEY_SRC_PORT			(1ULL << 9)
+#define	Q_KEY_DST_PORT			(1ULL << 10)
 
-#define	Q_KEY_SRC_PORT			(1ULL << 10)
-#define	Q_KEY_DST_PORT			(1ULL << 11)
-
-#define	Q_KEY_ICMP_TYPE			(1ULL << 12)
-#define	Q_KEY_ICMP_CODE			(1ULL << 13)
+#define	Q_KEY_ICMP_TYPE			(1ULL << 11)
+#define	Q_KEY_ICMP_CODE			(1ULL << 12)
 
 
 /* PFQ socket queue */
