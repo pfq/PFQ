@@ -41,6 +41,7 @@
 --
 ------------------------------------------------------------------------------
 
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE BangPatterns #-}
@@ -335,23 +336,23 @@ instance Monoid ClassMask where
 
 -- |Group policy type.
 newtype GroupPolicy = GroupPolicy { getGroupPolicy :: CInt }
-                        deriving (Eq, Show, Read)
+    deriving (Eq, Show, Read)
 
 -- |Async policy type.
 newtype AsyncPolicy = AsyncPolicy { getAsyncPolicy :: CInt }
-                        deriving (Eq, Show, Read)
+    deriving (Eq, Show, Read)
 
 -- |Generic pfq constant.
 newtype Constant = Constant { getConstant :: Int }
-                        deriving (Eq, Show, Read)
+    deriving (Eq, Show, Read)
 
 -- |Vlan tag.
 newtype VlanTag = VlanTag { getVid:: CInt }
-                    deriving (Eq, Show, Read)
+    deriving (Eq, Show, Read)
 
 -- |Generic pfq flow-key constant.
 newtype FlowKey = FlowKey { getFlowKey:: Word64 }
-                        deriving (Eq, Show, Read)
+    deriving (Eq, Show, Read, Bits)
 
 
 #{enum ClassMask, ClassMask
