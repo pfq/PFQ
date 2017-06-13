@@ -35,6 +35,7 @@ import Data.Maybe
 defaultImports :: [(ModuleName, Maybe String)]
 defaultImports =
     [ ("Prelude", Just "P")
+    , ("Data.Bits", Nothing)
     , ("Data.Monoid", Nothing)
     , ("Network.PFQ", Nothing)
     , ("Network.PFQ.Lang", Nothing)
