@@ -88,7 +88,6 @@ typedef uint8_t  pfq_qver_t;
 #define PFQ_SLOT_ALIGNMENT			32
 
 #define PFQ_SHARED_QUEUE_SLOT_SIZE(x)		ALIGN(sizeof(struct pfq_pkthdr) + x, PFQ_SLOT_ALIGNMENT)
-
 #define PFQ_SHARED_QUEUE_NEXT_PKTHDR(hdr, fix) ((struct pfq_pkthdr *)((char *)(hdr) + fix))
 
 
@@ -145,13 +144,13 @@ typedef uint8_t  pfq_qver_t;
 #define Q_ANY_KTHREAD			0xbadbee
 #define Q_NO_KTHREAD			-1
 
-/*timestamp*/
+/* timestamp */
 
 #define Q_TSTAMP_OFF			0	/*default*/
 #define Q_TSTAMP_ON			1
 
 
-/*vlan*/
+/* vlan */
 
 #define Q_VLAN_PRIO_MASK		0xe000
 #define Q_VLAN_VID_MASK			0x0fff
@@ -160,7 +159,7 @@ typedef uint8_t  pfq_qver_t;
 #define Q_VLAN_UNTAG			0
 #define Q_VLAN_ANYTAG			-1
 
-/*group policies*/
+/* group policies */
 
 #define Q_POLICY_GROUP_UNDEFINED	0
 #define Q_POLICY_GROUP_PRIVATE		1
@@ -179,15 +178,15 @@ typedef uint8_t  pfq_qver_t;
 #define Q_CLASS_ANY			(((unsigned long)-1)^Q_CLASS_CONTROL)	/*any class except management*/
 
 
-/*additional constants*/
+/* additional constants */
 
 #define Q_MAX_COUNTERS			64
 #define Q_MAX_TX_QUEUES			4
 #define Q_MAX_RX_NAPI			4
 
 
-/* PFQ socket queue */
 
+/* PFQ socket queue */
 
 struct pfq_shared_rx_queue
 {
