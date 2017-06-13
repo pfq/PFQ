@@ -199,15 +199,11 @@ typedef uint8_t  pfq_qver_t;
 #define	Q_KEY_IP_ECN	     		(1ULL << 7)
 #define	Q_KEY_IP_DSCP	     		(1ULL << 8)
 
-#define	Q_KEY_TCP_SRC_PORT		(1ULL << 9)
-#define	Q_KEY_TCP_DST_PORT		(1ULL << 10)
-#define	Q_KEY_TCP_FLAGS			(1ULL << 11)
+#define	Q_KEY_SRC_PORT			(1ULL << 10)
+#define	Q_KEY_DST_PORT			(1ULL << 11)
 
-#define	Q_KEY_UDP_SRC_PORT		(1ULL << 12)
-#define	Q_KEY_UDP_DST_PORT		(1ULL << 13)
-
-#define	Q_KEY_ICMP_TYPE			(1ULL << 14)
-#define	Q_KEY_ICMP_CODE			(1ULL << 15)
+#define	Q_KEY_ICMP_TYPE			(1ULL << 12)
+#define	Q_KEY_ICMP_CODE			(1ULL << 13)
 
 
 /* PFQ socket queue */

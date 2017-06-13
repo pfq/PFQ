@@ -73,7 +73,7 @@ module Network.PFQ
     ,  policy_priv
     ,  policy_restricted
     ,  policy_shared
-    ,  PfqConstant(..)
+    ,  Constant(..)
     ,  any_device
     ,  any_queue
     ,  any_group
@@ -87,7 +87,27 @@ module Network.PFQ
     ,  SocketParams(..)
     ,  defaultSocketParams
 
-       -- * Socket and Groups
+    ,  FlowKey(..)
+    ,  key_5tuple
+    ,  key_5tuple'
+    ,  key_3tuple
+    ,  key_3tuple'
+
+    , key_symmetric
+    , key_eth_type
+    , key_eth_src
+    , key_eth_dst
+    , key_ip_src
+    , key_ip_dst
+    , key_ip_proto
+    , key_ip_ecn
+    , key_ip_dscp
+    , key_src_port
+    , key_dst_port
+    , key_icmp_type
+    , key_icmp_code
+
+    -- * Socket and Groups
 
     ,  open
     ,  openNoGroup
@@ -185,11 +205,13 @@ import Data.Word
 import Data.Bits
 import Data.Maybe (fromJust)
 
-#if __GLASGOW_HASKELL__ < 710
-import Data.Monoid
-#else
-import Data.Monoid()
-#endif
+-- #if __GLASGOW_HASKELL__ < 710
+-- import Data.Monoid
+-- #else
+-- import Data.Monoid()
+-- #endif
+
+import Data.Monoid((<>))
 
 import qualified Data.ByteString.Char8 as C
 import qualified Data.ByteString.Lazy.Char8 as BL (pack)
@@ -197,6 +219,7 @@ import qualified Data.ByteString.Lazy.Char8 as BL (pack)
 import Data.ByteString.Unsafe
 import qualified Data.StorableVector as SV
 import qualified Data.StorableVector.Base as SV
+import qualified Foreign.Storable.Newtype as Store
 
 import Control.Monad
 import Control.Concurrent
@@ -322,12 +345,16 @@ newtype AsyncPolicy = AsyncPolicy { getAsyncPolicy :: CInt }
                         deriving (Eq, Show, Read)
 
 -- |Generic pfq constant.
-newtype PfqConstant = PfqConstant { getConstant :: Int }
+newtype Constant = Constant { getConstant :: Int }
                         deriving (Eq, Show, Read)
 
 -- |Vlan tag.
 newtype VlanTag = VlanTag { getVid:: CInt }
                     deriving (Eq, Show, Read)
+
+-- |Generic pfq flow-key constant.
+newtype FlowKey = FlowKey { getFlowKey:: Word64 }
+                        deriving (Eq, Show, Read)
 
 
 #{enum ClassMask, ClassMask
@@ -347,7 +374,7 @@ newtype VlanTag = VlanTag { getVid:: CInt }
 }
 
 
-#{enum PfqConstant, PfqConstant
+#{enum Constant, Constant
     , any_device           = Q_ANY_DEVICE
     , any_queue            = Q_ANY_QUEUE
     , any_group            = Q_ANY_GROUP
@@ -364,6 +391,39 @@ newtype VlanTag = VlanTag { getVid:: CInt }
     , vlan_untag           = Q_VLAN_UNTAG
     , vlan_anytag          = Q_VLAN_ANYTAG
 }
+
+#{enum FlowKey, FlowKey
+  , key_symmetric          = Q_KEY_SYMMETRIC
+  , key_eth_type           = Q_KEY_ETH_TYPE
+  , key_eth_src            = Q_KEY_ETH_SRC
+  , key_eth_dst            = Q_KEY_ETH_DST
+  , key_ip_src             = Q_KEY_IP_SRC
+  , key_ip_dst             = Q_KEY_IP_DST
+  , key_ip_proto           = Q_KEY_IP_PROTO
+  , key_ip_ecn             = Q_KEY_IP_ECN
+  , key_ip_dscp            = Q_KEY_IP_DSCP
+  , key_src_port           = Q_KEY_SRC_PORT
+  , key_dst_port           = Q_KEY_DST_PORT
+  , key_icmp_type          = Q_KEY_ICMP_TYPE
+  , key_icmp_code          = Q_KEY_ICMP_CODE
+}
+
+instance Monoid FlowKey where
+    mempty = FlowKey 0
+    FlowKey a `mappend` FlowKey b = FlowKey (a .|. b)
+
+instance Storable FlowKey where
+    sizeOf    = Store.sizeOf getFlowKey
+    alignment = Store.alignment getFlowKey
+    peek      = Store.peek FlowKey
+    poke      = Store.poke getFlowKey
+
+
+key_5tuple  = key_symmetric <> key_ip_src <> key_ip_dst <> key_src_port <> key_dst_port <> key_ip_proto
+key_5tuple' = key_ip_src <> key_ip_dst <> key_src_port <> key_dst_port <> key_ip_proto
+
+key_3tuple  = key_symmetric <> key_ip_src <> key_ip_dst <> key_ip_proto
+key_3tuple' = key_ip_src <> key_ip_dst <> key_ip_proto
 
 
 version :: String

@@ -43,6 +43,7 @@ module Network.PFQ.Lang.Experimental
     , dummy_cidrs
 
     , steer_gtp_usr
+    , steer_key
 
     , gtp
     , gtp_cp
@@ -75,6 +76,7 @@ module Network.PFQ.Lang.Experimental
     ) where
 
 
+import Network.PFQ
 import Network.PFQ.Lang
 
 -- Experimental/Testing in-kernel computations
@@ -110,6 +112,14 @@ dummy_cidrs xs  = Function "dummy_cidrs" xs () () () () () () ()
 
 steer_gtp_usr :: IPv4 -> Int -> NetFunction
 steer_gtp_usr net prefix = Function "steer_gtp_usr" net prefix () () () () () () :: NetFunction
+
+
+-- | Dispatch the packet to a given socket with id.
+--
+-- > ip >-> steer_key key_5tuple
+
+steer_key :: FlowKey -> NetFunction
+steer_key key = Function "steer_key" (getFlowKey key) () () () () () () () :: NetFunction
 
 
 -- | Evaluate to /Pass Qbuff/ in case of GTP packet, /Drop/ it otherwise.

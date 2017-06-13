@@ -25,10 +25,194 @@
 #include <lang/types.h>
 #include <lang/qbuff.h>
 
+#include <pfq/bitops.h>
 #include <pfq/kcompat.h>
 #include <pfq/printk.h>
 #include <pfq/qbuff.h>
 #include <pfq/vlan.h>
+
+
+
+#define IP_TOS_MASK      0x3
+#define IP_DSCP_MASK     0xfc
+
+static ActionQbuff
+steering_key(arguments_t args, struct qbuff * buff)
+{
+	uint64_t key = GET_ARG_0(uint64_t, args);
+        uint32_t hash, src_hash, dst_hash;
+	uint64_t field;
+        bool symmetric = false;
+
+	struct iphdr   _ip;    struct iphdr const *ip;
+	struct udphdr  _udp;   struct udphdr const *udp;
+	struct icmphdr _icmp;  struct icmphdr const *icmp;
+
+	switch(key)
+	{
+	case Q_KEY_IP_SRC|Q_KEY_IP_DST|Q_KEY_IP_PROTO|Q_KEY_SYMMETRIC: {
+
+		ip = qbuff_ip_header_pointer(buff, 0, sizeof(_ip), &_ip);
+		if (ip == NULL)
+			return Drop(buff);
+
+		return Steering(buff, (__force uint32_t)(ip->saddr ^ ip->daddr));
+
+	}
+	case Q_KEY_IP_SRC|Q_KEY_IP_DST|Q_KEY_SRC_PORT|Q_KEY_DST_PORT|Q_KEY_IP_PROTO|Q_KEY_SYMMETRIC: {
+
+		ip = qbuff_ip_header_pointer(buff, 0, sizeof(_ip), &_ip);
+		if (ip == NULL)
+			return Drop(buff);
+
+		if (ip->protocol != IPPROTO_UDP &&
+		    ip->protocol != IPPROTO_TCP) {
+		    	return Drop(buff);
+		}
+
+		udp = qbuff_ip_header_pointer(buff, (ip->ihl<<2), sizeof(_udp), &_udp);
+		if (udp == NULL)
+			return Drop(buff);  /* broken */
+
+		hash = ip->saddr ^ ip->daddr ^ (__force __be32)udp->source ^ (__force __be32)udp->dest;
+		return Steering(buff, (__force uint32_t)hash);
+	}
+
+	}
+
+	hash = 0; dst_hash = src_hash = 1;
+
+        pfq_bitwise_foreach(key, field,
+        {
+                switch(field)
+                {
+                case Q_KEY_SYMMETRIC:
+                {
+                        symmetric = true;
+                } break;
+
+                case Q_KEY_ETH_TYPE:
+                {
+	                uint16_t * w = (uint16_t *)qbuff_eth_hdr(buff);
+	                hash = (hash * 2654435761) + w[6];
+
+                } break;
+
+                case Q_KEY_ETH_SRC:
+                {
+	                uint16_t * w = (uint16_t *)qbuff_eth_hdr(buff);
+	                src_hash = ((src_hash << 5) + src_hash) + w[3];
+	                src_hash = ((src_hash << 5) + src_hash) + w[4];
+	                src_hash = ((src_hash << 5) + src_hash) + w[5];
+
+                } break;
+                case Q_KEY_ETH_DST:
+                {
+	                uint16_t * w = (uint16_t *)qbuff_eth_hdr(buff);
+	                dst_hash = ((dst_hash << 5) + dst_hash) + w[0];
+	                dst_hash = ((dst_hash << 5) + dst_hash) + w[1];
+	                dst_hash = ((dst_hash << 5) + dst_hash) + w[2];
+
+                } break;
+
+                case Q_KEY_IP_SRC:
+                {
+                        ip = qbuff_ip_header_pointer(buff, 0, sizeof(_ip), &_ip);
+                        if (ip == NULL)
+                                return Drop(buff);
+	                src_hash = ((src_hash << 5) + src_hash) + ip->saddr;
+
+                } break;
+
+                case Q_KEY_IP_DST:
+                {
+                        ip = qbuff_ip_header_pointer(buff, 0, sizeof(_ip), &_ip);
+                        if (ip == NULL)
+                                return Drop(buff);
+	                dst_hash = ((dst_hash << 5) + dst_hash) + ip->daddr;
+
+                } break;
+                case Q_KEY_IP_PROTO:
+                {
+                        ip = qbuff_ip_header_pointer(buff, 0, sizeof(_ip), &_ip);
+                        if (ip == NULL)
+                                return Drop(buff);
+	                hash = ((hash << 5) + hash) + ip->protocol;
+
+                } break;
+                case Q_KEY_IP_ECN:
+                {
+                        ip = qbuff_ip_header_pointer(buff, 0, sizeof(_ip), &_ip);
+                        if (ip == NULL)
+                                return Drop(buff);
+	                hash = ((hash << 5) + hash) + (ip->tos & IP_TOS_MASK);
+
+                } break;
+
+                case Q_KEY_IP_DSCP:
+                {
+                        ip = qbuff_ip_header_pointer(buff, 0, sizeof(_ip), &_ip);
+                        if (ip == NULL)
+                                return Drop(buff);
+	                hash = ((hash << 5) + hash) + (ip->tos & IP_DSCP_MASK);
+
+                } break;
+
+                case Q_KEY_SRC_PORT:
+                {
+                        udp = qbuff_ip_header_pointer(buff, 0, sizeof(_udp), &_udp);
+                        if (udp == NULL)
+                                return Drop(buff);
+
+	                src_hash = ((src_hash << 5) + src_hash) + udp->source;
+
+                } break;
+
+                case Q_KEY_DST_PORT:
+                {
+                        udp = qbuff_ip_header_pointer(buff, 0, sizeof(_udp), &_udp);
+                        if (udp == NULL)
+                                return Drop(buff);
+
+	                dst_hash = ((dst_hash << 5) + dst_hash) + udp->dest;
+
+                } break;
+
+                case Q_KEY_ICMP_TYPE:
+                {
+                        icmp = qbuff_ip_header_pointer(buff, 0, sizeof(_icmp), &_icmp);
+                        if (icmp == NULL)
+                                return Drop(buff);
+
+	                hash = ((hash << 5) + hash) + icmp->type;
+
+                } break;
+
+                case Q_KEY_ICMP_CODE:
+                {
+                        icmp = qbuff_ip_header_pointer(buff, 0, sizeof(_icmp), &_icmp);
+                        if (icmp == NULL)
+                                return Drop(buff);
+
+	                hash = ((hash << 5) + hash) + icmp->code;
+
+                } break;
+
+                default: {
+                        if (printk_ratelimit())
+                                printk(KERN_INFO "[PFQ] steering_key: unknown field");
+                }
+                }
+        });
+
+
+        if (symmetric)
+	        return Steering(buff, hash ^ src_hash ^ dst_hash);
+	else
+	        return Steering(buff, hash ^ (src_hash * 2654435761 + dst_hash));
+
+}
+
 
 static ActionQbuff
 steering_rrobin(arguments_t args, struct qbuff * buff)
@@ -377,5 +561,8 @@ struct pfq_lang_function_descr steering_functions[] = {
 	{ "double_steer_field","Word32 -> Word32 -> Word32 -> Qbuff -> Action Qbuff", double_steering_field, NULL, NULL},
 
 	{ "steer_local_net", "Word32 -> Word32 -> Word32 -> Qbuff -> Action Qbuff", steering_local_net, steering_net_init, NULL },
+
+	{ "steer_key",    "Word64 -> Qbuff -> Action Qbuff", steering_key, NULL, NULL },
+
 	{ NULL }};
 
