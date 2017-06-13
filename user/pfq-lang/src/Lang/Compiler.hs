@@ -23,7 +23,7 @@ module Lang.Compiler
 ) where
 
 import Language.Haskell.Interpreter
-import Network.PFQ.Lang as Q
+import Network.PFQ.Lang
 
 import Data.Maybe
 import System.IO
@@ -49,7 +49,7 @@ modToFilePath base n = base </> fixPath n <.> "hs"
     where fixPath = map (\c -> if c == '.' then '/' else c)
 
 
-compile :: String -> OptionT IO (Q.Function (Qbuff -> Action Qbuff))
+compile :: String -> OptionT IO (Function (Qbuff -> Action Qbuff))
 compile raw = do
     let (code, localImports) = parseCode raw
 
