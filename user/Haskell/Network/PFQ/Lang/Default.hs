@@ -214,7 +214,6 @@ module Network.PFQ.Lang.Default
 
 import           Network.PFQ.Lang
 
-import           Data.Int
 import           Data.Word
 
 import           Network.Socket
@@ -356,11 +355,11 @@ has_state x = Predicate "has_state" x () () () () () () ()
 
 
 -- | Evaluate to /True/ if the Qbuff has the given Layer3 protocol.
-is_l3_proto :: Int16 -> NetPredicate
+is_l3_proto :: Word16 -> NetPredicate
 is_l3_proto x = Predicate "is_l3_proto" x () () () () () () ()
 
 -- | Evaluate to /True/ if the Qbuff has the given Layer4 protocol.
-is_l4_proto :: Int8 -> NetPredicate
+is_l4_proto :: Word8 -> NetPredicate
 is_l4_proto x = Predicate "is_l4_proto" x () () () () () () ()
 
 is_rtp, is_rtcp, is_sip, is_voip :: NetPredicate
@@ -378,7 +377,7 @@ is_sip = Predicate "is_sip" () () () () () () () ()
 is_voip = Predicate "is_voip" () () () () () () () ()
 
 
-has_port, has_src_port, has_dst_port :: Int16 -> NetPredicate
+has_port, has_src_port, has_dst_port :: Word16 -> NetPredicate
 
 -- | Evaluate to /True/ if the Qbuff has the given source or destination port.
 --
@@ -770,7 +769,7 @@ put_state n = Function "put_state" n () () () () () () ()
 -- are combined with Kleisli operator:
 --
 -- > l3_proto 0x842 >-> log_msg "Wake-on-LAN packet!"
-l3_proto :: Int16 -> NetFunction
+l3_proto :: Word16 -> NetFunction
 l3_proto p = Function "l3_proto" p () () () () () () ()
 
 -- | Monadic version of 'is_l4_proto' predicate.
@@ -779,7 +778,7 @@ l3_proto p = Function "l3_proto" p () () () () () () ()
 -- are combined with Kleisli operator:
 --
 -- > l4_proto 89 >-> log_msg "OSFP packet!"
-l4_proto :: Int8 -> NetFunction
+l4_proto :: Word8 -> NetFunction
 l4_proto p = Function "l4_proto" p () () () () () () ()
 
 -- | Monadic version of 'has_port' predicate.
@@ -788,15 +787,15 @@ l4_proto p = Function "l4_proto" p () () () () () () ()
 -- are combined with Kleisli operator:
 --
 -- > port 80 >-> log_msg "http packet!"
-port :: Int16 -> NetFunction
+port :: Word16 -> NetFunction
 port p = Function "port" p () () () () () () ()
 
 -- | Monadic version of 'has_src_port' predicate.
-src_port :: Int16 -> NetFunction
+src_port :: Word16 -> NetFunction
 src_port p = Function "src_port" p () () () () () () ()
 
 -- | Monadic version of 'has_dst_port' predicate.
-dst_port :: Int16 -> NetFunction
+dst_port :: Word16 -> NetFunction
 dst_port a = Function "dst_port" a () () () () () () ()
 
 -- | Monadic version of 'has_addr' predicate.
