@@ -451,7 +451,7 @@ namespace pfq { namespace lang {
         auto icmp_code  = property("icmp_code");
 
         //
-        // default netfunctions:
+        // default network functions:
         //
 
         //! Dispatch the packet across the sockets in Round-Robin fashion.
@@ -478,8 +478,8 @@ namespace pfq { namespace lang {
 
         //! Dispatch the packet across the sockets.
         /*!
-         * Dispatch with a randomized algorithm that maintains the coherence
-         * of physical links. Example:
+         * Dispatch with a randomized algorithm that guarantees
+         * physical links consistency. Example:
          *
          * steer_link
          */
@@ -488,8 +488,8 @@ namespace pfq { namespace lang {
 
         //! Dispatch the packet across the sockets.
         /*!
-         * Dispatch with a randomized algorithm that maintains the coherence
-         * of local mac addresses. Example:
+         * Dispatch with a randomized algorithm that guarantees
+         * local mac addresses consistency. Example:
          *
          * steer_local_link("4c:60:de:86:55:46")
          */
@@ -499,8 +499,8 @@ namespace pfq { namespace lang {
 
         //! Dispatch the packet across the sockets.
         /*!
-         * Dispatch with a randomized algorithm that maintains the coherence
-         * of mac address. This alter the total amount of traffic, as the packets
+         * Dispatch with a randomized algorithm that guarantees
+         * mac address consistency. This alter the total amount of traffic, as the packets
          * can be steered to at most two sockets. Example:
          *
          * double_steer_mac
@@ -510,8 +510,8 @@ namespace pfq { namespace lang {
 
         //! Dispatch the packet across the sockets
         /*!
-         * Dispatch with a randomized algorithm that maintains the coherence
-         * of vlan links. Example:
+         * Dispatch with a randomized algorithm that guarantees
+         * vlan links consistency. Example:
          *
          * steer_vlan
          */
@@ -520,8 +520,8 @@ namespace pfq { namespace lang {
 
         //! Dispatch the packet across the sockets
         /*!
-         * Dispatch with a randomized algorithm that maintains the coherence
-         * of both IP addresses.
+         * Dispatch with a randomized algorithm that guarantees
+         * IP flows consistency.
          * This alter the total amount of traffic (\see double_steer_mac).
          *
          * double_steer_ip
@@ -531,8 +531,8 @@ namespace pfq { namespace lang {
 
         //! Dispatch the packet across the sockets
         /*!
-         * Dispatch with a randomized algorithm that maintains the coherence
-         * of local IP addresses.
+         * Dispatch with a randomized algorithm that guarantees
+         * local IP addresses consistency.
          * This alter the total amount of traffic (\see double_steer_mac).
          *
          * steer_local_ip "192.168.1.0/24"
@@ -542,8 +542,8 @@ namespace pfq { namespace lang {
 
         //! Dispatch the packet across the sockets
         /*!
-         * Dispatch with a randomized algorithm that maintains the coherence
-         * of IP flows. Example:
+         * Dispatch with a randomized algorithm that guarantees
+         * IP flows consistency. Example:
          *
          * ip >-> steer_p2p
          */
@@ -552,8 +552,8 @@ namespace pfq { namespace lang {
 
         //! Dispatch the packet across the sockets
         /*!
-         * Dispatch with a randomized algorithm that maintains the coherence
-         * of TCP/UDP flows. Example:
+         * Dispatch with a randomized algorithm that guarantees
+         * TCP/UDP flows consistency. Example:
          *
          * steer_flow >> log_msg ("Steering a flow")
          */
@@ -562,8 +562,8 @@ namespace pfq { namespace lang {
 
         //! Dispatch the packet across the sockets
         /*!
-         * Dispatch with a randomized algorithm that maintains the coherence
-         * of RTP/RTCP flows. Example:
+         * Dispatch with a randomized algorithm that guarantees
+         * RTP/RTCP flows consistency. Example:
          *
          * steer_rtp
          */
@@ -572,8 +572,8 @@ namespace pfq { namespace lang {
 
         //! Dispatch the packet across the sockets
         /*!
-         * Dispatch with a randomized algorithm that maintains the coherence
-         * of RTP/RTCP flows; SIP packets are boradcasted Example:
+         * Dispatch with a randomized algorithm that guarantees
+         * RTP/RTCP flows consistency; SIP packets are broadcasted Example:
          *
          * steer_voip
          */
@@ -582,8 +582,8 @@ namespace pfq { namespace lang {
 
         //! Dispatch the packet across the sockets
         /*!
-         * Dispatch with a randomized algorithm that maintains the coherence
-         * of sub networks. Example:
+         * Dispatch with a randomized algorithm that guarantees
+         * sub networks consistency. Example:
          *
          * steer_local_net("192.168.0.0", 16, 24)
          */

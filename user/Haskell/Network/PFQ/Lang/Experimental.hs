@@ -104,8 +104,8 @@ dummy_cidrs xs  = Function "dummy_cidrs" xs () () () () () () ()
 
 
 -- | Dispatch the packet across the sockets
--- with a randomized algorithm that maintains the integrity of
--- per-user flows on top of GTP tunnel protocol (Control-Plane packets
+-- with a randomized algorithm that guarantees
+-- per-user flows consistency on top of GTP tunnel protocol (Control-Plane packets
 -- are broadcasted to all sockets).
 --
 -- > (steer_gtp_usr "192.168.0.0" 16)

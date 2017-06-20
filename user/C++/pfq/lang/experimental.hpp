@@ -83,8 +83,8 @@ namespace pfq { namespace lang { namespace experimental {
 
         //! Dispatch the packet across the sockets.
         /*!
-         * Dispatch with a randomized algorithm that maintains the integrity
-         * of per-user flows on top of GTP tunnels (Control-Plane packets are broadcasted to
+         * Dispatch with a randomized algorithm that guarantees
+         * per-user flows consistency on top of GTP tunnels (Control-Plane packets are broadcasted to
          * all sockets). Example:
          *
          * steer_gtp_usr ("10.0.0.0", 8)

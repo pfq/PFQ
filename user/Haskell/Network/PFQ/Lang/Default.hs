@@ -481,53 +481,53 @@ steer_to :: Int -> NetFunction
 steer_to idx = Function "steer_to" idx () () () () () () () :: NetFunction
 
 -- | Dispatch the packet across the sockets
--- with a randomized algorithm that maintains the coherence of
--- physical links.
+-- with a randomized algorithm that guarantees
+-- physical links consistency.
 --
 -- > steer_link
 steer_link = Function "steer_link" () () () () () () () () :: NetFunction
 
 -- | Dispatch the packet across the sockets
--- with a randomized algorithm that maintains the coherence of
--- local mac addresses.
+-- with a randomized algorithm that guarantees
+-- local mac addresses consistency.
 --
 -- > steer_local_link "4c:60:de:86:55:46"
 steer_local_link :: String -> NetFunction
 steer_local_link mac_gw = Function "steer_local_link" mac_gw () () () () () () () :: NetFunction
 
 -- | Dispatch the packet across the sockets
--- with a randomized algorithm that maintains the coherence of both
--- mac addresses. This alter the total amount of traffic, as the
+-- with a randomized algorithm that guarantees both
+-- mac addresses consistency. This alter the total amount of traffic, as the
 -- packets can be steered to at most two sockets.
 --
 -- > double_steer_mac
 double_steer_mac = Function "double_steer_mac" () () () () () () () () :: NetFunction
 
 -- | Dispatch the packet across the sockets
--- with a randomized algorithm that maintains the coherence of
--- vlan links.
+-- with a randomized algorithm that guarantees
+-- vlan links consistency.
 --
 -- > steer_vlan
 steer_vlan = Function "steer_vlan" () () () () () () () () :: NetFunction
 
 -- | Dispatch the packet across the sockets
--- with a randomized algorithm that maintains the coherence of
--- IP flows.
+-- with a randomized algorithm that guarantees
+-- IP flows consistency.
 --
 -- > steer_p2p
 steer_p2p = Function "steer_p2p" () () () () () () () () :: NetFunction
 
 -- | Dispatch the packet across the sockets
--- with a randomized algorithm that maintains the coherence of both
--- IP addresses.
+-- with a randomized algorithm that guarantees both
+-- IP addresses consistency.
 -- This alter the total amount of traffic (see 'double_steer_mac').
 --
 -- > double_steer_ip
 double_steer_ip = Function "double_steer_ip" () () () () () () () () :: NetFunction
 
 -- | Dispatch the packet across the sockets
--- with a randomized algorithm that maintains the coherence of local
--- IP addresses.
+-- with a randomized algorithm that guarantees local
+-- IP addresses consistency.
 -- This alter the total amount of traffic (see 'double_steer_mac').
 --
 -- > steer_local_ip "192.168.1.0/24"
@@ -535,29 +535,29 @@ steer_local_ip :: CIDR -> NetFunction
 steer_local_ip d = Function "steer_local_ip" d () () () () () () () :: NetFunction
 
 -- | Dispatch the packet across the sockets
--- with a randomized algorithm that maintains the coherence of
--- TCP/UDP flows.
+-- with a randomized algorithm that guarantees
+-- TCP/UDP flows consistency.
 --
 -- > steer_flow >-> log_msg "Steering a flow"
 steer_flow = Function "steer_flow" () () () () () () () () :: NetFunction
 
 -- | Dispatch the packet across the sockets
--- with a randomized algorithm that maintains the coherence of
--- RTP/RTCP flows.
+-- with a randomized algorithm that guarantees
+-- RTP/RTCP flows consistency.
 --
 -- > steer_rtp
 steer_rtp = Function "steer_rtp" () () () () () () () () :: NetFunction
 
 -- | Dispatch the packet across the sockets
--- with a randomized algorithm that maintains the coherence of
--- RTP/RTCP flows; SIP packets are broadcasted.
+-- with a randomized algorithm that guarantees
+-- RTP/RTCP flows consistency; SIP packets are broadcasted.
 --
 -- > steer_voip
 steer_voip = Function "steer_voip" () () () () () () () () :: NetFunction
 
 -- | Dispatch the packet across the sockets
--- with a randomized algorithm that maintains the coherence of
--- sub networks.
+-- with a randomized algorithm that guarantees
+-- sub networks consistency.
 --
 -- > steer_local_net "192.168.0.0" 16 24
 steer_local_net :: IPv4 -> Int -> Int -> NetFunction
