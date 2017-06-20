@@ -73,11 +73,24 @@ module Network.PFQ.Lang.Experimental
     , ip_multicast
     , ip_host
 
+    , is_eth_pup
+    , is_eth_sprite
+    , is_eth_ip
+    , is_eth_arp
+    , is_eth_revarp
+    , is_eth_at
+    , is_eth_aarp
+    , is_eth_vlan
+    , is_eth_ipx
+    , is_eth_ipv6
+    , is_eth_loopback
     ) where
 
 
 import Network.PFQ
 import Network.PFQ.Lang
+
+import Data.Word
 
 -- Experimental/Testing in-kernel computations
 
@@ -224,4 +237,18 @@ ip_host = Function "ip_host" () () () () () () () () :: NetFunction
 -- is a broadcast or a multicast frame, /Drop/ it otherwise.
 incoming_host = Function "incoming_host" () () () () () () () () :: NetFunction
 
+
+-- | Ethernet protocols
+
+is_eth_pup      = Predicate "is_l3_proto" (0x0200 :: Word16)  () () () () () () ()
+is_eth_sprite   = Predicate "is_l3_proto" (0x0500 :: Word16)  () () () () () () ()
+is_eth_ip       = Predicate "is_l3_proto" (0x0800 :: Word16)  () () () () () () ()
+is_eth_arp      = Predicate "is_l3_proto" (0x0806 :: Word16)  () () () () () () ()
+is_eth_revarp   = Predicate "is_l3_proto" (0x8035 :: Word16)  () () () () () () ()
+is_eth_at       = Predicate "is_l3_proto" (0x809B :: Word16)  () () () () () () ()
+is_eth_aarp     = Predicate "is_l3_proto" (0x80F3 :: Word16)  () () () () () () ()
+is_eth_vlan     = Predicate "is_l3_proto" (0x8100 :: Word16)  () () () () () () ()
+is_eth_ipx      = Predicate "is_l3_proto" (0x8137 :: Word16)  () () () () () () ()
+is_eth_ipv6     = Predicate "is_l3_proto" (0x86dd :: Word16)  () () () () () () ()
+is_eth_loopback = Predicate "is_l3_proto" (0x9000 :: Word16)  () () () () () () ()
 
