@@ -707,7 +707,7 @@ Dispatch with a randomized algorithm. The function uses as hashes the fields of 
 
 Dispatch the packet across the sockets. 
 
-Dispatch with a randomized algorithm that maintains the coherence of both IP addresses. This alter the total amount of traffic (\begin{DoxySeeAlso}{See also}
+Dispatch with a randomized algorithm that guarantees IP flows consistency. This alter the total amount of traffic (\begin{DoxySeeAlso}{See also}
 \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a122b03580c609d71ca622ef9b15fa78d}{double\+\_\+steer\+\_\+mac}).
 \end{DoxySeeAlso}
 double\+\_\+steer\+\_\+ip \mbox{\Hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a122b03580c609d71ca622ef9b15fa78d}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a122b03580c609d71ca622ef9b15fa78d}} 
@@ -720,7 +720,7 @@ double\+\_\+steer\+\_\+ip \mbox{\Hypertarget{namespacepfq_1_1lang_1_1anonymous__
 
 Dispatch the packet across the sockets. 
 
-Dispatch with a randomized algorithm that maintains the coherence of mac address. This alter the total amount of traffic, as the packets can be steered to at most two sockets. Example\+:
+Dispatch with a randomized algorithm that guarantees mac address consistency. This alter the total amount of traffic, as the packets can be steered to at most two sockets. Example\+:
 
 double\+\_\+steer\+\_\+mac \mbox{\Hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a0d715988e000ac6284a1615091eb4067}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a0d715988e000ac6284a1615091eb4067}} 
 \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!drop@{drop}}
@@ -1459,7 +1459,7 @@ Dispatch with a randomized algorithm. The function uses as {\ttfamily hash} the 
 
 Dispatch the packet across the sockets. 
 
-Dispatch with a randomized algorithm that maintains the coherence of T\+C\+P/\+U\+DP flows. Example\+:
+Dispatch with a randomized algorithm that guarantees T\+C\+P/\+U\+DP flows consistency. Example\+:
 
 steer\+\_\+flow $>$$>$ log\+\_\+msg (\char`\"{}\+Steering a flow\char`\"{}) \mbox{\Hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_ac1f3f9a2caf886a1441e62860a4ca058}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_ac1f3f9a2caf886a1441e62860a4ca058}} 
 \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!steer\+\_\+link@{steer\+\_\+link}}
@@ -1471,7 +1471,7 @@ steer\+\_\+flow $>$$>$ log\+\_\+msg (\char`\"{}\+Steering a flow\char`\"{}) \mbo
 
 Dispatch the packet across the sockets. 
 
-Dispatch with a randomized algorithm that maintains the coherence of physical links. Example\+:
+Dispatch with a randomized algorithm that guarantees physical links consistency. Example\+:
 
 steer\+\_\+link \mbox{\Hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a4f2ef4dd2da0408a456f9b29b752686a}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a4f2ef4dd2da0408a456f9b29b752686a}} 
 \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!steer\+\_\+local\+\_\+ip@{steer\+\_\+local\+\_\+ip}}
@@ -1483,7 +1483,7 @@ steer\+\_\+link \mbox{\Hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_
 
 Dispatch the packet across the sockets. 
 
-Dispatch with a randomized algorithm that maintains the coherence of local IP addresses. This alter the total amount of traffic (\begin{DoxySeeAlso}{See also}
+Dispatch with a randomized algorithm that guarantees local IP addresses consistency. This alter the total amount of traffic (\begin{DoxySeeAlso}{See also}
 \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a122b03580c609d71ca622ef9b15fa78d}{double\+\_\+steer\+\_\+mac}).
 \end{DoxySeeAlso}
 steer\+\_\+local\+\_\+ip \char`\"{}192.\+168.\+1.\+0/24\char`\"{} \mbox{\Hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a6344b2b22c9e20a2015452ad2c1002f7}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a6344b2b22c9e20a2015452ad2c1002f7}} 
@@ -1496,7 +1496,7 @@ steer\+\_\+local\+\_\+ip \char`\"{}192.\+168.\+1.\+0/24\char`\"{} \mbox{\Hyperta
 
 Dispatch the packet across the sockets. 
 
-Dispatch with a randomized algorithm that maintains the coherence of local mac addresses. Example\+:
+Dispatch with a randomized algorithm that guarantees local mac addresses consistency. Example\+:
 
 steer\+\_\+local\+\_\+link(\char`\"{}4c\+:60\+:de\+:86\+:55\+:46\char`\"{}) \mbox{\Hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a9c26772930b75805453c19d0d5129c71}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a9c26772930b75805453c19d0d5129c71}} 
 \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!steer\+\_\+local\+\_\+net@{steer\+\_\+local\+\_\+net}}
@@ -1524,7 +1524,7 @@ steer\+\_\+local\+\_\+link(\char`\"{}4c\+:60\+:de\+:86\+:55\+:46\char`\"{}) \mbo
 
 Dispatch the packet across the sockets. 
 
-Dispatch with a randomized algorithm that maintains the coherence of sub networks. Example\+:
+Dispatch with a randomized algorithm that guarantees sub networks consistency. Example\+:
 
 steer\+\_\+local\+\_\+net(\char`\"{}192.\+168.\+0.\+0\char`\"{}, 16, 24) \mbox{\Hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a93e5f91a2b955269de017225cf62e711}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a93e5f91a2b955269de017225cf62e711}} 
 \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!steer\+\_\+p2p@{steer\+\_\+p2p}}
@@ -1536,7 +1536,7 @@ steer\+\_\+local\+\_\+net(\char`\"{}192.\+168.\+0.\+0\char`\"{}, 16, 24) \mbox{\
 
 Dispatch the packet across the sockets. 
 
-Dispatch with a randomized algorithm that maintains the coherence of IP flows. Example\+:
+Dispatch with a randomized algorithm that guarantees IP flows consistency. Example\+:
 
 ip $>$-\/$>$ steer\+\_\+p2p \mbox{\Hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a98f503710ebfe66f6866d642af30b1a8}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a98f503710ebfe66f6866d642af30b1a8}} 
 \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!steer\+\_\+rrobin@{steer\+\_\+rrobin}}
@@ -1568,7 +1568,7 @@ ip $>$$>$ steer\+\_\+rss \mbox{\Hypertarget{namespacepfq_1_1lang_1_1anonymous__n
 
 Dispatch the packet across the sockets. 
 
-Dispatch with a randomized algorithm that maintains the coherence of R\+T\+P/\+R\+T\+CP flows. Example\+:
+Dispatch with a randomized algorithm that guarantees R\+T\+P/\+R\+T\+CP flows consistency. Example\+:
 
 steer\+\_\+rtp \mbox{\Hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a4980fea0af16a26df90f252b5ae21113}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a4980fea0af16a26df90f252b5ae21113}} 
 \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!steer\+\_\+to@{steer\+\_\+to}}
@@ -1590,7 +1590,7 @@ ip $>$$>$ steer\+\_\+to(1) \mbox{\Hypertarget{namespacepfq_1_1lang_1_1anonymous_
 
 Dispatch the packet across the sockets. 
 
-Dispatch with a randomized algorithm that maintains the coherence of vlan links. Example\+:
+Dispatch with a randomized algorithm that guarantees vlan links consistency. Example\+:
 
 steer\+\_\+vlan \mbox{\Hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a50fa612c45aa8f8dfd3259e2d0cbfce0}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a50fa612c45aa8f8dfd3259e2d0cbfce0}} 
 \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!steer\+\_\+voip@{steer\+\_\+voip}}
@@ -1602,7 +1602,7 @@ steer\+\_\+vlan \mbox{\Hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_
 
 Dispatch the packet across the sockets. 
 
-Dispatch with a randomized algorithm that maintains the coherence of R\+T\+P/\+R\+T\+CP flows; S\+IP packets are boradcasted Example\+:
+Dispatch with a randomized algorithm that guarantees R\+T\+P/\+R\+T\+CP flows consistency; S\+IP packets are broadcasted Example\+:
 
 steer\+\_\+voip \mbox{\Hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a5b8ca91a33a120e7e0807e63c8b51b28}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a5b8ca91a33a120e7e0807e63c8b51b28}} 
 \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!tcp@{tcp}}

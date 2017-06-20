@@ -682,7 +682,7 @@ template&lt;typename Predicate &gt; </div>
 </div><div class="memdoc">
 <b>Initial value:</b><div class="fragment"><div class="line">= [] (<span class="keyword">const</span> <span class="keywordtype">char</span> *net, <span class="keywordtype">int</span> prefix)</div><div class="line">        {</div><div class="line">            <span class="keywordflow">return</span> <span class="keyword">function</span>(<span class="stringliteral">&quot;steer_gtp_usr&quot;</span>, ipv4_t{net}, prefix);</div><div class="line">        }</div></div><!-- fragment -->
 <p>Dispatch the packet across the sockets. </p>
-<p>Dispatch with a randomized algorithm that maintains the integrity of per-user flows on top of GTP tunnels (Control-Plane packets are broadcasted to all sockets). Example:</p>
+<p>Dispatch with a randomized algorithm that guarantees per-user flows consistency on top of GTP tunnels (Control-Plane packets are broadcasted to all sockets). Example:</p>
 <p>steer_gtp_usr ("10.0.0.0", 8) </p>
 
 </div>
@@ -693,7 +693,7 @@ template&lt;typename Predicate &gt; </div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="namespacepfq.html">pfq</a></li><li class="navelem"><a class="el" href="namespacepfq_1_1lang.html">lang</a></li><li class="navelem"><a class="el" href="namespacepfq_1_1lang_1_1experimental.html">experimental</a></li><li class="navelem"><a class="el" href="namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03.html">anonymous_namespace{experimental.hpp}</a></li>
-    <li class="footer">Generated on Thu Jun 8 2017 17:54:17 for pfq-lang eDLS by
+    <li class="footer">Generated on Tue Jun 20 2017 10:05:41 for pfq-lang eDLS by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.13 </li>
   </ul>
