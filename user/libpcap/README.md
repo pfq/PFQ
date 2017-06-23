@@ -62,8 +62,7 @@ PFQ\_TX\_SLOTS       |    4096       |   8192    | Define the TX queue length of
 PFQ\_TX\_SYNC        |      1        | 16..512   | Hint used to flush the transmission queue
 PFQ\_TX\_HW\_QUEUE   | empty list    |e.g. 0,1,2 | Set the TX HW queue passed to the driver
 PFQ\_TX\_IDX\_THREAD | empty list    |e.g. 0,1,2 | Set the index of the PFQ TX kernel threads (optional)
-PFQ\_LANG\_SRC       |    null       |           | Load the pfq-lang computation from source file
-PFQ\_LANG\_LIT       |    null       |           | Set the pfq-lang computation from the env. variable
+PFQ\_LANG            |    null       |           | Set the pfq-lang computation from the env. variable
 PFQ\_VLAN            | empty list    |           | Set the pfq vlan id filter list for the group
 
 Notes 
