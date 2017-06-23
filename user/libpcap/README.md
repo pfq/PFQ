@@ -72,9 +72,6 @@ e.g. 10G links with short packets.
 
 2. PFQ\_TX\_HW\_QUEUE, PFQ\_TX\_IDX\_THREAD, and PFQ\_VLAN are specified as comma separated list.
 
-3. PFQ\_LANG\_SRC specifies the name of the pfq-lang source code to load, whereas PFQ\_LANG\_LIT
-directly contains the pfq-lang computation.
-
 
 Configuration File
 ------------------
