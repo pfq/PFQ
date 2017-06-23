@@ -19,12 +19,10 @@ Executable pfq-hcounters
                         process,
                         containers,
                         split,
-                        old-time
+                        old-time,
+                        atomic-primops
 
     extra-libraries:    pfq
-    ghc-options:
-        -O2
-        -threaded
-        -rtsopts
+    ghc-options:        -O2 -threaded -rtsopts -with-rtsopts=-N -with-rtsopts=-qa
 
     default-language:   Haskell2010

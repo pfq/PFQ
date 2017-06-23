@@ -1,5 +1,4 @@
 --
---
 --  (C) 2011-16 Nicola Bonelli <nicola@pfq.io>
 --
 --  This program is free software; you can redistribute it and/or modify
@@ -38,6 +37,7 @@ import Control.Exception
 import Data.List.Split
 import Data.Data
 import Data.Maybe
+import Data.Atomics.Counter
 
 import qualified Data.Set as S
 import qualified Data.Map as M
@@ -45,15 +45,7 @@ import qualified Data.Map as M
 import System.Console.CmdArgs
 
 
-data Key = Key Word32 Word32 Word16 Word16
-            deriving (Eq, Show)
-
-
-data State a = State
-               {    sCounter :: MVar a
-               ,    sFlow    :: MVar a
-               ,    sSet     :: S.Set Key
-               }
+data State = State { sCounter :: AtomicCounter }
 
 
 -- Command line options
@@ -118,14 +110,17 @@ main = do
     dumpStat cs t
 
 
-dumpStat :: (RealFrac a) => [MVar a] -> ClockTime -> IO ()
+dumpStat :: [AtomicCounter] -> ClockTime -> IO ()
 dumpStat cs t0 = do
     threadDelay 1000000
     t <- getClockTime
-    cs' <- mapM (`swapMVar` 0) cs
+    cs' <- mapM (\a -> do
+                    x <- readCounter a 
+                    writeCounter a 0 
+                    return x ) cs
     M.void( when ((-1) `elem` cs') exitFailure)
     let delta = diffUSec t t0
-    let rate = (sum cs' * 1000000) / fromIntegral delta
+    let rate = fromIntegral (sum cs' * 1000000) / fromIntegral delta
     putStrLn $ "Total rate pkt/sec: " ++ show (truncate rate :: Integer)
     dumpStat cs t
 
@@ -135,14 +130,13 @@ diffUSec t1 t0 = (tdSec delta * 1000000) + truncate ((fromIntegral(tdPicosec del
                     where delta = diffClockTimes t1 t0
 
 
-runThreads :: (Num a) => Options -> IO [MVar a]
+runThreads :: Options -> IO [AtomicCounter]
 runThreads Options{..} =
     forM thread $ \tb -> do
         let binding = makeBinding tb
-        c <- newMVar 0
-        f <- newMVar 0
-        _ <- forkOn (coreNum binding) (
-                 handle ((\e -> M.void (putStrLn ("[pfq] Exception: " ++ show e) >> swapMVar c (-1))) :: SomeException -> IO ()) $ do
+        c <- newCounter 0
+        _ <- forkOn (coreNum binding) $ 
+                 handle ((\e -> M.void (putStrLn ("[pfq] Exception: " ++ show e))) :: SomeException -> IO ()) $ do
                  hq <- Q.openNoGroup caplen slots caplen 1024
                  Q.withPfq hq $ \q -> do
                      Q.joinGroup q (groupId binding) Q.class_default Q.policy_shared
@@ -154,18 +148,14 @@ runThreads Options{..} =
                              putStrLn $ "[pfq] Gid " ++ show (groupId binding) ++ " is using computation: " ++ (fromJust function)
                              Q.setGroupComputationFromString q (groupId binding) (fromJust function)
                      Q.enable q
-                     M.void (recvLoop q (State c f S.empty))
-                 )
+                     M.void (recvLoop q (State c))
         putStrLn $ "[pfq] " ++ show binding ++ " @core " ++ show (coreNum binding) ++ " started!"
         return c
 
 
-recvLoop :: (Num a) => Q.PfqHandlePtr -> State a -> IO Int
+recvLoop :: Q.PfqHandlePtr -> State -> IO Int
 recvLoop q state = do
     netQueue <- Q.read q 20000
-    case Q.qLen netQueue of
-        0 ->  recvLoop q state
-        _ ->  do
-              modifyMVar_ (sCounter state) $ \c -> return (c + fromIntegral (Q.qLen netQueue))
-              recvLoop q state
+    incrCounter (fromIntegral (Q.qLen netQueue)) (sCounter state)
+    recvLoop q state
 
