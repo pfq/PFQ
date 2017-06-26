@@ -45,7 +45,7 @@ a system with PIE (position independent executables) enabled by default (such as
 
 If it is your case, you have to edit the GHC settings file at:
 
-`usr/local/haskell/ghc-___/lib/ghc-___/settings`
+`/usr/local/haskell/ghc-___/lib/ghc-___/settings`
 
 and change the `compiler supports -no-pie` flag from "NO" to "YES".
 
