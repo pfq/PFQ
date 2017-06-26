@@ -473,7 +473,20 @@ int pfq_fanout(pcap_t *handle, int group, const char *fanout)
 			return PCAP_ERROR;
 		}
 
-	} else {
+	} else
+	if (strstr(fanout, "[{\"funIndex\":0") == fanout) {
+		fprintf(stderr, "[PFQ] loading pfq/json computation for group %d\n", group);
+
+		if (pfq_set_group_computation_from_json( handlep->q
+						       , group
+						       , fanout) < 0) {
+
+			snprintf(handle->errbuf, PCAP_ERRBUF_SIZE,
+				 "[PFQ] error: %s", pfq_error(handlep->q));
+			return PCAP_ERROR;
+		}
+        }
+        else {
 		fprintf(stderr, "[PFQ] loading in-line pfq '%s' for group %d\n", fanout, group);
 		if (pfq_set_group_computation_from_string( handlep->q
 							 , group
