@@ -425,28 +425,17 @@ version = #{const_str PFQ_VERSION_STRING }
 
 
 toPktHdr :: Ptr PktHdr -> IO PktHdr
-toPktHdr hdr = do
-    _sec   <- (`peekByteOff` 0)  hdr
-    _nsec  <- (`peekByteOff` 4)  hdr
-    _capl  <- (`peekByteOff` 8)  hdr
-    _len   <- (`peekByteOff` 10) hdr
-    _ifidx <- (`peekByteOff` 12) hdr
-    _mark  <- (`peekByteOff` 16) hdr
-    _state <- (`peekByteOff` 20) hdr
-    _tci   <- (`peekByteOff` 24) hdr
-    _hwq   <- (`peekByteOff` 26) hdr
-    _com   <- (`peekByteOff` 28) hdr
-    return PktHdr {  hMark     = fromIntegral (_mark :: Word32)
-                  ,  hState    = fromIntegral (_state:: Word32)
-                  ,  hSec      = fromIntegral (_sec  :: Word32)
-                  ,  hNsec     = fromIntegral (_nsec :: Word32)
-                  ,  hIfIndex  = fromIntegral (_ifidx:: CInt)
-                  ,  hLen      = fromIntegral (_len  :: CUShort)
-                  ,  hCapLen   = fromIntegral (_capl :: CUShort)
-                  ,  hTci      = fromIntegral (_tci  :: CUShort)
-                  ,  hHwQueue  = fromIntegral (_hwq  :: CUShort)
-                  ,  hCommit   = fromIntegral (_com  :: Word32)
-                  }
+toPktHdr hdr =
+    PktHdr <$> #{peek struct pfq_pkthdr, tstamp.tv.sec }  hdr
+           <*> #{peek struct pfq_pkthdr, tstamp.tv.nsec}  hdr
+           <*> #{peek struct pfq_pkthdr, caplen}          hdr
+           <*> #{peek struct pfq_pkthdr, len}             hdr
+           <*> #{peek struct pfq_pkthdr, info.ifindex}    hdr
+           <*> #{peek struct pfq_pkthdr, info.data.mark}  hdr
+           <*> #{peek struct pfq_pkthdr, info.data.state} hdr
+           <*> #{peek struct pfq_pkthdr, info.vlan.tci}   hdr
+           <*> #{peek struct pfq_pkthdr, info.queue}      hdr
+           <*> #{peek struct pfq_pkthdr, info.commit}     hdr
 
 -- | The type of the callback function passed to 'dispatch'.
 
@@ -909,17 +898,12 @@ read :: PfqHandlePtr
      -> Int         -- ^ timeout (msec)
      -> IO NetQueue
 read hdl msec =
-    allocaBytes #{size struct pfq_net_queue} $ \queue -> do
-       pfq_read hdl queue (fromIntegral msec) >>= throwPfqIf_ hdl (== -1)
-       _ptr <- ( `peekByteOff` 0)  queue
-       _len <- ( `peekByteOff` sizeOf _ptr) queue
-       _css <- ( `peekByteOff` (sizeOf _ptr + sizeOf _len)) queue
-       _cid <- ( `peekByteOff` (sizeOf _ptr + sizeOf _len + sizeOf _css)) queue
-       return NetQueue { qPtr       = _ptr :: Ptr PktHdr
-                       , qLen       = fromIntegral (_len :: CSize)
-                       , qSlotSize  = fromIntegral (_css :: CSize)
-                       , qIndex     = fromIntegral (_cid :: CUInt)
-                       }
+    allocaBytes #{size struct pfq_net_queue} $ \qptr -> do
+       pfq_read hdl qptr (fromIntegral msec) >>= throwPfqIf_ hdl (== -1)
+       NetQueue <$> #{peek struct pfq_net_queue, queue} qptr
+                <*> fmap fromIntegral (#{peek struct pfq_net_queue, len} qptr       :: IO CSize)
+                <*> fmap fromIntegral (#{peek struct pfq_net_queue, slot_size} qptr :: IO CSize)
+                <*> fmap fromIntegral (#{peek struct pfq_net_queue, index} qptr     :: IO CUInt)
 
 -- |Collect and process packets.
 --
@@ -999,25 +983,15 @@ getGroupStats hdl gid =
 
 makeStats :: Ptr a
           -> IO Statistics
-makeStats p = do
-    _recv <- ( `peekByteOff` 0) p
-    _lost <- ( `peekByteOff` sizeOf(undefined :: CLong)) p
-    _drop <- ( `peekByteOff` (sizeOf (undefined :: CLong) * 2)) p
-    _sent <- ( `peekByteOff` (sizeOf (undefined :: CLong) * 3)) p
-    _disc <- ( `peekByteOff` (sizeOf (undefined :: CLong) * 4)) p
-    _fail <- ( `peekByteOff` (sizeOf (undefined :: CLong) * 5)) p
-    _frwd <- ( `peekByteOff` (sizeOf (undefined :: CLong) * 6)) p
-    _kern <- ( `peekByteOff` (sizeOf (undefined :: CLong) * 7)) p
-    return Statistics
-           { sReceived = fromIntegral (_recv :: CULong)
-           , sLost     = fromIntegral (_lost :: CULong)
-           , sDropped  = fromIntegral (_drop :: CULong)
-           , sSent     = fromIntegral (_sent :: CULong)
-           , sDiscard  = fromIntegral (_disc :: CULong)
-           , sFailure  = fromIntegral (_fail :: CULong)
-           , sForward  = fromIntegral (_frwd :: CULong)
-           , sKernel   = fromIntegral (_kern :: CULong)
-           }
+makeStats p =
+    Statistics <$> fmap fromIntegral (#{peek struct pfq_stats, recv} p :: IO CULong)
+               <*> fmap fromIntegral (#{peek struct pfq_stats, lost} p :: IO CULong)
+               <*> fmap fromIntegral (#{peek struct pfq_stats, drop} p :: IO CULong)
+               <*> fmap fromIntegral (#{peek struct pfq_stats, sent} p :: IO CULong)
+               <*> fmap fromIntegral (#{peek struct pfq_stats, disc} p :: IO CULong)
+               <*> fmap fromIntegral (#{peek struct pfq_stats, fail} p :: IO CULong)
+               <*> fmap fromIntegral (#{peek struct pfq_stats, frwd} p :: IO CULong)
+               <*> fmap fromIntegral (#{peek struct pfq_stats, kern} p :: IO CULong)
 
 -- |Return the set of counters of the given group.
 
