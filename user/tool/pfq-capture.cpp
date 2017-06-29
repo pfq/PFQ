@@ -65,6 +65,7 @@ namespace opt
     bool use_comp  = false;
     bool promisc   = true;
     bool dump      = false;
+    bool verbose   = false;
 
     std::string dumpfile;
 
@@ -388,6 +389,7 @@ void usage(std::string name)
         " -w --write FILE               Write packets to file (pcap)\n"
         " -d --dump                     Dump packets to stdout\n"
         "    --flow                     Enable per-flow counters\n"
+        " -v --verbose                  Verbose mode (e.g. dump flow counters)\n"
         " -s --slot INT                 Set slots\n"
         "    --seconds INT              Terminate after INT seconds\n"
         "    --no-promisc               Disable promiscuous mode (enabled by default)\n"
@@ -488,6 +490,12 @@ try
         if (any_strcmp(argv[i], "-d", "--dump"))
         {
             opt::dump = true;
+            continue;
+        }
+        
+        if (any_strcmp(argv[i], "-v", "--verbose"))
+        {
+            opt::verbose = true;
             continue;
         }
 
@@ -659,6 +667,8 @@ try
                 auto & fmap = ctx->flow_map();
                 for(auto & f : fmap) {
 
+                if (opt::verbose)
+                {
                     std::cout << "    "
                               << static_cast<int>(std::get<4>(f.first)) << "|"
                               << show_ip(std::get<0>(f.first)) << ":"
@@ -667,18 +677,26 @@ try
                               << ntohs(std::get<3>(f.first))   << "\t"
                               << pretty_number<double>(f.second.count) << "pkt/sec - "
                               << pretty_number<double>(f.second.bytes * 8) << "bit/sec - ";
+                }
 
                     for(int i = 0; i < 64; i++) {
                         auto & cnt = f.second.count_dscp[i];
                         auto & byt = f.second.bytes_dscp[i];
                         if (cnt) {
-                            std::cout << std::hex << i << std::dec << ":{ pkt " << cnt << ", " << pretty_number<double>(byt*8) << "bit/sec } ";
+
+                            if (opt::verbose)
+                            {
+                                std::cout << std::hex << i << std::dec << ":{ pkt " << cnt << ", " << pretty_number<double>(byt*8) << "bit/sec } ";
+                            }
                             cnt = 0;
                             byt = 0;
                         }
                     }
 
-                    std::cout << std::endl;
+                    if (opt::verbose)
+                    {
+                        std::cout << std::endl;
+                    }
 
                     f.second.count = 0;
                     f.second.bytes = 0;
