@@ -38,5 +38,6 @@ Library
                  storablevector,
                  unix,
                  yaml,
-                 hint
+                 hint,
+                 atomic-primops
                     
