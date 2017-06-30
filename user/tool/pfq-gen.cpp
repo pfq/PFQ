@@ -138,7 +138,9 @@ namespace opt
     uint16_t src_port;
     uint16_t dst_port;
 
-    uint32_t rand_period = 1;
+    uint32_t rand_src_period = 1;
+    uint32_t rand_dst_period = 1;
+
     uint32_t rand_depth = 32;
     uint32_t rand_flow_depth = 8;
 
@@ -388,24 +390,27 @@ namespace thread
                 m_band->fetch_add(len, std::memory_order_relaxed);
                 m_gros->fetch_add(len+24, std::memory_order_relaxed);
 
-                if ((n & (opt::rand_period-1)) == 0)
+                if ((n & (opt::rand_src_period-1)) == 0)
                 {
                     if (opt::rand_src_ip)
                     {
                         ip->saddr = opt::src_ip | htonl(static_cast<uint32_t>(m_gen()) & rand_mask);
                     }
+                }
+
+                if ((n & (opt::rand_dst_period-1)) == 0)
+                {
                     if (opt::rand_dst_ip)
                     {
                         ip->daddr = opt::dst_ip | htonl(static_cast<uint32_t>(m_gen()) & rand_mask);
                     }
-
-                    if (opt::checksum)
-                    {
-                        ip->check = 0;
-                        ip->check = in_cksum(reinterpret_cast<u_short *>(ip), 20);
-                    }
                 }
 
+                if (opt::checksum)
+                {
+                    ip->check = 0;
+                    ip->check = in_cksum(reinterpret_cast<u_short *>(ip), 20);
+                }
                 n++;
 
                 if (opt::stop.load(std::memory_order_relaxed))
@@ -525,22 +530,26 @@ namespace thread
                 m_band->fetch_add(len, std::memory_order_relaxed);
                 m_gros->fetch_add(len+24, std::memory_order_relaxed);
 
-                if ((n & (opt::rand_period-1)) == 0)
+                if ((n & (opt::rand_src_period-1)) == 0)
                 {
                     if (opt::rand_src_ip)
                     {
                         ip->saddr = opt::src_ip | htonl(static_cast<uint32_t>(m_gen()) & rand_mask);
                     }
+                }
+                
+                if ((n & (opt::rand_dst_period-1)) == 0)
+                {
                     if (opt::rand_dst_ip)
                     {
                         ip->daddr = opt::dst_ip | htonl(static_cast<uint32_t>(m_gen()) & rand_mask);
                     }
+                }
 
-                    if (opt::checksum)
-                    {
-                        ip->check = 0;
-                        ip->check = in_cksum(reinterpret_cast<u_short *>(ip), 20);
-                    }
+                if (opt::checksum)
+                {
+                    ip->check = 0;
+                    ip->check = in_cksum(reinterpret_cast<u_short *>(ip), 20);
                 }
 
                 n++;
@@ -588,31 +597,36 @@ namespace thread
 
                     auto ip = reinterpret_cast<iphdr *>(data + 14);
 
-                    if ((n & (opt::rand_period-1)) == 0)
+                    if ((n & (opt::rand_src_period-1)) == 0)
                     {
                         if (opt::rand_src_ip)
                         {
                             ip->saddr = opt::src_ip | htonl(static_cast<uint32_t>(m_gen()) & rand_mask);
                         }
+                    }
+
+                    if ((n & (opt::rand_dst_period-1)) == 0)
+                    {
                         if (opt::rand_dst_ip)
                         {
                             ip->daddr = opt::dst_ip | htonl(static_cast<uint32_t>(m_gen()) & rand_mask);
                         }
-
-                        if (opt::rand_flow)
-                        {
-                            auto hash = ip->saddr ^ ip->daddr;
-                            auto seed = opt::rand_seed[(hash+l) & rand_flow_mask];
-                            ip->saddr ^= seed;
-                            ip->daddr ^= seed;
-                        }
-
-                        if (opt::checksum)
-                        {
-                            ip->check = 0;
-                            ip->check = in_cksum(reinterpret_cast<u_short *>(ip), 20);
-                        }
                     }
+
+                    if (opt::rand_flow)
+                    {
+                        auto hash = ip->saddr ^ ip->daddr;
+                        auto seed = opt::rand_seed[(hash+l) & rand_flow_mask];
+                        ip->saddr ^= seed;
+                        ip->daddr ^= seed;
+                    }
+
+                    if (opt::checksum)
+                    {
+                        ip->check = 0;
+                        ip->check = in_cksum(reinterpret_cast<u_short *>(ip), 20);
+                    }
+                    
                     if (m_async)
                     {
                         if (!m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(data), plen), opt::copies))
@@ -709,6 +723,8 @@ void usage(std::string name)
         "    --rand-dst-ip              Randomize IP dest addresses\n"
         "    --rand-depth               Depth of randomization (0-32)\n"
         "    --rand-period INT          Randomize every N packets (power of 2)\n"
+        "    --rand-src-period INT      Randomize src addresses every N packets (power of 2)\n"
+        "    --rand-dst-period INT      Randomize dst addresses every N packets (power of 2)\n"
 #ifdef HAVE_PCAP_H
         " -F --rand-flow                Randomize IP addresses per-flow\n"
         "    --rand-flow-depth          Depth of flow-randomization (def. 8)\n"
@@ -905,9 +921,37 @@ try
                 throw std::runtime_error("number missing");
             }
 
-            opt::rand_period = static_cast<uint32_t>(std::atoi(argv[i]));
-            if ((opt::rand_period & (opt::rand_period-1)) != 0)
+            opt::rand_dst_period = opt::rand_src_period = static_cast<uint32_t>(std::atoi(argv[i]));
+            if ((opt::rand_src_period & (opt::rand_src_period-1)) != 0)
                 throw std::runtime_error("rand-period: not a power of 2!");
+
+            continue;
+        }
+        
+        if ( any_strcmp(argv[i], "--rand-src-period") )
+        {
+            if (++i == argc)
+            {
+                throw std::runtime_error("number missing");
+            }
+
+            opt::rand_src_period = static_cast<uint32_t>(std::atoi(argv[i]));
+            if ((opt::rand_src_period & (opt::rand_src_period-1)) != 0)
+                throw std::runtime_error("rand-src-period: not a power of 2!");
+
+            continue;
+        }
+        
+        if ( any_strcmp(argv[i], "--rand-dst-period") )
+        {
+            if (++i == argc)
+            {
+                throw std::runtime_error("number missing");
+            }
+
+            opt::rand_dst_period = static_cast<uint32_t>(std::atoi(argv[i]));
+            if ((opt::rand_dst_period & (opt::rand_dst_period-1)) != 0)
+                throw std::runtime_error("rand-dst-period: not a power of 2!");
 
             continue;
         }
