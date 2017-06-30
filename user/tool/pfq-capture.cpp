@@ -591,7 +591,7 @@ try
     if (pfq::hugepages_mountpoint().empty())
         std::cout << "*** Warning: HugePages not mounted ***" << std::endl;
 
-    unsigned long long sum, flow, old = 0;
+    unsigned long long sum, flows, old = 0;
     pfq_stats sum_stats, old_stats = {0,0,0,0,0,0,0,0};
 
     signal(SIGINT, sighandler);
@@ -613,12 +613,12 @@ try
             continue;
 
         sum = 0;
-        flow = 0;
+        flows = 0;
         sum_stats = {0,0,0,0,0,0,0,0};
 
         std::for_each(thread_ctx.begin(), thread_ctx.end(), [&](const thread::context *c) {
             sum += c->read();
-            flow += c->flow_map().size();
+            flows += c->flow_map().size();
             sum_stats += c->stats();
         });
 
@@ -661,7 +661,7 @@ try
                                         << '.' << std::setfill('0') << std::setw(9) << (std::chrono::duration_cast<std::chrono::nanoseconds>(dur_now).count() % 1000000)
                                         << std::endl;
 
-            std::cout << "flows     : " << flow << std::endl;
+            std::cout << "flows     : " << flows << std::endl;
             for(auto &ctx : thread_ctx) {
 
                 auto & fmap = ctx->flow_map();
