@@ -453,11 +453,11 @@ instance
                                     (s2, n2) = serialize b n1
                                 in (s1 ++ s2, n2)
 
-    serialize (Combinator1 symb p) n = let (s1, n1) = ([FunctionDescr symb [mkArgument p s2] n (-1) ], n+1)
+    serialize (Combinator1 symb p) n = let (s1, n1) = ([FunctionDescr symb [mkArgument p s2, ArgNull, ArgNull, ArgNull, ArgNull, ArgNull, ArgNull, ArgNull] n (-1) ], n+1)
                                            (s2, n2) = serialize p n1
                                        in (s1 ++ s2, n2)
 
-    serialize (Combinator2 symb p1 p2) n = let (s1, n1) = ([FunctionDescr symb [mkArgument p1 s2, mkArgument p2 s3] n (-1) ], n+1)
+    serialize (Combinator2 symb p1 p2) n = let (s1, n1) = ([FunctionDescr symb [mkArgument p1 s2, mkArgument p2 s3, ArgNull, ArgNull, ArgNull, ArgNull, ArgNull, ArgNull] n (-1) ], n+1)
                                                (s2, n2) = serialize p1 n1
                                                (s3, n3) = serialize p2 n2
                                            in (s1 ++ s2 ++ s3, n3)
