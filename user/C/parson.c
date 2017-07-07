@@ -1,6 +1,6 @@
 /*
  Parson ( http://kgabis.github.com/parson/ )
- Copyright (c) 2012 - 2016 Krzysztof Gabis
+ Copyright (c) 2012 - 2017 Krzysztof Gabis
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
@@ -39,10 +39,14 @@
 #include <math.h>
 #include <errno.h>
 
+/* Apparently sscanf is not implemented in some "standard" libraries, so don't use it, if you
+ * don't have to. */
+#define sscanf THINK_TWICE_ABOUT_USING_SSCANF
+
 #define STARTING_CAPACITY         15
 #define ARRAY_MAX_CAPACITY    122880 /* 15*(2^13) */
 #define OBJECT_MAX_CAPACITY      960 /* 15*(2^6)  */
-#define MAX_NESTING               19
+#define MAX_NESTING             2048
 #define DOUBLE_SERIALIZATION_FORMAT "%f"
 
 #define SIZEOF_TOKEN(a)       (sizeof(a) - 1)
@@ -94,7 +98,8 @@ static char * read_file(const char *filename);
 static void   remove_comments(char *string, const char *start_token, const char *end_token);
 static char * parson_strndup(const char *string, size_t n);
 static char * parson_strdup(const char *string);
-static int    is_utf16_hex(const unsigned char *string);
+static int    hex_char_to_int(char c);
+static int    parse_utf16_hex(const char *string, unsigned int *result);
 static int    num_bytes_in_utf8_sequence(unsigned char c);
 static int    verify_utf8_sequence(const unsigned char *string, int *len);
 static int    is_valid_utf8(const char *string, size_t string_len);
@@ -118,7 +123,7 @@ static JSON_Value * json_value_init_string_no_copy(char *string);
 
 /* Parser */
 static JSON_Status  skip_quotes(const char **string);
-static int          parse_utf_16(const char **unprocessed, char **processed);
+static int          parse_utf16(const char **unprocessed, char **processed);
 static char *       process_string(const char *input, size_t len);
 static char *       get_quoted_string(const char **string);
 static JSON_Value * parse_object_value(const char **string, size_t nesting);
@@ -150,8 +155,31 @@ static char * parson_strdup(const char *string) {
     return parson_strndup(string, strlen(string));
 }
 
-static int is_utf16_hex(const unsigned char *s) {
-    return isxdigit(s[0]) && isxdigit(s[1]) && isxdigit(s[2]) && isxdigit(s[3]);
+static int hex_char_to_int(char c) {
+    if (c >= '0' && c <= '9') {
+        return c - '0';
+    } else if (c >= 'a' && c <= 'f') {
+        return c - 'a' + 10;
+    } else if (c >= 'A' && c <= 'F') {
+        return c - 'A' + 10;
+    }
+    return -1;
+}
+
+static int parse_utf16_hex(const char *s, unsigned int *result) {
+    int x1, x2, x3, x4;
+    if (s[0] == '\0' || s[1] == '\0' || s[2] == '\0' || s[3] == '\0') {
+        return 0;
+    }
+    x1 = hex_char_to_int(s[0]);
+    x2 = hex_char_to_int(s[1]);
+    x3 = hex_char_to_int(s[2]);
+    x4 = hex_char_to_int(s[3]);
+    if (x1 == -1 || x2 == -1 || x3 == -1 || x4 == -1) {
+        return 0;
+    }
+    *result = (unsigned int)((x1 << 12) | (x2 << 8) | (x3 << 4) | x4);
+    return 1;
 }
 
 static int num_bytes_in_utf8_sequence(unsigned char c) {
@@ -252,7 +280,7 @@ static char * read_file(const char * filename) {
         fclose(fp);
         return NULL;
     }
-    file_size = (size_t)pos;
+    file_size = pos;
     rewind(fp);
     file_contents = (char*)parson_malloc(sizeof(char) * (file_size + 1));
     if (!file_contents) {
@@ -273,7 +301,7 @@ static char * read_file(const char * filename) {
 
 static void remove_comments(char *string, const char *start_token, const char *end_token) {
     int in_string = 0, escaped = 0;
-    ptrdiff_t i;
+    size_t i;
     char *ptr = NULL, current_char;
     size_t start_token_len = strlen(start_token);
     size_t end_token_len = strlen(end_token);
@@ -288,7 +316,7 @@ static void remove_comments(char *string, const char *start_token, const char *e
         } else if (current_char == '\"' && !escaped) {
             in_string = !in_string;
         } else if (!in_string && strncmp(string, start_token, start_token_len) == 0) {
-            for(i = 0; i < (ptrdiff_t)start_token_len; i++) {
+            for(i = 0; i < start_token_len; i++) {
                 string[i] = ' ';
             }
             string = string + start_token_len;
@@ -296,7 +324,7 @@ static void remove_comments(char *string, const char *start_token, const char *e
             if (!ptr) {
                 return;
             }
-            for (i = 0; i < (ptr - string) + (ptrdiff_t)end_token_len; i++) {
+            for (i = 0; i < (ptr - string) + end_token_len; i++) {
                 string[i] = ' ';
             }
             string = ptr + end_token_len - 1;
@@ -309,7 +337,7 @@ static void remove_comments(char *string, const char *start_token, const char *e
 /* JSON Object */
 static JSON_Object * json_object_init(JSON_Value *wrapping_value) {
     JSON_Object *new_obj = (JSON_Object*)parson_malloc(sizeof(JSON_Object));
-    if (!new_obj) {
+    if (new_obj == NULL) {
         return NULL;
     }
     new_obj->wrapping_value = wrapping_value;
@@ -393,9 +421,10 @@ static JSON_Value * json_object_nget_value(const JSON_Object *object, const char
 }
 
 static void json_object_free(JSON_Object *object) {
-    while(object->count--) {
-        parson_free(object->names[object->count]);
-        json_value_free(object->values[object->count]);
+    size_t i;
+    for (i = 0; i < object->count; i++) {
+        parson_free(object->names[i]);
+        json_value_free(object->values[i]);
     }
     parson_free(object->names);
     parson_free(object->values);
@@ -405,7 +434,7 @@ static void json_object_free(JSON_Object *object) {
 /* JSON Array */
 static JSON_Array * json_array_init(JSON_Value *wrapping_value) {
     JSON_Array *new_array = (JSON_Array*)parson_malloc(sizeof(JSON_Array));
-    if (!new_array) {
+    if (new_array == NULL) {
         return NULL;
     }
     new_array->wrapping_value = wrapping_value;
@@ -450,8 +479,9 @@ static JSON_Status json_array_resize(JSON_Array *array, size_t new_capacity) {
 }
 
 static void json_array_free(JSON_Array *array) {
-    while (array->count--) {
-        json_value_free(array->items[array->count]);
+    size_t i;
+    for (i = 0; i < array->count; i++) {
+        json_value_free(array->items[i]);
     }
     parson_free(array->items);
     parson_free(array);
@@ -490,37 +520,40 @@ static JSON_Status skip_quotes(const char **string) {
     return JSONSuccess;
 }
 
-static int parse_utf_16(const char **unprocessed, char **processed) {
+static int parse_utf16(const char **unprocessed, char **processed) {
     unsigned int cp, lead, trail;
+    int parse_succeeded = 0;
     char *processed_ptr = *processed;
     const char *unprocessed_ptr = *unprocessed;
     unprocessed_ptr++; /* skips u */
-    if (!is_utf16_hex((const unsigned char*)unprocessed_ptr) || sscanf(unprocessed_ptr, "%4x", &cp) == EOF) {
+    parse_succeeded = parse_utf16_hex(unprocessed_ptr, &cp);
+    if (!parse_succeeded) {
         return JSONFailure;
     }
     if (cp < 0x80) {
         *processed_ptr = (char)cp; /* 0xxxxxxx */
     } else if (cp < 0x800) {
-        *processed_ptr++ = (char)(((cp >> 6) & 0x1F) | 0xC0); /* 110xxxxx */
-        *processed_ptr   = (char)(((cp     ) & 0x3F) | 0x80); /* 10xxxxxx */
+        *processed_ptr++ = ((cp >> 6) & 0x1F) | 0xC0; /* 110xxxxx */
+        *processed_ptr   = ((cp     ) & 0x3F) | 0x80; /* 10xxxxxx */
     } else if (cp < 0xD800 || cp > 0xDFFF) {
-        *processed_ptr++ = (char)(((cp >> 12) & 0x0F) | 0xE0); /* 1110xxxx */
-        *processed_ptr++ = (char)(((cp >> 6)  & 0x3F) | 0x80); /* 10xxxxxx */
-        *processed_ptr   = (char)(((cp     )  & 0x3F) | 0x80); /* 10xxxxxx */
+        *processed_ptr++ = ((cp >> 12) & 0x0F) | 0xE0; /* 1110xxxx */
+        *processed_ptr++ = ((cp >> 6)  & 0x3F) | 0x80; /* 10xxxxxx */
+        *processed_ptr   = ((cp     )  & 0x3F) | 0x80; /* 10xxxxxx */
     } else if (cp >= 0xD800 && cp <= 0xDBFF) { /* lead surrogate (0xD800..0xDBFF) */
         lead = cp;
         unprocessed_ptr += 4; /* should always be within the buffer, otherwise previous sscanf would fail */
-        if (*unprocessed_ptr++ != '\\' || *unprocessed_ptr++ != 'u' || /* starts with \u? */
-            !is_utf16_hex((const unsigned char*)unprocessed_ptr)    ||
-            sscanf(unprocessed_ptr, "%4x", &trail) == EOF           ||
-            trail < 0xDC00 || trail > 0xDFFF) { /* valid trail surrogate? (0xDC00..0xDFFF) */
-                return JSONFailure;
+        if (*unprocessed_ptr++ != '\\' || *unprocessed_ptr++ != 'u') {
+            return JSONFailure;
+        }
+        parse_succeeded = parse_utf16_hex(unprocessed_ptr, &trail);
+        if (!parse_succeeded || trail < 0xDC00 || trail > 0xDFFF) { /* valid trail surrogate? (0xDC00..0xDFFF) */
+            return JSONFailure;
         }
         cp = ((((lead-0xD800)&0x3FF)<<10)|((trail-0xDC00)&0x3FF))+0x010000;
-        *processed_ptr++ = (char)(((cp >> 18) & 0x07) | 0xF0); /* 11110xxx */
-        *processed_ptr++ = (char)(((cp >> 12) & 0x3F) | 0x80); /* 10xxxxxx */
-        *processed_ptr++ = (char)(((cp >> 6)  & 0x3F) | 0x80); /* 10xxxxxx */
-        *processed_ptr   = (char)(((cp     )  & 0x3F) | 0x80); /* 10xxxxxx */
+        *processed_ptr++ = (((cp >> 18) & 0x07) | 0xF0); /* 11110xxx */
+        *processed_ptr++ = (((cp >> 12) & 0x3F) | 0x80); /* 10xxxxxx */
+        *processed_ptr++ = (((cp >> 6)  & 0x3F) | 0x80); /* 10xxxxxx */
+        *processed_ptr   = (((cp     )  & 0x3F) | 0x80); /* 10xxxxxx */
     } else { /* trail surrogate before lead surrogate */
         return JSONFailure;
     }
@@ -537,9 +570,12 @@ static char* process_string(const char *input, size_t len) {
     const char *input_ptr = input;
     size_t initial_size = (len + 1) * sizeof(char);
     size_t final_size = 0;
-    char *output = (char*)parson_malloc(initial_size);
-    char *output_ptr = output;
-    char *resized_output = NULL;
+    char *output = NULL, *output_ptr = NULL, *resized_output = NULL;
+    output = (char*)parson_malloc(initial_size);
+    if (output == NULL) {
+        goto error;
+    }
+    output_ptr = output;
     while ((*input_ptr != '\0') && (size_t)(input_ptr - input) < len) {
         if (*input_ptr == '\\') {
             input_ptr++;
@@ -553,7 +589,7 @@ static char* process_string(const char *input, size_t len) {
                 case 'r':  *output_ptr = '\r'; break;
                 case 't':  *output_ptr = '\t'; break;
                 case 'u':
-                    if (parse_utf_16(&input_ptr, &output_ptr) == JSONFailure) {
+                    if (parse_utf16(&input_ptr, &output_ptr) == JSONFailure) {
                         goto error;
                     }
                     break;
@@ -593,7 +629,7 @@ static char * get_quoted_string(const char **string) {
     if (status != JSONSuccess) {
         return NULL;
     }
-    string_len = (size_t)(*string - string_start - 2); /* length without quotes */
+    string_len = *string - string_start - 2; /* length without quotes */
     return process_string(string_start + 1, string_len);
 }
 
@@ -649,9 +685,9 @@ static JSON_Value * parse_object_value(const char **string, size_t nesting) {
             json_value_free(output_value);
             return NULL;
         }
-        if(json_object_add(output_object, new_key, new_value) == JSONFailure) {
+        if (json_object_add(output_object, new_key, new_value) == JSONFailure) {
             parson_free(new_key);
-            parson_free(new_value);
+            json_value_free(new_value);
             json_value_free(output_value);
             return NULL;
         }
@@ -687,12 +723,12 @@ static JSON_Value * parse_array_value(const char **string, size_t nesting) {
     }
     while (**string != '\0') {
         new_array_value = parse_value(string, nesting);
-        if (!new_array_value) {
+        if (new_array_value == NULL) {
             json_value_free(output_value);
             return NULL;
         }
         if (json_array_add(output_array, new_array_value) == JSONFailure) {
-            parson_free(new_array_value);
+            json_value_free(new_array_value);
             json_value_free(output_value);
             return NULL;
         }
@@ -742,15 +778,14 @@ static JSON_Value * parse_boolean_value(const char **string) {
 
 static JSON_Value * parse_number_value(const char **string) {
     char *end;
-    double number = strtod(*string, &end);
-    JSON_Value *output_value;
-    if (is_decimal(*string, (size_t)(end - *string))) {
-    *string = end;
-        output_value = json_value_init_number(number);
-    } else {
-        output_value = NULL;
+    double number = 0;
+    errno = 0;
+    number = strtod(*string, &end);
+    if (errno || !is_decimal(*string, end - *string)) {
+        return NULL;
     }
-    return output_value;
+    *string = end;
+    return json_value_init_number(number);
 }
 
 static JSON_Value * parse_null_value(const char **string) {
@@ -1077,7 +1112,7 @@ JSON_Value * json_object_dotget_value(const JSON_Object *object, const char *nam
     if (!dot_position) {
         return json_object_get_value(object, name);
     }
-    object = json_value_get_object(json_object_nget_value(object, name, (size_t)(dot_position - name)));
+    object = json_value_get_object(json_object_nget_value(object, name, dot_position - name));
     return json_object_dotget_value(object, dot_position + 1);
 }
 
@@ -1212,9 +1247,7 @@ void json_value_free(JSON_Value *value) {
             json_object_free(value->value.object);
             break;
         case JSONString:
-            if (value->value.string) {
             parson_free(value->value.string);
-            }
             break;
         case JSONArray:
             json_array_free(value->value.array);
@@ -1705,7 +1738,7 @@ JSON_Status json_object_dotset_value(JSON_Object *object, const char *name, JSON
     if (dot_pos == NULL) {
         return json_object_set_value(object, name, value);
     } else {
-        current_name = parson_strndup(name, (size_t)(dot_pos - name));
+        current_name = parson_strndup(name, dot_pos - name);
         temp_obj = json_object_get_object(object, current_name);
         if (temp_obj == NULL) {
             new_value = json_value_init_object();
@@ -1801,13 +1834,12 @@ JSON_Status json_object_dotremove(JSON_Object *object, const char *name) {
     if (dot_pos == NULL) {
         return json_object_remove(object, name);
     } else {
-        current_name = parson_strndup(name, (size_t)(dot_pos - name));
+        current_name = parson_strndup(name, dot_pos - name);
         temp_obj = json_object_get_object(object, current_name);
+        parson_free(current_name);
         if (temp_obj == NULL) {
-            parson_free(current_name);
             return JSONFailure;
         }
-        parson_free(current_name);
         return json_object_dotremove(temp_obj, dot_pos + 1);
     }
 }
