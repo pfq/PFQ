@@ -857,8 +857,7 @@ pfq_set_group_computation_from_json(pfq_t *q, int gid, const char *input)
 		prog->fun[n].symbol = json_object_get_string   (fun, "funSymbol");
                 prog->fun[n].next = (int)json_object_get_number(fun, "funLink");
 
-		args   = json_object_get_array(fun, "funArgs");
-
+		args = json_object_get_array(fun, "funArgs");
 		if (!args) {
 			json_value_free(root);
 			return Q_ERROR(q, "PFQ: computation: JSON funArgs missing!");
@@ -1326,34 +1325,43 @@ pfq_set_group_computation_from_string(pfq_t *q, int gid, const char *comp)
 int
 pfq_set_group_computation_from_file(pfq_t *q, int gid, const char *filepath)
 {
+	char buffer[1024],
+	     *comout;
+	size_t chread,
+    	       omalloc = 1024,
+    	       olen = 0;
 	FILE *fp;
-	char cmd[1024], *page = NULL;
-	size_t size = 0;
 	int ret;
 
-	if (snprintf(cmd, 1024, "~/.cabal/bin/pfq-lang --json %s", filepath) < 0)
+	if (snprintf(buffer, 1024, "~/.cabal/bin/pfq-lang --json %s", filepath) < 0) {
 		return Q_ERROR(q, "PFQ: set_group_computation_from_file: snprintf");
-
-	fp = popen(cmd, "r");
-	if (fp == NULL)
-		return Q_ERROR(q, "PFQ: set_group_computation_from_file: popen");
-
-	while(!feof(fp)) {
-		if (fgets(cmd, 1024, fp) != NULL) {
-			if (page == NULL) {
-				page = (char *)malloc(1024);
-				page[0] = '\0';
-			}
-			else {
-				page = realloc(page, size + 1024);
-			}
-
-			strcat(page+size, cmd);
-		}
 	}
 
-	ret = pfq_set_group_computation_from_json(q, gid, page);
-	free(page);
+	fp = popen(buffer, "r");
+	if (fp == NULL) {
+		return Q_ERROR(q, "PFQ: set_group_computation_from_file: popen");
+	}
+
+    	comout = malloc(omalloc);
+        if (!comout) {
+		return Q_ERROR(q, "PFQ: set_group_computation_from_file: malloc");
+	}
+
+	while ((chread = fread(buffer, 1, sizeof(buffer), fp)) != 0) {
+	    if (olen + chread >= omalloc) {
+	        omalloc *= 2;
+	        comout = realloc(comout, omalloc);
+	    }
+	    memmove(comout + olen, buffer, chread);
+	    olen += chread;
+	}
+
+	comout[olen] = '\0';
+
+	ret = pfq_set_group_computation_from_json(q, gid, comout);
+
+	free(comout);
+	pclose(fp);
         return ret;
 }
 
