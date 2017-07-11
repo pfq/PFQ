@@ -190,7 +190,7 @@ udp_source(arguments_t args, struct qbuff * buff)
 	if (ip == NULL)
 		return NOTHING;
 
-	if (ip->protocol != IPPROTO_TCP)
+	if (ip->protocol != IPPROTO_UDP)
 		return NOTHING;
 
 	udp = qbuff_ip_header_pointer(buff, (ip->ihl<<2), sizeof(_udp), &_udp);
@@ -214,7 +214,7 @@ udp_dest(arguments_t args, struct qbuff * buff)
 	if (ip == NULL)
 		return NOTHING;
 
-	if (ip->protocol != IPPROTO_TCP)
+	if (ip->protocol != IPPROTO_UDP)
 		return NOTHING;
 
 	udp = qbuff_ip_header_pointer(buff, (ip->ihl<<2), sizeof(_udp), &_udp);
@@ -237,7 +237,7 @@ udp_len(arguments_t args, struct qbuff * buff)
 	if (ip == NULL)
 		return NOTHING;
 
-	if (ip->protocol != IPPROTO_TCP)
+	if (ip->protocol != IPPROTO_UDP)
 		return NOTHING;
 
 	udp = qbuff_ip_header_pointer(buff, (ip->ihl<<2), sizeof(_udp), &_udp);
