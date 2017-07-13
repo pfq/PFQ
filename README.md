@@ -105,6 +105,8 @@ Giuseppe Sucameli <brush.tyler@gmail.com>
 
 Sergio Borghese <s.borghese@netresults.it>
 
+Fabio Del Vigna <fabio.delvigna@larthia.com>
+
 
 HomePages
 ---------
