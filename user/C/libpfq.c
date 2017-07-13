@@ -45,6 +45,7 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <poll.h>
+#include <strings.h>
 
 #include <linux/if_ether.h>
 #include <linux/pf_q.h>
@@ -52,7 +53,7 @@
 #include <pfq/pfq.h>
 #include <pfq/pfq-int.h>
 
-#include "parson.h"
+#include "cJSON.h"
 
 
 /* macros */
@@ -809,11 +810,11 @@ pfq_set_group_computation(pfq_t *q, int gid, struct pfq_lang_computation_descr c
 	new;					\
 })
 
-#define PFQ_ALLOCA_N(type, n, value_idx) ({     \
-	type * new = alloca(sizeof(type) * n);  \
-	size_t idx;                             \
-	for(idx = 0; idx < n; idx++)		\
-		new[idx] = value_idx;		\
+#define PFQ_ALLOCA_N(type, n, get_value_idx) ({ \
+	type * new = alloca(sizeof(type) * (size_t)n);  \
+	int Idx;                                \
+	for(Idx = 0; Idx < n; Idx++)		\
+		new[Idx] = get_value_idx;	\
         (void *)new;				\
 })
 
@@ -825,480 +826,621 @@ struct CIDR
 };
 
 
+enum pfl_type
+{
+        PFLT_INT
+    ,   PFLT_INT8
+    ,   PFLT_INT16
+    ,   PFLT_INT32
+    ,   PFLT_INT64
+    ,   PFLT_WORD
+    ,   PFLT_WORD8
+    ,   PFLT_WORD16
+    ,   PFLT_WORD32
+    ,   PFLT_WORD64
+    ,   PFLT_FUN
+    ,   PFLT_STRING
+    ,   PFLT_IPv4
+    ,   PFLT_CIDR
+    ,   PFLT_INTs
+    ,   PFLT_INT8s
+    ,   PFLT_INT16s
+    ,   PFLT_INT32s
+    ,   PFLT_INT64s
+    ,   PFLT_WORDs
+    ,   PFLT_WORD8s
+    ,   PFLT_WORD16s
+    ,   PFLT_WORD32s
+    ,   PFLT_WORD64s
+    ,   PFLT_STRINGs
+    ,   PFLT_IPv4s
+    ,   PFLT_CIDRs
+    ,   PFLT_ERROR
+};
+
+
+static
+enum pfl_type pfq_get_pfl_type(const char *type)
+{
+        if (strcasecmp(type, "int"   ) == 0) return PFLT_INT;
+        if (strcasecmp(type, "int8"  ) == 0) return PFLT_INT8;
+        if (strcasecmp(type, "int16" ) == 0) return PFLT_INT16;
+        if (strcasecmp(type, "int32" ) == 0) return PFLT_INT32;
+        if (strcasecmp(type, "int64" ) == 0) return PFLT_INT64;
+        if (strcasecmp(type, "word"  ) == 0) return PFLT_WORD;
+        if (strcasecmp(type, "word8" ) == 0) return PFLT_WORD8;
+        if (strcasecmp(type, "word16") == 0) return PFLT_WORD16;
+        if (strcasecmp(type, "word32") == 0) return PFLT_WORD32;
+        if (strcasecmp(type, "word64") == 0) return PFLT_WORD64;
+        if (strcasecmp(type, "fun"   ) == 0) return PFLT_FUN;
+        if (strcasecmp(type, "string") == 0) return PFLT_STRING;
+        if (strcasecmp(type, "ipv4"  ) == 0) return PFLT_IPv4;
+        if (strcasecmp(type, "cidr"  ) == 0) return PFLT_CIDR;
+
+        if (strcasecmp(type, "[int]"   ) == 0) return PFLT_INTs;
+        if (strcasecmp(type, "[int8]"  ) == 0) return PFLT_INT8s;
+        if (strcasecmp(type, "[int16]" ) == 0) return PFLT_INT16s;
+        if (strcasecmp(type, "[int32]" ) == 0) return PFLT_INT32s;
+        if (strcasecmp(type, "[int64]" ) == 0) return PFLT_INT64s;
+        if (strcasecmp(type, "[word]"  ) == 0) return PFLT_WORDs;
+        if (strcasecmp(type, "[word8]" ) == 0) return PFLT_WORD8s;
+        if (strcasecmp(type, "[word16]") == 0) return PFLT_WORD16s;
+        if (strcasecmp(type, "[word32]") == 0) return PFLT_WORD32s;
+        if (strcasecmp(type, "[word64]") == 0) return PFLT_WORD64s;
+        if (strcasecmp(type, "[string]") == 0) return PFLT_STRINGs;
+        if (strcasecmp(type, "[ipv4]"  ) == 0) return PFLT_IPv4s;
+        if (strcasecmp(type, "[cidr]"  ) == 0) return PFLT_CIDRs;
+
+        return PFLT_ERROR;
+}
+
+
 int
 pfq_set_group_computation_from_json(pfq_t *q, int gid, const char *input)
 {
-	JSON_Value * root = json_parse_string(input);
-	JSON_Array * funs;
 	struct pfq_lang_computation_descr *prog;
-	size_t n;
+        int n, nfuns;
 
-	if (json_value_get_type(root) != JSONArray) {
-		json_value_free(root);
-		return Q_ERROR(q, "PFQ: computation: JSON parse error (JSONArray)");
-	}
+        cJSON * root = cJSON_Parse(input);
+        if (!root) {
+                cJSON_Delete(root);
+	        return Q_ERROR(q, "PFQ: computation: JSON parse error (cJSON_Parse)");
+        }
 
-	funs = json_value_get_array(root);
-	prog = alloca(sizeof(size_t) * 2 + sizeof(struct pfq_lang_functional_descr) * json_array_get_count(funs));
-        if (!prog) {
-		json_value_free(root);
-		return Q_ERROR(q, "PFQ: computation: JSON alloca!");
-	}
+	nfuns = cJSON_GetArraySize(root);
+
+	prog = alloca(sizeof(size_t) * 2 + sizeof(struct pfq_lang_functional_descr) * (size_t)nfuns);
+
+        memset(prog, 0, sizeof(size_t) * 2 + sizeof(struct pfq_lang_functional_descr) * (size_t)nfuns);
 
 	prog->entry_point = 0;
-	prog->size = json_array_get_count(funs);
+	prog->size = (size_t)nfuns;
 
-	for(n = 0; n < json_array_get_count(funs); ++n)
-	{
-		JSON_Object *fun = json_array_get_object(funs, n);
-		JSON_Array  *args;
-		size_t i;
+        for (n = 0; n < nfuns; ++n)
+        {
+                cJSON *fun, *symbol, *link, *args;
+                int i, nargs = 0;
 
-		prog->fun[n].symbol = json_object_get_string   (fun, "funSymbol");
-                prog->fun[n].next = (int)json_object_get_number(fun, "funLink");
+                fun = cJSON_GetArrayItem(root, n);
 
-		args = json_object_get_array(fun, "funArgs");
-		if (!args) {
-			json_value_free(root);
-			return Q_ERROR(q, "PFQ: computation: JSON funArgs missing!");
-		}
+                symbol = cJSON_GetObjectItemCaseSensitive(fun, "funSymbol");
+                if (!cJSON_IsString(symbol))
+                {
+                        cJSON_Delete(root);
+	                return Q_ERROR(q, "PFQ: computation: JSON parse error (cJSON_GetObject: funSymbol)!");
+                }
 
-		/* parse the list of arguments */
+                link = cJSON_GetObjectItemCaseSensitive(fun, "funLink");
+                if (!cJSON_IsNumber(link))
+                {
+                        cJSON_Delete(root);
+	                return Q_ERROR(q, "PFQ: computation: JSON parse error (cJSON_GetObject: funLink)!");
+                }
 
-		for(i = 0; i < json_array_get_count(args); ++i)
-		{
-			JSON_Object *arg = json_array_get_object(args, i);
-			const char *type;
-			type = json_object_get_string(arg, "argType");
-			if (!type) {
-				json_value_free(root);
-				return Q_ERROR(q, "PFQ: computation: JSON argType missing!");
-			}
+                args = cJSON_GetObjectItemCaseSensitive(fun, "funArgs");
+                if (!cJSON_IsArray(args))
+                {
+                        cJSON_Delete(root);
+	                return Q_ERROR(q, "PFQ: computation: JSON parse error (cJSON_GetObject: funArgs)!");
+                }
 
-			if (strcmp(type, "Int") == 0)
-			{
-				JSON_Value * value = json_object_get_value(arg, "argValue");
-				if (!value) {
-					json_value_free(root);
-					return Q_ERROR(q, "PFQ: computation: JSON argValue missing!");
-				}
+                for(i = 0; i < cJSON_GetArraySize(args); ++i)
+                {
+                        cJSON * arg = cJSON_GetArrayItem(args, i);
+                        if (!cJSON_IsNull(arg))
+                                nargs++;
+                }
 
-				prog->fun[n].arg[i].addr  = PFQ_ALLOCA(int, (int)json_value_get_number(value));
-				prog->fun[n].arg[i].size  = sizeof(int);
-				prog->fun[n].arg[i].nelem = -1;
-			}
-			else if (strcmp(type, "Int64") == 0)
-			{
-				JSON_Value * value = json_object_get_value(arg, "argValue");
-				if (!value) {
-					json_value_free(root);
-					return Q_ERROR(q, "PFQ: computation: JSON argValue missing!");
-				}
+	        prog->fun[n].symbol = symbol->valuestring;
+                prog->fun[n].next = (int)link->valuedouble;
 
-				prog->fun[n].arg[i].addr  = PFQ_ALLOCA(int64_t, (int64_t)json_value_get_number(value));
-				prog->fun[n].arg[i].size  = sizeof(int64_t);
-				prog->fun[n].arg[i].nelem = -1;
-			}
-			else if (strcmp(type, "Int32") == 0)
-			{
-				JSON_Value * value = json_object_get_value(arg, "argValue");
-				if (!value) {
-					json_value_free(root);
-					return Q_ERROR(q, "PFQ: computation: JSON argValue missing!");
-				}
+                // parse arguments...
+                //
 
-				prog->fun[n].arg[i].addr  = PFQ_ALLOCA(int32_t, (int32_t)json_value_get_number(value));
-				prog->fun[n].arg[i].size  = sizeof(int32_t);
-				prog->fun[n].arg[i].nelem = -1;
-			}
-			else if (strcmp(type, "Int16") == 0)
-			{
-				JSON_Value * value = json_object_get_value(arg, "argValue");
-				if (!value) {
-					json_value_free(root);
-					return Q_ERROR(q, "PFQ: computation: JSON argValue missing!");
-				}
+	        for(i = 0; i < (int)min((size_t)nargs, sizeof(prog->fun[n].arg)/sizeof(struct pfq_lang_functional_arg_descr)); ++i)
+                {
+                        cJSON * arg = cJSON_GetArrayItem(args, i);
+                        cJSON * type;
 
-				prog->fun[n].arg[i].addr  = PFQ_ALLOCA(int16_t, (int16_t)json_value_get_number(value));
-				prog->fun[n].arg[i].size  = sizeof(int16_t);
-				prog->fun[n].arg[i].nelem = -1;
-			}
-			else if (strcmp(type, "Int8") == 0)
-			{
-				JSON_Value * value = json_object_get_value(arg, "argValue");
-				if (!value) {
-					json_value_free(root);
-					return Q_ERROR(q, "PFQ: computation: JSON argValue missing!");
-				}
+                        if (!cJSON_IsObject(arg))
+                        {
+                                cJSON_Delete(root);
+	                        return Q_ERROR(q, "PFQ: computation: JSON parse error (cJSON_GetObject: arg)!");
+                        }
 
-				prog->fun[n].arg[i].addr  = PFQ_ALLOCA(int8_t, (int8_t)json_value_get_number(value));
-				prog->fun[n].arg[i].size  = sizeof(int8_t);
-				prog->fun[n].arg[i].nelem = -1;
-			}
-			else if (strcmp(type, "Word64") == 0)
-			{
-				JSON_Value * value = json_object_get_value(arg, "argValue");
-				if (!value) {
-					json_value_free(root);
-					return Q_ERROR(q, "PFQ: computation: JSON argValue missing!");
-				}
+                        type = cJSON_GetObjectItemCaseSensitive(arg, "argType");
+                        if (!cJSON_IsString(type))
+                        {
+                                cJSON_Delete(root);
+	                        return Q_ERROR(q, "PFQ: computation: JSON parse error (cJSON_GetObject: argType)!");
+                        }
 
-				prog->fun[n].arg[i].addr  = PFQ_ALLOCA(uint64_t, (uint64_t)json_value_get_number(value));
-				prog->fun[n].arg[i].size  = sizeof(uint64_t);
-				prog->fun[n].arg[i].nelem = -1;
-			}
-			else if (strcmp(type, "Word32") == 0)
-			{
-				JSON_Value * value = json_object_get_value(arg, "argValue");
-				if (!value) {
-					json_value_free(root);
-					return Q_ERROR(q, "PFQ: computation: JSON argValue missing!");
-				}
+                        switch(pfq_get_pfl_type(type->valuestring))
+                        {
+                        case PFLT_INT:
+                        {
+                                cJSON * val = cJSON_GetObjectItemCaseSensitive(arg, "argValue");
+                                if (!cJSON_IsNumber(val))
+                                {
+                                        cJSON_Delete(root);
+	                                return Q_ERROR(q, "PFQ: computation: JSON parse error (Int: argValue)!");
+                                }
 
-				prog->fun[n].arg[i].addr  = PFQ_ALLOCA(uint32_t, (uint32_t)json_value_get_number(value));
-				prog->fun[n].arg[i].size  = sizeof(uint32_t);
-				prog->fun[n].arg[i].nelem = -1;
-			}
-			else if (strcmp(type, "Word16") == 0)
-			{
-				JSON_Value * value = json_object_get_value(arg, "argValue");
-				if (!value) {
-					json_value_free(root);
-					return Q_ERROR(q, "PFQ: computation: JSON argValue missing!");
-				}
+	                        prog->fun[n].arg[i].addr  = PFQ_ALLOCA(int, (int)val->valuedouble);
+	                        prog->fun[n].arg[i].size  = sizeof(int);
+	                        prog->fun[n].arg[i].nelem = -1;
 
-				prog->fun[n].arg[i].addr  = PFQ_ALLOCA(uint16_t, (uint16_t)json_value_get_number(value));
-				prog->fun[n].arg[i].size  = sizeof(uint16_t);
-				prog->fun[n].arg[i].nelem = -1;
-			}
-			else if (strcmp(type, "Word8") == 0)
-			{
-				JSON_Value * value = json_object_get_value(arg, "argValue");
-				if (!value) {
-					json_value_free(root);
-					return Q_ERROR(q, "PFQ: computation: JSON argValue missing!");
-				}
+	                } break;
+                        case PFLT_INT8:
+                        {
+                                cJSON * val = cJSON_GetObjectItemCaseSensitive(arg, "argValue");
+                                if (!cJSON_IsNumber(val))
+                                {
+                                        cJSON_Delete(root);
+	                                return Q_ERROR(q, "PFQ: computation: JSON parse error (Int8: argValue)!");
+                                }
 
-				prog->fun[n].arg[i].addr  = PFQ_ALLOCA(uint8_t, (uint8_t)json_value_get_number(value));
-				prog->fun[n].arg[i].size  = sizeof(uint8_t);
-				prog->fun[n].arg[i].nelem = -1;
-			}
-			else if (strcmp(type, "Fun") == 0)
-			{
-				JSON_Value * value = json_object_get_value(arg, "argValue");
-				if (!value) {
-					json_value_free(root);
-					return Q_ERROR(q, "PFQ: computation: JSON argValue missing!");
-				}
+	                        prog->fun[n].arg[i].addr  = PFQ_ALLOCA(int8_t, (int8_t)val->valuedouble);
+	                        prog->fun[n].arg[i].size  = sizeof(int8_t);
+	                        prog->fun[n].arg[i].nelem = -1;
 
-				prog->fun[n].arg[i].addr  = NULL;
-				prog->fun[n].arg[i].size  = (size_t)json_value_get_number(value);
-				prog->fun[n].arg[i].nelem = -1;
-			}
-			else if (strcmp(type, "String") == 0)
-			{
-				JSON_Value * value = json_object_get_value(arg, "argValue");
-				if (!value) {
-					json_value_free(root);
-					return Q_ERROR(q, "PFQ: computation: JSON argValue missing!");
-				}
+	                } break;
+                        case PFLT_INT16:
+                        {
+                                cJSON * val = cJSON_GetObjectItemCaseSensitive(arg, "argValue");
+                                if (!cJSON_IsNumber(val))
+                                {
+                                        cJSON_Delete(root);
+	                                return Q_ERROR(q, "PFQ: computation: JSON parse error (Int16: argValue)!");
+                                }
 
-				prog->fun[n].arg[i].addr  = json_value_get_string(value);
-				prog->fun[n].arg[i].size  = 0;
-				prog->fun[n].arg[i].nelem = -1;
-			}
-			else if (strcmp(type, "IPv4") == 0)
-			{
-				JSON_Object * obj = json_object_get_object(arg, "argValue");
-				JSON_Value  * value;
-				if (!obj) {
-					json_value_free(root);
-					return Q_ERROR(q, "PFQ: computation: JSON argValue missing!");
-				}
+	                        prog->fun[n].arg[i].addr  = PFQ_ALLOCA(int16_t, (int16_t)val->valuedouble);
+	                        prog->fun[n].arg[i].size  = sizeof(int16_t);
+	                        prog->fun[n].arg[i].nelem = -1;
 
-				value = json_object_get_value(obj, "getHostAddress");
-                                if (!value) {
-					json_value_free(root);
-					return Q_ERROR(q, "PFQ: computation: JSON IPv4 internal error!");
-				}
+	                } break;
+                        case PFLT_INT32:
+                        {
+                                cJSON * val = cJSON_GetObjectItemCaseSensitive(arg, "argValue");
+                                if (!cJSON_IsNumber(val))
+                                {
+                                        cJSON_Delete(root);
+	                                return Q_ERROR(q, "PFQ: computation: JSON parse error (Int32: argValue)!");
+                                }
 
-				prog->fun[n].arg[i].addr  = PFQ_ALLOCA(uint32_t, (uint32_t)json_value_get_number(value));
-				prog->fun[n].arg[i].size  = sizeof(uint32_t);
-				prog->fun[n].arg[i].nelem = -1;
-			}
-			else if (strcmp(type, "CIDR") == 0)
-			{
-				JSON_Object *obj_addr, * obj = json_object_get_object(arg, "argValue");
-				JSON_Array  * sub_array;
-				JSON_Value  * value_addr, * value_prefix;
+	                        prog->fun[n].arg[i].addr  = PFQ_ALLOCA(int32_t, (int32_t)val->valuedouble);
+	                        prog->fun[n].arg[i].size  = sizeof(int32_t);
+	                        prog->fun[n].arg[i].nelem = -1;
 
-				if (!obj) {
-					json_value_free(root);
-					return Q_ERROR(q, "PFQ: computation: JSON argValue missing!");
-				}
+	                } break;
+                        case PFLT_INT64:
+                        {
+                                cJSON * val = cJSON_GetObjectItemCaseSensitive(arg, "argValue");
+                                if (!cJSON_IsNumber(val))
+                                {
+                                        cJSON_Delete(root);
+	                                return Q_ERROR(q, "PFQ: computation: JSON parse error (Int64: argValue)!");
+                                }
 
-				sub_array = json_object_get_array(obj, "getNetworkPair");
-				if (!sub_array) {
-					json_value_free(root);
-					return Q_ERROR(q, "PFQ: computation: JSON getNetworkPair missing!");
-				}
+	                        prog->fun[n].arg[i].addr  = PFQ_ALLOCA(int64_t, (int64_t)val->valuedouble);
+	                        prog->fun[n].arg[i].size  = sizeof(int64_t);
+	                        prog->fun[n].arg[i].nelem = -1;
 
-				obj_addr = json_array_get_object(sub_array, 0);
-				if (!obj_addr) {
-					json_value_free(root);
-					return Q_ERROR(q, "PFQ: computation: JSON getNetworkPair: net-address missing!");
-				}
+	                } break;
+                        case PFLT_WORD8:
+                        {
+                                cJSON * val = cJSON_GetObjectItemCaseSensitive(arg, "argValue");
+                                if (!cJSON_IsNumber(val))
+                                {
+                                        cJSON_Delete(root);
+	                                return Q_ERROR(q, "PFQ: computation: JSON parse error (Word8: argValue)!");
+                                }
 
-				value_addr = json_object_get_value(obj_addr, "getHostAddress");
-				if (!value_addr) {
-					json_value_free(root);
-					return Q_ERROR(q, "PFQ: computation: JSON getHostAddress: net-address missing!");
-				}
+	                        prog->fun[n].arg[i].addr  = PFQ_ALLOCA(uint8_t, (uint8_t)val->valuedouble);
+	                        prog->fun[n].arg[i].size  = sizeof(uint8_t);
+	                        prog->fun[n].arg[i].nelem = -1;
 
-				value_prefix = json_array_get_value(sub_array, 1);
-				if (!value_prefix) {
-					json_value_free(root);
-					return Q_ERROR(q, "PFQ: computation: JSON getNetworkPair: preifx missing!");
-				}
+	                } break;
+                        case PFLT_WORD16:
+                        {
+                                cJSON * val = cJSON_GetObjectItemCaseSensitive(arg, "argValue");
+                                if (!cJSON_IsNumber(val))
+                                {
+                                        cJSON_Delete(root);
+	                                return Q_ERROR(q, "PFQ: computation: JSON parse error (Word16: argValue)!");
+                                }
 
-                                if (!value_addr) {
-					json_value_free(root);
-					return Q_ERROR(q, "PFQ: computation: JSON IPv4 internal error!");
-				}
+	                        prog->fun[n].arg[i].addr  = PFQ_ALLOCA(uint16_t, (uint16_t)val->valuedouble);
+	                        prog->fun[n].arg[i].size  = sizeof(uint16_t);
+	                        prog->fun[n].arg[i].nelem = -1;
 
-				prog->fun[n].arg[i].addr  = PFQ_ALLOCA(struct CIDR, ((struct CIDR){.addr = (uint32_t)json_value_get_number(value_addr), .prefix = (int)json_value_get_number(value_prefix) }));
-				prog->fun[n].arg[i].size  = sizeof(struct CIDR);
-				prog->fun[n].arg[i].nelem = -1;
-			}
-			else if (strcmp(type, "[Int]") == 0)
-			{
-				JSON_Array * value = json_object_get_array(arg, "argValue");
-				if (!value) {
-					json_value_free(root);
-					return Q_ERROR(q, "PFQ: computation: JSON argValue missing!");
-				}
+	                } break;
+                        case PFLT_WORD32:
+                        {
+                                cJSON * val = cJSON_GetObjectItemCaseSensitive(arg, "argValue");
+                                if (!cJSON_IsNumber(val))
+                                {
+                                        cJSON_Delete(root);
+	                                return Q_ERROR(q, "PFQ: computation: JSON parse error (Word32: argValue)!");
+                                }
 
-                                size_t m = json_array_get_count(value);
+	                        prog->fun[n].arg[i].addr  = PFQ_ALLOCA(uint32_t, (uint32_t)val->valuedouble);
+	                        prog->fun[n].arg[i].size  = sizeof(uint32_t);
+	                        prog->fun[n].arg[i].nelem = -1;
 
-				prog->fun[n].arg[i].addr  = PFQ_ALLOCA_N(int, m, (int)json_array_get_number(value, idx));
-				prog->fun[n].arg[i].size  = sizeof(int);
-				prog->fun[n].arg[i].nelem = (ptrdiff_t)m;
-			}
-			else if (strcmp(type, "[Int64]") == 0)
-			{
-				JSON_Array * value = json_object_get_array(arg, "argValue");
-				if (!value) {
-					json_value_free(root);
-					return Q_ERROR(q, "PFQ: computation: JSON argValue missing!");
-				}
+	                } break;
+                        case PFLT_WORD64:
+                        {
+                                cJSON * val = cJSON_GetObjectItemCaseSensitive(arg, "argValue");
+                                if (!cJSON_IsNumber(val))
+                                {
+                                        cJSON_Delete(root);
+	                                return Q_ERROR(q, "PFQ: computation: JSON parse error (Word64: argValue)!");
+                                }
 
-                                size_t m = json_array_get_count(value);
+	                        prog->fun[n].arg[i].addr  = PFQ_ALLOCA(uint64_t, (uint64_t)val->valuedouble);
+	                        prog->fun[n].arg[i].size  = sizeof(uint64_t);
+	                        prog->fun[n].arg[i].nelem = -1;
 
-				prog->fun[n].arg[i].addr  = PFQ_ALLOCA_N(int64_t, m, (int64_t)json_array_get_number(value, idx));
-				prog->fun[n].arg[i].size  = sizeof(int64_t);
-				prog->fun[n].arg[i].nelem = (ptrdiff_t)m;
-			}
-			else if (strcmp(type, "[Int32]") == 0)
-			{
-				JSON_Array * value = json_object_get_array(arg, "argValue");
-				if (!value) {
-					json_value_free(root);
-					return Q_ERROR(q, "PFQ: computation: JSON argValue missing!");
-				}
+	                } break;
+                        case PFLT_FUN:
+                        {
+                                cJSON * val = cJSON_GetObjectItemCaseSensitive(arg, "argValue");
+                                if (!cJSON_IsNumber(val))
+                                {
+                                        cJSON_Delete(root);
+	                                return Q_ERROR(q, "PFQ: computation: JSON parse error (Fun: argValue)!");
+                                }
 
-                                size_t m = json_array_get_count(value);
+	                        prog->fun[n].arg[i].addr  = NULL;
+	                        prog->fun[n].arg[i].size  = (size_t)val->valuedouble;
+	                        prog->fun[n].arg[i].nelem = -1;
 
-				prog->fun[n].arg[i].addr  = PFQ_ALLOCA_N(int32_t, m, (int32_t)json_array_get_number(value, idx));
-				prog->fun[n].arg[i].size  = sizeof(int32_t);
-				prog->fun[n].arg[i].nelem = (ptrdiff_t)m;
-			}
-			else if (strcmp(type, "[Int16]") == 0)
-			{
-				JSON_Array * value = json_object_get_array(arg, "argValue");
-				if (!value) {
-					json_value_free(root);
-					return Q_ERROR(q, "PFQ: computation: JSON argValue missing!");
-				}
+	                } break;
+                        case PFLT_STRING:
+                        {
+                                cJSON * val = cJSON_GetObjectItemCaseSensitive(arg, "argValue");
+                                if (!cJSON_IsString(val))
+                                {
+                                        cJSON_Delete(root);
+	                                return Q_ERROR(q, "PFQ: computation: JSON parse error (String: argValue)!");
+                                }
 
-                                size_t m = json_array_get_count(value);
+	                        prog->fun[n].arg[i].addr  = val->valuestring;
+	                        prog->fun[n].arg[i].size  = 0;
+	                        prog->fun[n].arg[i].nelem = -1;
 
-				prog->fun[n].arg[i].addr  = PFQ_ALLOCA_N(int16_t, m, (int16_t)json_array_get_number(value, idx));
-				prog->fun[n].arg[i].size  = sizeof(int16_t);
-				prog->fun[n].arg[i].nelem = (ptrdiff_t)m;
-			}
-			else if (strcmp(type, "[Int8]") == 0)
-			{
-				JSON_Array * value = json_object_get_array(arg, "argValue");
-				if (!value) {
-					json_value_free(root);
-					return Q_ERROR(q, "PFQ: computation: JSON argValue missing!");
-				}
+                        } break;
+                        case PFLT_IPv4:
+                        {
+                                cJSON * obj = cJSON_GetObjectItemCaseSensitive(arg, "argValue");
+                                if (!cJSON_IsObject(obj))
+                                {
+                                        cJSON_Delete(root);
+	                                return Q_ERROR(q, "PFQ: computation: JSON parse error (IPv4: argValue)!");
+                                }
 
-                                size_t m = json_array_get_count(value);
+                                cJSON * val = cJSON_GetObjectItemCaseSensitive(obj, "getHostAddress");
+                                if (!cJSON_IsNumber(val))
+                                {
+                                        cJSON_Delete(root);
+	                                return Q_ERROR(q, "PFQ: computation: JSON parse error (IPv4: argValue)!");
+                                }
 
-				prog->fun[n].arg[i].addr  = PFQ_ALLOCA_N(int8_t, m, (int8_t)json_array_get_number(value, idx));
-				prog->fun[n].arg[i].size  = sizeof(int8_t);
-				prog->fun[n].arg[i].nelem = (ptrdiff_t)m;
-			}
-			else if (strcmp(type, "[Word64]") == 0)
-			{
-				JSON_Array * value = json_object_get_array(arg, "argValue");
-				if (!value) {
-					json_value_free(root);
-					return Q_ERROR(q, "PFQ: computation: JSON argValue missing!");
-				}
+	                        prog->fun[n].arg[i].addr  = PFQ_ALLOCA(uint32_t, (uint32_t)val->valuedouble);
+	                        prog->fun[n].arg[i].size  = sizeof(uint32_t);
+	                        prog->fun[n].arg[i].nelem = -1;
 
-                                size_t m = json_array_get_count(value);
+	                } break;
+                        case PFLT_CIDR:
+                        {
+                                cJSON * obj = cJSON_GetObjectItemCaseSensitive(arg, "argValue");
+                                cJSON *pair, * addr, *prefix;
 
-				prog->fun[n].arg[i].addr  = PFQ_ALLOCA_N(uint64_t, m, (uint64_t)json_array_get_number(value, idx));
-				prog->fun[n].arg[i].size  = sizeof(uint64_t);
-				prog->fun[n].arg[i].nelem = (ptrdiff_t)m;
-			}
-			else if (strcmp(type, "[Word32]") == 0)
-			{
-				JSON_Array * value = json_object_get_array(arg, "argValue");
-				if (!value) {
-					json_value_free(root);
-					return Q_ERROR(q, "PFQ: computation: JSON argValue missing!");
-				}
+                                if (!cJSON_IsObject(obj))
+                                {
+                                        cJSON_Delete(root);
+	                                return Q_ERROR(q, "PFQ: computation: JSON parse error (CIDR: argValue)!");
+                                }
 
-                                size_t m = json_array_get_count(value);
+                                pair = cJSON_GetObjectItemCaseSensitive(obj, "getNetworkPair");
+                                if (!cJSON_IsArray(pair))
+                                {
+                                        cJSON_Delete(root);
+	                                return Q_ERROR(q, "PFQ: computation: JSON parse error (CIDR: array missing)!");
+                                }
 
-				prog->fun[n].arg[i].addr  = PFQ_ALLOCA_N(uint32_t, m, (uint32_t)json_array_get_number(value, idx));
-				prog->fun[n].arg[i].size  = sizeof(uint32_t);
-				prog->fun[n].arg[i].nelem = (ptrdiff_t)m;
-			}
-			else if (strcmp(type, "[Word16]") == 0)
-			{
-				JSON_Array * value = json_object_get_array(arg, "argValue");
-				if (!value) {
-					json_value_free(root);
-					return Q_ERROR(q, "PFQ: computation: JSON argValue missing!");
-				}
+                                if (cJSON_GetArraySize(pair) != 2)
+                                {
+                                        cJSON_Delete(root);
+	                                return Q_ERROR(q, "PFQ: computation: JSON parse error (CIDR: broken array)!");
+                                }
 
-                                size_t m = json_array_get_count(value);
+                                addr   = cJSON_GetObjectItemCaseSensitive(cJSON_GetArrayItem(pair, 0), "getHostAddress");
+                                prefix = cJSON_GetArrayItem(pair, 1);
 
-				prog->fun[n].arg[i].addr  = PFQ_ALLOCA_N(uint16_t, m, (uint16_t)json_array_get_number(value, idx));
-				prog->fun[n].arg[i].size  = sizeof(uint16_t);
-				prog->fun[n].arg[i].nelem = (ptrdiff_t)m;
-			}
-			else if (strcmp(type, "[Word8]") == 0)
-			{
-				JSON_Array * value = json_object_get_array(arg, "argValue");
-				if (!value) {
-					json_value_free(root);
-					return Q_ERROR(q, "PFQ: computation: JSON argValue missing!");
-				}
+	                        prog->fun[n].arg[i].addr  = PFQ_ALLOCA(struct CIDR, ((struct CIDR){.addr = (uint32_t)addr->valuedouble,
+	                                                                                           .prefix = (int)prefix->valuedouble }));
+                                prog->fun[n].arg[i].size  = sizeof(struct CIDR);
+	                        prog->fun[n].arg[i].nelem = -1;
 
-                                size_t m = json_array_get_count(value);
+                        } break;
+                        case PFLT_INTs:
+                        {
+                                cJSON * val = cJSON_GetObjectItemCaseSensitive(arg, "argValue");
+                                int len;
 
-				prog->fun[n].arg[i].addr  = PFQ_ALLOCA_N(uint8_t, m, (uint8_t)json_array_get_number(value, idx));
-				prog->fun[n].arg[i].size  = sizeof(uint8_t);
-				prog->fun[n].arg[i].nelem = (ptrdiff_t)m;
-			}
-			else if (strcmp(type, "[String]") == 0)
-			{
-				JSON_Array * value = json_object_get_array(arg, "argValue");
-				if (!value) {
-					json_value_free(root);
-					return Q_ERROR(q, "PFQ: computation: JSON argValue missing!");
-				}
+                                if (!cJSON_IsArray(val))
+                                {
+                                        cJSON_Delete(root);
+	                                return Q_ERROR(q, "PFQ: computation: JSON parse error ([Int]: argValue)!");
+                                }
 
-                                size_t m = json_array_get_count(value);
+                                len = (int)cJSON_GetArraySize(val);
+	                        prog->fun[n].arg[i].addr  = PFQ_ALLOCA_N(int, len, (int)cJSON_GetArrayItem(val,Idx)->valuedouble);
+	                        prog->fun[n].arg[i].size  = sizeof(int);
+	                        prog->fun[n].arg[i].nelem = len;
 
-				prog->fun[n].arg[i].addr  = PFQ_ALLOCA_N(char *, m, (char *)json_array_get_string(value, idx));
-				prog->fun[n].arg[i].size  = 0;
-				prog->fun[n].arg[i].nelem = (ptrdiff_t)m;
-			}
-			else if (strcmp(type, "[IPv4]") == 0)
-			{
-				JSON_Array * value = json_object_get_array(arg, "argValue");
-				if (!value) {
-					json_value_free(root);
-					return Q_ERROR(q, "PFQ: computation: JSON argValue missing!");
-				}
+                        } break;
+                        case PFLT_INT8s:
+                        {
+                                cJSON * val = cJSON_GetObjectItemCaseSensitive(arg, "argValue");
+                                int len;
 
-                                size_t m = json_array_get_count(value);
+                                if (!cJSON_IsArray(val))
+                                {
+                                        cJSON_Delete(root);
+	                                return Q_ERROR(q, "PFQ: computation: JSON parse error ([Int8]: argValue)!");
+                                }
 
-				prog->fun[n].arg[i].addr  = PFQ_ALLOCA_N(uint32_t, m, (uint32_t)({
-								JSON_Object * obj = json_array_get_object(value, idx);
-								JSON_Value  * val = NULL;
-								if (obj) {
-									val = json_object_get_value(obj, "getHostAddress");
-								}
-                                                                val ? json_value_get_number(val) : 0;
-							    }));
-				prog->fun[n].arg[i].size  = sizeof(uint32_t);
-				prog->fun[n].arg[i].nelem = (ptrdiff_t)m;
-			}
-			else if (strcmp(type, "[CIDR]") == 0)
-			{
-				JSON_Array  * array = json_object_get_array(arg, "argValue");
+                                len = (int)cJSON_GetArraySize(val);
+	                        prog->fun[n].arg[i].addr  = PFQ_ALLOCA_N(int8_t, len, (int8_t)cJSON_GetArrayItem(val,Idx)->valuedouble);
+	                        prog->fun[n].arg[i].size  = sizeof(int8_t);
+	                        prog->fun[n].arg[i].nelem = len;
 
-				size_t m = json_array_get_count(array);
+                        } break;
+                        case PFLT_INT16s:
+                        {
+                                cJSON * val = cJSON_GetObjectItemCaseSensitive(arg, "argValue");
+                                int len;
 
-				prog->fun[n].arg[i].addr  = PFQ_ALLOCA_N(struct CIDR, m, (struct CIDR)({
+                                if (!cJSON_IsArray(val))
+                                {
+                                        cJSON_Delete(root);
+	                                return Q_ERROR(q, "PFQ: computation: JSON parse error ([Int16]: argValue)!");
+                                }
 
-								JSON_Object *obj_addr, * obj = json_array_get_object(array, idx);
-								JSON_Array  * sub_array;
-								JSON_Value  * value_addr, * value_prefix;
+                                len = (int)cJSON_GetArraySize(val);
+	                        prog->fun[n].arg[i].addr  = PFQ_ALLOCA_N(int16_t, len, (int16_t)cJSON_GetArrayItem(val,Idx)->valuedouble);
+	                        prog->fun[n].arg[i].size  = sizeof(int16_t);
+	                        prog->fun[n].arg[i].nelem = len;
 
-								if (!obj) {
-									json_value_free(root);
-									return Q_ERROR(q, "PFQ: computation: JSON argValue missing!");
-								}
+                        } break;
+                        case PFLT_INT32s:
+                        {
+                                cJSON * val = cJSON_GetObjectItemCaseSensitive(arg, "argValue");
+                                int len;
 
-								sub_array = json_object_get_array(obj, "getNetworkPair");
-								if (!sub_array) {
-									json_value_free(root);
-									return Q_ERROR(q, "PFQ: computation: JSON getNetworkPair missing!");
-								}
+                                if (!cJSON_IsArray(val))
+                                {
+                                        cJSON_Delete(root);
+	                                return Q_ERROR(q, "PFQ: computation: JSON parse error ([Int32]: argValue)!");
+                                }
 
-								obj_addr = json_array_get_object(sub_array, 0);
-								if (!obj_addr) {
-									json_value_free(root);
-									return Q_ERROR(q, "PFQ: computation: JSON getNetworkPair: net-address missing!");
-								}
+                                len = (int)cJSON_GetArraySize(val);
+	                        prog->fun[n].arg[i].addr  = PFQ_ALLOCA_N(int32_t, len, (int32_t)cJSON_GetArrayItem(val,Idx)->valuedouble);
+	                        prog->fun[n].arg[i].size  = sizeof(int32_t);
+	                        prog->fun[n].arg[i].nelem = len;
 
-								value_addr = json_object_get_value(obj_addr, "getHostAddress");
-								if (!value_addr) {
-									json_value_free(root);
-									return Q_ERROR(q, "PFQ: computation: JSON getHostAddress: net-address missing!");
-								}
+                        } break;
+                        case PFLT_INT64s:
+                        {
+                                cJSON * val = cJSON_GetObjectItemCaseSensitive(arg, "argValue");
+                                int len;
 
-								value_prefix = json_array_get_value(sub_array, 1);
-								if (!value_prefix) {
-									json_value_free(root);
-									return Q_ERROR(q, "PFQ: computation: JSON getNetworkPair: preifx missing!");
-								}
+                                if (!cJSON_IsArray(val))
+                                {
+                                        cJSON_Delete(root);
+	                                return Q_ERROR(q, "PFQ: computation: JSON parse error ([Int64]: argValue)!");
+                                }
 
-								if (!value_addr) {
-									json_value_free(root);
-									return Q_ERROR(q, "PFQ: computation: JSON IPv4 internal error!");
-								}
+                                len = (int)cJSON_GetArraySize(val);
+	                        prog->fun[n].arg[i].addr  = PFQ_ALLOCA_N(int64_t, len, (int64_t)cJSON_GetArrayItem(val,Idx)->valuedouble);
+	                        prog->fun[n].arg[i].size  = sizeof(int64_t);
+	                        prog->fun[n].arg[i].nelem = len;
 
-								(struct CIDR){.addr = (uint32_t)json_value_get_number(value_addr), .prefix = (int)json_value_get_number(value_prefix) };
-							    }));
-				prog->fun[n].arg[i].size  = sizeof(struct CIDR);
-				prog->fun[n].arg[i].nelem = (ptrdiff_t)m;
+                        } break;
+                        case PFLT_WORD8s:
+                        {
+                                cJSON * val = cJSON_GetObjectItemCaseSensitive(arg, "argValue");
+                                int len;
 
-			}
-			else if (strlen(type) == 0)
-			{
-				prog->fun[n].arg[i].addr  = NULL;
-				prog->fun[n].arg[i].size  = 0;
-				prog->fun[n].arg[i].nelem = 0;
-			}
-			else {
-				static __thread char *e = NULL; free(e);
-				asprintf(&e, "PFQ: computation: JSON unknown argType: %s!", type);
-				json_value_free(root);
-				return Q_ERROR(q, e);
-			}
-		}
-	}
+                                if (!cJSON_IsArray(val))
+                                {
+                                        cJSON_Delete(root);
+	                                return Q_ERROR(q, "PFQ: computation: JSON parse error ([Word8]: argValue)!");
+                                }
 
-	return pfq_set_group_computation(q, gid, prog);
+                                len = (int)cJSON_GetArraySize(val);
+	                        prog->fun[n].arg[i].addr  = PFQ_ALLOCA_N(uint8_t, len, (uint8_t)cJSON_GetArrayItem(val,Idx)->valuedouble);
+	                        prog->fun[n].arg[i].size  = sizeof(uint8_t);
+	                        prog->fun[n].arg[i].nelem = len;
+
+                        } break;
+                        case PFLT_WORD16s:
+                        {
+                                cJSON * val = cJSON_GetObjectItemCaseSensitive(arg, "argValue");
+                                int len;
+
+                                if (!cJSON_IsArray(val))
+                                {
+                                        cJSON_Delete(root);
+	                                return Q_ERROR(q, "PFQ: computation: JSON parse error ([Word16]: argValue)!");
+                                }
+
+                                len = (int)cJSON_GetArraySize(val);
+	                        prog->fun[n].arg[i].addr  = PFQ_ALLOCA_N(uint16_t, len, (uint16_t)cJSON_GetArrayItem(val,Idx)->valuedouble);
+	                        prog->fun[n].arg[i].size  = sizeof(uint16_t);
+	                        prog->fun[n].arg[i].nelem = len;
+
+                        } break;
+                        case PFLT_WORD32s:
+                        {
+                                cJSON * val = cJSON_GetObjectItemCaseSensitive(arg, "argValue");
+                                int len;
+
+                                if (!cJSON_IsArray(val))
+                                {
+                                        cJSON_Delete(root);
+	                                return Q_ERROR(q, "PFQ: computation: JSON parse error ([Word32]: argValue)!");
+                                }
+
+                                len = (int)cJSON_GetArraySize(val);
+	                        prog->fun[n].arg[i].addr  = PFQ_ALLOCA_N(uint32_t, len, (uint32_t)cJSON_GetArrayItem(val,Idx)->valuedouble);
+	                        prog->fun[n].arg[i].size  = sizeof(uint32_t);
+	                        prog->fun[n].arg[i].nelem = len;
+
+                        } break;
+                        case PFLT_WORD64s:
+                        {
+                                cJSON * val = cJSON_GetObjectItemCaseSensitive(arg, "argValue");
+                                int len;
+
+                                if (!cJSON_IsArray(val))
+                                {
+                                        cJSON_Delete(root);
+	                                return Q_ERROR(q, "PFQ: computation: JSON parse error ([Word64]: argValue)!");
+                                }
+
+                                len = (int)cJSON_GetArraySize(val);
+	                        prog->fun[n].arg[i].addr  = PFQ_ALLOCA_N(uint64_t, len, (uint64_t)cJSON_GetArrayItem(val,Idx)->valuedouble);
+	                        prog->fun[n].arg[i].size  = sizeof(uint64_t);
+	                        prog->fun[n].arg[i].nelem = len;
+
+                        } break;
+                        case PFLT_STRINGs:
+                        {
+                                cJSON * val = cJSON_GetObjectItemCaseSensitive(arg, "argValue");
+                                int len;
+
+                                if (!cJSON_IsArray(val))
+                                {
+                                        cJSON_Delete(root);
+	                                return Q_ERROR(q, "PFQ: computation: JSON parse error ([Word64]: argValue)!");
+                                }
+
+                                len = (int)cJSON_GetArraySize(val);
+	                        prog->fun[n].arg[i].addr  = PFQ_ALLOCA_N(char *, len, (char *)cJSON_GetArrayItem(val,Idx)->valuestring);
+	                        prog->fun[n].arg[i].size  = 0;
+	                        prog->fun[n].arg[i].nelem = len;
+
+                        } break;
+                        case PFLT_IPv4s:
+                        {
+                                cJSON * val = cJSON_GetObjectItemCaseSensitive(arg, "argValue");
+                                int len;
+
+                                if (!cJSON_IsArray(val))
+                                {
+                                        cJSON_Delete(root);
+	                                return Q_ERROR(q, "PFQ: computation: JSON parse error ([IPv4]: argValue)!");
+                                }
+
+                                len = (int)cJSON_GetArraySize(val);
+                                prog->fun[n].arg[i].addr  = PFQ_ALLOCA_N(uint32_t, len, (uint32_t)({
+                                                                cJSON * obj = cJSON_GetArrayItem(val, Idx);
+                                                                cJSON * ip = NULL;
+                                                                if (cJSON_IsObject(obj)) {
+                                                                        ip = cJSON_GetObjectItemCaseSensitive(obj, "getHostAddress");
+                                                                }
+
+                                                                (ip && cJSON_IsNumber(ip)) ? (uint32_t)ip->valuedouble : 0;
+                                                                }));
+                                prog->fun[n].arg[i].size  = sizeof(uint32_t);
+	                        prog->fun[n].arg[i].nelem = len;
+
+                        } break;
+                        case PFLT_CIDRs:
+                        {
+                                cJSON * val = cJSON_GetObjectItemCaseSensitive(arg, "argValue");
+                                int len;
+
+                                if (!cJSON_IsArray(val))
+                                {
+                                        cJSON_Delete(root);
+	                                return Q_ERROR(q, "PFQ: computation: JSON parse error ([CIDR]: argValue)!");
+                                }
+
+                                len = (int)cJSON_GetArraySize(val);
+
+                                prog->fun[n].arg[i].addr  = PFQ_ALLOCA_N(struct CIDR, len, (struct CIDR)({
+
+                                        cJSON * obj = cJSON_GetArrayItem(val, Idx);
+                                        cJSON *pair, * addr, *prefix;
+
+                                        if (!cJSON_IsObject(obj))
+                                        {
+                                                cJSON_Delete(root);
+                                                return Q_ERROR(q, "PFQ: computation: JSON parse error ([CIDR]: argValue)!");
+                                        }
+
+                                        pair = cJSON_GetObjectItemCaseSensitive(obj, "getNetworkPair");
+                                        if (!cJSON_IsArray(pair))
+                                        {
+                                                cJSON_Delete(root);
+                                                return Q_ERROR(q, "PFQ: computation: JSON parse error (CIDR: array missing)!");
+                                        }
+
+                                        if (cJSON_GetArraySize(pair) != 2)
+                                        {
+                                                cJSON_Delete(root);
+                                                return Q_ERROR(q, "PFQ: computation: JSON parse error (CIDR: broken array)!");
+                                        }
+
+                                        addr   = cJSON_GetObjectItemCaseSensitive(cJSON_GetArrayItem(pair, 0), "getHostAddress");
+                                        prefix = cJSON_GetArrayItem(pair, 1);
+
+	                                (struct CIDR){.addr = (uint32_t)addr->valuedouble, .prefix = (int)prefix->valuedouble };
+                                }));
+
+                                prog->fun[n].arg[i].size  = sizeof(struct CIDR);
+	                        prog->fun[n].arg[i].nelem = len;
+
+                        } break;
+                        case PFLT_ERROR:
+                        default: {
+                                static __thread char *e = NULL; free(e);
+                                asprintf(&e, "PFQ: computation: JSON argType '%s' not supported!", type->valuestring);
+                                cJSON_Delete(root);
+	                        return Q_ERROR(q, e);
+                        }
+                        }
+                }
+        }
+
+	int ret = pfq_set_group_computation(q, gid, prog);
+        cJSON_Delete(root);
+        return ret;
 }
 
 
