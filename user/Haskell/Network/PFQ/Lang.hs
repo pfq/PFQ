@@ -135,7 +135,7 @@ instance ToJSON Argument where
   toJSON (ArgString xs)  = object [ "argType" .= ("String"   :: String), "argValue" .= toJSON xs ]
   toJSON (ArgStrings xs) = object [ "argType" .= ("[String]" :: String), "argValue" .= toJSON xs ]
   toJSON (ArgFunPtr x)   = object [ "argType" .= ("Fun"      :: String), "argValue" .= toJSON x  ]
-  toJSON ArgNull         = object [ "argType" .= (""         :: String), "argValue" .= toJSON () ]
+  toJSON ArgNull         = Null
 
 
 instance FromJSON Argument where

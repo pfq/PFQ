@@ -34,9 +34,10 @@ module Network.PFQ.Lang.Experimental
         -- * Experimental Functions
         -- | This set of experimental functions may be subject to changes in future releases
 
-      dummy
+      dummy_int
+    , dummy_ints
     , dummy_ip
-    , dummy_vector
+    , dummy_ips
     , dummy_string
     , dummy_strings
     , dummy_cidr
@@ -94,14 +95,17 @@ import Data.Word
 
 -- Experimental/Testing in-kernel computations
 
-dummy :: Int -> NetFunction
-dummy n = Function "dummy" n () () () () () () ()
+dummy_int :: Int -> NetFunction
+dummy_int n = Function "dummy_int" n () () () () () () ()
+
+dummy_ints :: [Int] -> NetFunction
+dummy_ints xs  = Function "dummy_ints" xs () () () () () () ()
 
 dummy_ip  :: IPv4 -> NetFunction
-dummy_ip xs  = Function "dummy_ip" xs () () () () () () ()
+dummy_ip x  = Function "dummy_ip" x () () () () () () ()
 
-dummy_vector  :: [Int] -> NetFunction
-dummy_vector xs  = Function "dummy_vector" xs () () () () () () ()
+dummy_ips  :: [IPv4] -> NetFunction
+dummy_ips xs  = Function "dummy_ips" xs () () () () () () ()
 
 dummy_string :: String -> NetFunction
 dummy_string xs  = Function "dummy_string" xs () () () () () () ()
