@@ -30,13 +30,45 @@
 #include <pfq/sparse.h>
 
 static ActionQbuff
-dummy(arguments_t args, struct qbuff * buff)
+dummy_int(arguments_t args, struct qbuff * buff)
 {
         const int data = GET_ARG(int,args);
+	printk(KERN_INFO "[pfq-lang] dummy_int: %d\n", data);
+        return Pass(buff);
+}
 
-	printk(KERN_INFO "[pfq-lang] dummy = %d\n", data);
+static int
+dummy_init_int(arguments_t args)
+{
+	size_t len = LEN_ARRAY(args);
+	printk(KERN_INFO "[pfq-lang] %s (len: %zu)!\n", __PRETTY_FUNCTION__, len);
+	dummy_int(args, NULL);
+	return 0;
+}
+
+static ActionQbuff
+dummy_ints(arguments_t args, struct qbuff * buff)
+{
+        const int *data = GET_ARRAY(int,args);
+	size_t n, len = LEN_ARRAY(args);
+
+	printk(KERN_INFO "[pfq-lang] dummy_ints: len: %zu...\n", len);
+
+	for(n = 0; n < len; n++)
+	{
+		printk(KERN_INFO "[pfq-lang] data[%zu] = %d\n", n, data[n]);
+	}
 
         return Pass(buff);
+}
+
+static int
+dummy_init_ints(arguments_t args)
+{
+	size_t len = LEN_ARRAY(args);
+	printk(KERN_INFO "[pfq-lang] %s (len: %zu)!\n", __PRETTY_FUNCTION__, len);
+	dummy_ints(args, NULL);
+	return 0;
 }
 
 
@@ -48,21 +80,39 @@ dummy_ip(arguments_t args, struct qbuff * buff)
 	return Pass (buff);
 }
 
+static int
+dummy_init_ip(arguments_t args)
+{
+	size_t len = LEN_ARRAY(args);
+	printk(KERN_INFO "[pfq-lang] %s (len: %zu)!\n", __PRETTY_FUNCTION__, len);
+	dummy_ip(args, NULL);
+	return 0;
+}
+
 
 static ActionQbuff
-dummy_vector(arguments_t args, struct qbuff * buff)
+dummy_ips(arguments_t args, struct qbuff * buff)
 {
-        const int *data = GET_ARRAY(int,args);
+        const int *ips = GET_ARRAY(__be32, args);
 	size_t n, len = LEN_ARRAY(args);
 
-	printk(KERN_INFO "[pfq-lang] dummy: vector len: %zu...\n", len);
+	printk(KERN_INFO "[pfq-lang] dummy: ips len: %zu...\n", len);
 
 	for(n = 0; n < len; n++)
 	{
-		printk(KERN_INFO "[pfq-lang] data[%zu] = %d\n", n, data[n]);
+	        printk(KERN_INFO "[pfq-lang] ip[%zu]:%pI4\n", n, &ips[n]);
 	}
 
         return Pass(buff);
+}
+
+static int
+dummy_init_ips(arguments_t args)
+{
+	size_t len = LEN_ARRAY(args);
+	printk(KERN_INFO "[pfq-lang] %s (len: %zu)!\n", __PRETTY_FUNCTION__, len);
+	dummy_ips(args, NULL);
+	return 0;
 }
 
 
@@ -70,12 +120,18 @@ static ActionQbuff
 dummy_string(arguments_t args, struct qbuff * buff)
 {
         const char *data = GET_ARG(const char *,args);
-
 	printk(KERN_INFO "[pfq-lang] dummy: string: %s\n", data);
-
         return Pass(buff);
 }
 
+static int
+dummy_init_string(arguments_t args)
+{
+	size_t len = LEN_ARRAY(args);
+	printk(KERN_INFO "[pfq-lang] %s (len: %zu)!\n", __PRETTY_FUNCTION__, len);
+	dummy_string(args, NULL);
+	return 0;
+}
 
 static ActionQbuff
 dummy_strings(arguments_t args, struct qbuff * buff)
@@ -93,6 +149,14 @@ dummy_strings(arguments_t args, struct qbuff * buff)
         return Pass(buff);
 }
 
+static int
+dummy_init_strings(arguments_t args)
+{
+	size_t len = LEN_ARRAY(args);
+	printk(KERN_INFO "[pfq-lang] %s (len: %zu)!\n", __PRETTY_FUNCTION__, len);
+	dummy_strings(args, NULL);
+	return 0;
+}
 
 static ActionQbuff
 dummy_cidr(arguments_t args, struct qbuff * buff)
@@ -117,30 +181,34 @@ dummy_cidrs(arguments_t args, struct qbuff * buff)
 
 
 static int
-dummy_init(arguments_t args)
+dummy_init_cidr(arguments_t args)
 {
-	printk(KERN_INFO "[pfq-lang] %s :)\n", __PRETTY_FUNCTION__);
+	size_t len = LEN_ARRAY(args);
+	printk(KERN_INFO "[pfq-lang] %s (len: %zu)!\n", __PRETTY_FUNCTION__, len);
+	dummy_cidr(args, NULL);
 	return 0;
 }
 
 static int
-dummy_fini(arguments_t args)
+dummy_init_cidrs(arguments_t args)
 {
-	printk(KERN_INFO "[pfq-lang] %s :(\n", __PRETTY_FUNCTION__);
+	size_t len = LEN_ARRAY(args);
+	printk(KERN_INFO "[pfq-lang] %s (len: %zu)!\n", __PRETTY_FUNCTION__, len);
+	dummy_cidrs(args, NULL);
 	return 0;
 }
 
 
-
 struct pfq_lang_function_descr dummy_functions[] = {
 
-        { "dummy",         "CInt   -> Qbuff -> Action Qbuff",	  dummy, dummy_init,	     dummy_fini },
-        { "dummy_ip",      "Word32 -> Qbuff -> Action Qbuff",	  dummy_ip,	dummy_init,  dummy_fini },
-        { "dummy_cidr",	   "CIDR   -> Qbuff -> Action Qbuff",   dummy_cidr,	dummy_init,  dummy_fini },
-        { "dummy_cidrs",   "[CIDR] -> Qbuff -> Action Qbuff",   dummy_cidrs,	dummy_init,  dummy_fini },
-        { "dummy_vector",  "[CInt] -> Qbuff -> Action Qbuff",	  dummy_vector, dummy_init,  dummy_fini },
-        { "dummy_string",  "String -> Qbuff -> Action Qbuff",	  dummy_string, dummy_init,  dummy_fini },
-        { "dummy_strings", "[String] -> Qbuff -> Action Qbuff", dummy_strings, dummy_init, dummy_fini },
+        { "dummy_int",     "CInt   -> Qbuff -> Action Qbuff",	dummy_int,      dummy_init_int,         NULL },
+        { "dummy_ints",    "[CInt] -> Qbuff -> Action Qbuff",	dummy_ints,     dummy_init_ints,        NULL },
+        { "dummy_ip",      "Word32 -> Qbuff -> Action Qbuff",	dummy_ip,	dummy_init_ip,          NULL },
+        { "dummy_ips",     "[Word32] -> Qbuff -> Action Qbuff",	dummy_ips,	dummy_init_ips,         NULL },
+        { "dummy_cidr",	   "CIDR   -> Qbuff -> Action Qbuff",   dummy_cidr,	dummy_init_cidr,        NULL },
+        { "dummy_cidrs",   "[CIDR] -> Qbuff -> Action Qbuff",   dummy_cidrs,	dummy_init_cidrs,       NULL },
+        { "dummy_string",  "String -> Qbuff -> Action Qbuff",	dummy_string,   dummy_init_string,      NULL },
+        { "dummy_strings", "[String] -> Qbuff -> Action Qbuff", dummy_strings,  dummy_init_strings,     NULL },
 
         { NULL }};
 
