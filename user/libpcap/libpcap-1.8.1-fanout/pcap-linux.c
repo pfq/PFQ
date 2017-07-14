@@ -1721,12 +1721,14 @@ pcap_activate_linux(pcap_t *handle)
 		config = getenv("PCAP_CONFIG");
 		if (config != NULL) {
 			fprintf(stderr, "libpcap: parsing config file %s...\n", config);
-
 			if (pcap_parse_config(&handle->opt.config, config) == -1) {
 				snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "pfq: config error");
 				return PCAP_ERROR;
 			}
 		}
+		else {
+		        handle->opt.config = pcap_config_default(handle);
+                }
 
 		/*
 		 * parse environ variables
@@ -1738,6 +1740,7 @@ pcap_activate_linux(pcap_t *handle)
 		}
 
 		handle->snapshot = min(handle->snapshot, handle->opt.config.caplen);
+
 		/*
 		 * setup fanout support
 		 */
