@@ -2,7 +2,7 @@
 -- see http://haskell.org/cabal/users-guide/
 
 name:                   pfq-affinity
-version:                6.0
+version:                6.1
 -- synopsis:               
 -- description:            
 license-file:           LICENSE

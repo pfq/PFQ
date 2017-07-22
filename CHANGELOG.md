@@ -157,3 +157,6 @@ PFQ 6.0
  * General improvements.
  * Regressions and bugs fixes.
 
+PFQ 6.1
+------- 
+ * Genearal improvements and bug fixes.
