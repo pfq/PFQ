@@ -56,10 +56,10 @@ main = do
                          Q.when is_tcp (inc 2) >->
                          addr "192.168.0.0/24" >->
                          steer_local_link "4c:60:de:86:55:46" >->
-                         dummy 42 >->
+                         dummy_int 42 >->
+                         dummy_ints [1,2,3] >->
                          dummy_string "hello world" >->
-                         dummy_strings ["hello", "world"] >->
-                         dummy_vector [1,2,3]
+                         dummy_strings ["hello", "world"]
 
         putStrLn "\nFunctional computation (show):"
         print comp
