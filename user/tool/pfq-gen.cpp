@@ -530,7 +530,7 @@ namespace thread
                         ip->check = 0;
                         ip->check = in_cksum(reinterpret_cast<u_short *>(ip), 20);
                     }
-                    
+
                     if (m_async)
                     {
                         if (!m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(data), plen), opt::copies))
@@ -1155,27 +1155,27 @@ try
 
         if (!opt::interactive)
         {
-            std::cout << "stats    : { " << cur << " }" << std::endl;
+            std::cout << "pfq stats: { " << cur << " }" << std::endl;
+
+            std::cout << "   socket: { "
+                      << "sent: " << vt100::BOLD << persecond<int64_t>(cur.sent - prec.sent, delta) << vt100::RESET << " pkt/sec - "
+                      << "disc: " << vt100::BOLD << persecond<int64_t>(cur.disc - prec.disc, delta) << vt100::RESET << " pkt/sec - "
+                      << "fail: " << vt100::BOLD << persecond<int64_t>(cur.fail - prec.fail, delta) << vt100::RESET << " pkt/sec "
+                      << " }" << std::endl;
 
             std::cout << "   app   : { "
                       << vt100::BOLD
-                      << "sent: " << persecond<int64_t>(sent - sent_, delta)            << ' '
-                      << "fail: " << persecond<int64_t>(fail-fail_, delta)              << " ";
+                      << "sent: " << persecond<int64_t>(sent - sent_, delta) << " pkt/sec - "
+                      << "fail: " << persecond<int64_t>(fail - fail_, delta) << " pkt/sec - ";
             if (opt::copies > 1)
-               std::cout << " (x " << opt::copies << ") => ";
-
-            std::cout << "band: " << pretty_number(persecond<double>((band-band_)*8 * opt::copies, delta))  << "bit/sec "
-                      << "gros: " << pretty_number(persecond<double>((gros-gros_)*8 * opt::copies, delta))  << "bit/sec "
-                      << vt100::RESET << " }" << std::endl;
-
-            std::cout << "   socket: { "
-                      << "sent: " << vt100::BOLD << persecond<int64_t>(cur.sent - prec.sent, delta) << vt100::RESET << " pkt/sec "
-                      << "disc: " << vt100::BOLD << persecond<int64_t>(cur.disc - prec.disc, delta) << vt100::RESET << " pkt/sec "
-                      << "fail: " << vt100::BOLD << persecond<int64_t>(cur.fail - prec.fail, delta) << vt100::RESET << " pkt/sec "
-                      << " }" << std::endl;
+            std::cout << " (x " << opt::copies << ") => ";
+            std::cout << "band: " << pretty_number(persecond<double>((band-band_)* 8 * opt::copies, delta))  << "bit/sec - "
+                      << "gros: " << pretty_number(persecond<double>((gros-gros_)* 8 * opt::copies, delta))  << "bit/sec "
+                      << vt100::RESET << " }\n" << std::endl;
         }
 
         prec = cur, begin = end;
+
         sent_ = sent;
         band_ = band;
         gros_ = gros;
