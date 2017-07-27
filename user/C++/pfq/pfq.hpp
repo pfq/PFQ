@@ -1059,22 +1059,23 @@ namespace pfq {
 
         //! Store the packet and transmit the packets in the queue.
         /*!
-         * The queue is flushed every fsync packets.
+         * The queue is flushed every sync packets.
          * Requires the socket is bound for transmission to a net device and queue.
          * See 'bind_tx'.
          */
 
         bool
-        send(const_buffer pkt, size_t fsync = 1, unsigned int copies = 1)
+        send(const_buffer pkt, size_t copies = 1, unsigned int sync = 1)
         {
             retry:
             auto ret = send_raw(pkt.first, pkt.second, 0, copies, no_kthread);
-            if (!ret || ++data_->tx_attempt == fsync)
+            if (!ret || ++data_->tx_attempt == sync)
             {
                 data_->tx_attempt = 0;
                 this->sync_queue(0);
-                if (!ret)
+                if (!ret) {
                     goto retry;
+                }
             }
             return ret;
         }
@@ -1137,7 +1138,6 @@ namespace pfq {
                 ++index;
 
                 poff_addr = (index & 1) ? &tx->prod.off1 : &tx->prod.off0;
-
                 __atomic_store_n(poff_addr, 0, __ATOMIC_RELEASE);
                 __atomic_store_n(&tx->prod.index, index, __ATOMIC_RELEASE);
             }
@@ -1188,7 +1188,6 @@ namespace pfq {
         void
         sync_queue(int queue = 0)
         {
-
 #if 1
             if (::setsockopt(data()->fd, PF_Q, Q_SO_TX_QUEUE_XMIT, &queue, sizeof(queue)) == -1)
                 throw system_error(errno, "PFQ: Tx queue");

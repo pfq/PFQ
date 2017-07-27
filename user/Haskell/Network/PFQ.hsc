@@ -1143,22 +1143,22 @@ syncQueue hdl queue =
 
 -- |Store the packet and transmit the packets in the queue.
 --
--- The queue is flushed every fhint packets.
+-- The queue is flushed every sync packets.
 -- Requires the socket is bound for transmission to a net device and queue.
 -- See 'bindTx'.
 
 send :: PfqHandlePtr
      -> C.ByteString  -- ^ bytes of packet
      -> Int           -- ^ copies
-     -> Int           -- ^ fhint
+     -> Int           -- ^ sync
      -> IO Bool
-send hdl xs copies fhint =
+send hdl xs copies sync =
     unsafeUseAsCStringLen xs $ \(p, l) ->
         fmap (> 0) $ pfq_send hdl
                         p
                         (fromIntegral l)
-                        (fromIntegral fhint)
-                        (fromIntegral copies) >>= throwPfqIf hdl (== -1)
+                        (fromIntegral copies)
+                        (fromIntegral sync) >>= throwPfqIf hdl (== -1)
 
 
 -- |Transmit the packet asynchronously.
@@ -1251,7 +1251,7 @@ foreign import ccall unsafe pfq_bind_tx             :: PfqHandlePtr -> CString -
 foreign import ccall unsafe pfq_unbind_tx           :: PfqHandlePtr -> IO CInt
 
 foreign import ccall unsafe pfq_send                :: PfqHandlePtr -> Ptr CChar -> CSize -> CSize -> CUInt -> IO CInt
-foreign import ccall unsafe pfq_send_raw            :: PfqHandlePtr -> Ptr CChar -> CSize -> CInt -> CInt -> CULLong -> CUInt -> CInt -> CInt -> IO CInt
+foreign import ccall unsafe pfq_send_raw            :: PfqHandlePtr -> Ptr CChar -> CSize -> CULLong -> CUInt -> CInt -> IO CInt
 
 foreign import ccall unsafe pfq_sync_queue          :: PfqHandlePtr -> CInt -> IO CInt
 

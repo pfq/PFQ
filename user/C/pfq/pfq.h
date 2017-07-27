@@ -619,13 +619,13 @@ extern int pfq_send_raw(pfq_t *q, const void *ptr, size_t len, uint64_t nsec, un
 
 /*! Store the packet and transmit the packets in the queue. */
 /*!
- * The queue is flushed every fsync packets (0 means immediate synchronization).
+ * The queue is flushed every sync packets (0 means immediate synchronization).
  * Requires the socket is bound for transmission to a net device and queue.
  * See 'pfq_bind_tx'.
  */
 
 extern
-int pfq_send(pfq_t *q, const void *ptr, size_t len, unsigned int copies, size_t fsync);
+int pfq_send(pfq_t *q, const void *ptr, size_t len, unsigned int copies, size_t sync);
 
 
 /*! Transmit the packet asynchronously. */

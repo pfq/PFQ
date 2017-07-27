@@ -1862,12 +1862,12 @@ pfq_send( pfq_t *q
 	, const void *ptr
 	, size_t len
 	, unsigned int copies
-	, size_t fsync)
+	, size_t sync)
 {
 	int ret;
 	retry:
 	ret = pfq_send_raw(q, ptr, len, 0, copies, Q_NO_KTHREAD);
-	if (ret == 0 || ++q->tx_attempt == fsync) {
+	if (ret == 0 || ++q->tx_attempt == sync) {
 		q->tx_attempt = 0;
 		pfq_sync_queue(q, 0);
 		if (ret == 0)
