@@ -174,7 +174,6 @@ module Network.PFQ
 
     ,  send
     ,  sendAsync
-    ,  sendAt
 
     ,  syncQueue
 
@@ -233,7 +232,7 @@ import Foreign.ForeignPtr (ForeignPtr, withForeignPtr)
 
 import Network.PFQ.Lang
 
-import System.Clock
+-- import System.Clock
 import System.Process(readProcess)
 
 -- |Packet capture handle.
@@ -1178,34 +1177,7 @@ sendAsync hdl xs copies =
                         p
                         (fromIntegral l)
                         0
-                        0
-                        0
                         (fromIntegral copies)
-                        1
-                        (fromIntegral $ getConstant any_queue) >>= throwPfqIf hdl (== -1)
-
-
--- |Transmit the packet asynchronously.
---
--- The transmission takes place asynchronously at the given Timespec time.
--- Requires the socket is bound for transmission to one (or multiple) PFQ kernel threads.
--- See 'bindTx'.
-
-sendAt :: PfqHandlePtr
-       -> C.ByteString  -- ^ bytes of packet
-       -> TimeSpec      -- ^ active timestamp
-       -> Int           -- ^ copies
-       -> IO Bool
-sendAt hdl xs ts copies =
-    unsafeUseAsCStringLen xs $ \(p, l) ->
-        fmap (> 0) $ pfq_send_raw hdl
-                        p
-                        (fromIntegral l)
-                        0
-                        0
-                        (fromIntegral (fromIntegral (sec ts) * (1000000000 :: Integer) + fromIntegral (nsec ts)))
-                        (fromIntegral copies)
-                        1
                         (fromIntegral $ getConstant any_queue) >>= throwPfqIf hdl (== -1)
 
 

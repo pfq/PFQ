@@ -1093,23 +1093,6 @@ namespace pfq {
             return send_raw(pkt.first, pkt.second, 0, copies, async);
         }
 
-
-        /*! Transmit the packet asynchronously. */
-        /*!
-         * The transmission takes place asynchronously at the given timespec time, specified
-         * as a generic chrono::time_point.
-         * Requires the socket is bound for transmission to one (or multiple) PFQ kernel threads.
-         * See 'bind_tx'.
-         */
-
-        template <typename Clock, typename Duration>
-        bool
-        send_at(const_buffer pkt, std::chrono::time_point<Clock, Duration> const &tp, unsigned int copies=1, int async = any_kthread)
-        {
-            auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(tp.time_since_epoch()).count();
-            return send_raw(pkt.first, pkt.second, static_cast<uint64_t>(ns), copies, async);
-        }
-
         //! Schedule a packet transmission.
         /*!
          * The packet is copied into a Tx queue. If 'async' is true and 'queue' is set to any_queue, a TSS symmetric hash

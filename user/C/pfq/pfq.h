@@ -637,14 +637,6 @@ int pfq_send_async(pfq_t *q, const void *ptr, size_t len, unsigned int copies, i
 }
 
 
-static inline
-int pfq_send_at(pfq_t *q, const void *ptr, size_t len, unsigned int copies, int async, struct timespec *ts)
-{
-	uint64_t ns = (uint64_t)(ts->tv_sec)*1000000000ull + (uint64_t)ts->tv_nsec;
-        return pfq_send_raw(q, ptr, len, ns, copies, async);
-}
-
-
 #ifdef __cplusplus
 }
 #endif

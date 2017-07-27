@@ -125,8 +125,6 @@ namespace opt
     bool   rand_dst_ip = false;
 
     bool   rand_flow   = false;
-    bool   active_ts   = false;
-    bool   poisson     = false;
     bool   interactive = false;
     bool   checksum    = false;
 
@@ -311,12 +309,6 @@ namespace thread
                 throw std::runtime_error("pcap support disabled!");
 #endif
             }
-            else if (opt::poisson) {
-                active_generator(true);
-            }
-            else if (opt::active_ts) {
-                active_generator(false);
-            }
             else if (opt::preload > 1) {
                 pool_generator();
             }
@@ -463,94 +455,6 @@ namespace thread
                 m_sent->fetch_add(1, std::memory_order_relaxed);
                 m_band->fetch_add(len, std::memory_order_relaxed);
                 m_gros->fetch_add(len+24, std::memory_order_relaxed);
-
-                n++;
-
-                if (opt::stop.load(std::memory_order_relaxed))
-                    break;
-            }
-        }
-
-
-        void active_generator(bool poisson = false)
-        {
-            auto delta    = std::chrono::nanoseconds(static_cast<uint64_t>(1000/opt::rate));
-            auto ip       = reinterpret_cast<iphdr *>(m_packet.get() + 14);
-            auto now      = std::chrono::system_clock::now();
-            auto len      = opt::len;
-
-            std::chrono::nanoseconds pkt_time{0};
-
-            try
-            {
-                if (poisson)
-                {
-                    auto link_speed_mbit = ethtool_cmd_speed(more::ethtool_command(m_bind.dev.front().name.c_str()).get());
-                    pkt_time = std::chrono::nanoseconds( (len + 24)*8*1000/(link_speed_mbit) );
-                    std::cout << "link       : " << link_speed_mbit/(1000.0) << " Gbit/sec" << std::endl;
-                    std::cout << "pkt_tx_time: " << pkt_time.count() << " nsec" << std::endl;
-                }
-            }
-            catch(...)
-            {
-
-                std::cout << "link       : could not detect speed of link!" << std::endl;
-                std::cout << "pkt_tx_time: 0 nsec" << std::endl;
-            }
-
-            // poisson process traffic
-
-            std::default_random_engine rnd;
-
-            // we want to control the inter-packet gap instead of the departure time
-            // otherwise we run into problems when the inter-departure time is less
-            // than the packet length
-
-            std::exponential_distribution<double> exp_dist(1.0 / static_cast<double>((delta-pkt_time).count()));
-
-            uint32_t rand_mask = ((1ULL << opt::rand_depth)-1);
-
-            for(size_t n = 0; n < opt::npackets;)
-            {
-                if (opt::interactive)
-                    wait_keyboard();
-
-                if (!m_pfq.send_at(pfq::const_buffer(reinterpret_cast<const char *>(m_packet.get()), len), now, opt::copies))
-                {
-                    m_fail->fetch_add(1, std::memory_order_relaxed);
-                    continue;
-                }
-
-                if (poisson)
-                    now += std::chrono::nanoseconds(static_cast<int>(exp_dist(rnd))) + pkt_time;
-                else
-                    now += delta;
-
-                m_sent->fetch_add(1, std::memory_order_relaxed);
-                m_band->fetch_add(len, std::memory_order_relaxed);
-                m_gros->fetch_add(len+24, std::memory_order_relaxed);
-
-                if ((n & (opt::rand_src_period-1)) == 0)
-                {
-                    if (opt::rand_src_ip)
-                    {
-                        ip->saddr = opt::src_ip | htonl(static_cast<uint32_t>(m_gen()) & rand_mask);
-                    }
-                }
-                
-                if ((n & (opt::rand_dst_period-1)) == 0)
-                {
-                    if (opt::rand_dst_ip)
-                    {
-                        ip->daddr = opt::dst_ip | htonl(static_cast<uint32_t>(m_gen()) & rand_mask);
-                    }
-                }
-
-                if (opt::checksum)
-                {
-                    ip->check = 0;
-                    ip->check = in_cksum(reinterpret_cast<u_short *>(ip), 20);
-                }
 
                 n++;
 
@@ -734,8 +638,6 @@ void usage(std::string name)
         " -P --preload INT              Preload INT packets (must be a power of 2)\n"
         "    --rate DOUBLE              Packet rate in Mpps\n"
         "    --interactive              Transmit a packet at time\n"
-        " -a --active-tstamp            Use active timestamp as rate control\n"
-        " -p --poisson                  Use a Poisson process for inter-packet gaps, implies -a\n"
         " -S --queue-sync INT           Set queue sync value, used to Tx sync\n"
         " -t --thread BINDING\n\n"
         "      " + more::netdev_format + "\n" +
@@ -913,7 +815,7 @@ try
 
             continue;
         }
-        
+
         if ( any_strcmp(argv[i], "--rand-period") )
         {
             if (++i == argc)
@@ -927,7 +829,7 @@ try
 
             continue;
         }
-        
+
         if ( any_strcmp(argv[i], "--rand-src-period") )
         {
             if (++i == argc)
@@ -941,7 +843,7 @@ try
 
             continue;
         }
-        
+
         if ( any_strcmp(argv[i], "--rand-dst-period") )
         {
             if (++i == argc)
@@ -1061,19 +963,6 @@ try
             continue;
         }
 
-        if ( any_strcmp(argv[i], "-a", "--active-tstamp") )
-        {
-            opt::active_ts = true;
-            continue;
-        }
-
-        if ( any_strcmp(argv[i], "-p", "--poisson") )
-        {
-            opt::poisson = true;
-            opt::active_ts = true;
-            continue;
-        }
-
         if ( any_strcmp(argv[i], "-t", "--thread") )
         {
             if (++i == argc)
@@ -1145,9 +1034,10 @@ try
 
         while (opt::kthread.at(i).size() < binding.at(i).dev.front().queue.size()) {
 
+#if 0
             if (opt::kthread.at(i).empty() && opt::active_ts)
                 throw std::runtime_error("active_ts requires async transmission (-k)");
-
+#endif
             opt::kthread.at(i).push_back(opt::kthread.at(i).empty() ? no_kthread : opt::kthread.at(i).back());
         }
 
@@ -1191,12 +1081,6 @@ try
 
     if (opt::rate != 0.0)
         std::cout << "rate       : "  << opt::rate << " Mpps" << std::endl;
-
-    if (opt::active_ts && !opt::poisson)
-        std::cout << "timestamp  : active!" << std::endl;
-
-    if (opt::poisson)
-        std::cout << "timestamp  : active with poisson Process traffic!" << std::endl;
 
     auto mq = std::any_of(std::begin(binding), std::end(binding), [](more::thread_binding const &b) { return b.dev.front().queue.size() > 1; });
 
