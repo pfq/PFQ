@@ -59,6 +59,7 @@ Publications
 * _"Network Traffic Processing with PFQ"_: JSAC-SI-MT/IEEE journal Special Issue on Measuring and Troubleshooting the Internet (March 2016) 
 * _"Enabling Packet Fan--Out in the libpcap Library for Parallel Traffic Processing"_: Network Traffic Measurement and Analysis Conference (TMA 2017)
 * _"A Pipeline Functional Language for Stateful Packet Processing"_: IEEE International Workshop on NEtwork Accelerated FunctIOns (NEAF-IO '17)
+* _"The Acceleration of OfSoftSwitch"_: IEEE Conference on Network Function Virtualization and Software Defined Networks (NFV-SDN '17) 
 
 Invited talks
 -------------
