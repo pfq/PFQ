@@ -191,7 +191,7 @@ namespace pfq { namespace lang
 
     //////// Function argument_type class:
 
-    struct funptr_t { } funptr = {};
+    struct funptr_t { };
 
     struct argument_type
     {
@@ -336,7 +336,7 @@ namespace pfq { namespace lang
         if (ser.empty())
             return argument_type(x);
 
-        return argument_type(funptr, static_cast<std::size_t>(ser[0].index));
+        return argument_type(funptr_t{}, static_cast<std::size_t>(ser[0].index));
     }
 
     template <typename ...Ts, typename ...Ti>
