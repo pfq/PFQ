@@ -18,6 +18,10 @@ cabal-version:       >=1.10
 
 executable pfqd
   main-is:             Main.hs
+  other-modules:       Config
+                       Daemon
+                       Options
+                       PFQDaemon
   hs-source-dirs:      src
   build-depends:       base >= 4.7,
                        pfq >= 6.1,
