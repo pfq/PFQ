@@ -19,36 +19,41 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-
+{-# LANGUAGE RecordWildCards #-}
 
 module Development.SimpleBuilder (
 
-    Target(..),
-    BuilderScript,
-    Command,
-    Options,
-    (*>>),
-    requires,
-    into,
-    simpleBuilder,
-    numberOfPhyCores,
+      Target(..)
+    , Options(..)
+    , BuilderScript
+    , Command
+    , (*>>)
+    , requires
+    , into
+    , simpleBuilder
+    , defaultOptions
+    , numberOfPhyCores
 
     -- predefined actions
-    Development.SimpleBuilder.empty,
-    cabalConfigure,
-    cabalBuild,
-    cabalInstall,
-    cabalClean,
-    cabalDistClean,
-    cmake,
-    cmake_distclean,
-    make,
-    make_install,
-    make_clean,
-    make_distclean,
-    ldconfig,
-    configure,
-    cmd
+    , Development.SimpleBuilder.empty
+    , cabalConfigure
+    , cabalBuild
+    , cabalInstall
+    , cabalClean
+    , cabalDistClean
+    , stackConfigure
+    , stackBuild
+    , stackInstall
+    , stackClean
+    , cmake
+    , cmake_distclean
+    , make
+    , make_install
+    , make_clean
+    , make_distclean
+    , ldconfig
+    , configure
+    , cmd
 
 ) where
 
@@ -76,37 +81,41 @@ import Data.Maybe
 
 -- version
 
-verString = "v0.4" :: String
+verString = "v0.5" :: String
 
 
 -- predefined commands
-
 
 empty = return () :: Action ()
 
 
 cabalConfigure = tellCmd $
-    DynamicCmd
-        (\o -> case () of
-                  _   | Just path <- sandbox o -> "cabal sandbox init --sandbox=" ++ path ++ " && cabal configure"
-                      | otherwise -> "runhaskell Setup configure --user")
+    DynamicCmd $ \Options{..} -> case () of
+                    _ | stack             -> ""
+                      | Just p <- sandbox -> "cabal sandbox init --sandbox=" ++ p ++ " && cabal configure"
+                      | otherwise         -> "runhaskell Setup configure --user"
 
 cabalBuild = tellCmd $
-    DynamicCmd $ \o -> if isJust (sandbox o)
-                            then "cabal build"
-                            else "runhaskell Setup build"
+    DynamicCmd $ \Options{..} -> case () of
+                    _ | stack             -> "stack build"
+                      | Just _ <- sandbox -> "cabal build"
+                      | otherwise         -> "runhaskell Setup build"
 
 cabalInstall = tellCmd $
-    DynamicCmd $ \o -> if isJust (sandbox o)
-                            then "cabal install"
-                            else "runhaskell Setup install"
+    DynamicCmd $ \Options{..} -> case () of
+                    _ | stack             -> "stack install"
+                      | Just _ <- sandbox -> "cabal build"
+                      | otherwise         -> "runhaskell Setup install"
 
 cabalClean = tellCmd $
-    DynamicCmd $ \o -> if isJust (sandbox o)
-                            then "cabal clean"
-                            else "runhaskell Setup clean"
+    DynamicCmd $ \Options{..} -> case () of
+                    _ | stack             -> "stack clean"
+                      | Just _ <- sandbox -> "cabal clean"
+                      | otherwise         -> "runhaskell Setup clean"
 
-cabalDistClean  = tellCmd $ StaticCmd "rm -rf dist; rm -f cabal.sandbox.config"
+
+cabalDistClean  = tellCmd $ StaticCmd "rm -rf dist; rm -f cabal.sandbox.config; rm -rf .stack-work"
+
 
 make_install    = tellCmd $ StaticCmd "make install"
 make_clean      = tellCmd $ StaticCmd "make clean"
@@ -115,25 +124,32 @@ ldconfig        = tellCmd $ StaticCmd "ldconfig"
 configure       = tellCmd $ StaticCmd "./configure"
 
 
+stackConfigure  = tellCmd $ StaticCmd "stack setup"
+stackBuild      = tellCmd $ StaticCmd "stack build"
+stackInstall    = tellCmd $ StaticCmd "stack install"
+stackClean      = tellCmd $ StaticCmd "stack clean"
+stackDistClean  = tellCmd $ StaticCmd "rm -rf .stack-work"
+
+
 make = tellCmd $
     DynamicCmd
-        (\o ->
+        (\Options{..} ->
               case () of
-                  _   | jobs o == 0 -> "make"
-                      | jobs o > numberOfPhyCores -> "make -j " ++ show (numberOfPhyCores + 1)
-                      | otherwise -> "make -j " ++ show (jobs o))
+                  _   | jobs == 0 -> "make"
+                      | jobs > numberOfPhyCores -> "make -j " ++ show (numberOfPhyCores + 1)
+                      | otherwise -> "make -j " ++ show jobs)
 
 cmake = tellCmd $
     DynamicCmd
-        (\o ->
-              let build = case buildType o of
+        (\Options{..} ->
+              let build = case buildType of
                           Nothing -> ""
                           Just Release -> "-DCMAKE_BUILD_TYPE=Release"
-                          Just Debug -> "-DCMAKE_BUILD_TYPE=Debug"
-                  cc = case ccComp o of
+                          Just Debug   -> "-DCMAKE_BUILD_TYPE=Debug"
+                  cc = case ccComp of
                           Nothing -> ""
                           Just xs -> "-DCMAKE_C_COMPILER=" ++ xs
-                  cxx = case cxxComp o of
+                  cxx = case cxxComp of
                           Nothing -> ""
                           Just xs -> "-DCMAKE_CXX_COMPILER=" ++ xs
               in unwords ["cmake", build, cc, cxx, "."])
@@ -158,14 +174,14 @@ tellCmd :: Command -> Action ()
 tellCmd c = tell ([c], [])
 
 
--- options...
-
+-- Options...
 
 data Options = Options
     {   buildType  :: Maybe BuildType
     ,   cxxComp    :: Maybe String
     ,   ccComp     :: Maybe String
     ,   sandbox    :: Maybe String
+    ,   stack      :: Bool
     ,   dryRun     :: Bool
     ,   verbose    :: Bool
     ,   version    :: Bool
@@ -180,6 +196,7 @@ defaultOptions = Options
     ,   cxxComp   =  Nothing
     ,   ccComp    =  Nothing
     ,   sandbox   =  Nothing
+    ,   stack     =  False
     ,   dryRun    =  False
     ,   verbose   =  False
     ,   version   =  False
@@ -198,6 +215,9 @@ options = [ Option "v" ["verbose"]
           , Option "h?" ["help"]
                 (NoArg (\o -> o { help = True }))
                 "Print this help"
+          , Option "s" ["stack"]
+                (NoArg (\o -> o { stack = True }))
+                "Use the stack tool"
           , Option "d" ["dry-run"]
                 (NoArg (\o -> o { dryRun = True }))
                 "Print commands, don't actually run them"
@@ -231,9 +251,9 @@ helpBanner = "[ITEMS] = COMMAND [TARGETS]\n" <> "\n" <> "Commands:\n" <>
 -- data types...
 
 data Target = Configure { getTargetName :: String}
-            | Build { getTargetName :: String}
-            | Install { getTargetName :: String}
-            | Clean { getTargetName :: String}
+            | Build     { getTargetName :: String}
+            | Install   { getTargetName :: String}
+            | Clean     { getTargetName :: String}
             | DistClean { getTargetName :: String}
 
 
@@ -267,7 +287,9 @@ evalCmd opt (DynamicCmd fun) = fun opt
 
 execCmd :: Options -> Command -> IO ExitCode
 execCmd opt cmd' = let raw = evalCmd opt cmd'
-    in system raw
+    in case raw of
+         "" -> return ExitSuccess
+         _  -> system raw
 
 
 data BuildType = Release | Debug
@@ -316,40 +338,38 @@ buildTargets tgts script baseDir level = do
     when (length tgts > length script') $
         liftIO $ error ("SimpleBuilder: " ++ unwords (map getTargetName $ filter (`notElem` targets) tgts) ++ ": target not found!")
 
-    forM_ (zip [1 ..] script') $
-        \(n,Component target (ActionInfo path action)) ->
-             do let (cmds',deps') = execWriter $ runAction action
-                done <- get
-                unless (target `elem` done) $
-                    do put (target : done)
-                       putStrLnVerbose Nothing $ replicate level '.' ++ "[" ++ show n ++ "/" ++ show (length script') ++ "] " ++ show target ++ ":"
-                       -- satisfy dependencies
-                       unless
-                           (null deps') $
-                           do putStrLnVerbose
-                                  (Just $ verbose opt) $ "# Satisfying dependencies for " ++ show target ++ ": " ++ show deps'
-                              forM_ deps' $
-                                  \t -> when (t `notElem` done) $
-                                        buildTargets [t] script baseDir (level + 1)
-                       putStrLnVerbose
-                           (Just $ verbose opt) $ "# Building target '" ++ show target ++ "': " ++ show (map (evalCmd opt) cmds')
-                       liftIO $
-                           do -- set working dir...
-                              let workDir = dropTrailingPathSeparator $ baseDir </> path
-                              cur <- getCurrentDirectory
-                              when (cur /= workDir) $
-                                  do setCurrentDirectory workDir
-                                     when (dryRun opt || verbose opt) $
-                                         putStrLn $ "cd " ++ workDir
-                              -- build target
-                              if dryRun opt
-                                  then mapM_ (putStrLn . evalCmd opt) cmds'
-                                  else void $
-                                       do ec <- sequenceWhile (== ExitSuccess) $ map (execCmd opt) cmds'
-                                          when (length ec /= length cmds') $
-                                            let show_cmd (c,e) = show c ++ " -> (" ++ show e ++ ")" in
-                                                error ("SimpleBuilder: " ++ show target ++ " aborted: '" ++ show (head (drop (length ec) cmds'))  ++ "' command failed!")
-
+    forM_ (zip [1 ..] script') $ \(n,Component target (ActionInfo path action)) ->
+        do let (cmds',deps') = execWriter $ runAction action
+           done <- get
+           unless (target `elem` done) $
+               do put (target : done)
+                  putStrLnVerbose Nothing $ replicate level '.' ++ "[" ++ show n ++ "/" ++ show (length script') ++ "] " ++ show target ++ ":"
+                  -- satisfy dependencies
+                  unless
+                      (null deps') $
+                      do putStrLnVerbose
+                             (Just $ verbose opt) $ "# Satisfying dependencies for " ++ show target ++ ": " ++ show deps'
+                         forM_ deps' $
+                             \t -> when (t `notElem` done) $
+                                   buildTargets [t] script baseDir (level + 1)
+                  putStrLnVerbose
+                      (Just $ verbose opt) $ "# Building target '" ++ show target ++ "': " ++ show (map (evalCmd opt) cmds')
+                  liftIO $
+                      do -- set working dir...
+                         let workDir = dropTrailingPathSeparator $ baseDir </> path
+                         cur <- getCurrentDirectory
+                         when (cur /= workDir) $
+                             do setCurrentDirectory workDir
+                                when (dryRun opt || verbose opt) $
+                                    putStrLn $ "cd " ++ workDir
+                         -- build target
+                         if dryRun opt
+                             then mapM_ (putStrLn . evalCmd opt) cmds'
+                             else void $
+                                  do ec <- sequenceWhile (== ExitSuccess) $ map (execCmd opt) cmds'
+                                     when (length ec /= length cmds') $
+                                       let show_cmd (c,e) = show c ++ " -> (" ++ show e ++ ")" in
+                                           error ("SimpleBuilder: " ++ show target ++ " aborted: '" ++ show (head (drop (length ec) cmds'))  ++ "' command failed!")
 
 
 --  ...from monad extras
@@ -370,16 +390,16 @@ putStrLnVerbose Nothing xs = liftIO $ putStrLn xs
 putStrLnVerbose (Just v) xs = when v (liftIO $ putStrLn xs)
 
 
-parseOpts :: [String] -> IO (Options, [String])
-parseOpts argv =
+parseOpts :: [String] -> Options -> IO (Options, [String])
+parseOpts argv opt =
     case getOpt Permute options argv of
-        (o,n,[]  ) -> return (foldl (flip id) defaultOptions o, n)
-        (_,_,errs) -> ioError (userError (concat errs ++ usageInfo "--help for additional information" options))
+      (o,n,[]  ) -> return (foldl (flip id) opt o, n)
+      (_,_,errs) -> ioError (userError (concat errs ++ usageInfo "--help for additional information" options))
 
 
-simpleBuilder :: BuilderScript -> [String] -> IO ()
-simpleBuilder script' args = do
-    (opt,cmds) <- parseOpts args
+simpleBuilder :: BuilderScript -> Options -> [String] -> IO ()
+simpleBuilder script' opt' args = do
+    (opt,cmds) <- parseOpts args opt'
     baseDir <- getCurrentDirectory
     when (help opt) $
         putStrLn (usageInfo helpBanner options) >>
