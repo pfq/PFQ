@@ -91,7 +91,7 @@ empty = return () :: Action ()
 
 cabalConfigure = tellCmd $
     DynamicCmd $ \Options{..} -> case () of
-                    _ | stack             -> ""
+                    _ | stack             -> "stack setup"
                       | Just p <- sandbox -> "cabal sandbox init --sandbox=" ++ p ++ " && cabal configure"
                       | otherwise         -> "runhaskell Setup configure --user"
 
@@ -345,31 +345,29 @@ buildTargets tgts script baseDir level = do
                do put (target : done)
                   putStrLnVerbose Nothing $ replicate level '.' ++ "[" ++ show n ++ "/" ++ show (length script') ++ "] " ++ show target ++ ":"
                   -- satisfy dependencies
-                  unless
-                      (null deps') $
+                  unless (null deps') $
                       do putStrLnVerbose
                              (Just $ verbose opt) $ "# Satisfying dependencies for " ++ show target ++ ": " ++ show deps'
                          forM_ deps' $
                              \t -> when (t `notElem` done) $
                                    buildTargets [t] script baseDir (level + 1)
-                  putStrLnVerbose
-                      (Just $ verbose opt) $ "# Building target '" ++ show target ++ "': " ++ show (map (evalCmd opt) cmds')
-                  liftIO $
-                      do -- set working dir...
-                         let workDir = dropTrailingPathSeparator $ baseDir </> path
-                         cur <- getCurrentDirectory
-                         when (cur /= workDir) $
-                             do setCurrentDirectory workDir
-                                when (dryRun opt || verbose opt) $
-                                    putStrLn $ "cd " ++ workDir
-                         -- build target
-                         if dryRun opt
-                             then mapM_ (putStrLn . evalCmd opt) cmds'
-                             else void $
-                                  do ec <- sequenceWhile (== ExitSuccess) $ map (execCmd opt) cmds'
-                                     when (length ec /= length cmds') $
-                                       let show_cmd (c,e) = show c ++ " -> (" ++ show e ++ ")" in
-                                           error ("SimpleBuilder: " ++ show target ++ " aborted: '" ++ show (head (drop (length ec) cmds'))  ++ "' command failed!")
+                  putStrLnVerbose (Just $ verbose opt) $ "# Building target '" ++ show target ++ "': " ++ show (map (evalCmd opt) cmds')
+                  liftIO $ do -- set working dir...
+                      let workDir = dropTrailingPathSeparator $ baseDir </> path
+                      cur <- getCurrentDirectory
+                      when (cur /= workDir) $ do
+                          setCurrentDirectory workDir
+                          when (dryRun opt || verbose opt) $
+                              putStrLn $ "cd " ++ workDir
+
+                      -- build target
+                      if dryRun opt
+                          then mapM_ (putStrLn . evalCmd opt) cmds'
+                          else void $ do
+                              ec <- sequenceWhile (== ExitSuccess) $ map (execCmd opt) cmds'
+                              when (length ec /= length cmds') $
+                                let show_cmd (c,e) = show c ++ " -> (" ++ show e ++ ")" in
+                                    error ("SimpleBuilder: " ++ show target ++ " aborted: '" ++ show (head (drop (length ec) cmds'))  ++ "' command failed!")
 
 
 --  ...from monad extras
