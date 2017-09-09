@@ -1474,10 +1474,18 @@ pfq_set_group_computation_from_file(pfq_t *q, int gid, const char *filepath)
     	       olen = 0;
 	FILE *fp;
 	int ret;
+        char *stack_yaml;
 
-	if (snprintf(buffer, 1024, "~/.cabal/bin/pfq-lang --json %s", filepath) < 0) {
-		return Q_ERROR(q, "PFQ: set_group_computation_from_file: snprintf");
-	}
+        if ((stack_yaml = getenv("PFQ_LANG_STACK_YAML"))) {
+	        if (snprintf(buffer, 1024, "stack exec --stack-yaml %s -- ~/.local/bin/pfq-lang --json %s", stack_yaml, filepath) < 0) {
+		        return Q_ERROR(q, "PFQ: set_group_computation_from_file: snprintf");
+	        }
+        }
+        else {
+                if (snprintf(buffer, 1024, "~/.cabal/bin/pfq-lang --json %s", filepath) < 0) {
+                        return Q_ERROR(q, "PFQ: set_group_computation_from_file: snprintf");
+                }
+        }
 
 	fp = popen(buffer, "r");
 	if (fp == NULL) {
