@@ -25,6 +25,7 @@ import System.Console.CmdArgs
 import CmdLine
 import Options
 import System.IO
+import System.Exit
 
 import Data.Maybe
 import Control.Exception
@@ -39,6 +40,10 @@ main :: IO ()
 main = do
 
   opt' <- cmdArgsRun options
+
+  when (ver opt') $ do
+      putStrLn $ "pfq-lang: GHC version " ++ show ghcVersion
+      exitSuccess
 
   bracket (maybe (return stdin)  (`openFile` ReadMode)  (file opt')) hClose $ \inHandle ->
     bracket (maybe (return stdout) (`openFile` WriteMode) (output opt')) hClose $ \outHandle -> do

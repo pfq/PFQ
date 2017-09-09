@@ -39,6 +39,7 @@ data Options = Options
     ,   gid                 :: Maybe Int
     -- other
     ,   verb                :: Int
+    ,   ver                 :: Bool
     ,   file                :: Maybe FilePath
     } deriving (Data, Typeable, Show)
 

@@ -32,6 +32,7 @@ options = cmdArgsMode $ Options
           ,     fdescr = False   &= help "Format output as list of function descriptors" &= explicit &= name "fdescr"
           ,     gid = Nothing    &= help "Specify the PFQ gid to set the computation for" &= explicit &= name "gid"
           ,     verb = 0         &= groupname "Other" &= help "Control verbosity level (0..3)" &= explicit &= name "verbosity"
+          ,     ver = False      &= help "Display GHC underlying version" &= explicit &= name "ver"
           ,     file = Nothing   &= args
           } &= summary ("pfq-lang " ++ showVersion version)  &= program "pfq-lang"
 
