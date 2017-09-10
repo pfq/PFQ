@@ -27,9 +27,23 @@ module Development.SimpleBuilder (
     , Options(..)
     , BuilderScript
     , Command
-    , (*>>)
-    , requires
-    , into
+
+    , objective
+
+    , config
+    , build
+    , install
+    , clean
+    , distclean
+
+    , configOf
+    , buildOf
+    , installOf
+    , cleanOf
+    , distcleanOf
+
+    , req
+    , reqs
     , simpleBuilder
     , defaultOptions
     , numberOfPhyCores
@@ -238,9 +252,9 @@ options = [ Option "v" ["verbose"]
                 "Compiler to use for C programs"]
 
 
-helpBanner :: String
-helpBanner = "[ITEMS] = COMMAND [TARGETS]\n" <> "\n" <> "Commands:\n" <>
-    "  configure                     Prepare to build PFQ framework.\n" <>
+banner :: String
+banner = "[ITEMS] = COMMAND [TARGETS]\n" <> "\n" <> "Commands:\n" <>
+    "  config                        Prepare to build PFQ framework.\n" <>
     "  build                         Build PFQ framework.\n" <>
     "  install                       Copy the files into the install location.\n" <>
     "  clean                         Clean up after a build.\n" <>
@@ -250,15 +264,16 @@ helpBanner = "[ITEMS] = COMMAND [TARGETS]\n" <> "\n" <> "Commands:\n" <>
 
 -- data types...
 
-data Target = Configure { getTargetName :: String}
-            | Build     { getTargetName :: String}
-            | Install   { getTargetName :: String}
-            | Clean     { getTargetName :: String}
-            | DistClean { getTargetName :: String}
+
+data Target =  Config    { getTargetName :: String}
+            |  Build     { getTargetName :: String}
+            |  Install   { getTargetName :: String}
+            |  Clean     { getTargetName :: String}
+            |  DistClean { getTargetName :: String}
 
 
 instance Show Target where
-    show (Configure x) = "configure " ++ x
+    show (Config x)    = "config " ++ x
     show (Build x)     = "build " ++ x
     show (Install x)   = "install " ++ x
     show (Clean x)     = "clean " ++ x
@@ -266,19 +281,22 @@ instance Show Target where
 
 
 instance Eq Target where
-    (Configure a) == (Configure b)  = a == b || a == "*" || b == "*"
-    (Build a)     == (Build b)      = a == b || a == "*" || b == "*"
-    (Install a)   == (Install b)    = a == b || a == "*" || b == "*"
-    (Clean a)     == (Clean b)      = a == b || a == "*" || b == "*"
-    (DistClean a) == (DistClean b)  = a == b || a == "*" || b == "*"
+    (Config a)    == (Config b)    = a == b || a == "*" || b == "*"
+    (Build a)     == (Build b)     = a == b || a == "*" || b == "*"
+    (Install a)   == (Install b)   = a == b || a == "*" || b == "*"
+    (Clean a)     == (Clean b)     = a == b || a == "*" || b == "*"
+    (DistClean a) == (DistClean b) = a == b || a == "*" || b == "*"
     _ == _ = False
+
 
 
 data Command = StaticCmd String | DynamicCmd (Options -> String)
 
+
 instance Show Command where
     show (StaticCmd xs) = xs
     show (DynamicCmd f) = f defaultOptions
+
 
 evalCmd :: Options -> Command -> String
 evalCmd _ (StaticCmd xs) = xs
@@ -295,7 +313,24 @@ execCmd opt cmd' = let raw = evalCmd opt cmd'
 data BuildType = Release | Debug
     deriving (Data, Typeable, Show, Read, Eq)
 
-type ActionLog = ([Command], [Target])
+
+data Objective = Objective
+    {
+        getObjectiveName :: String
+    ,   getFolder        :: FilePath
+    ,   getScript        :: Writer [Component] ()
+    }
+
+data Component = Component
+    {  getTarget :: Target
+    ,  getActionInfo :: ActionInfo
+    } deriving (Show)
+
+
+data ActionInfo = ActionInfo
+    { basedir :: FilePath
+    , action :: Action ()
+    } deriving (Show)
 
 newtype Action a = Action { runAction :: Writer ActionLog a }
     deriving(Functor, Applicative, Monad, MonadWriter ActionLog)
@@ -303,40 +338,48 @@ newtype Action a = Action { runAction :: Writer ActionLog a }
 instance (Show a) => Show (Action a) where
     show act = (\(cs, ts) -> show cs ++ ": " ++ show ts) $ (runWriter . runAction) act
 
-data Component = Component { getTarget :: Target,  getActionInfo :: ActionInfo }
+type ActionLog = ([Command], [Target])
 
-data ActionInfo = ActionInfo { basedir :: FilePath, action :: Action () }
+config, build, install, clean, distclean  :: Action () -> Writer [Component] ()
+
+config    act = tell [Component (Config    "") (ActionInfo "" act)]
+build     act = tell [Component (Build     "") (ActionInfo "" act)]
+install   act = tell [Component (Install   "") (ActionInfo "" act)]
+clean     act = tell [Component (Clean     "") (ActionInfo "" act)]
+distclean act = tell [Component (DistClean "") (ActionInfo "" act)]
 
 
-type BuilderScript = Writer Script ()
+objective :: String -> FilePath -> Writer [Component] () -> Writer [Objective] ()
+objective name path cs = tell [Objective name path cs]
 
-type Script = [Component]
+
+type BuilderScript = Writer [Objective] ()
 
 type BuilderT = RWST Options () [Target]
 
 
-infixr 0 *>>
-
-(*>>) :: Target -> ActionInfo -> Writer [Component] ()
-t *>> r = tell [Component t r]
-
-
-into :: FilePath -> Action () -> ActionInfo
-into = ActionInfo
+configOf    = Config
+buildOf     = Build
+installOf   = Install
+cleanOf     = Clean
+distcleanOf = DistClean
 
 
-requires :: Action () -> [Target] -> Action ()
-ac `requires` xs = ac >> Action (tell ([],xs))
+req :: Action () -> Target -> Action ()
+ac `req` x = ac >> Action (tell ([], [x]))
+
+reqs :: Action () -> [Target] -> Action ()
+ac `reqs` xs = ac >> Action (tell ([],xs))
 
 
-buildTargets :: [Target] -> Script -> FilePath -> Int -> BuilderT IO ()
-buildTargets tgts script baseDir level = do
+runBuilders :: [Target] -> [Component] -> FilePath -> Int -> BuilderT IO ()
+runBuilders ts script baseDir level = do
     opt <- ask
     let targets = map getTarget script
-    let script' = filter (\(Component tar' _) -> tar' `elem` tgts) script
+    let script' = filter (\(Component tar' _) -> tar' `elem` ts) script
 
-    when (length tgts > length script') $
-        liftIO $ error ("SimpleBuilder: " ++ unwords (map getTargetName $ filter (`notElem` targets) tgts) ++ ": target not found!")
+    when (length ts > length script') $
+        liftIO $ error ("SimpleBuilder: " ++ unwords (map getTargetName $ filter (`notElem` targets) ts) ++ ": target not found!")
 
     forM_ (zip [1 ..] script') $ \(n,Component target (ActionInfo path action)) ->
         do let (cmds',deps') = execWriter $ runAction action
@@ -350,7 +393,7 @@ buildTargets tgts script baseDir level = do
                              (Just $ verbose opt) $ "# Satisfying dependencies for " ++ show target ++ ": " ++ show deps'
                          forM_ deps' $
                              \t -> when (t `notElem` done) $
-                                   buildTargets [t] script baseDir (level + 1)
+                                   runBuilders [t] script baseDir (level + 1)
                   putStrLnVerbose (Just $ verbose opt) $ "# Building target '" ++ show target ++ "': " ++ show (map (evalCmd opt) cmds')
                   liftIO $ do -- set working dir...
                       let workDir = dropTrailingPathSeparator $ baseDir </> path
@@ -368,6 +411,57 @@ buildTargets tgts script baseDir level = do
                               when (length ec /= length cmds') $
                                 let show_cmd (c,e) = show c ++ " -> (" ++ show e ++ ")" in
                                     error ("SimpleBuilder: " ++ show target ++ " aborted: '" ++ show (head (drop (length ec) cmds'))  ++ "' command failed!")
+
+
+simpleBuilder :: BuilderScript -> Options -> [String] -> IO ()
+simpleBuilder script' opt' args = do
+
+    (opt, cmds) <- parseOpts args opt'
+
+    when (help opt) $
+        putStrLn (usageInfo banner options) *> exitSuccess
+    when (version opt) $
+        putStrLn ("SimpleBuilder " ++ verString) *> exitSuccess
+
+    let objs = execWriter script'
+
+    when (verbose opt) $
+        mapM_ print $ concatMap mkComponents objs
+
+    simpleBuilder' (concatMap mkComponents objs) opt cmds
+
+    where mkComponents :: Objective -> [Component]
+          mkComponents Objective{..} =
+            map (\(Component target ai) -> Component target{getTargetName = getObjectiveName} ai{basedir = getFolder}) (snd $ runWriter getScript)
+
+
+
+simpleBuilder' :: [Component] -> Options -> [String] -> IO ()
+simpleBuilder' script opt cmds = do
+
+    baseDir <- getCurrentDirectory
+
+    sb <- let sb = sandbox opt
+          in if isJust sb
+                then fmap Just $
+                    checkDir (fromJust sb) >>
+                    canonicalizePath
+                        (fromJust sb)
+               else return sb
+
+    E.catch (case cmds of
+               ("config":xs)    -> evalRWST (runBuilders (map Config    (mkTargets xs)) script baseDir 0) opt { sandbox = sb } [] >> putStrLn "Done."
+               ("build":xs)     -> evalRWST (runBuilders (map Build     (mkTargets xs)) script baseDir 0) opt { sandbox = sb } [] >> putStrLn "Done."
+               ("install":xs)   -> evalRWST (runBuilders (map Install   (mkTargets xs)) script baseDir 0) opt { sandbox = sb } [] >> putStrLn "Done."
+               ("clean":xs)     -> evalRWST (runBuilders (map Clean     (mkTargets xs)) script baseDir 0) opt { sandbox = sb } [] >> putStrLn "Done."
+               ("distclean":xs) -> evalRWST (runBuilders (map DistClean (mkTargets xs)) script baseDir 0) opt { sandbox = sb } [] >> putStrLn "Done."
+               ("show":_)       -> showTargets script
+               _                -> putStr $ usageInfo banner options)
+        (\e -> setCurrentDirectory baseDir >> print (e :: E.SomeException))
+
+    where mkTargets xs = if null xs
+                            then ["*"]
+                            else xs
 
 
 --  ...from monad extras
@@ -388,46 +482,6 @@ putStrLnVerbose Nothing xs = liftIO $ putStrLn xs
 putStrLnVerbose (Just v) xs = when v (liftIO $ putStrLn xs)
 
 
-parseOpts :: [String] -> Options -> IO (Options, [String])
-parseOpts argv opt =
-    case getOpt Permute options argv of
-      (o,n,[]  ) -> return (foldl (flip id) opt o, n)
-      (_,_,errs) -> ioError (userError (concat errs ++ usageInfo "--help for additional information" options))
-
-
-simpleBuilder :: BuilderScript -> Options -> [String] -> IO ()
-simpleBuilder script' opt' args = do
-    (opt,cmds) <- parseOpts args opt'
-    baseDir <- getCurrentDirectory
-    when (help opt) $
-        putStrLn (usageInfo helpBanner options) >>
-        exitSuccess
-    when (version opt) $
-        putStrLn ("SimpleBuilder " ++ verString) >>
-        exitSuccess
-    sb <- let sb = sandbox opt
-          in if isJust sb
-                then fmap Just $
-                    checkDir (fromJust sb) >>
-                    canonicalizePath
-                        (fromJust sb)
-               else return sb
-    let script = execWriter script'
-
-    E.catch (case cmds of
-                ("configure":xs) -> evalRWST (buildTargets (map Configure (mkTargets xs)) script baseDir 0) opt { sandbox = sb } [] >> putStrLn "Done."
-                ("build":xs)     -> evalRWST (buildTargets (map Build (mkTargets xs)) script baseDir 0)     opt { sandbox = sb } [] >> putStrLn "Done."
-                ("install":xs)   -> evalRWST (buildTargets (map Install (mkTargets xs)) script baseDir 0)   opt { sandbox = sb } [] >> putStrLn "Done."
-                ("clean":xs)     -> evalRWST (buildTargets (map Clean (mkTargets xs)) script baseDir 0)     opt { sandbox = sb } [] >> putStrLn "Done."
-                ("distclean":xs) -> evalRWST (buildTargets (map DistClean (mkTargets xs)) script baseDir 0) opt { sandbox = sb } [] >> putStrLn "Done."
-                ("show":_)       -> showTargets script
-                _                -> putStr $ usageInfo helpBanner options)
-        (\e -> setCurrentDirectory baseDir >> print (e :: E.SomeException))
-
-    where mkTargets xs = if null xs
-                            then ["*"]
-                            else xs
-
 
 checkDir :: FilePath -> IO ()
 checkDir path = do
@@ -435,7 +489,7 @@ checkDir path = do
     unless v $ error ("SimpleBuilder: " ++ path ++ " directory does not exist")
 
 
-showTargets :: Script -> IO ()
+showTargets :: [Component] -> IO ()
 showTargets script =
     putStrLn "targets:" >> mapM_ putStrLn (nub (map (\(Component t _) -> "    " ++ getTargetName t) script))
 
@@ -445,4 +499,10 @@ numberOfPhyCores :: Int
 numberOfPhyCores = unsafePerformIO $
     (length . filter (isInfixOf "processor") . lines) <$> readFile "/proc/cpuinfo"
 
+
+parseOpts :: [String] -> Options -> IO (Options, [String])
+parseOpts argv opt =
+    case getOpt Permute options argv of
+      (o,n,[]  ) -> return (foldl (flip id) opt o, n)
+      (_,_,errs) -> ioError (userError (concat errs ++ usageInfo "--help for additional information" options))
 
