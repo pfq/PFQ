@@ -110,9 +110,9 @@ cabalConfigure = tellCmd $
                       | otherwise         -> "runhaskell Setup configure --user"
 
 cabalBuild = tellCmd $
-    DynamicCmd $ \Options{..} -> case () of
-                    _ | stack             -> "stack build"
-                      | Just _ <- sandbox -> "cabal build"
+    DynamicCmd $ \opt@Options{..} -> case () of
+                    _ | stack             -> runParallel "stack build" "--ghc-options -j" opt
+                      | Just _ <- sandbox -> runParallel "cabal build" "-j" opt
                       | otherwise         -> "runhaskell Setup build"
 
 cabalInstall = tellCmd $
@@ -145,13 +145,13 @@ stackClean      = tellCmd $ StaticCmd "stack clean"
 stackDistClean  = tellCmd $ StaticCmd "rm -rf .stack-work"
 
 
-make = tellCmd $
-    DynamicCmd
-        (\Options{..} ->
-              case () of
-                  _   | jobs == 0 -> "make"
-                      | jobs > numberOfPhyCores -> "make -j " ++ show (numberOfPhyCores + 1)
-                      | otherwise -> "make -j " ++ show jobs)
+runParallel :: String -> String -> Options -> String
+runParallel cmd s Options {..} | jobs == 0                =  cmd
+                               | jobs > numberOfPhyCores  =  cmd ++ " " ++ s ++ show (numberOfPhyCores+1)
+                               | otherwise                =  cmd ++ " " ++ s ++ show jobs
+
+make = tellCmd $ DynamicCmd (\opt -> runParallel "make" "-j" opt)
+
 
 cmake = tellCmd $
     DynamicCmd
@@ -386,15 +386,14 @@ runBuilders ts script baseDir level = do
            done <- get
            unless (target `elem` done) $
                do put (target : done)
-                  putStrLnVerbose Nothing $ replicate level '.' ++ "[" ++ show n ++ "/" ++ show (length script') ++ "] " ++ show target ++ ":"
+                  putStrLnVerbose True $ replicate level '.' ++ "[" ++ show n ++ "/" ++ show (length script') ++ "] " ++ show target ++ ":"
                   -- satisfy dependencies
                   unless (null deps') $
-                      do putStrLnVerbose
-                             (Just $ verbose opt) $ "# Satisfying dependencies for " ++ show target ++ ": " ++ show deps'
+                      do putStrLnVerbose (verbose opt) $ "# Satisfying dependencies for " ++ show target ++ ": " ++ show deps'
                          forM_ deps' $
                              \t -> when (t `notElem` done) $
                                    runBuilders [t] script baseDir (level + 1)
-                  putStrLnVerbose (Just $ verbose opt) $ "# Building target '" ++ show target ++ "': " ++ show (map (evalCmd opt) cmds')
+                  putStrLnVerbose (verbose opt) $ "# Building target '" ++ show target ++ "': " ++ show (map (evalCmd opt) cmds')
                   liftIO $ do -- set working dir...
                       let workDir = dropTrailingPathSeparator $ baseDir </> path
                       cur <- getCurrentDirectory
@@ -407,6 +406,7 @@ runBuilders ts script baseDir level = do
                       if dryRun opt
                           then mapM_ (putStrLn . evalCmd opt) cmds'
                           else void $ do
+                              mapM_ (putStrLnVerboseIO (verbose opt) . show ) cmds'
                               ec <- sequenceWhile (== ExitSuccess) $ map (execCmd opt) cmds'
                               when (length ec /= length cmds') $
                                 let show_cmd (c,e) = show c ++ " -> (" ++ show e ++ ")" in
@@ -477,10 +477,12 @@ sequenceWhile p (m:ms) = do
         else return []
 
 
-putStrLnVerbose  :: Maybe Bool -> String -> BuilderT IO ()
-putStrLnVerbose Nothing xs = liftIO $ putStrLn xs
-putStrLnVerbose (Just v) xs = when v (liftIO $ putStrLn xs)
+putStrLnVerbose  :: Bool -> String -> BuilderT IO ()
+putStrLnVerbose v xs = when v (liftIO $ putStrLn xs)
 
+
+putStrLnVerboseIO  :: Bool -> String -> IO ()
+putStrLnVerboseIO v xs = when v (putStrLn xs)
 
 
 checkDir :: FilePath -> IO ()
