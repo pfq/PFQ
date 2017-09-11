@@ -9,12 +9,12 @@ if(PCAP_HEADER_FOUND)
     add_definitions(-DHAVE_PCAP_H)
 endif(PCAP_HEADER_FOUND)
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/../common/CMakeLists.txt)
+include(${CMAKE_CURRENT_SOURCE_DIR}/../lib/common/CMakeLists.txt)
 
 include_directories(.)
 include_directories(../../kernel)
-include_directories(../C++)
-include_directories(../common/lib)
+include_directories(../lib/C++)
+include_directories(../lib/common/lib)
 
 
 add_executable(pfq-gen pfq-gen.cpp)

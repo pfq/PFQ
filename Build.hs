@@ -42,17 +42,17 @@ script = do
 
    -- PFQ C library
 
-    objective "pfq-clib" "user/C/" $ do
+    objective "pfq-clib" "user/lib/C/" $ do
 
        config     $ cmake
-       build      $ make         `req` configOf "pfq-clib"
-       install    $ make_install `req` buildOf "pfq-clib" >> ldconfig
-       clean      $ make_clean
-       distclean  $ cmake_distclean
+       build      $ make            `req` configOf "pfq-clib"
+       install    $ make_install    `req` buildOf  "pfq-clib" >> ldconfig
+       clean      $ make_clean      `req` configOf "pfq-clib"
+       distclean  $ cmake_distclean `req` cleanOf  "pfq-clib"
 
     -- PFQ C++ library
 
-    objective "pfq-cpplib" "user/C++/pfq/" $ do
+    objective "pfq-cpplib" "user/lib/C++/pfq/" $ do
         config    $ empty
         build     $ empty
         install   $ make_install `req` installOf "pfq-clib" `req` installOf "pfq.ko"
@@ -60,7 +60,7 @@ script = do
 
      -- PFQ Haskell library
 
-    objective "pfq-haskell-lib" "user/Haskell/" $ do
+    objective "pfq-haskell-lib" "user/lib/Haskell/" $ do
         config    $ cabalConfigure  `req` installOf "pfq-clib"
         build     $ cabalBuild      `req` installOf "pfq.ko" `req` configOf "pfq-haskell-lib"
         install   $ cabalInstall    `req` buildOf "pfq-haskell-lib"
@@ -69,12 +69,12 @@ script = do
 
      -- PFQ pcap library 1.8.1
 
-    objective "pfq-pcap" "user/libpcap/libpcap-1.8.1-fanout/" $ do
+    objective "pfq-pcap" "user/lib/libpcap-1.8.1-fanout/" $ do
         config    $ cmd "autoconf" `req` installOf "pfq-clib" >> configure
         build     $ make           `req` installOf "pfq.ko" `req` configOf "pfq-pcap"
-        install   $ empty          `req` buildOf "pfq-pcap"
-        clean     $ make_clean     `req` configOf "pfq-pcap"
-        distclean $ make_distclean
+        install   $ empty          `req` buildOf   "pfq-pcap"
+        clean     $ make_clean     `req` configOf  "pfq-pcap"
+        distclean $ make_distclean `req` cleanOf   "pfq-pcap"
 
      -- PFQ hcounters (exmaple)
 
@@ -132,28 +132,28 @@ script = do
         clean     $ cabalClean
         distclean $ cabalDistClean
 
-    objective "regression" "user/regression/C/" $ do
+    objective "pfq-regression" "user/pfq-regression/C/" $ do
         config    $ cmake
-        build     $ make              `reqs` [installOf "pfq-clib", installOf "pfq-cpplib", configOf "regression"]
-        install   $ empty             `req`  buildOf   "regression"
-        clean     $ make_clean
-        distclean $ cmake_distclean
+        build     $ make              `reqs` [installOf "pfq-clib", installOf "pfq-cpplib", configOf "pfq-regression"]
+        install   $ empty             `req`  buildOf  "pfq-regression"
+        clean     $ make_clean        `req`  configOf "pfq-regression"
+        distclean $ cmake_distclean   `req`  cleanOf  "pfq-regression"
 
      -- PFQ htest (misc tests)
 
-    objective "h-regression" "user/regression/Haskell/" $ do
+    objective "h-regression" "user/pfq-regression/Haskell/" $ do
         config    $ cabalConfigure  `req` installOf "pfq-haskell-lib"
         build     $ cabalBuild      `req` configOf  "h-regression"
         install   $ empty           `req` buildOf   "h-regression"
         clean     $ cabalClean
         distclean $ cabalDistClean
 
-    objective "tools" "user/tool/" $ do
+    objective "pfq-tools" "user/pfq-tools/" $ do
         config    $ cmake
-        build     $ make             `reqs` [installOf "pfq-clib", configOf "tools"]
-        install   $ make_install     `req`  buildOf "tools"
-        clean     $ make_clean
-        distclean $ cmake_distclean
+        build     $ make             `reqs` [installOf "pfq-clib", configOf "pfq-tools"]
+        install   $ make_install     `req`  buildOf  "pfq-tools"
+        clean     $ make_clean       `req`  configOf "pfq-tools"
+        distclean $ cmake_distclean  `req`  cleanOf  "pfq-tools"
 
 
 main = simpleBuilder script options =<< getArgs

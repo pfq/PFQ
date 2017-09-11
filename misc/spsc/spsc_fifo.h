@@ -1,1 +1,1 @@
-../../kernel/core/spsc_fifo.h
+../../kernel/pfq/spsc_fifo.h
