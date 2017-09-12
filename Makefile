@@ -23,9 +23,8 @@ MAKE_PID := $(shell echo $$PPID)
 JOB_FLAG := $(filter -j%, $(subst -j ,-j,$(shell ps T | grep "^\s*$(MAKE_PID).*$(MAKE)")))
 JOBS     := $(subst -j,,$(JOB_FLAG))
 
-HASKELL_BUILD ?= stack
-
-BUILD_TYPE ?= Release
+HASKELL_BUILD = stack
+BUILD_TYPE = Release
 
 include define.mk
 

@@ -19,11 +19,11 @@
 
 ifdef BUILD_TYPE
 define cmake-configure =
-		cmake -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) .
+		cmake -DCMAKE_C_COMPILER=$(CC) -DCMAKE_CXX_COMPILER=$(CXX) -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) .
 endef
 else
 define cmake-configure =
-		cmake .
+		cmake -DCMAKE_C_COMPILER=$(CC) -DCMAKE_CXX_COMPILER=$(CXX) .
 endef
 endif
 
