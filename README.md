@@ -7,26 +7,26 @@ PFQ v6.1
 Introduction
 ------------
 
-PFQ is a functional network framework designed for the Linux operating system 
-that allows efficient packets capture/transmission (10G, 40G and beyond), in-kernel
-functional processing and packets steering across sockets/end-points.
+PFQ is a functional framework designed for the Linux operating system built for efficient 
+packets capture/transmission (10G, 40G and beyond), in-kernel functional processing, 
+kernel-bypass and packets steering across groups of sockets/end-points.
 
-PFQ is highly optimized for multi-core architecture, as well as for network devices 
-equipped with multiple hardware queues. It works with any NIC and provides a script 
-designed to compile accelerated versions of device drivers starting from the source 
-code.
+It is highly optimized for multi-core architecture, as well as for network devices 
+equipped with multiple hardware queues. Compliant with any NIC, it provides a script 
+that generates accelerated network device drivers starting from the source code.
 
-PFQ enables the development of high-performance networking applications with 
-different programming languages: C, C++ and Haskell. In addition, a pure functional 
-language designed for early stages in-kernel packet processing is included: pfq-lang.
+PFQ enables the development of high-performance network applications, and it is shipped 
+with a custom version of libpcap that accelerate and parallelize legacy applications. 
+Besides, a pure functional language designed for early stages in-kernel packet processing 
+is included: pfq-lang.
 
-pfq-lang is inspired by Haskell and allows the define of small applications that run
-on top of network device drivers. Through pfq-lang it is possible to build efficient
-bridges, port mirrors, simple firewalls, network balancers and so forth.
+Pfq-Lang is inspired by Haskell and is intended to define applications that run on top 
+of network device drivers. Through pfq-lang it is possible to build efficient bridges, 
+port mirrors, simple firewalls, network balancers and so forth.
 
-The package provides the source code of the PFQ kernel module, user-space libraries for C, 
-C++11-14 and Haskell language, an implementation of pfq-lang as eDSL for C++11-14 and
-Haskell, an experimental pfq-lang compiler and a set of diagnostic tools.
+The framework includes the source code of the PFQ kernel module, user-space libraries 
+for C, C++11-14, Haskell language, an accelerated pcap library, an implementation of 
+pfq-lang as eDSL for C++/Haskell, an experimental pfq-lang compiler and a set of diagnostic tools.
 
 
 Features
