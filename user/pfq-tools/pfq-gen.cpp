@@ -220,11 +220,11 @@ char *make_packets( size_t size
 
         if (opt::rand_src_ip)
         {
-            ip->saddr = src_ip | htonl(static_cast<uint32_t>(gen()) & rand_mask);
+            ip->saddr = src_ip ^ htonl(static_cast<uint32_t>(gen()) & rand_mask);
         }
         if (opt::rand_dst_ip)
         {
-            ip->daddr = dst_ip | htonl(static_cast<uint32_t>(gen()) & rand_mask);
+            ip->daddr = dst_ip ^ htonl(static_cast<uint32_t>(gen()) & rand_mask);
         }
 
         if (opt::checksum)
@@ -386,7 +386,7 @@ namespace thread
                 {
                     if (opt::rand_src_ip)
                     {
-                        ip->saddr = opt::src_ip | htonl(static_cast<uint32_t>(m_gen()) & rand_mask);
+                        ip->saddr = opt::src_ip ^ htonl(static_cast<uint32_t>(m_gen()) & rand_mask);
                     }
                 }
 
@@ -394,7 +394,7 @@ namespace thread
                 {
                     if (opt::rand_dst_ip)
                     {
-                        ip->daddr = opt::dst_ip | htonl(static_cast<uint32_t>(m_gen()) & rand_mask);
+                        ip->daddr = opt::dst_ip ^ htonl(static_cast<uint32_t>(m_gen()) & rand_mask);
                     }
                 }
 
@@ -505,7 +505,7 @@ namespace thread
                     {
                         if (opt::rand_src_ip)
                         {
-                            ip->saddr = opt::src_ip | htonl(static_cast<uint32_t>(m_gen()) & rand_mask);
+                            ip->saddr = opt::src_ip ^ htonl(static_cast<uint32_t>(m_gen()) & rand_mask);
                         }
                     }
 
@@ -513,7 +513,7 @@ namespace thread
                     {
                         if (opt::rand_dst_ip)
                         {
-                            ip->daddr = opt::dst_ip | htonl(static_cast<uint32_t>(m_gen()) & rand_mask);
+                            ip->daddr = opt::dst_ip ^ htonl(static_cast<uint32_t>(m_gen()) & rand_mask);
                         }
                     }
 
