@@ -139,10 +139,12 @@ namespace opt
     uint32_t rand_src_period = 1;
     uint32_t rand_dst_period = 1;
 
-    uint32_t rand_depth = 32;
+    uint32_t rand_depth      = 32;
     uint32_t rand_flow_depth = 8;
+    uint32_t flow_multiplier = 1;
 
     std::vector<uint32_t> rand_seed;
+    std::vector<uint32_t> rand_multiplier;
     std::vector< std::vector<int> > kthread;
 
     std::string file;
@@ -525,32 +527,38 @@ namespace thread
                         ip->daddr ^= seed;
                     }
 
-                    if (opt::checksum)
+                    for(size_t x = 0; x < opt::flow_multiplier; x++)
                     {
-                        ip->check = 0;
-                        ip->check = in_cksum(reinterpret_cast<u_short *>(ip), 20);
-                    }
+                        ip->saddr ^= opt::rand_multiplier.at(x);
+                        ip->daddr ^= opt::rand_multiplier.at(x);
 
-                    if (m_async)
-                    {
-                        if (!m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(data), plen), opt::copies))
+                        if (opt::checksum)
                         {
-                            m_fail->fetch_add(1, std::memory_order_relaxed);
-                            continue;
+                            ip->check = 0;
+                            ip->check = in_cksum(reinterpret_cast<u_short *>(ip), 20);
                         }
-                    }
-                    else
-                    {
-                        if (!m_pfq.send(pfq::const_buffer(reinterpret_cast<const char *>(data), plen), opt::copies, opt::queue_sync))
-                        {
-                            m_fail->fetch_add(1, std::memory_order_relaxed);
-                            continue;
-                        }
-                    }
 
-                    m_sent->fetch_add(1, std::memory_order_relaxed);
-                    m_band->fetch_add(plen, std::memory_order_relaxed);
-                    m_gros->fetch_add(plen+24, std::memory_order_relaxed);
+                        if (m_async)
+                        {
+                            if (!m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(data), plen), opt::copies))
+                            {
+                                m_fail->fetch_add(1, std::memory_order_relaxed);
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            if (!m_pfq.send(pfq::const_buffer(reinterpret_cast<const char *>(data), plen), opt::copies, opt::queue_sync))
+                            {
+                                m_fail->fetch_add(1, std::memory_order_relaxed);
+                                continue;
+                            }
+                        }
+
+                        m_sent->fetch_add(1, std::memory_order_relaxed);
+                        m_band->fetch_add(plen, std::memory_order_relaxed);
+                        m_gros->fetch_add(plen+24, std::memory_order_relaxed);
+                    }
 
                     n = pcap_next_ex(p, &hdr, (u_char const **)&data);
                     if (n == -2)
@@ -705,6 +713,18 @@ try
 
             if (opt::rand_flow_depth > 31)
                 throw std::runtime_error("rand-flow-depth: too large value [0-32]!");
+
+            continue;
+        }
+
+        if ( any_strcmp(argv[i], "--flow-multiplier") )
+        {
+            if (++i == argc)
+            {
+                throw std::runtime_error("number missing");
+            }
+
+            opt::flow_multiplier = static_cast<uint32_t>(std::atoi(argv[i]));
 
             continue;
         }
@@ -997,18 +1017,27 @@ try
     std::cout << "rand_ip_src: "  << std::boolalpha << (opt::rand_src_ip) << std::endl;
     std::cout << "rand_ip_dst: "  << std::boolalpha << (opt::rand_dst_ip) << std::endl;
 
+    std::mt19937 gen;
+
     if (opt::rand_flow)
     {
         auto max_seed = (1ULL <<opt::rand_flow_depth);
-        std::mt19937 gen;
 
         std::cout << "rand_flow  : loading " << max_seed << " seeds..." << std::endl;
-
         opt::rand_seed.reserve(max_seed);
 
-        for(uint64_t i = 0; i < max_seed; i++)
+        for(size_t i = 0; i < max_seed; i++)
             opt::rand_seed.push_back(static_cast<uint32_t>(gen()));
     }
+
+
+    opt::rand_multiplier.push_back(0);
+
+    for(size_t i = 0; i < (opt::flow_multiplier-1); i++)
+    {
+        opt::rand_multiplier.push_back(static_cast<uint32_t>(gen()));
+    }
+
 
     while (opt::kthread.size() < binding.size())
         opt::kthread.push_back(std::vector<int>{});
