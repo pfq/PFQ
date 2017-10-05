@@ -528,10 +528,10 @@ namespace thread
                         ip->daddr ^= seed;
                     }
 
-                    for(size_t x = 0; x < opt::flow_multiplier; x++)
+                    for(size_t x = 0; x < opt::flow_multiplier*2; x += 2)
                     {
-                        ip->saddr ^= opt::rand_multiplier.at(x);
-                        ip->daddr ^= opt::rand_multiplier.at(x);
+                        ip->saddr ^= opt::rand_multiplier[x];
+                        ip->daddr ^= opt::rand_multiplier[x+1];
 
                         if (opt::checksum)
                         {
@@ -1037,11 +1037,12 @@ try
             opt::rand_seed.push_back(static_cast<uint32_t>(gen()));
     }
 
-
+    opt::rand_multiplier.push_back(0);
     opt::rand_multiplier.push_back(0);
 
     for(size_t i = 0; i < (opt::flow_multiplier-1); i++)
     {
+        opt::rand_multiplier.push_back(static_cast<uint32_t>(gen()));
         opt::rand_multiplier.push_back(static_cast<uint32_t>(gen()));
     }
 
