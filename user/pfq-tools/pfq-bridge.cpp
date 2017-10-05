@@ -58,7 +58,7 @@ namespace opt
 {
     bool fast_forward = false;
     size_t caplen  = 64;
-    size_t slots   = 4096;
+    size_t slots   = 8192;
     std::atomic_bool stop;
 
     long timeout_ms = 1000000;

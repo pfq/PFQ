@@ -57,8 +57,8 @@ PFQ\_CONFIG          |               |           | Specify the PFQ/pcap config f
 PFQ\_FORCE\_ALL      |               |           | Force PFQ sockets for all devices
 PFQ\_DEF\_GROUP      |  a free one   |           | Specify the PFQ group for the process
 PFQ\_CAPLEN          | pcap snapshot |           | Override the snaplen value for capture
-PFQ\_RX\_SLOTS       |    4096       |  131072   | Define the RX queue length of the socket
-PFQ\_TX\_SLOTS       |    4096       |   8192    | Define the TX queue length of the socket
+PFQ\_RX\_SLOTS       |    8192       |  131072   | Define the RX queue length of the socket
+PFQ\_TX\_SLOTS       |    8192       |   8192    | Define the TX queue length of the socket
 PFQ\_TX\_SYNC        |      1        | 16..512   | Hint used to flush the transmission queue
 PFQ\_TX\_HW\_QUEUE   | empty list    |e.g. 0,1,2 | Set the TX HW queue passed to the driver
 PFQ\_TX\_IDX\_THREAD | empty list    |e.g. 0,1,2 | Set the index of the PFQ TX kernel threads (optional)

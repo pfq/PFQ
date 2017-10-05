@@ -100,9 +100,9 @@ main = do
     infoM "daemon" ("Total number of egress port: " ++ show negrs)
 
     runDetached Nothing DevNull $
-        (Q.openNoGroup 1520 4096 1520 4096 >>= \hq ->
+        (Q.openNoGroup 1520 8192 1520 8192 >>= \hq ->
             withPfq hq $ \ctrl -> do
-            fps <- replicateM (countEgress config) (Q.openNoGroup 1520 4096 1520 4096)
+            fps <- replicateM (countEgress config) (Q.openNoGroup 1520 8192 1520 8192)
             withMany withPfq fps $ \egrs -> do
                     runQSetup opts ctrl egrs
                     foreverDaemon opts (SLH.close s >> Q.close ctrl >> mapM_ Q.close egrs))

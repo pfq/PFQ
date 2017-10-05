@@ -315,9 +315,9 @@ data SocketParams = SocketParams {
 defaultSocketParams :: SocketParams
 defaultSocketParams = SocketParams {
         parCaplen  = 1520
-    ,   parRxSlots = 4096
+    ,   parRxSlots = 8192
     ,   parXmitLen = 1520
-    ,   parTxSlots = 4096
+    ,   parTxSlots = 8192
     ,   parPolicy  = policy_priv
     ,   parClass   = class_default
     }

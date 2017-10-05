@@ -78,8 +78,8 @@ pcap_config_default(pcap_t *handle)
 	,	.fanout			= { [0 ... PCAP_FANOUT_GROUP_DEFAULT] = NULL }
 	,	.caplen			= handle->snapshot
 #ifdef PCAP_SUPPORT_PFQ
-	,	.pfq_rx_slots		= 4096
-	,	.pfq_tx_slots		= 4096
+	,	.pfq_rx_slots		= 8192
+	,	.pfq_tx_slots		= 8192
 	,	.pfq_tx_sync		= 1
 	,	.pfq_tx_async		= 0
 	,	.pfq_tx_hw_queue	= {-1, -1, -1, -1}
