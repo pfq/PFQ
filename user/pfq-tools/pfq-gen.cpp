@@ -145,6 +145,7 @@ namespace opt
 
     std::vector<uint32_t> rand_seed;
     std::vector<uint32_t> rand_multiplier;
+
     std::vector< std::vector<int> > kthread;
 
     std::string file;
@@ -306,7 +307,7 @@ namespace thread
 
             if (!opt::file.empty()) {
 #ifdef HAVE_PCAP_H
-                pcap_generator();
+                pcap_replay();
 #else
                 throw std::runtime_error("pcap support disabled!");
 #endif
@@ -467,7 +468,7 @@ namespace thread
 
 
 #ifdef HAVE_PCAP_H
-        void pcap_generator()
+        void pcap_replay()
         {
             struct pcap_pkthdr *hdr;
             u_char *data;
@@ -612,44 +613,50 @@ void usage(std::string name)
 {
     throw std::runtime_error
     (
-        "usage: " + std::move(name) + " [OPTIONS]\n\n"
-        " -h --help                     Display this help\n"
+        "usage: " + std::move(name) + " [OPTIONS]\n"
+
+        "\nGeneral:\n"
         " -l --len INT                  Set packet length\n"
+        " -c --copies INT               Set number of copies\n"
         " -n --packets INT              Number of packets to transmit\n"
         "    --seconds INT              Number of seconds to transmit\n"
-        " -c --copies INT               Number of per-packet copies\n"
-        " -s --queue-slots INT          Set Tx queue length\n"
-        " -k --kthread IDX,IDX...       Async with kernel threads\n"
-#ifdef HAVE_PCAP_H
-        " -r --read FILE                Read pcap trace file to send\n"
-        "    --loop                     Loop through the trace file N times\n"
-#endif
+        "    --rate DOUBLE              Packet rate in Mpps\n"
+        "    --interactive              Transmit a packet at time\n"
+        " -P --preload INT              Preload INT packets (must be a power of 2)\n"
+        " -h --help                     Display this help\n"
 
+        "\nPacket:\n"
         " -C --ip-checksum              Enable IP checksum\n"
         "    --src-ip IP                Source IP address\n"
         "    --dst-ip IP                Dest IP address\n"
         "    --src-port PORT            Source UDP port\n"
         "    --dst-port PORT            Dest UDP address\n"
+        "    --dst-mac MAC              Specify dest MAC address\n"
+        "    --src-mac MAC              Specify source MAC address\n"
+
+        "\nRandomization:\n"
         " -R --rand-ip                  Randomize IP addresses\n"
         "    --rand-src-ip              Randomize IP source addresses\n"
         "    --rand-dst-ip              Randomize IP dest addresses\n"
-        "    --rand-depth               Depth of randomization (0-32)\n"
+        "    --rand-depth               Depth of IP randomization (0-32)\n"
         "    --rand-period INT          Randomize every N packets (power of 2)\n"
         "    --rand-src-period INT      Randomize src addresses every N packets (power of 2)\n"
         "    --rand-dst-period INT      Randomize dst addresses every N packets (power of 2)\n"
+
 #ifdef HAVE_PCAP_H
-        " -F --rand-flow                Randomize IP addresses per-flow\n"
-        "    --rand-flow-depth          Depth of flow-randomization (def. 8)\n"
+        "\nPcap:\n"
+        " -r --read FILE                Read pcap trace file to send\n"
+        "    --loop                     Loop through the trace file N times\n"
+        " -F --rand-flow                Randomize IP addresses on a per-flow basis\n"
+        "    --rand-flow-depth          Depth of flow randomization (default 8)\n"
+        "    --flow-multiplier INT      Enable flow multiplier\n"
 #endif
-        "    --dst-mac MAC              Specify dest MAC address\n"
-        "    --src-mac MAC              Specify source MAC address\n"
-        " -P --preload INT              Preload INT packets (must be a power of 2)\n"
-        "    --rate DOUBLE              Packet rate in Mpps\n"
-        "    --interactive              Transmit a packet at time\n"
+        "\nPFQ:\n"
+        " -k --kthread IDX,IDX...       Async with kernel threads\n"
+        " -s --queue-slots INT          Set Tx queue length\n"
         " -S --queue-sync INT           Set queue sync value, used to Tx sync\n"
         " -t --thread BINDING\n\n"
-        "      " + more::netdev_format + "\n" +
-        "      " + more::thread_binding_format
+        "      " + more::netdev_format + "\n" + "      " + more::thread_binding_format
     );
 }
 
