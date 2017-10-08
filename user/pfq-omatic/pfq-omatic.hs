@@ -26,7 +26,7 @@ import System.Environment
 import System.FilePath
 import System.Exit
 
-import Control.Monad(void,when,unless,liftM,forM,filterM)
+import Control.Monad(void,when,unless,forM,filterM)
 import Control.Applicative
 import Text.Regex.Posix
 
