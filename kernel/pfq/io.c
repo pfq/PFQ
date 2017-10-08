@@ -667,16 +667,27 @@ unsigned clp2(unsigned int x)
         return x + 1;
 }
 
+
 /*
- * Optimized folding operation...
+ * http://burtleburtle.net/bob/hash/integer.html
  */
 
 static inline
-uint32_t prefold(uint32_t hash)
+uint32_t hash_int( uint32_t a)
 {
-	return hash ^ (hash >> 8) ^ (hash >> 16) ^ (hash >> 24);
+        a += ~(a<<15);
+        a ^=  (a>>10);
+        a +=  (a<<3);
+        a ^=  (a>>6);
+        a += ~(a<<11);
+        a ^=  (a>>16);
+        return a;
 }
 
+
+/*
+ * folding operation...
+ */
 
 static inline
 unsigned int pfq_fold(unsigned int a, unsigned int b)
@@ -864,10 +875,10 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb)
 							steer_mask[steer_mask_numb++] = sbit;
 			 		});
 
-					buff->fwd_mask |= steer_mask[pfq_fold(prefold(monad.fanout.hash), (unsigned int)steer_mask_numb)];
+					buff->fwd_mask |= steer_mask[pfq_fold(hash_int(monad.fanout.hash), (unsigned int)steer_mask_numb)];
 
 					if (is_double_steering(monad.fanout))
-						buff->fwd_mask |= steer_mask[pfq_fold(prefold(monad.fanout.hash2), (unsigned int)steer_mask_numb)];
+						buff->fwd_mask |= steer_mask[pfq_fold(hash_int(monad.fanout.hash2), (unsigned int)steer_mask_numb)];
 
 			 	}
 			 	else {  /* broadcast */
