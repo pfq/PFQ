@@ -34,11 +34,13 @@ import Data.Data
 import System.Console.ANSI
 import System.Console.CmdArgs
 import System.IO.Unsafe
-import System.IO.Error
+-- import System.IO.Error
 import System.Exit
 
 proc_interrupt, proc_cpuinfo :: String
 
+
+bold, red, blue, reset :: String
 
 bold  = setSGRCode [SetConsoleIntensity BoldIntensity]
 red   = setSGRCode [SetColor Foreground Vivid Red]
@@ -108,10 +110,11 @@ data IrqBinding = IrqBinding
     ,   runFilter :: Int -> Bool
     }
 
+
 makeIrqBinding :: [String] -> Int -> IrqBinding
-makeIrqBinding ["round-robin"]    first  = IrqBinding (-1)      1       1       none
+makeIrqBinding ["round-robin"]    _      = IrqBinding (-1)      1       1       none
 makeIrqBinding ["naive"]          first  = IrqBinding first     1       1       none
-makeIrqBinding ["multiple", m]    first  = IrqBinding (-1)      1    (read m)   none
+makeIrqBinding ["multiple", m]    _      = IrqBinding (-1)      1    (read m)   none
 makeIrqBinding ["raster", m]      first  = IrqBinding first     1    (read m)   none
 makeIrqBinding ["even"]           first  = IrqBinding first     1       1       even
 makeIrqBinding ["odd"]            first  = IrqBinding first     1       1       odd
@@ -139,11 +142,11 @@ main = handle (\(ErrorCall msg) -> putStrBoldLn (red ++ msg ++ reset) *> exitWit
 
 dispatch :: String -> BindStateT IO ()
 dispatch arg = do
-    (op, start) <- get
+    (op, _ ) <- get
     case () of
         _ | Just _  <- algorithm op -> makeBinding arg
           | Nothing <- algorithm op -> if core op
-                                            then showIRQ arg
+                                            then liftIO $ showIRQ arg
                                             else showBinding arg
 
 -- makeBinding algorithm:
@@ -155,14 +158,14 @@ makeBinding dev = do
     let msi  = msitype op
         alg  = makeIrqBinding (splitOneOf ":/" $ fromJust (algorithm op)) (firstcore op)
         irq  = getInterruptsByDevice dev msi
-        core = mkBinding dev (exclude op) start alg msi
+        cpu   = mkBinding dev (exclude op) start alg msi
     lift $ do
         putStrLn $ "Setting binding for device " ++ dev ++
             case msi of { Nothing -> ":"; Just None -> "(none):"; _ -> " (" ++ show msi ++ "):" }
         when (null irq) $ error ("pfq-affinity: irq(s) not found for dev " ++ dev ++ "!")
-        when (null core) $ error "pfq-affinity: no eligible cores found!"
-        mapM_ setIrqAffinity $ zip irq core
-    put (op, last core + 1)
+        when (null cpu) $ error "pfq-affinity: no eligible cpu found!"
+        mapM_ setIrqAffinity $ zip irq cpu
+    put (op, last cpu + 1)
 
 -- show current binding of a given device:
 --
@@ -177,35 +180,33 @@ showBinding dev = do
             case msi of { Nothing -> ":"; Just None -> "(none):";  _ -> " (" ++ show (fromJust msi) ++ "):" }
         when (null irq) $ error $ "pfq-affinity: irq vector not found for dev " ++ dev ++ "!"
         forM_ irq $ \n ->
-            getIrqAffinity n >>= \cs -> putStrLn $ "   irq " ++ show n ++ " -> core " ++ show cs
+            getIrqAffinity n >>= \cs -> putStrLn $ "   irq " ++ show n ++ " -> CPU " ++ show cs
 
 
 -- show IRQ per core:
 --
 
-showIRQ :: String -> BindStateT IO ()
-showIRQ core = do
-    (op,_) <- get
-    let irq = getInterrupts
-    lift $ do
-        putStrLn $ "Core " ++ core ++ ":"
-        mat <- forM irq $ \n ->
-            getIrqAffinity (read $ fst n) >>= \l -> if read core `elem` l
-                                                    then return $ Just (n, l)
-                                                    else return Nothing
-        let out = map fst $ catMaybes mat
-        forM_ out $ \(n,descr) ->
-            putStrLn $ "  irq -> " ++ n ++ "\t(" ++ descr ++ ")"
+showIRQ :: String -> IO ()
+showIRQ cpu = do
+    irqs <- getInterrupts
+    putStrLn $ "CPU " ++ cpu ++ ":"
+    mat <- forM irqs $ \n ->
+        getIrqAffinity (fst n) >>= \l -> if read cpu `elem` l
+                                            then return $ Just (n, l)
+                                            else return Nothing
+    let out = map fst $ catMaybes mat
+    forM_ out $ \(n,descr) ->
+        putStrLn $ "  irq -> " ++ show n ++ "\t(" ++ descr ++ ")"
 
 
 -- set irq affinity for the given (irq,core) pair
 --
 
 setIrqAffinity :: (Int, Int) -> IO ()
-setIrqAffinity (irq, core) = do
-    putStrLn $ "   irq " ++ show irq ++ " -> core " ++ show core ++ " {mask = " ++ mask ++ "}"
-    writeFile ("/proc/irq/" ++ show irq ++ "/smp_affinity") mask
-      where mask = showMask $ makeCpuMask [core]
+setIrqAffinity (irq, cpu) = do
+    putStrLn $ "   irq " ++ show irq ++ " -> CPU " ++ show cpu ++ " {mask = " ++ mask' ++ "}"
+    writeFile ("/proc/irq/" ++ show irq ++ "/smp_affinity") mask'
+      where mask' = showMask $ makeCpuMask [cpu]
 
 
 getIrqAffinity :: Int -> IO [Int]
@@ -213,12 +214,14 @@ getIrqAffinity irq =
     (getCpusListFromMask . readMask) <$> readFile ("/proc/irq/" ++ show irq ++ "/smp_affinity")
 
 
+intersperseEvery :: Int -> t -> [t] -> [t]
 intersperseEvery n x xs = zip xs [1 .. l] >>= ins
   where ins (x',k) = if k `mod` n == 0 && k /= l then [x',x] else [x']
         l = length xs
 
+
 showMask :: CpuMask -> String
-showMask mask = reverse . intersperseEvery 8 ',' . reverse $ showHex mask ""
+showMask mask' = reverse . intersperseEvery 8 ',' . reverse $ showHex mask' ""
 
 
 readMask :: String -> CpuMask
@@ -226,11 +229,11 @@ readMask = fst . head . readHex . filter (/= ',')
 
 
 makeCpuMask :: [Int] -> CpuMask
-makeCpuMask = foldr (\cpu mask -> mask .|. (1 `shiftL` cpu)) (0 :: CpuMask)
+makeCpuMask = foldr (\cpu mask' -> mask' .|. (1 `shiftL` cpu)) (0 :: CpuMask)
 
 
 getCpusListFromMask :: CpuMask -> [Int]
-getCpusListFromMask mask  = [ n | n <- [0 .. 4095], let p2 = 1 `shiftL` n, mask .&. p2 /= 0 ]
+getCpusListFromMask mask'  = [ n | n <- [0 .. 4095], let p2 = 1 `shiftL` n, mask' .&. p2 /= 0 ]
 
 
 -- given a device and a binding algorithm, create the eligible list of core
@@ -238,9 +241,9 @@ getCpusListFromMask mask  = [ n | n <- [0 .. 4095], let p2 = 1 `shiftL` n, mask 
 
 mkBinding :: Device -> [Int] -> Int -> IrqBinding -> Maybe MSI -> [Int]
 mkBinding _   _  _ _ Nothing = error "pfq-affinity: to create IRQ bindings you must specify the MSI type"
-mkBinding dev excl f (IrqBinding f' step multi filt) msi =
+mkBinding dev excl f (IrqBinding f' step multi' filt) msi =
     take nqueue [ n | let f''= if f' == -1 then f else f',
-                      x <- [f'', f''+ step .. ] >>= replicate multi,
+                      x <- [f'', f''+ step .. ] >>= replicate multi',
                       let n = x `mod` getNumberOfPhyCores,
                       filt n,
                       n `notElem` excl ]
@@ -258,22 +261,21 @@ getDeviceName dev (Just msi ) = dev ++ "-" ++ show msi
 
 getNumberOfQueues :: Device -> Maybe MSI -> Int
 getNumberOfQueues dev msi = unsafePerformIO $ readFile proc_interrupt >>= \file ->
-    return $ length $ filter (isInfixOf $ getDeviceName dev msi) $ lines file
+    return $ length $ filter (getDeviceName dev msi `isInfixOf`) $ lines file
 
 
 getInterruptsByDevice :: Device -> Maybe MSI -> [Int]
 getInterruptsByDevice dev msi = unsafePerformIO $ readFile proc_interrupt >>= \file ->
-    return $ map (read . takeWhile (/= ':')) $ filter (isInfixOf $ getDeviceName dev msi) $ lines file
+    return $ map (read . takeWhile (/= ':')) $ filter (getDeviceName dev msi `isInfixOf`) $ lines file
 
 
-{-# NOINLINE getInterrupts #-}
-getInterrupts :: [(String, String)]
-getInterrupts = unsafePerformIO $ readFile proc_interrupt >>= \file ->
-    return $ map (\(f,s) -> (show f, last . words $ s)) (concatMap reads $ lines file  :: [(Int, String)])
+getInterrupts :: IO [(Int, String)]
+getInterrupts = readFile proc_interrupt >>= \file ->
+    return $ map (\(i,l) -> (i, last . words $ l)) (concatMap reads $ lines file  :: [(Int, String)])
 
 
 {-# NOINLINE getNumberOfPhyCores #-}
 getNumberOfPhyCores :: Int
 getNumberOfPhyCores = unsafePerformIO $ readFile proc_cpuinfo >>= \file ->
-    return $ length $ filter (isInfixOf "processor") $ lines file
+    return $ length $ filter ("processor" `isInfixOf`) $ lines file
 
