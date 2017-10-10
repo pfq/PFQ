@@ -675,13 +675,20 @@ unsigned clp2(unsigned int x)
 static inline
 uint32_t hash_int( uint32_t a)
 {
+#if 1
+	 a = (a^0xdeadbeef) + (a<<4);
+	 a = a ^ (a>>10);
+	 a = a + (a<<7);
+	 a = a ^ (a>>13);
+#else
         a += ~(a<<15);
         a ^=  (a>>10);
         a +=  (a<<3);
         a ^=  (a>>6);
         a += ~(a<<11);
         a ^=  (a>>16);
-        return a;
+#endif
+	 return a;
 }
 
 
