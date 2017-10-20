@@ -6,8 +6,12 @@
 
 #pragma once
 
-#include <pthread.h> // pthread_setaffinity_np
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+
 #include <sched.h>
+#include <pthread.h> // pthread_setaffinity_np
 
 #include <thread>
 #include <stdexcept>

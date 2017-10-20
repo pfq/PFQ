@@ -24,6 +24,10 @@
 #ifndef PFQ_H
 #define PFQ_H
 
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+
 #include <stddef.h>
 
 #include <linux/pf_q.h>

@@ -21,6 +21,10 @@
  *
  ****************************************************************/
 
+#ifndef _GNU_SOURCE	
+#define _GNU_SOURCE
+#endif
+
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -34,6 +38,7 @@
 
 #include <stdlib.h>
 
+#include <sched.h>
 #include <stdio.h>
 #include <stddef.h>
 #include <stdarg.h>
@@ -41,7 +46,6 @@
 #include <string.h>
 #include <errno.h>
 #include <ctype.h>
-#include <sched.h>
 #include <fcntl.h>
 #include <signal.h>
 #include <poll.h>
