@@ -277,10 +277,10 @@ mkEligibleCPUs _   _  _ _ Nothing = error "pfq-affinity: to create IRQ bindings 
 mkEligibleCPUs _ excl _ (IrqBinding 0 0 0 _) _ = [ n | n <- [0 .. getNumberOfPhyCores-1], n `notElem` excl ]
 mkEligibleCPUs dev excl f (IrqBinding f' step multi' filt) msi =
     take nqueue [ n | let f''= if f' == -1 then f else f',
-                      x <- [f'', f''+ step .. ] >>= replicate multi',  -- make the list of eligible CPU
-                      let n = x `mod` getNumberOfPhyCores,             -- modulo max number of CPU
-                      filt n,                                          -- that pass the given predicate
-                      n `notElem` excl ]                               -- and which are not element of the exclusion list
+                      x <- [f'', f''+ step .. ] >>= replicate multi',  -- make the list of eligible CPUs
+                      let n = x `mod` getNumberOfPhyCores,             -- modulo number of max CPUs
+                      filt n,                                          -- whose elements pass the given predicate
+                      n `notElem` excl ]                               -- and are not prensent in the exclusion list
         where nqueue = getNumberOfQueues dev msi
 
 
