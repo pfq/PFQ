@@ -17,6 +17,7 @@
 --
 
 {-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Main where
 
@@ -34,11 +35,8 @@ import Data.Data
 import System.Console.ANSI
 import System.Console.CmdArgs
 import System.IO.Unsafe
--- import System.IO.Error
+import System.Environment (withArgs)
 import System.Exit
-
-proc_interrupt, proc_cpuinfo :: String
-
 
 bold, red, blue, reset :: String
 
@@ -51,6 +49,7 @@ reset = setSGRCode []
 putStrBoldLn :: String -> IO ()
 putStrBoldLn msg = putStrLn $ bold ++ msg ++ reset
 
+proc_interrupt, proc_cpuinfo :: String
 
 proc_interrupt = "/proc/interrupts"
 proc_cpuinfo   = "/proc/cpuinfo"
@@ -59,31 +58,33 @@ proc_cpuinfo   = "/proc/cpuinfo"
 type Device = String
 
 
-data MSI =  Rx | Tx | TxRx | None
+data MSI =  Rx | Tx | TxRx | Other
             deriving (Data, Typeable, Eq, Read)
 
 instance Show MSI where
     show Rx   = "rx"
     show Tx   = "tx"
     show TxRx = "TxRx"
-    show None = ""
+    show Other = ""
 
 
 -- Command line options
 --
 
+
 data Options = Options
-    {   firstcore :: Int
+    {   firstcpu  :: Int
     ,   exclude   :: [Int]
     ,   algorithm :: Maybe String
+    ,   oneToMany :: Bool
     ,   msitype   :: Maybe MSI
-    ,   core      :: Bool
-    ,   arguments :: [Device]
+    ,   showCPU   :: [Int]
+    ,   bindIRQ   :: Device
+    ,   arguments :: [String]
     } deriving (Data, Typeable, Show)
 
 
 type BindStateT = StateT (Options, Int)
-
 type CpuMask = Integer
 
 -- default options
@@ -91,21 +92,23 @@ type CpuMask = Integer
 
 options :: Mode (CmdArgs Options)
 options = cmdArgsMode $ Options
-    {   firstcore = 0       &= typ "CORE" &= help "First core involved"
-    ,   exclude   = []      &= typ "CORE" &= help "Exclude core from binding"
-    ,   algorithm = Nothing               &= help "Binding algorithm: round-robin, naive, multiple/n, raster/n, even, odd, all-in:id, step:id, custom:step/multi"
-    ,   msitype   = Nothing &= typ "MSI"  &= help "MSI type: TxRx, Rx, Tx or None"
-    ,   core      = False                 &= help "Inspect cores irq"
-    ,   arguments = []                    &= args
-    } &= summary "pfq-affinity: Linux advanced interrupt-affinity binding." &= program "pfq-affinity"
+    {   firstcpu  = 0       &= typ "CPU"   &= help "First cpu involved"
+    ,   exclude   = []      &= typ "CPU"   &= help "Exclude cpu from binding"
+    ,   algorithm = Nothing                &= help "Algorithm: round-robin, naive, multiple/n, raster/n, even, odd, any, all-in:id, step:id, custom:step/multi"
+    ,   oneToMany = False &= explicit &= name "one-to-many" &= help "Bind each IRQ to every eligible CPU. Note: by default irq affinity is set one-to-one"
+    ,   msitype   = Nothing &= typ "MSI"   &= help "MSI type: TxRx, Rx, Tx or Other"
+    ,   showCPU   = []  &= explicit &= name "cpu" &= help "Display IRQs of the given CPUs"
+    ,   bindIRQ   = def &= explicit &= name "bind" &= help "Set the IRQs affinity of the given device (e.g., --bind eth0 1 2)"
+    ,   arguments = []                     &= args
+    } &= summary "pfq-affinity: Linux Interrupt-affinity bind tool." &= program "pfq-affinity"
 
 
 -- binding algorithm
 --
 
 data IrqBinding = IrqBinding
-    {   firstCore :: Int
-    ,   stepCore  :: Int
+    {   firstCpu  :: Int
+    ,   stepCpu   :: Int
     ,   multi     :: Int
     ,   runFilter :: Int -> Bool
     }
@@ -118,56 +121,50 @@ makeIrqBinding ["multiple", m]    _      = IrqBinding (-1)      1    (read m)   
 makeIrqBinding ["raster", m]      first  = IrqBinding first     1    (read m)   none
 makeIrqBinding ["even"]           first  = IrqBinding first     1       1       even
 makeIrqBinding ["odd"]            first  = IrqBinding first     1       1       odd
+makeIrqBinding ["any"]            _      = IrqBinding 0         0       0       none
 makeIrqBinding ["all-in", n]      _      = IrqBinding (read n)  0       1       none
 makeIrqBinding ["step",   s]      first  = IrqBinding first   (read s)  1       none
 makeIrqBinding ["custom", s, m]   first  = IrqBinding first   (read s) (read m) none
 makeIrqBinding _ _ =  error "pfq-affinity: unknown IRQ binding algorithm"
 
-
 none :: a -> Bool
 none _ = True
 
 
--- main:
+-- main function
 --
 
 main :: IO ()
 main = handle (\(ErrorCall msg) -> putStrBoldLn (red ++ msg ++ reset) *> exitWith (ExitFailure 1)) $ do
-    ops <- cmdArgsRun options
-    let runcmd = forM_ (arguments ops) $ \dev -> dispatch dev
-    evalStateT runcmd (ops, firstcore ops)
+    opt' <- cmdArgsRun options
+    evalStateT (runCmd opt') (opt', firstcpu opt')
 
--- dispatch command:
+
+-- dispatch commands
 --
 
-dispatch :: String -> BindStateT IO ()
-dispatch arg = do
-    (op, _ ) <- get
-    case () of
-        _ | Just _  <- algorithm op -> makeBinding arg
-          | Nothing <- algorithm op -> if core op
-                                            then liftIO $ showIRQ arg
-                                            else showBinding arg
+runCmd :: Options -> BindStateT IO ()
+runCmd Options{..}
+    | Just _  <- algorithm  = forM_ arguments $ \dev -> bindDevice dev
+    | not $ null showCPU    = liftIO $ mapM_ showIRQ showCPU
+    | not $ null bindIRQ    = runBinding bindIRQ (map read arguments)
+    | not $ null arguments  = mapM_ showBinding arguments
+    | otherwise             = liftIO $ withArgs ["--help"] $ void (cmdArgsRun options)
 
--- makeBinding algorithm:
+
+-- bindDevice
 --
 
-makeBinding :: String -> BindStateT IO ()
-makeBinding dev = do
+bindDevice :: String -> BindStateT IO ()
+bindDevice dev = do
     (op,start) <- get
     let msi  = msitype op
-        alg  = makeIrqBinding (splitOneOf ":/" $ fromJust (algorithm op)) (firstcore op)
-        irq  = getInterruptsByDevice dev msi
-        cpu   = mkBinding dev (exclude op) start alg msi
-    lift $ do
-        putStrLn $ "Setting binding for device " ++ dev ++
-            case msi of { Nothing -> ":"; Just None -> "(none):"; _ -> " (" ++ show msi ++ "):" }
-        when (null irq) $ error ("pfq-affinity: irq(s) not found for dev " ++ dev ++ "!")
-        when (null cpu) $ error "pfq-affinity: no eligible cpu found!"
-        mapM_ setIrqAffinity $ zip irq cpu
-    put (op, last cpu + 1)
+        alg  = makeIrqBinding (splitOneOf ":/" $ fromJust (algorithm op)) (firstcpu op)
+        cpus = mkEligibleCPUs dev (exclude op) start alg msi
+    runBinding dev cpus
 
--- show current binding of a given device:
+
+-- show IRQ affinity of a given device
 --
 
 showBinding :: String -> BindStateT IO ()
@@ -177,21 +174,21 @@ showBinding dev = do
         irq = getInterruptsByDevice dev msi
     lift $ do
         putStrLn $ "Binding for device " ++ dev ++
-            case msi of { Nothing -> ":"; Just None -> "(none):";  _ -> " (" ++ show (fromJust msi) ++ "):" }
+            case msi of { Nothing -> ":"; Just Other -> "(other):";  _ -> " (" ++ show (fromJust msi) ++ "):" }
         when (null irq) $ error $ "pfq-affinity: irq vector not found for dev " ++ dev ++ "!"
         forM_ irq $ \n ->
             getIrqAffinity n >>= \cs -> putStrLn $ "   irq " ++ show n ++ " -> CPU " ++ show cs
 
 
--- show IRQ per core:
+-- show IRQ list of a given cpu
 --
 
-showIRQ :: String -> IO ()
+showIRQ :: Int -> IO ()
 showIRQ cpu = do
     irqs <- getInterrupts
-    putStrLn $ "CPU " ++ cpu ++ ":"
+    putStrLn $ "CPU " ++ show cpu ++ ":"
     mat <- forM irqs $ \n ->
-        getIrqAffinity (fst n) >>= \l -> if read cpu `elem` l
+        getIrqAffinity (fst n) >>= \l -> if cpu `elem` l
                                             then return $ Just (n, l)
                                             else return Nothing
     let out = map fst $ catMaybes mat
@@ -199,20 +196,56 @@ showIRQ cpu = do
         putStrLn $ "  irq -> " ++ show n ++ "\t(" ++ descr ++ ")"
 
 
--- set irq affinity for the given (irq,core) pair
---
+-- runBinding
 
-setIrqAffinity :: (Int, Int) -> IO ()
-setIrqAffinity (irq, cpu) = do
-    putStrLn $ "   irq " ++ show irq ++ " -> CPU " ++ show cpu ++ " {mask = " ++ mask' ++ "}"
+runBinding :: String -> [Int] -> BindStateT IO ()
+runBinding dev cpus = do
+    (op, _) <- get
+
+    let msi  = msitype op
+        irqs = getInterruptsByDevice dev msi
+
+    lift $ do
+        putStrLn $ "Setting binding for device " ++ dev ++
+            case msi of { Nothing -> ":"; Just Other -> "(other):"; _ -> " (" ++ show msi ++ "):" }
+        when (null irqs) $ error ("pfq-affinity: IRQs not found for the " ++ dev ++ " device!")
+        when (null cpus) $ error "pfq-affinity: No eligible cpu found!"
+
+        let doBind = if oneToMany op
+                        then bindOneToMany
+                        else bindOneToOne
+        doBind irqs cpus
+
+    put (op, last cpus + 1)
+
+
+bindOneToOne :: [Int] -> [Int] -> IO ()
+bindOneToOne irqs cpus = forM_ (zip irqs cpus) $ \(irq,cpu) -> setIrqAffinity irq [cpu]
+
+
+bindOneToMany :: [Int] -> [Int] -> IO ()
+bindOneToMany irqs cpus = forM_ irqs $ \irq -> setIrqAffinity irq cpus
+
+
+-- set IRQ affinity for the given (irq,cpu) pair
+
+setIrqAffinity :: Int -> [Int] -> IO ()
+setIrqAffinity irq cpus = do
+    putStrLn $ "   irq " ++ show irq ++ " -> CPU " ++ show cpus ++ " {mask = " ++ mask' ++ "}"
     writeFile ("/proc/irq/" ++ show irq ++ "/smp_affinity") mask'
-      where mask' = showMask $ makeCpuMask [cpu]
+      where mask' = showMask $ makeCpuMask cpus
 
+
+
+-- get IRQ affinity for the given irq
 
 getIrqAffinity :: Int -> IO [Int]
 getIrqAffinity irq =
     (getCpusListFromMask . readMask) <$> readFile ("/proc/irq/" ++ show irq ++ "/smp_affinity")
 
+
+-- utilities
+--
 
 intersperseEvery :: Int -> t -> [t] -> [t]
 intersperseEvery n x xs = zip xs [1 .. l] >>= ins
@@ -236,24 +269,26 @@ getCpusListFromMask :: CpuMask -> [Int]
 getCpusListFromMask mask'  = [ n | n <- [0 .. 4095], let p2 = 1 `shiftL` n, mask' .&. p2 /= 0 ]
 
 
--- given a device and a binding algorithm, create the eligible list of core
+-- given a device and a bind-algorithm, create the list of eligible cpu
 --
 
-mkBinding :: Device -> [Int] -> Int -> IrqBinding -> Maybe MSI -> [Int]
-mkBinding _   _  _ _ Nothing = error "pfq-affinity: to create IRQ bindings you must specify the MSI type"
-mkBinding dev excl f (IrqBinding f' step multi' filt) msi =
+mkEligibleCPUs :: Device -> [Int] -> Int -> IrqBinding -> Maybe MSI -> [Int]
+mkEligibleCPUs _   _  _ _ Nothing = error "pfq-affinity: to create IRQ bindings you must specify the MSI type"
+mkEligibleCPUs _ excl _ (IrqBinding 0 0 0 _) _ = [ n | n <- [0 .. getNumberOfPhyCores-1], n `notElem` excl ]
+mkEligibleCPUs dev excl f (IrqBinding f' step multi' filt) msi =
     take nqueue [ n | let f''= if f' == -1 then f else f',
-                      x <- [f'', f''+ step .. ] >>= replicate multi',
-                      let n = x `mod` getNumberOfPhyCores,
-                      filt n,
-                      n `notElem` excl ]
+                      x <- [f'', f''+ step .. ] >>= replicate multi',  -- make the list of eligible CPU
+                      let n = x `mod` getNumberOfPhyCores,             -- modulo max number of CPU
+                      filt n,                                          -- that pass the given predicate
+                      n `notElem` excl ]                               -- and which are not element of the exclusion list
         where nqueue = getNumberOfQueues dev msi
 
 
+
 getDeviceName :: String -> Maybe MSI -> String
-getDeviceName dev Nothing     = dev
-getDeviceName dev (Just None) = dev
-getDeviceName dev (Just msi ) = dev ++ "-" ++ show msi
+getDeviceName dev Nothing      = dev
+getDeviceName dev (Just Other) = dev
+getDeviceName dev (Just msi )  = dev ++ "-" ++ show msi
 
 
 -- the following actions can be unsafe IO because the files they parse are not mutable
