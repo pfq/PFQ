@@ -31,9 +31,10 @@ with programmable fanout.
 * Kernel headers, required to compile modules for your kernel.
 * A gcc compiler, the one used to compile the kernel in use.
 * A g++ compiler (g++-4.8/clang-3.4 or higher), for user-space tools and libraries.
-* GHC Glasgow Haskell Compiler (tested with GHC 8.0.2).
+* The Haskell stack tool [haskell-stack](https://docs.haskellstack.org/en/stable/README/) 
 * Alex and happy tool.
-* CMake and make.
+* CMake, make, autoconf.
+* Flex and bison.
 
 
 ### Haskell and Linux Distributions (PIE)
@@ -57,27 +58,18 @@ Clone the source codes from the GitHub repository with the following command:
 `git clone https://github.com/pfq/PFQ.git`
 
 
-## Satisfy Library Dependencies
-
-Before building the framework ensure the required Haskell libraries are installed. You can use the cabal tool to install them. 
-
-From the base directory launch the command:
-
-`cabal install --only-dep --allow-newer pfq-framework.cabal`
-
-
 ## Build the software
 
 * To build and install the framework:
 
-`runhaskell Build.hs install --build-type=Release`
+`stack Build.hs --build-type=Release install`
 
 The command configures, compiles and installs PFQ framework satisfying the dependencies and the correct order for building the components.
 
 * Alternatively, you can specify the list of components you want to build from the command line. The following command shows the targets available:
 
 ```
-runhaskell Build.hs show
+stack Build.hs show
 
 targets:
     pfq.ko
@@ -99,32 +91,7 @@ targets:
 
 For example, to install pfq.ko and pfqd:
 
-`runhaskell Build.hs install pfq.ko pfqd --build-type=Release`
-
-
-## Build the software in sandbox!
-
-SimpleBuilder does support building Haskell packages in a shared cabal sandbox.
-
-First, create and initialize a cabal sandbox with the commands:
-
-```
-mkdir shared-sandbox
-cabal sandbox init --sandbox=shared-sandbox
-```
-
-Then, to satisfy the the dependencies run:
-
-`cabal install --only-dep --allow-newer pfq-framework.cabal`
-
-All the required libraries will be installed in the newly created sandbox.
-
-After this you can simply build the framework with:
-
-`cabal exec -- runhaskell Build.hs install --build-type=Release --sandbox=shared-sandbox`
-
-
-The PFQ Haskell library and packages will be installed in isolation within the specified sandbox folder.
+`stack Build.hs -j3 --build-type=Release install pfq.ko pfqd`
 
 
 ## Software Components
