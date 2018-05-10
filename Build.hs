@@ -1,6 +1,8 @@
+#!/user/bin/env stack
+-- stack --resolver lts-11.8 script --package process --package directory --package filepath --package mtl
+
 --
---
--- Copyright (c) 2014 Nicola Bonelli <nicola@pfq.io>
+-- Copyright (c) 2014-18 Nicola Bonelli <nicola@pfq.io>
 --
 -- This program is free software; you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
@@ -24,9 +26,7 @@ import System.Environment
 import Control.Monad(when)
 
 
-options = defaultOptions { stack = False }
-
-
+options = defaultOptions { stack = True }
 script :: BuilderScript
 script = do
 
@@ -45,7 +45,7 @@ script = do
     objective "pfq-clib" "user/lib/C/" $ do
 
        config     $ cmake
-       build      $ make            `req` configOf "pfq-clib"
+       build      $ make            `req` configOf "pfq-clib"  `req` installOf "pfq.ko"
        install    $ make_install    `req` buildOf  "pfq-clib" >> ldconfig
        clean      $ make_clean      `req` configOf "pfq-clib"
        distclean  $ cmake_distclean `req` cleanOf  "pfq-clib"
