@@ -18,7 +18,7 @@ Executable pfq-lang
     other-modules:
                         CmdLine
                         Options
-                        Paths
+                        Paths_pfq_lang
                         Lang.Compiler 
                         Lang.FDescr  
                         Lang.JSON  
