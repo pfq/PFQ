@@ -1,4 +1,4 @@
-PFQ v6.1 
+PFQ v6.2 
 ========
 
 [![Stability](https://img.shields.io/badge/stability-experimental-red.svg)](http://github.com/badges/stability-badges)
