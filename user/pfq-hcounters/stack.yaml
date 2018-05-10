@@ -15,7 +15,7 @@
 # resolver:
 #  name: custom-snapshot
 #  location: "./custom-snapshot.yaml"
-resolver: lts-9.3
+resolver: lts-11.8
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -61,7 +61,7 @@ extra-package-dbs: []
 #
 # Extra directories used by stack for building
 # extra-include-dirs: 
-# extra-lib-dirs: 
+extra-lib-dirs: [../lib/C/]
 #
 # Allow a newer minor version of GHC than the snapshot specifies
 # compiler-check: newer-minor
