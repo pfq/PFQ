@@ -241,7 +241,7 @@ setIrqAffinity irq cpus = do
 
 getIrqAffinity :: Int -> IO [Int]
 getIrqAffinity irq =
-    (getCpusListFromMask . readMask) <$> readFile ("/proc/irq/" ++ show irq ++ "/smp_affinity")
+    getCpusListFromMask . readMask <$> readFile ("/proc/irq/" ++ show irq ++ "/smp_affinity")
 
 
 -- utilities

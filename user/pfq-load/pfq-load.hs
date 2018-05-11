@@ -354,7 +354,7 @@ loadConfig confs opt =
                    case conf' of
                       Right x -> return x
                       Left  x -> throw $ SystemError (Y.prettyPrintParseException x) (ExitFailure 42)
-               else (read . clean) <$> readFile conf
+               else read . clean <$> readFile conf
 
 
 {-# NOINLINE getNumberOfPhyCores #-}
@@ -379,7 +379,7 @@ rmmodFromProcMOdules name = filter (\(m,ds) -> m /= name )
 
 
 getProcessID :: String -> IO [ProcessID]
-getProcessID name = (map read . words) <$> catchIOError (readProcess pidof [name] "") (\_-> return [])
+getProcessID name = map read . words <$> catchIOError (readProcess pidof [name] "") (\_-> return [])
 
 
 moduleDependencies :: String -> ProcModules -> [String]

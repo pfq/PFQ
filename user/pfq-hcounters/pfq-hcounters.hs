@@ -45,7 +45,7 @@ import qualified Data.Map as M
 import System.Console.CmdArgs
 
 
-data State = State { sCounter :: AtomicCounter }
+newtype State = State { sCounter :: AtomicCounter }
 
 
 -- Command line options
@@ -115,8 +115,8 @@ dumpStat cs t0 = do
     threadDelay 1000000
     t <- getClockTime
     cs' <- mapM (\a -> do
-                    x <- readCounter a 
-                    writeCounter a 0 
+                    x <- readCounter a
+                    writeCounter a 0
                     return x ) cs
     M.void( when ((-1) `elem` cs') exitFailure)
     let delta = diffUSec t t0
@@ -135,7 +135,7 @@ runThreads Options{..} =
     forM thread $ \tb -> do
         let binding = makeBinding tb
         c <- newCounter 0
-        _ <- forkOn (coreNum binding) $ 
+        _ <- forkOn (coreNum binding) $
                  handle ((\e -> M.void (putStrLn ("[pfq] Exception: " ++ show e))) :: SomeException -> IO ()) $ do
                  hq <- Q.openNoGroup caplen slots caplen 1024
                  Q.withPfq hq $ \q -> do
@@ -145,7 +145,7 @@ runThreads Options{..} =
                          Q.setPromisc q (devName dev) True
                          Q.bindGroup q (groupId binding) (devName dev) queue
                          when (isJust function) $ do
-                             putStrLn $ "[pfq] Gid " ++ show (groupId binding) ++ " is using computation: " ++ (fromJust function)
+                             putStrLn $ "[pfq] Gid " ++ show (groupId binding) ++ " is using computation: " ++ fromJust function
                              Q.setGroupComputationFromString q (groupId binding) (fromJust function)
                      Q.enable q
                      M.void (recvLoop q (State c))

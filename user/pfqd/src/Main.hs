@@ -148,5 +148,5 @@ mkPolicy Restricted = Q.policy_restricted
 
 
 pidof :: String -> IO [ProcessID]
-pidof name = (map Prelude.read . words) <$> catchIOError (readProcess "/bin/pidof" [name] "") (const $ return [])
+pidof name = map Prelude.read . words <$> catchIOError (readProcess "/bin/pidof" [name] "") (const $ return [])
 
