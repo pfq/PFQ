@@ -54,7 +54,7 @@ Features
 Publications
 ------------
 
-* _"PFQ: a Novel Engine for Multi-Gigabit Packet Capturing With Multi-Core Commodity Hardware"_: Best-Paper-Award at PAM2012 in Vienna http://tma2012.ftw.at/papers/PAM2012paper12.pdf
+* _"PFQ: a Novel Engine for Multi-Gigabit Packet Capturing With Multi-Core Commodity Hardware"_: Best-Paper-Award at [PAM2012](https://link.springer.com/chapter/10.1007/978-3-642-28537-0_7), paper avaiable from [here](https://pdfs.semanticscholar.org/d0a9/086aff225ed5a0ff0855216faee4072973e8.pdf)
 * _"A Purely Functional Approach to Packet Processing"_: ANCS 2014 Conference (October 2014, Marina del Rey) 
 * _"Network Traffic Processing with PFQ"_: JSAC-SI-MT/IEEE journal Special Issue on Measuring and Troubleshooting the Internet (March 2016) 
 * _"Enabling Packet Fan--Out in the libpcap Library for Parallel Traffic Processing"_: Network Traffic Measurement and Analysis Conference (TMA 2017)
