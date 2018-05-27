@@ -67,6 +67,12 @@ Invited talks
 * _"Functional Network Programming"_ at Tyrrhenian International Workshop on Digital Communication - (Sep. 2016)
 * _"Software Accelerations for Network Applications"_ at NetV IRISA / Technicolor Workshop on Network Virtualization (Feb. 2017)
 
+Licenses
+--------
+
+The PFQ kernel module is distributed with GPL license. User-space libraries and tools, instead, are distributed with a dual license scheme, 
+so they are available either as GPL or with a Commercial License. For more information contact the author.
+
 Author
 ------
 
