@@ -22,7 +22,7 @@
 module Main where
 
 import Data.Maybe
-import Data.List(isInfixOf)
+import Data.List(isInfixOf, nub, sort)
 import Data.List.Split(splitOneOf)
 import Control.Monad.State
 import Control.Exception
@@ -168,15 +168,26 @@ bindDevice dev = do
 -- show IRQ affinity of a given device
 --
 
+prettyMSI :: Maybe MSI -> String
+prettyMSI Nothing = ""
+prettyMSI (Just Other) = "(other)"
+prettyMSI (Just msi)   = "(" <> show msi <> ")"
+
+
 showBinding :: String -> BindStateT IO ()
 showBinding dev = do
     (op,_) <- get
     let msi = msitype op
         irq = getInterruptsByDevice dev msi
     lift $ do
-        putStrLn $ "Binding for device " ++ dev ++
-            case msi of { Nothing -> ":"; Just Other -> "(other):";  _ -> " (" ++ show (fromJust msi) ++ "):" }
-        when (null irq) $ error $ "pfq-affinity: irq vector not found for dev " ++ dev ++ " (" ++ show msi ++ ")!"
+
+        cpus <- nub . sort . concat <$> mapM getIrqAffinity irq
+
+        putStrLn $ "IRQ binding for device " ++ dev ++ prettyMSI msi ++ " on cpu "  ++ show cpus ++ " (" ++  show (length irq) ++ " irqs): "
+
+        when (null irq) $
+            error $ "pfq-affinity: irq vector not found for dev " ++ dev ++ " (" ++ show msi ++ ")!"
+
         forM_ irq $ \n ->
             getIrqAffinity n >>= \cs -> putStrLn $ "   irq " ++ show n ++ " -> CPU " ++ show cs
 
