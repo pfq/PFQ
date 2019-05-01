@@ -49,8 +49,9 @@ reset = setSGRCode []
 putStrBoldLn :: String -> IO ()
 putStrBoldLn msg = putStrLn $ bold ++ msg ++ reset
 
-proc_interrupt, proc_cpuinfo :: String
+proc_interrupt, proc_cpuinfo, proc_irq :: String
 
+proc_irq = "/proc/irq/"
 proc_interrupt = "/proc/interrupts"
 proc_cpuinfo   = "/proc/cpuinfo"
 
@@ -175,7 +176,7 @@ showBinding dev = do
     lift $ do
         putStrLn $ "Binding for device " ++ dev ++
             case msi of { Nothing -> ":"; Just Other -> "(other):";  _ -> " (" ++ show (fromJust msi) ++ "):" }
-        when (null irq) $ error $ "pfq-affinity: irq vector not found for dev " ++ dev ++ "!"
+        when (null irq) $ error $ "pfq-affinity: irq vector not found for dev " ++ dev ++ " (" ++ show msi ++ ")!"
         forM_ irq $ \n ->
             getIrqAffinity n >>= \cs -> putStrLn $ "   irq " ++ show n ++ " -> CPU " ++ show cs
 
@@ -232,7 +233,7 @@ bindOneToMany irqs cpus = forM_ irqs $ \irq -> setIrqAffinity irq cpus
 setIrqAffinity :: Int -> [Int] -> IO ()
 setIrqAffinity irq cpus = do
     putStrLn $ "   irq " ++ show irq ++ " -> CPU " ++ show cpus ++ " {mask = " ++ mask' ++ "}"
-    writeFile ("/proc/irq/" ++ show irq ++ "/smp_affinity") mask'
+    writeFile (proc_irq ++ show irq ++ "/smp_affinity") mask'
       where mask' = showMask $ makeCpuMask cpus
 
 
@@ -241,7 +242,7 @@ setIrqAffinity irq cpus = do
 
 getIrqAffinity :: Int -> IO [Int]
 getIrqAffinity irq =
-    getCpusListFromMask . readMask <$> readFile ("/proc/irq/" ++ show irq ++ "/smp_affinity")
+    getCpusListFromMask . readMask <$> readFile (proc_irq ++ show irq ++ "/smp_affinity")
 
 
 -- utilities
