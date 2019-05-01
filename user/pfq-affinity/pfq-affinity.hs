@@ -78,7 +78,6 @@ instance Show MSI where
 -- Command line options
 --
 
-
 data Options = Options
     {   firstcpu    :: Int
     ,   exclude     :: [Int]
@@ -155,8 +154,8 @@ main = handle (\(ErrorCall msg) -> putStrBoldLn (red <> T.pack msg <> reset) *> 
 runCmd :: Options -> BindStateT IO ()
 runCmd Options{..}
     | Just _  <- algorithm  = forM_ arguments $ \dev -> bindDevice dev
-    | showAllCPUs           = liftIO $ showAllCpuIRQs (fmap T.pack arguments)
-    | not $ null showCPU    = liftIO $ mapM_ showIRQ showCPU
+    | showAllCPUs           = liftIO $ showAllCpuIRQs (T.pack <$> arguments)
+    | not $ null showCPU    = liftIO $ mapM_ (showIRQ (T.pack <$> arguments)) showCPU
     | not $ null bindIRQ    = runBinding bindIRQ (map read arguments)
     | not $ null arguments  = mapM_ showBinding arguments
     | otherwise             = liftIO $ withArgs ["--help"] $ void (cmdArgsRun options)
@@ -223,8 +222,8 @@ showAllCpuIRQs filts = do
 -- show IRQ list of a given cpu
 --
 
-showIRQ :: Int -> IO ()
-showIRQ cpu = do
+showIRQ :: [T.Text] -> Int -> IO ()
+showIRQ filts cpu = do
     let irqs = getInterrupts
     putStrLn $ "CPU " <> show cpu <> ":"
 
@@ -236,7 +235,8 @@ showIRQ cpu = do
 
     let out = map fst $ catMaybes mat
     forM_ out $ \(n,descr) ->
-        printf "  irq %s%d%s:%s%s%s\n" red n reset green descr reset
+        when (any (`T.isInfixOf` descr) filts || null filts) $
+            printf "  irq %s%d%s:%s%s%s\n" red n reset green descr reset
 
 -- runBinding
 
