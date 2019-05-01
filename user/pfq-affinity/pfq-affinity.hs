@@ -16,21 +16,26 @@
 -- Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 --
 
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE ApplicativeDo #-}
 
 module Main where
 
 import Data.Maybe
-import Data.List(isInfixOf, nub, sort)
+import Data.List(nub, sort)
 import Data.List.Split(splitOneOf)
 import Control.Monad.State
 import Control.Exception
 
 import Numeric(showHex,readHex)
 
+import Text.Printf
 import Data.Bits
 import Data.Data
+import qualified Data.Text as T
+import qualified Data.Text.IO as T
 
 import System.Console.ANSI
 import System.Console.CmdArgs
@@ -38,23 +43,23 @@ import System.IO.Unsafe
 import System.Environment (withArgs)
 import System.Exit
 
-bold, red, blue, reset :: String
+bold, red, blue, green, reset :: T.Text
 
-bold  = setSGRCode [SetConsoleIntensity BoldIntensity]
-red   = setSGRCode [SetColor Foreground Vivid Red]
-blue  = setSGRCode [SetColor Foreground Vivid Blue]
-green = setSGRCode [SetColor Foreground Vivid Green]
-reset = setSGRCode []
+bold  = T.pack $ setSGRCode [SetConsoleIntensity BoldIntensity]
+red   = T.pack $ setSGRCode [SetColor Foreground Vivid Red]
+blue  = T.pack $ setSGRCode [SetColor Foreground Vivid Blue]
+green = T.pack $ setSGRCode [SetColor Foreground Vivid Green]
+reset = T.pack $ setSGRCode []
 
 
-putStrBoldLn :: String -> IO ()
-putStrBoldLn msg = putStrLn $ bold <> msg <> reset
+putStrBoldLn :: T.Text -> IO ()
+putStrBoldLn msg = T.putStrLn $ bold <> msg <> reset
 
 proc_interrupt, proc_cpuinfo, proc_irq :: String
 
-proc_irq = "./proc/irq/"
-proc_interrupt = "./proc/interrupts"
-proc_cpuinfo   = "./proc/cpuinfo"
+proc_irq = "/proc/irq/"
+proc_interrupt = "/proc/interrupts"
+proc_cpuinfo   = "/proc/cpuinfo"
 
 
 type Device = String
@@ -139,7 +144,7 @@ none _ = True
 --
 
 main :: IO ()
-main = handle (\(ErrorCall msg) -> putStrBoldLn (red <> msg <> reset) *> exitWith (ExitFailure 1)) $ do
+main = handle (\(ErrorCall msg) -> putStrBoldLn (red <> T.pack msg <> reset) *> exitWith (ExitFailure 1)) $ do
     opt' <- cmdArgsRun options
     evalStateT (runCmd opt') (opt', firstcpu opt')
 
@@ -150,7 +155,7 @@ main = handle (\(ErrorCall msg) -> putStrBoldLn (red <> msg <> reset) *> exitWit
 runCmd :: Options -> BindStateT IO ()
 runCmd Options{..}
     | Just _  <- algorithm  = forM_ arguments $ \dev -> bindDevice dev
-    | showAllCPUs           = liftIO $ showAllCpuIRQs arguments
+    | showAllCPUs           = liftIO $ showAllCpuIRQs (fmap T.pack arguments)
     | not $ null showCPU    = liftIO $ mapM_ showIRQ showCPU
     | not $ null bindIRQ    = runBinding bindIRQ (map read arguments)
     | not $ null arguments  = mapM_ showBinding arguments
@@ -185,51 +190,53 @@ showBinding dev = do
         irq = getInterruptsByDevice dev msi
 
     lift $ do
-        cpus <- nub . sort . concat <$> mapM getIrqAffinity (fst <$> irq)
+        let cpus = nub . sort . concat $ getIrqAffinity . fst <$> irq
 
         putStrLn $ "IRQ binding for device " <> dev <> prettyMSI msi <> " on cpu "  <> show cpus <> " (" <>  show (length irq) <> " irqs): "
 
         when (null irq) $
             error $ "pfq-affinity: irq vector not found for dev " <> dev <> " (" <> show msi <> ")!"
 
-        forM_ irq $ \(n,descr) ->
-            getIrqAffinity n >>= \cs -> putStrLn $ "irq " <> red  <> show n <> reset <> ":" <> green <> descr <> reset <> " -> cpu " <> show cs
+        forM_ irq $ \(n,descr) -> do
+            let cs = getIrqAffinity n
+            printf "  irq %s%d%s:%s%s%s -> cpu %v\n" red  n reset green descr reset (show cs)
 
 
 -- show cpus irq map
 --
 
-showAllCpuIRQs ::[String] -> IO ()
+showAllCpuIRQs ::[T.Text] -> IO ()
 showAllCpuIRQs filts = do
-    irqs <- getInterrupts
+    let irqs = getInterrupts
     forM_ [0..getNumberOfPhyCores-1] $ \cpu -> do
-        mat <- forM irqs $ \n ->
-                    getIrqAffinity (fst n) >>= \l -> if cpu `elem` l
-                                                        then return $ Just (n, l)
-                                                        else return Nothing
-        putStr $ "cpu " <> show cpu <> " -> "
-
+        mat <- forM irqs $ \n -> do
+                let cs = getIrqAffinity (fst n)
+                if cpu `elem` cs
+                    then return $ Just (n, cs)
+                    else return Nothing
+        putStr $ "  cpu " <> show cpu <> " -> "
         forM_ (fst <$> catMaybes mat) $ \(n,descr) ->
-            when (any (`isInfixOf` descr) filts || null filts) $
-                putStr $ red <> show n <> reset <> ":" <> green <> descr <> reset <> " "
-
-        putStr "\n"
+            when (any (`T.isInfixOf` descr) filts || null filts) $
+                printf "%s%d%s:%s%s%s " red n reset green descr reset
+        T.putStr "\n"
 
 -- show IRQ list of a given cpu
 --
 
 showIRQ :: Int -> IO ()
 showIRQ cpu = do
-    irqs <- getInterrupts
+    let irqs = getInterrupts
     putStrLn $ "CPU " <> show cpu <> ":"
-    mat <- forM irqs $ \n ->
-        getIrqAffinity (fst n) >>= \l -> if cpu `elem` l
-                                            then return $ Just (n, l)
-                                            else return Nothing
+
+    mat <- forM irqs $ \n -> do
+        let cs = getIrqAffinity (fst n)
+        if cpu `elem` cs
+            then return $ Just (n, cs)
+            else return Nothing
+
     let out = map fst $ catMaybes mat
     forM_ out $ \(n,descr) ->
-        putStrLn $ "  irq " <> red <> show n <> reset <> ":" <> green <> descr <> reset
-
+        printf "  irq %s%d%s:%s%s%s\n" red n reset green descr reset
 
 -- runBinding
 
@@ -266,17 +273,9 @@ bindOneToMany irqs cpus = forM_ irqs $ \irq -> setIrqAffinity irq cpus
 
 setIrqAffinity :: Int -> [Int] -> IO ()
 setIrqAffinity irq cpus = do
-    putStrLn $ "   irq " <> show irq <> " -> CPU " <> show cpus <> " {mask = " <> mask' <> "}"
+    putStrLn $ "  irq " <> show irq <> " -> CPU " <> show cpus <> " {mask = " <> mask' <> "}"
     writeFile (proc_irq <> show irq <> "/smp_affinity") mask'
       where mask' = showMask $ makeCpuMask cpus
-
-
--- get IRQ affinity for the given irq
-
-getIrqAffinity :: Int -> IO [Int]
-getIrqAffinity irq =
-    getCpusListFromMask . readMask <$> readFile (proc_irq <> show irq <> "/smp_affinity")
-
 
 -- utilities
 --
@@ -319,32 +318,42 @@ mkEligibleCPUs dev excl f (IrqBinding f' step multi' filt) msi =
 
 
 
-getDeviceName :: String -> Maybe MSI -> String
-getDeviceName dev Nothing      = dev
-getDeviceName dev (Just Other) = dev
-getDeviceName dev (Just msi )  = dev <> "-" <> show msi
+getDeviceName :: String -> Maybe MSI -> T.Text
+getDeviceName dev Nothing      = T.pack dev
+getDeviceName dev (Just Other) = T.pack dev
+getDeviceName dev (Just msi )  = T.pack dev <> "-" <> (T.pack . show) msi
 
 
--- the following actions can be unsafe IO because the files they parse are not mutable
---
+-- the following actions can be unsafe IO because the files they parse are immutable
 
+-- get IRQ affinity, that is the list of the CPUs the given irq is bound to
+
+{-# NOINLINE getIrqAffinity #-}
+getIrqAffinity :: Int -> [Int]
+getIrqAffinity irq =  unsafePerformIO $
+    getCpusListFromMask . readMask <$> readFile (proc_irq <> show irq <> "/smp_affinity")
+
+
+{-# NOINLINE getInterrupts #-}
+getInterrupts :: [(Int, T.Text)]
+getInterrupts = unsafePerformIO $ readFile proc_interrupt >>= \file ->
+    return $ map (\(i,l) -> (i, T.pack . last . words $ l)) (concatMap reads $ lines file :: [(Int, String)])
+
+
+{-# NOINLINE getNumberOfQueues #-}
 getNumberOfQueues :: Device -> Maybe MSI -> Int
-getNumberOfQueues dev msi = unsafePerformIO $ readFile proc_interrupt >>= \file ->
-    return $ length $ filter (getDeviceName dev msi `isInfixOf`) $ lines file
+getNumberOfQueues dev msi = unsafePerformIO $ T.readFile proc_interrupt >>= \file ->
+    return $ length $ filter (getDeviceName dev msi `T.isInfixOf`) $ T.lines file
 
 
-getInterruptsByDevice :: Device -> Maybe MSI -> [(Int, String)]
-getInterruptsByDevice dev msi = unsafePerformIO $ readFile proc_interrupt >>= \file ->
-    return $ map (\l -> (read $ takeWhile (/= ':') l, last . words $ l)) $ filter (getDeviceName dev msi `isInfixOf`) $ lines file
-
-
-getInterrupts :: IO [(Int, String)]
-getInterrupts = readFile proc_interrupt >>= \file ->
-    return $ map (\(i,l) -> (i, last . words $ l)) (concatMap reads $ lines file  :: [(Int, String)])
+{-# NOINLINE getInterruptsByDevice #-}
+getInterruptsByDevice :: Device -> Maybe MSI -> [(Int, T.Text)]
+getInterruptsByDevice dev msi = unsafePerformIO $ T.readFile proc_interrupt >>= \file ->
+    return $ map (\l -> (read . T.unpack $ T.takeWhile (/= ':') l, last . T.words $ l)) $ filter (getDeviceName dev msi `T.isInfixOf`) $ T.lines file
 
 
 {-# NOINLINE getNumberOfPhyCores #-}
 getNumberOfPhyCores :: Int
-getNumberOfPhyCores = unsafePerformIO $ readFile proc_cpuinfo >>= \file ->
-    return $ length $ filter ("processor" `isInfixOf`) $ lines file
+getNumberOfPhyCores = unsafePerformIO $ T.readFile proc_cpuinfo >>= \file ->
+    return $ length $ filter ("processor" `T.isInfixOf`) $ T.lines file
 
