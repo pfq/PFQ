@@ -19,7 +19,8 @@ Executable pfq-affinity
                         mtl, 
                         split,
                         ansi-terminal,
-                        text
+                        text, 
+                        regex-posix
     default-language:   Haskell2010
   
   Ghc-options:       -O2 -optc-O3 -Wall -threaded -funbox-strict-fields -fno-state-hack -rtsopts  
